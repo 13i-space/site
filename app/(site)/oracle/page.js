@@ -1,4 +1,4 @@
-import OracleWidget from "../../components/OracleWidget";
+import OracleWidget from "../../../components/OracleWidget";
 
 export default function OraclePage() {
   return (
