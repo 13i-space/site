@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 
-export default function NemesisGame() {
+export default function NemesisCommand() {
   const canvasRef = useRef(null);
   const stateRef = useRef(null);
   const [score, setScore] = useState(0);
@@ -36,10 +36,20 @@ export default function NemesisGame() {
     let raf;
     let running = true;
 
-    const handleClick = (e) => {
+    // The canvas draws at a fixed internal resolution (600x400) but is
+    // often displayed smaller on phones via CSS. Without this scaling,
+    // touch/click position doesn't match where things visually are.
+    const toCanvasCoords = (clientX, clientY) => {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+      };
+    };
+
+    const fireAt = (x, y) => {
       const s = stateRef.current;
       const dx = x - s.turretX;
       const dy = y - (canvas.height - 30);
@@ -51,13 +61,36 @@ export default function NemesisGame() {
         vy: (dy / dist) * 7,
       });
     };
+
+    const handleClick = (e) => {
+      const { x, y } = toCanvasCoords(e.clientX, e.clientY);
+      fireAt(x, y);
+    };
     const handleMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      stateRef.current.turretX = e.clientX - rect.left;
+      const { x } = toCanvasCoords(e.clientX, e.clientY);
+      stateRef.current.turretX = x;
+    };
+
+    // Touch: aiming and firing happen in the same gesture, since there's
+    // no separate "hover" step on a phone the way there is with a mouse.
+    const handleTouchStart = (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const { x, y } = toCanvasCoords(touch.clientX, touch.clientY);
+      stateRef.current.turretX = x;
+      fireAt(x, y);
+    };
+    const handleTouchMove = (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const { x } = toCanvasCoords(touch.clientX, touch.clientY);
+      stateRef.current.turretX = x;
     };
 
     canvas.addEventListener("click", handleClick);
     canvas.addEventListener("mousemove", handleMove);
+    canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
+    canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
 
     const loop = (t) => {
       if (!running) return;
@@ -151,6 +184,8 @@ export default function NemesisGame() {
       cancelAnimationFrame(raf);
       canvas.removeEventListener("click", handleClick);
       canvas.removeEventListener("mousemove", handleMove);
+      canvas.removeEventListener("touchstart", handleTouchStart);
+      canvas.removeEventListener("touchmove", handleTouchMove);
     };
   }, [started]);
 

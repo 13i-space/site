@@ -70,12 +70,27 @@ export default function MusicPage() {
     <div>
       <div className="page-title">The Music</div>
       <div className="page-subtitle">36 signals &middot; 3 years &middot; one per month</div>
+
       <div className="panel" style={{ marginBottom: 32 }}>
-        <p>
-          What arrives is not sound where it comes from. What you hear here
-          is a translation. These are early, unmixed/unmastered rough
-          drafts, shared for feedback before the rollout begins 4.6.2027 —
-          several may change before then.
+        <p style={{ marginBottom: 14 }}>
+          13i is an instrumental electronic music project exploring the
+          intersection of science fiction, artificial intelligence,
+          consciousness, and emotion. Every composition is 100% human
+          written, performed, arranged, and produced. AI is part of the
+          narrative in the accompanying 13i sci-fi novel — however AI it is
+          not used in the writing/production (novel or music) process.
+        </p>
+        <p style={{ marginBottom: 14 }}>
+          The three (trilogy) pre-release rough draft albums below blend
+          cinematic electronic music with melodic synth-wave, progressive
+          EDM, ambient textures, and driving rhythms. The result is
+          instrumental music designed for late-night drives, headphones,
+          science fiction, focus, exploration, and imagination.
+        </p>
+        <p style={{ margin: 0, fontStyle: "italic", color: "#B7BADF" }}>
+          More than sound ~ this is a signal.
+          <br />
+          More than music ~ this is a message.
         </p>
       </div>
 
@@ -126,6 +141,22 @@ export default function MusicPage() {
           </div>
         </div>
       ))}
+
+      <div className="panel" style={{ marginTop: 20 }}>
+        <div className="mono" style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "1px", marginBottom: 10 }}>
+          COPYRIGHT NOTICE
+        </div>
+        <p style={{ fontSize: 12.5, color: "#8A8FBF", lineHeight: 1.7, margin: 0 }}>
+          All songs on this page are the exclusive property of{" "}
+          <a href="https://www.tempogoatstudios.com" target="_blank" rel="noopener noreferrer">
+            Tempo Goat Studios
+          </a>
+          . These tracks are unfinished, unreleased and confidential. They
+          may not be copied, distributed, or shared in any form without
+          written consent from Tempo Goat Studios. Unauthorized use is
+          strictly prohibited.
+        </p>
+      </div>
     </div>
   );
 }
