@@ -1,33 +1,51 @@
-import NemesisCommand from "../../../components/NemesisCommand";
-import ThirteenIVsNemesis from "../../../components/ThirteenIVsNemesis";
+import Link from "next/link";
 
-export default function GamesPage() {
+const games = [
+  {
+    href: "/games/nemesis-command",
+    title: "NEMESIS Command",
+    blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic.",
+  },
+  {
+    href: "/games/13i-vs-nemesis",
+    title: "13i vs NEMESIS",
+    blurb: "Defend Earth across five zones of approach, with multiple weapons and countermeasures.",
+  },
+];
+
+export default function GamesHub() {
   return (
     <div>
       <div className="page-title">Games</div>
       <div className="page-subtitle">two ways to play</div>
 
-      <div style={{ marginBottom: 44 }}>
-        <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF", marginBottom: 8 }}>
-          NEMESIS Command
-        </div>
-        <p style={{ fontSize: 13, color: "#8A8FBF", marginBottom: 16 }}>
-          Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic.
-        </p>
-        <NemesisCommand />
-      </div>
-
-      <div>
-        <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF", marginBottom: 8 }}>
-          13i vs NEMESIS
-        </div>
-        <p style={{ fontSize: 13, color: "#8A8FBF", marginBottom: 16 }}>
-          Defend Earth across five zones of approach. Only the Asteroid Belt
-          encounter (kinetic interceptors vs. gravitic deflection) is live
-          so far — the rest of the zones build on this same foundation.
-        </p>
-        <ThirteenIVsNemesis />
+      <div style={styles.grid}>
+        {games.map((g) => (
+          <Link key={g.href} href={g.href} style={styles.card}>
+            <div className="wordmark" style={styles.cardTitle}>{g.title}</div>
+            <p style={styles.cardBlurb}>{g.blurb}</p>
+          </Link>
+        ))}
       </div>
     </div>
   );
 }
+
+const styles = {
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 20,
+  },
+  card: {
+    display: "block",
+    background: "rgba(14, 16, 38, 0.72)",
+    border: "1px solid #262A55",
+    borderRadius: 4,
+    padding: "24px 20px",
+    color: "inherit",
+    textDecoration: "none",
+  },
+  cardTitle: { fontSize: 22, color: "#DCDFFF", marginBottom: 8 },
+  cardBlurb: { fontSize: 13, color: "#8A8FBF", lineHeight: 1.6, margin: 0 },
+};

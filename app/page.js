@@ -1,9 +1,11 @@
 import "./globals.css";
 import Countdown from "../components/Countdown";
+import StarField from "../components/StarField";
 
 export default function CountdownPage() {
   return (
     <div style={styles.page}>
+      <StarField density={160} />
       <div style={styles.glow} />
       <img src="/13i-logo.png" alt="13i" style={styles.logo} />
       <div className="mono" style={styles.subtitle}>

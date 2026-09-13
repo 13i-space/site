@@ -73,6 +73,42 @@ a:hover {
   text-decoration: none;
 }
 
+.nav-dropdown {
+  position: relative;
+}
+.nav-dropdown-menu {
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 6px 0;
+  min-width: 170px;
+  list-style: none;
+  flex-direction: column;
+  gap: 0;
+  z-index: 20;
+}
+.nav-dropdown:hover .nav-dropdown-menu {
+  display: flex;
+}
+.nav-dropdown-menu li {
+  width: 100%;
+}
+.nav-dropdown-menu a {
+  display: block;
+  padding: 10px 16px;
+  white-space: nowrap;
+  color: var(--muted);
+}
+.nav-dropdown-menu a:hover {
+  color: var(--lavender);
+  background: rgba(139, 149, 246, 0.08);
+}
+
 .site-footer {
   max-width: 1100px;
   margin: 60px auto 0;
