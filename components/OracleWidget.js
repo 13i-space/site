@@ -70,7 +70,8 @@ export default function OracleWidget() {
       if (!res.ok) throw new Error(data.error || "Unknown error");
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
     } catch (e) {
-      setError("Signal lost. The connection could not be completed.");
+      console.error("Oracle error:", e);
+      setError(e.message || "Signal lost. The connection could not be completed.");
     } finally {
       setPending(false);
     }

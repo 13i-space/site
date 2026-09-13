@@ -10,7 +10,13 @@ export default function Nav() {
         <li><Link href="/book">Book</Link></li>
         <li><Link href="/music">Music</Link></li>
         <li><Link href="/oracle">Oracle</Link></li>
-        <li><Link href="/games">Games</Link></li>
+        <li className="nav-dropdown">
+          <Link href="/games">Games</Link>
+          <ul className="nav-dropdown-menu">
+            <li><Link href="/games/nemesis-command">NEMESIS Command</Link></li>
+            <li><Link href="/games/13i-vs-nemesis">13i vs NEMESIS</Link></li>
+          </ul>
+        </li>
       </ul>
     </nav>
   );
