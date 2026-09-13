@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13i vs NEMESIS — Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --void: #05070c;
+    --panel: #0b1220;
+    --panel-edge: #16324a;
+    --grid: #123049;
+    --nemesis: #ffb020;
+    --nemesis-dim: #8a5e14;
+    --signal: #9b6bff;
+    --signal-dim: #4a3380;
+    --alert: #ff4136;
+    --ok: #2fe6c4;
+    --text: #cfe3ee;
+    --text-dim: #6f8ea3;
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; padding:0; height:100%;
+    background: var(--void);
+    color: var(--text);
+    font-family:'JetBrains Mono', monospace;
+    overflow:hidden;
+    -webkit-user-select:none; user-select:none;
+  }
+  #app{
+    display:flex; flex-direction:column;
+    height:100vh; width:100vw;
+    background:
+      radial-gradient(ellipse at 50% -10%, #0f1830 0%, var(--void) 55%);
+  }
+  header{
+    display:flex; justify-content:space-between; align-items:center;
+    padding:10px 16px;
+    border-bottom:1px solid var(--panel-edge);
+    background:var(--panel);
+    flex-wrap:wrap; gap:6px;
+    z-index:5;
+  }
+  .title{
+    font-family:'Press Start 2P', monospace;
+    font-size:12px;
+    color:var(--nemesis);
+    letter-spacing:1px;
+  }
+  .title span{color:var(--signal);}
+  .hud-mid{
+    display:flex; gap:22px; font-size:12px; color:var(--text-dim);
+  }
+  .hud-mid b{color:var(--text); font-weight:500;}
+  #stage-wrap{
+    position:relative;
+    flex:1;
+    display:flex; align-items:center; justify-content:center;
+    padding:10px;
+    min-height:0;
+  }
+  canvas{
+    background:#03050a;
+    border:1px solid var(--panel-edge);
+    max-width:100%; max-height:100%;
+    width:100%; height:auto;
+    aspect-ratio: 900/460;
+    box-shadow: 0 0 60px rgba(155,107,255,0.05) inset;
+    cursor:crosshair;
+  }
+  .toast{
+    position:absolute; top:14px; left:50%; transform:translateX(-50%);
+    font-family:'Press Start 2P', monospace;
+    font-size:11px;
+    padding:10px 16px;
+    background:rgba(11,18,32,0.92);
+    border:1px solid var(--panel-edge);
+    opacity:0; pointer-events:none;
+    transition:opacity 0.25s ease, transform 0.25s ease;
+    white-space:nowrap;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(4px);}
+  .toast.hit{color:var(--ok); border-color:var(--ok);}
+  .toast.miss{color:var(--alert); border-color:var(--alert);}
+  .toast.deflect{color:var(--signal); border-color:var(--signal);}
+  footer{
+    border-top:1px solid var(--panel-edge);
+    background:var(--panel);
+    padding:12px 16px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:16px; flex-wrap:wrap;
+  }
+  .meters{display:flex; gap:20px; flex-wrap:wrap;}
+  .meter{display:flex; flex-direction:column; gap:4px; min-width:120px;}
+  .meter-label{font-size:10px; color:var(--text-dim); letter-spacing:0.5px;}
+  .meter-track{width:150px; height:8px; background:#0a1424; border:1px solid var(--panel-edge); position:relative;}
+  .meter-fill{height:100%; background:var(--signal); transition:width 0.3s ease;}
+  .meter-fill.hull{background:linear-gradient(90deg, var(--ok), var(--nemesis) 60%, var(--alert));}
+  .meter-fill.dev{background:var(--signal);}
+  .weapons{display:flex; gap:10px; flex-wrap:wrap;}
+  button.weapon{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    background:#0e1830;
+    color:var(--text);
+    border:1px solid var(--panel-edge);
+    padding:10px 14px;
+    cursor:pointer;
+    display:flex; flex-direction:column; align-items:flex-start; gap:3px;
+    min-width:118px;
+    transition:border-color 0.15s ease, background 0.15s ease;
+  }
+  button.weapon:not(:disabled):hover{border-color:var(--nemesis); background:#15223f;}
+  button.weapon:not(:disabled){animation: pulseReady 1.6s ease-in-out infinite;}
+  @keyframes pulseReady{
+    0%,100%{border-color:var(--panel-edge);}
+    50%{border-color:var(--nemesis);}
+  }
+  button.weapon:disabled{opacity:0.35; cursor:not-allowed; animation:none;}
+  button.weapon .wname{color:var(--nemesis); font-weight:700; letter-spacing:0.5px;}
+  button.weapon.locked .wname{color:var(--text-dim);}
+  button.weapon .wsub{font-size:9px; color:var(--text-dim);}
+  .weapons-label{
+    font-size:9px; color:var(--text-dim); letter-spacing:1px;
+    margin-right:2px; align-self:center;
+  }
+  #overlay{
+    position:fixed; inset:0; background:rgba(3,5,10,0.92);
+    display:none; align-items:center; justify-content:center; z-index:20;
+    flex-direction:column; gap:18px; text-align:center; padding:20px;
+  }
+  #overlay.show{display:flex;}
+  #overlay h1{
+    font-family:'Press Start 2P', monospace;
+    font-size: clamp(14px, 3vw, 22px);
+    color:var(--alert);
+    max-width:640px; line-height:1.7;
+  }
+  #overlay p{color:var(--text-dim); max-width:520px; line-height:1.6; font-size:13px;}
+  #overlay .stats{color:var(--text); font-size:13px; display:flex; gap:24px;}
+  #overlay button.restart{
+    font-family:'Press Start 2P', monospace;
+    font-size:12px;
+    padding:14px 24px;
+    background:var(--nemesis);
+    color:#1a1200;
+    border:none;
+    cursor:pointer;
+  }
+  #overlay button.restart:hover{background:#ffc659;}
+  .encounter-hint{
+    position:absolute; bottom:8px; left:50%; transform:translateX(-50%);
+    font-size:10px; color:var(--text-dim);
+    background:rgba(11,18,32,0.8); padding:5px 10px; border:1px solid var(--panel-edge);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="title">13i <span>::</span> NEMESIS</div>
+    <div class="hud-mid">
+      <div>ZONE <b id="zoneLabel">1 — OUTER SYSTEM</b></div>
+      <div>RANGE <b id="rangeLabel">100%</b></div>
+      <div>THREAT SCORE <b id="scoreLabel">0</b></div>
+    </div>
+  </header>
+
+  <div id="stage-wrap">
+    <canvas id="stage" width="900" height="460"></canvas>
+    <div class="toast" id="toast"></div>
+    <div class="encounter-hint" id="hint" style="display:none;"></div>
+  </div>
+
+  <footer>
+    <div class="meters">
+      <div class="meter">
+        <div class="meter-label">13i HULL INTEGRITY</div>
+        <div class="meter-track"><div class="meter-fill hull" id="hullBar" style="width:100%"></div></div>
+      </div>
+      <div class="meter">
+        <div class="meter-label">COURSE DEVIATION</div>
+        <div class="meter-track"><div class="meter-fill dev" id="devBar" style="width:0%"></div></div>
+      </div>
+    </div>
+    <div class="weapons">
+      <span class="weapons-label">SELECT TO ENGAGE →</span>
+      <div class="weapons" id="weapons" style="gap:10px;"></div>
+    </div>
+  </footer>
+</div>
+
+<div id="overlay">
+  <h1 id="overlayTitle">13i HAS REACHED EARTH ORBIT</h1>
+  <p id="overlayText">NEMESIS's arsenal wasn't enough. Whether that's a failure or a mercy is not yet known.</p>
+  <div class="stats" id="overlayStats"></div>
+  <button class="restart" id="restartBtn">RUN AGAIN</button>
+</div>
+
+<script>
+(function(){
+  const canvas = document.getElementById('stage');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+
+  const zoneLabelEl = document.getElementById('zoneLabel');
+  const rangeLabelEl = document.getElementById('rangeLabel');
+  const scoreLabelEl = document.getElementById('scoreLabel');
+  const hullBar = document.getElementById('hullBar');
+  const devBar = document.getElementById('devBar');
+  const weaponsEl = document.getElementById('weapons');
+  const toastEl = document.getElementById('toast');
+  const hintEl = document.getElementById('hint');
+  const overlay = document.getElementById('overlay');
+  const overlayTitle = document.getElementById('overlayTitle');
+  const overlayText = document.getElementById('overlayText');
+  const overlayStats = document.getElementById('overlayStats');
+  const restartBtn = document.getElementById('restartBtn');
+
+  const ZONES = [
+    {name:'1 — OUTER SYSTEM', min:0, max:20},
+    {name:'2 — ASTEROID BELT', min:20, max:45},
+    {name:'3 — INNER SYSTEM', min:45, max:70},
+    {name:'4 — CISLUNAR SPACE', min:70, max:90},
+    {name:'5 — EARTH ORBIT', min:90, max:101},
+  ];
+
+  const WEAPONS = {
+    kinetic: {
+      key:'kinetic', label:'KINETIC INTERCEPT', unlockAt:0,
+      ammoMax:6, rechargeTime:7, cooldown:0,
+    },
+    laser: {
+      key:'laser', label:'DIRECTED LASER', unlockAt:25,
+      ammoMax:null, cooldown:4,
+    },
+    emp: {key:'emp', label:'EMP BURST', unlockAt:70, locked:true},
+    nuke:{key:'nuke', label:'ORBITAL WARHEAD', unlockAt:90, locked:true},
+  };
+
+  let state;
+
+  function freshState(){
+    return {
+      mode:'map', // 'map' | 'encounter' | 'over'
+      t:0,
+      progress:0, // 0..100, 100 = reaches earth
+      speed:1.15, // base progress per second
+      hull:100,
+      deviation:0,
+      score:0,
+      ammo:{kinetic:WEAPONS.kinetic.ammoMax},
+      rechargeAt:{kinetic:0},
+      cooldownUntil:{laser:0},
+      encounter:null,
+      lastTime:null,
+      over:null,
+    };
+  }
+
+  function currentZoneIndex(p){
+    for(let i=0;i<ZONES.length;i++){ if(p>=ZONES[i].min && p<ZONES[i].max) return i; }
+    return ZONES.length-1;
+  }
+
+  function showToast(msg, cls){
+    toastEl.textContent = msg;
+    toastEl.className = 'toast show ' + (cls||'');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=>{ toastEl.classList.remove('show'); }, 1400);
+  }
+
+  let weaponBtnRefs = {};
+
+  function buildWeaponButtonsOnce(){
+    weaponsEl.innerHTML = '';
+    weaponBtnRefs = {};
+    Object.values(WEAPONS).forEach(w=>{
+      const btn = document.createElement('button');
+      btn.className = 'weapon';
+      const nameEl = document.createElement('span');
+      nameEl.className = 'wname';
+      nameEl.textContent = w.label;
+      const subEl = document.createElement('span');
+      subEl.className = 'wsub';
+      btn.appendChild(nameEl);
+      btn.appendChild(subEl);
+      btn.addEventListener('click', ()=>{
+        if (btn.disabled) return;
+        startEncounter(w.key);
+      });
+      weaponsEl.appendChild(btn);
+      weaponBtnRefs[w.key] = {btn, subEl, nameEl};
+    });
+  }
+
+  function renderWeaponButtons(){
+    Object.values(WEAPONS).forEach(w=>{
+      const ref = weaponBtnRefs[w.key];
+      if (!ref) return;
+      const { btn, subEl, nameEl } = ref;
+      let sub = '';
+      let disabled = false;
+      let locked = w.locked || state.progress < w.unlockAt;
+      if (locked){
+        sub = w.locked ? 'NOT IN PROTOTYPE' : ('UNLOCKS AT ' + w.unlockAt + '%');
+        disabled = true;
+      } else if (w.key === 'kinetic'){
+        sub = 'AMMO ' + state.ammo.kinetic + '/' + w.ammoMax;
+        disabled = state.mode !== 'map' || state.ammo.kinetic <= 0;
+      } else if (w.key === 'laser'){
+        const ready = state.t >= (state.cooldownUntil.laser||0);
+        sub = ready ? 'READY' : 'RECHARGING';
+        disabled = state.mode !== 'map' || !ready;
+      }
+      // only touch the DOM when something actually changed, to keep the
+      // button nodes stable across mousedown/mouseup (fixes dead clicks on Safari)
+      if (subEl.textContent !== sub) subEl.textContent = sub;
+      if (btn.disabled !== disabled) btn.disabled = disabled;
+      btn.classList.toggle('locked', locked);
+    });
+  }
+
+  function updateHud(){
+    const zi = currentZoneIndex(state.progress);
+    zoneLabelEl.textContent = ZONES[zi].name;
+    rangeLabelEl.textContent = Math.max(0, Math.round(100-state.progress)) + '%';
+    scoreLabelEl.textContent = state.score;
+    hullBar.style.width = Math.max(0,state.hull) + '%';
+    devBar.style.width = Math.min(100,state.deviation) + '%';
+    renderWeaponButtons();
+  }
+
+  // ---------- MAP VIEW ----------
+  function drawMap(){
+    ctx.clearRect(0,0,W,H);
+    // starfield
+    ctx.fillStyle = '#03050a';
+    ctx.fillRect(0,0,W,H);
+    drawStars();
+
+    const cx = W*0.5, cy = H*0.52;
+    // orbit rings for each zone boundary
+    ZONES.forEach((z,i)=>{
+      const r = 40 + (100-z.min) * 3.6;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, r, r*0.42, 0, 0, Math.PI*2);
+      ctx.strokeStyle = 'rgba(18,48,73,0.9)';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+    });
+
+    // earth
+    ctx.beginPath();
+    ctx.arc(cx, cy, 16, 0, Math.PI*2);
+    ctx.fillStyle = '#2fe6c4';
+    ctx.shadowColor = '#2fe6c4'; ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#cfe3ee';
+    ctx.font = "10px 'JetBrains Mono'";
+    ctx.textAlign = 'center';
+    ctx.fillText('EARTH', cx, cy+34);
+
+    // 13i position: progress 0 -> far ring, 100 -> earth
+    const r = 40 + (100-state.progress) * 3.6;
+    const angle = -Math.PI/2 + (state.progress/100)*1.4 + Math.sin(state.t*0.4)*0.02;
+    const sx = cx + Math.cos(angle)*r;
+    const sy = cy + Math.sin(angle)*r*0.42;
+
+    // trail
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(-Math.PI/2)*(40+100*3.6), cy + Math.sin(-Math.PI/2)*(40+100*3.6)*0.42);
+    for(let p=0; p<=state.progress; p+=2){
+      const rr = 40 + (100-p)*3.6;
+      const aa = -Math.PI/2 + (p/100)*1.4;
+      ctx.lineTo(cx+Math.cos(aa)*rr, cy+Math.sin(aa)*rr*0.42);
+    }
+    ctx.strokeStyle = 'rgba(155,107,255,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 13i ship — condition reflected visually
+    const damaged = state.hull < 60;
+    const critical = state.hull < 30;
+    ctx.save();
+    ctx.translate(sx, sy);
+    ctx.rotate(angle + Math.PI/2);
+    ctx.beginPath();
+    ctx.moveTo(0,-10); ctx.lineTo(7,8); ctx.lineTo(0,4); ctx.lineTo(-7,8);
+    ctx.closePath();
+    ctx.fillStyle = critical ? '#ff8a80' : (damaged ? '#c9a8ff' : '#9b6bff');
+    ctx.shadowColor = '#9b6bff'; ctx.shadowBlur = 12;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    if (damaged){
+      // venting particles
+      for(let i=0;i<3;i++){
+        const jx = (Math.random()-0.5)*10, jy = 6+Math.random()*10;
+        ctx.fillStyle = critical ? 'rgba(255,65,54,0.6)' : 'rgba(255,176,32,0.5)';
+        ctx.beginPath(); ctx.arc(jx, jy, 1.6, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.restore();
+
+    // readouts panel
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#6f8ea3';
+    ctx.font = "10px 'JetBrains Mono'";
+    ctx.fillText('DIST TO EARTH: ' + Math.max(0,Math.round(100-state.progress)) + '%', 20, 24);
+    ctx.fillText('EFFECTIVE VELOCITY: ' + (state.speed*(1-Math.min(state.deviation,60)/120)).toFixed(2) + ' u/s', 20, 40);
+    ctx.fillText('SENSOR NOTE: gravitic signature stable — 13i sees mass, not light', 20, H-16);
+
+    // persistent prompt pointing at the weapon controls below the canvas
+    const pulse = 0.55 + Math.sin(state.t*4)*0.35;
+    ctx.textAlign = 'center';
+    ctx.font = "11px 'JetBrains Mono'";
+    ctx.fillStyle = 'rgba(255,176,32,' + pulse + ')';
+    ctx.fillText('▼ CHOOSE A WEAPON BELOW TO OPEN A FIRING WINDOW ▼', W/2, H-14);
+  }
+
+  let stars = null;
+  function drawStars(){
+    if(!stars){
+      stars = [];
+      for(let i=0;i<140;i++){
+        stars.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.4+0.2, a:Math.random()*0.6+0.2});
+      }
+    }
+    stars.forEach(s=>{
+      ctx.fillStyle = 'rgba(207,227,238,'+s.a+')';
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+    });
+  }
+
+  // ---------- ENCOUNTER: KINETIC ----------
+  function startEncounter(type){
+    if (state.mode !== 'map') return;
+    const dur = 12;
+    state.mode = 'encounter';
+    state.encounter = {
+      type, startT: state.t, duration: dur,
+      hits:0, misses:0, deflects:0,
+      projectiles: [],
+      beam: null,
+      chargeStart: null,
+      target:{jukeAt:0, jukeOffset:{x:0,y:0}, jukeTarget:{x:0,y:0}},
+      reticle:{x:W/2, y:H*0.35},
+      lastFire: -99,
+    };
+    if (type === 'kinetic') state.ammo.kinetic = Math.max(0, state.ammo.kinetic);
+    hintEl.style.display = 'block';
+    hintEl.textContent = type === 'kinetic'
+      ? 'CLICK/TAP ANYWHERE ON THE VIEW TO LAUNCH'
+      : 'HOLD ANYWHERE ON THE VIEW, RELEASE TO FIRE';
+    showToast(type === 'kinetic' ? 'CLICK THE VIEW TO FIRE' : 'HOLD THE VIEW TO CHARGE', 'deflect');
+  }
+
+  function targetPos(et){
+    // et = elapsed time within encounter
+    const baseX = W/2 + Math.sin(et*0.9)*W*0.28 + Math.sin(et*0.37)*W*0.08;
+    const baseY = H*0.28 + Math.sin(et*1.3)*H*0.10;
+    const e = state.encounter;
+    return {x: baseX + e.target.jukeOffset.x, y: baseY + e.target.jukeOffset.y};
+  }
+
+  function deflectionActive(et){
+    return (et % 2.5) < 0.6;
+  }
+
+  function updateEncounter(dt){
+    const e = state.encounter;
+    const et = state.t - e.startT;
+
+    // juke logic (adaptive mass shift / evasive maneuver)
+    if (et > e.target.jukeAt){
+      e.target.jukeAt = et + 1.1 + Math.random()*0.9;
+      e.target.jukeTarget = {x:(Math.random()-0.5)*70, y:(Math.random()-0.5)*40};
+    }
+    e.target.jukeOffset.x += (e.target.jukeTarget.x - e.target.jukeOffset.x) * Math.min(1, dt*4);
+    e.target.jukeOffset.y += (e.target.jukeTarget.y - e.target.jukeOffset.y) * Math.min(1, dt*4);
+
+    if (e.type === 'kinetic'){
+      e.projectiles.forEach(p=>{
+        p.t += dt / p.flight;
+      });
+      e.projectiles = e.projectiles.filter(p=>{
+        if (p.t >= 1 && !p.resolved){
+          p.resolved = true;
+          const tp = targetPos(et);
+          const dist = Math.hypot(p.tx - tp.x, p.ty - tp.y);
+          if (dist <= 30){
+            if (deflectionActive(et)){
+              e.deflects++;
+              showToast('DEFLECTED — GRAVITY WELL', 'deflect');
+            } else {
+              e.hits++;
+              const dmg = 6 + Math.random()*5;
+              state.hull = Math.max(0, state.hull - dmg);
+              state.score += Math.round(dmg*10);
+              showToast('HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
+            }
+          } else {
+            e.misses++;
+            showToast('MISS', 'miss');
+          }
+        }
+        return p.t < 1.15;
+      });
+    } else if (e.type === 'laser'){
+      // reticle lags toward pointer
+      const target = e.pointer || e.reticle;
+      e.reticle.x += (target.x - e.reticle.x) * Math.min(1, dt*5.5);
+      e.reticle.y += (target.y - e.reticle.y) * Math.min(1, dt*5.5);
+      if (e.beam){
+        e.beam.life -= dt;
+        if (e.beam.life <= 0) e.beam = null;
+      }
+    }
+
+    if (et >= e.duration){
+      endEncounter();
+    }
+  }
+
+  function fireKinetic(x,y){
+    const e = state.encounter;
+    if (state.ammo.kinetic <= 0) return;
+    state.ammo.kinetic--;
+    state.rechargeAt.kinetic = state.t + WEAPONS.kinetic.rechargeTime;
+    e.projectiles.push({
+      sx: W/2, sy: H-24, tx:x, ty:y, t:0, flight:0.9, resolved:false
+    });
+  }
+
+  function tryFireLaser(){
+    const e = state.encounter;
+    if (!e.chargeStart) return;
+    const charge = state.t - e.chargeStart;
+    e.chargeStart = null;
+    if (charge < 0.55){ showToast('RELEASED TOO SOON', 'miss'); return; }
+    const et = state.t - e.startT;
+    const tp = targetPos(et);
+    const dist = Math.hypot(e.reticle.x - tp.x, e.reticle.y - tp.y);
+    e.beam = {x:e.reticle.x, y:e.reticle.y, life:0.25};
+    state.cooldownUntil.laser = state.t + WEAPONS.laser.cooldown;
+    if (dist <= 22){
+      e.hits++;
+      const dmg = 8 + Math.random()*6;
+      state.hull = Math.max(0, state.hull - dmg);
+      state.score += Math.round(dmg*12);
+      showToast('DIRECT HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
+    } else {
+      e.misses++;
+      showToast('MISS — OFF TARGET', 'miss');
+    }
+  }
+
+  function endEncounter(){
+    hintEl.style.display = 'none';
+    const e = state.encounter;
+    state.mode = 'map';
+    state.encounter = null;
+  }
+
+  function drawEncounter(){
+    const e = state.encounter;
+    const et = state.t - e.startT;
+    ctx.clearRect(0,0,W,H);
+    ctx.fillStyle = '#03050a';
+    ctx.fillRect(0,0,W,H);
+    drawStars();
+
+    // battery
+    ctx.fillStyle = '#ffb020';
+    ctx.fillRect(W/2-14, H-22, 28, 14);
+
+    const tp = targetPos(et);
+    const defActive = deflectionActive(et);
+
+    // deflection ring telegraph
+    if (e.type === 'kinetic'){
+      const soon = ((et+0.5) % 2.5) < 0.6;
+      if (defActive || soon){
+        ctx.beginPath();
+        ctx.arc(tp.x, tp.y, 34 + Math.sin(state.t*10)*4, 0, Math.PI*2);
+        ctx.strokeStyle = defActive ? 'rgba(255,176,32,0.85)' : 'rgba(255,176,32,0.3)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
+    }
+
+    // target (13i)
+    ctx.save();
+    ctx.translate(tp.x, tp.y);
+    ctx.beginPath();
+    ctx.moveTo(0,-12); ctx.lineTo(9,9); ctx.lineTo(0,4); ctx.lineTo(-9,9);
+    ctx.closePath();
+    ctx.fillStyle = '#9b6bff';
+    ctx.shadowColor = '#9b6bff'; ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.restore();
+
+    if (e.type === 'kinetic'){
+      e.projectiles.forEach(p=>{
+        const t = Math.min(p.t,1);
+        const x = p.sx + (p.tx-p.sx)*t;
+        const y = p.sy + (p.ty-p.sy)*t - Math.sin(t*Math.PI)*90;
+        ctx.beginPath();
+        ctx.arc(x,y,4,0,Math.PI*2);
+        ctx.fillStyle = '#ffb020';
+        ctx.shadowColor='#ffb020'; ctx.shadowBlur=8;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      });
+      // aim reticle preview follows pointer via CSS cursor already; draw crosshair at last known pointer
+      if (e.pointer){
+        ctx.strokeStyle = 'rgba(255,176,32,0.5)';
+        ctx.beginPath();
+        ctx.moveTo(e.pointer.x-8, e.pointer.y); ctx.lineTo(e.pointer.x+8, e.pointer.y);
+        ctx.moveTo(e.pointer.x, e.pointer.y-8); ctx.lineTo(e.pointer.x, e.pointer.y+8);
+        ctx.stroke();
+      }
+    } else if (e.type === 'laser'){
+      // reticle
+      const charging = !!e.chargeStart;
+      const chargeAmt = charging ? Math.min(1, (state.t-e.chargeStart)/0.9) : 0;
+      ctx.beginPath();
+      ctx.arc(e.reticle.x, e.reticle.y, 10 + chargeAmt*6, 0, Math.PI*2);
+      ctx.strokeStyle = charging ? '#ffb020' : 'rgba(255,176,32,0.5)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      if (e.beam){
+        ctx.beginPath();
+        ctx.moveTo(W/2, H-20);
+        ctx.lineTo(e.beam.x, e.beam.y);
+        ctx.strokeStyle = 'rgba(255,80,60,'+ (e.beam.life/0.25) +')';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+    }
+
+    // encounter timer bar
+    const remain = Math.max(0, (e.duration-et)/e.duration);
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(20, 18, 200, 6);
+    ctx.fillStyle = '#2fe6c4';
+    ctx.fillRect(20, 18, 200*remain, 6);
+    ctx.fillStyle = '#6f8ea3';
+    ctx.font = "10px 'JetBrains Mono'";
+    ctx.fillText('HITS ' + e.hits + '  MISS ' + e.misses + '  DEFLECTED ' + e.deflects, 20, 40);
+
+    // large persistent firing instruction, on-canvas so it can't be missed
+    ctx.textAlign = 'center';
+    ctx.font = "12px 'JetBrains Mono'";
+    ctx.fillStyle = 'rgba(255,176,32,0.85)';
+    ctx.fillText(
+      e.type === 'kinetic' ? 'CLICK / TAP ANYWHERE HERE TO FIRE' : 'HOLD ANYWHERE HERE, RELEASE TO FIRE',
+      W/2, H-14
+    );
+  }
+
+  // ---------- INPUT ----------
+  function canvasPos(evt){
+    const rect = canvas.getBoundingClientRect();
+    const cxs = canvas.width / rect.width;
+    const cys = canvas.height / rect.height;
+    const p = evt.touches ? evt.touches[0] : evt;
+    return { x: (p.clientX-rect.left)*cxs, y: (p.clientY-rect.top)*cys };
+  }
+
+  canvas.addEventListener('mousemove', (evt)=>{
+    if (state.mode !== 'encounter') return;
+    const e = state.encounter;
+    const pos = canvasPos(evt);
+    if (e.type === 'kinetic') e.pointer = pos;
+    if (e.type === 'laser') e.pointer = pos;
+  });
+  canvas.addEventListener('mousedown', (evt)=>{
+    if (state.mode !== 'encounter') return;
+    const e = state.encounter;
+    const pos = canvasPos(evt);
+    if (e.type === 'laser') e.chargeStart = state.t;
+    if (e.type === 'kinetic') fireKinetic(pos.x, pos.y);
+  });
+  canvas.addEventListener('mouseup', ()=>{
+    if (state.mode !== 'encounter') return;
+    const e = state.encounter;
+    if (e.type === 'laser') tryFireLaser();
+  });
+  canvas.addEventListener('touchstart', (evt)=>{
+    if (state.mode !== 'encounter') return;
+    evt.preventDefault();
+    const e = state.encounter;
+    const pos = canvasPos(evt);
+    e.pointer = pos;
+    if (e.type === 'laser') e.chargeStart = state.t;
+    if (e.type === 'kinetic') fireKinetic(pos.x, pos.y);
+  }, {passive:false});
+  canvas.addEventListener('touchend', (evt)=>{
+    if (state.mode !== 'encounter') return;
+    evt.preventDefault();
+    const e = state.encounter;
+    if (e.type === 'laser') tryFireLaser();
+  }, {passive:false});
+
+  // ---------- MAIN LOOP ----------
+  function tick(ts){
+    if (state.lastTime == null) state.lastTime = ts;
+    const dt = Math.min(0.05, (ts - state.lastTime)/1000);
+    state.lastTime = ts;
+    if (state.mode !== 'over'){
+      state.t += dt;
+
+      // ammo recharge
+      if (state.ammo.kinetic < WEAPONS.kinetic.ammoMax && state.t >= state.rechargeAt.kinetic){
+        state.ammo.kinetic++;
+        state.rechargeAt.kinetic = state.t + WEAPONS.kinetic.rechargeTime;
+      }
+      // deviation slowly self-corrects
+      state.deviation = Math.max(0, state.deviation - dt*0.6);
+
+      if (state.mode === 'map'){
+        const slow = 1 - Math.min(state.deviation,60)/120;
+        state.progress += state.speed * slow * dt * (100/100);
+        state.progress = Math.min(100, state.progress);
+        drawMap();
+      } else if (state.mode === 'encounter'){
+        updateEncounter(dt);
+        // updateEncounter can end the encounter (setting state.encounter to null
+        // and mode back to 'map') partway through this same tick — re-check mode
+        // before drawing, and draw the right view instead of assuming encounter.
+        if (state.mode === 'encounter'){
+          drawEncounter();
+        } else {
+          drawMap();
+        }
+      }
+
+      // check end conditions
+      if (state.hull <= 0 && state.mode !== 'over'){
+        endGame('DAMAGED', '13i CRITICALLY DAMAGED', "Hull integrity collapsed under sustained fire. Whether that's a victory for NEMESIS or a tragedy is left open.");
+      } else if (state.progress >= 100 && state.mode !== 'over'){
+        endGame('ARRIVED', '13i HAS REACHED EARTH ORBIT', "NEMESIS's arsenal wasn't enough to stop it. Whether that's a failure or a mercy is not yet known.");
+      }
+
+      updateHud();
+    }
+    requestAnimationFrame(tick);
+  }
+
+  function endGame(kind, title, text){
+    state.mode = 'over';
+    overlayTitle.textContent = title;
+    overlayText.textContent = text;
+    overlayStats.innerHTML = 'THREAT SCORE: ' + state.score + '&nbsp;&nbsp;&nbsp;HULL REMAINING: ' + Math.round(Math.max(0,state.hull)) + '%';
+    overlay.classList.add('show');
+  }
+
+  function resetGame(){
+    state = freshState();
+    overlay.classList.remove('show');
+    hintEl.style.display = 'none';
+    updateHud();
+  }
+
+  restartBtn.addEventListener('click', resetGame);
+
+  buildWeaponButtonsOnce();
+  resetGame();
+  requestAnimationFrame(tick);
+})();
+</script>
+</body>
+</html>
