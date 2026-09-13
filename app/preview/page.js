@@ -1,18 +1,18 @@
 import Link from "next/link";
-import GravityWaves from "../../components/GravityWaves";
-import LogoWithRipple from "../../components/LogoWithRipple";
+import StarField from "../../components/StarField";
+import AwarenessLogo from "../../components/AwarenessLogo";
 
 const sections = [
   { title: "The Book", blurb: "First contact, told from three perspectives — two human, one not." },
   { title: "The Music", blurb: "Three albums, 36 signals. A translation of something felt, not heard." },
   { title: "The Oracle", blurb: "Speak to 13i directly." },
-  { title: "Games", blurb: "NEMESIS Command, and 13i vs NEMESIS." },
+  { title: "Artifacts", blurb: "The Ninefold, the Cryptex, and more to come." },
 ];
 
 export default function PreviewGravityWaves() {
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
-      <GravityWaves />
+      <StarField density={160} />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 1000, margin: "0 auto", padding: "48px 32px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 60 }}>
           <span
@@ -20,7 +20,7 @@ export default function PreviewGravityWaves() {
               fontFamily: "'Fraunces', Georgia, serif",
               fontStyle: "italic",
               fontSize: 22,
-              color: "#F0DCC8",
+              color: "#DCDFFF",
             }}
           >
             13i
@@ -28,27 +28,29 @@ export default function PreviewGravityWaves() {
           <Link
             href="/launch"
             className="mono"
-            style={{ fontSize: 11, color: "#9A8A95", letterSpacing: "0.5px" }}
+            style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "0.5px" }}
           >
             &larr; back to the live site
           </Link>
         </div>
 
         <div style={{ textAlign: "center", marginBottom: 50 }}>
-          <div className="mono" style={{ fontSize: 11, color: "#9A8A95", letterSpacing: "1px", marginBottom: 20 }}>
-            LOOK PREVIEW &mdash; GRAVITY WAVES
+          <div className="mono" style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "1px", marginBottom: 20 }}>
+            LOOK PREVIEW &mdash; AWARENESS CORE
           </div>
-          <LogoWithRipple size={140} />
+          <div style={{ maxWidth: 340, margin: "0 auto" }}>
+            <AwarenessLogo />
+          </div>
           <div
             className="mono"
-            style={{ fontSize: 13, color: "#C9A896", letterSpacing: "2px", marginBottom: 16, marginTop: 20 }}
+            style={{ fontSize: 13, color: "#8B95F6", letterSpacing: "2px", marginBottom: 16, marginTop: 24 }}
           >
             a signal, translated
           </div>
-          <p style={{ color: "#C7B8C4", maxWidth: 520, margin: "0 auto" }}>
-            Where the starfield leans cosmic, this leans instrumental —
-            ripples expanding outward the way a gravitational wave passes
-            through spacetime, on a warmer, quieter palette.
+          <p style={{ color: "#B7BADF", maxWidth: 520, margin: "0 auto" }}>
+            The eye wakes on its own slow, irregular cycle — mostly dormant,
+            occasionally aware. Every pulse sends a ripple outward from the
+            exact point it's watching from.
           </p>
         </div>
 
@@ -57,9 +59,9 @@ export default function PreviewGravityWaves() {
             <div
               key={s.title}
               style={{
-                background: "rgba(30, 18, 28, 0.5)",
+                background: "rgba(14, 16, 38, 0.6)",
                 backdropFilter: "blur(2px)",
-                border: "1px solid rgba(150, 100, 100, 0.25)",
+                border: "1px solid #262A55",
                 borderRadius: 4,
                 padding: "24px 20px",
               }}
@@ -69,13 +71,13 @@ export default function PreviewGravityWaves() {
                   fontFamily: "'Fraunces', Georgia, serif",
                   fontStyle: "italic",
                   fontSize: 22,
-                  color: "#F0DCC8",
+                  color: "#DCDFFF",
                   marginBottom: 8,
                 }}
               >
                 {s.title}
               </div>
-              <p style={{ fontSize: 13, color: "#B5A2AC", lineHeight: 1.6, margin: 0 }}>
+              <p style={{ fontSize: 13, color: "#8A8FBF", lineHeight: 1.6, margin: 0 }}>
                 {s.blurb}
               </p>
             </div>

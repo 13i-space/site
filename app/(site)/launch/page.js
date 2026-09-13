@@ -9,7 +9,7 @@ const sections = [
   {
     href: "/music",
     title: "The Music",
-    blurb: "Three albums, 36 signals. What you hear is a translation of something 13i's creators feel, not hear.",
+    blurb: "Three albums, 36 signals. What you hear is a translation of something felt, not heard.",
   },
   {
     href: "/oracle",
@@ -19,7 +19,27 @@ const sections = [
   {
     href: "/games",
     title: "Games",
-    blurb: "NEMESIS vs 13i — an early playable build.",
+    blurb: "NEMESIS Command, and 13i vs NEMESIS.",
+  },
+  {
+    href: "/artifacts",
+    title: "Artifacts",
+    blurb: "The Ninefold and the Cryptex — objects from inside the story.",
+  },
+  {
+    href: "/wiki",
+    title: "The Wiki",
+    blurb: "The basics — characters, terms, the shape of the world so far.",
+  },
+  {
+    href: "/assignments",
+    title: "Assignments",
+    blurb: "A growing community collection of short stories.",
+  },
+  {
+    href: "/galaxy",
+    title: "The Galaxy",
+    blurb: "Where this all takes place, with Earth marked on the map.",
   },
 ];
 

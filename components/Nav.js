@@ -19,6 +19,18 @@ export default function Nav() {
             </ul>
           </div>
         </li>
+        <li className="nav-dropdown">
+          <Link href="/artifacts">Artifacts</Link>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/artifacts/ninefold">The Ninefold</Link></li>
+              <li><Link href="/artifacts/cryptex">The Cryptex</Link></li>
+            </ul>
+          </div>
+        </li>
+        <li><Link href="/wiki">Wiki</Link></li>
+        <li><Link href="/assignments">Assignments</Link></li>
+        <li><Link href="/galaxy">Galaxy</Link></li>
       </ul>
     </nav>
   );

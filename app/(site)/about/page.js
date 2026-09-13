@@ -1,5 +1,22 @@
 import AlienPlaceholder from "../../../components/AlienPlaceholder";
 
+const paragraphs = [
+  "Paul Donaghy was born in Birmingham, England, on April 6, 1967, and moved to the United States with his family when he was three. Raised in Michigan, he developed an early fascination with dinosaurs, the natural world, and the possibilities of life beyond Earth.",
+  "After earning a degree in Marketing from Michigan State University and an MBA from Wayne State University, Paul spent more than two decades in business leadership, eventually leaving corporate America to pursue his passion for soccer. He founded a youth soccer academy, worked in professional and semi-professional soccer and futsal, and built businesses along the way.",
+  "A lifelong planner and believer in taking calculated risks, Paul eventually reached financial independence and retired at 53. Retirement, however, didn't mean slowing down. After several demanding years caring for family, he finally had something he had rarely had before: time to explore the ideas and interests that had always been waiting in the background.",
+  "That led somewhere unexpected.",
+  "First came music. With no formal background in music production, Paul opened Logic and simply started experimenting. One song became another, and eventually a growing catalog of instrumental electronic music emerged.",
+  "Then came 13i.",
+  "Inspired by his lifelong fascination with space, extraterrestrial possibilities, and the emerging world of artificial intelligence, Paul began developing a story about an alien AI observing humanity from outside our world. What started as an idea gradually became a novel — and then something much larger: a universe encompassing stories, music, technology, and the possibility of contributions from others.",
+  "Paul approaches creativity much like he has approached everything else in his life: strategically, with discipline, curiosity, and a willingness to tackle things that seem difficult or even impossible.",
+  "He believes that perspective matters. Looking at humanity through the eyes of an outsider has led him to think differently about our differences, our similarities, our technology, and what it means to be part of the same human tribe.",
+  "And perhaps most importantly, Paul believes it is never too late.",
+  "At 60, he plans to release his first novel and his first music on April 6, 2027 — his 60th birthday.",
+  "For Paul, the date isn't simply a deadline. It's a statement.",
+  "A reminder that the things we once thought were impossible may simply be things we haven't tried yet.",
+  "With the unwavering support of his wife, Alma, and the belief that there is always another challenge worth tackling, Paul continues to explore what might be possible when we stop putting limits on ourselves.",
+];
+
 export default function AboutPage() {
   return (
     <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center" }}>
@@ -14,41 +31,13 @@ export default function AboutPage() {
       </div>
 
       <div style={{ textAlign: "left", marginTop: 36, fontSize: 15, lineHeight: 1.85, color: "#C7CAE8" }}>
-        <p style={{ fontStyle: "italic", color: "#6E76B8", fontSize: 13, marginBottom: 24 }}>
-          (a first draft, written to see what landed — the real version, in
-          my own words, is coming)
-        </p>
-
-        <p>
-          I'm the person writing the 13i trilogy, composing and producing
-          its music, and — slowly, one page at a time — building this site
-          by hand.
-        </p>
-        <p>
-          I run Tempo Goat Studios, where the music for this project takes
-          shape. Every track is written, performed, and produced without
-          AI involved in the composition itself — even though AI is very
-          much part of the story the book and the music are telling
-          together.
-        </p>
-        <p>
-          The idea at the center of 13i — that we share far more with each
-          other than the things that seem to divide us — isn't just a plot
-          point. It's the reason this project exists at all, and the reason
-          the book and the music are being given away rather than sold.
-          If this makes even a small dent in that direction for someone,
-          that matters more to me than anything this project could earn.
-        </p>
-        <p>
-          I'm not a web developer by trade, which means every page on this
-          site has been a small, hard-won lesson — DNS records, GitHub,
-          deployment pipelines, all of it learned in service of getting
-          this universe into a shape other people can actually visit. If
-          you're reading this, it worked.
-        </p>
-        <p>
-          More of my own story will go here soon. For now, this is what
-          the process looked like from the inside.
+        {paragraphs.map((p, i) => (
+          <p key={i} style={{ marginBottom: 18 }}>
+            {p}
+          </p>
+        ))}
+        <p style={{ textAlign: "center", fontStyle: "italic", color: "#8B95F6", marginTop: 30 }}>
+          It is never too late.
         </p>
       </div>
     </div>

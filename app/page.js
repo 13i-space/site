@@ -1,6 +1,7 @@
 import "./globals.css";
 import Countdown from "../components/Countdown";
 import StarField from "../components/StarField";
+import EmailSignup from "../components/EmailSignup";
 
 export default function CountdownPage() {
   return (
@@ -19,6 +20,12 @@ export default function CountdownPage() {
       <p className="mono" style={styles.footNote}>
         the book and the first signal arrive 4.6.2027
       </p>
+      <div style={{ ...styles.signupWrap }}>
+        <div className="mono" style={styles.signupLabel}>
+          get updates before launch
+        </div>
+        <EmailSignup />
+      </div>
     </div>
   );
 }
@@ -74,5 +81,16 @@ const styles = {
     marginTop: 8,
     position: "relative",
     zIndex: 1,
+  },
+  signupWrap: {
+    marginTop: 32,
+    position: "relative",
+    zIndex: 1,
+  },
+  signupLabel: {
+    fontSize: 11,
+    color: "#565B8F",
+    letterSpacing: "1px",
+    marginBottom: 10,
   },
 };
