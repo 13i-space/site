@@ -20,8 +20,8 @@ const entries = [
     body: "13i's word for a mission or task — both the grand kind (a civilization at a critical turning point) and the small kind (something asked of one person). The community's own \"Assignments\" section borrows this term directly from the book.",
   },
   {
-    term: "The Golden Rule",
-    body: "Not 13i's own moral code, but its diagnostic tool. 13i has observed that civilizations capable of reciprocity — of treating others as they'd want to be treated — tend to coexist peacefully with others. A species that struggles to manage this internally, 13i suggests, tends not to fare well when it meets anyone else.",
+    term: "The Continuance Rule",
+    body: "Not a human idea borrowed and scaled up — 13i's own diagnostic, built for judging whether an entire civilization deserves to continue, not just how one person should treat another. 13i has observed that species capable of real cooperation among themselves tend to coexist peacefully with others; species that can't manage that internally tend not to survive contact. Continuance, in other words, is earned — not owed.",
   },
   {
     term: "The Fibonacci Signal",

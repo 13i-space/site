@@ -2,13 +2,16 @@ import "./globals.css";
 import Countdown from "../components/Countdown";
 import StarField from "../components/StarField";
 import EmailSignup from "../components/EmailSignup";
+import SignalLogo from "../components/SignalLogo";
 
 export default function CountdownPage() {
   return (
     <div style={styles.page}>
       <StarField density={160} />
       <div style={styles.glow} />
-      <img src="/13i-logo.png" alt="13i" style={styles.logo} />
+      <div style={styles.logoWrap}>
+        <SignalLogo />
+      </div>
       <div className="mono" style={styles.subtitle}>
         a signal, translated
       </div>
@@ -53,9 +56,8 @@ const styles = {
       "radial-gradient(circle, rgba(139,149,246,0.18) 0%, rgba(139,149,246,0) 70%)",
     pointerEvents: "none",
   },
-  logo: {
+  logoWrap: {
     width: "min(70vw, 380px)",
-    height: "auto",
     position: "relative",
     zIndex: 1,
     filter: "drop-shadow(0 0 40px rgba(139,149,246,0.25))",

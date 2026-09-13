@@ -1,6 +1,6 @@
 import Link from "next/link";
 import StarField from "../../components/StarField";
-import AwarenessLogo from "../../components/AwarenessLogo";
+import SignalLogo from "../../components/SignalLogo";
 
 const sections = [
   { title: "The Book", blurb: "First contact, told from three perspectives — two human, one not." },
@@ -36,10 +36,10 @@ export default function PreviewGravityWaves() {
 
         <div style={{ textAlign: "center", marginBottom: 50 }}>
           <div className="mono" style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "1px", marginBottom: 20 }}>
-            LOOK PREVIEW &mdash; AWARENESS CORE
+            LOOK PREVIEW &mdash; SIGNAL
           </div>
           <div style={{ maxWidth: 340, margin: "0 auto" }}>
-            <AwarenessLogo />
+            <SignalLogo />
           </div>
           <div
             className="mono"
@@ -48,9 +48,8 @@ export default function PreviewGravityWaves() {
             a signal, translated
           </div>
           <p style={{ color: "#B7BADF", maxWidth: 520, margin: "0 auto" }}>
-            The eye wakes on its own slow, irregular cycle — mostly dormant,
-            occasionally aware. Every pulse sends a ripple outward from the
-            exact point it's watching from.
+            Every pulse sends a ripple outward from the exact point 13i is
+            watching from.
           </p>
         </div>
 

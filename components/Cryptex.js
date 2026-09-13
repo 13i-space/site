@@ -57,27 +57,28 @@ function Glyph({ def, size = 64, active = false }) {
   );
 }
 
-function Ring({ index, onChange, disabled }) {
+function Ring({ index, onChange, disabled, locked }) {
   const glyph = GLYPHS[index];
   return (
     <div style={styles.ringCol}>
-      <button style={styles.ringBtn} disabled={disabled} onClick={() => onChange((index + 1) % 9)} aria-label="Rotate ring up">▲</button>
-      <div style={styles.ringWindow}>
-        <Glyph def={glyph} size={72} />
+      <button style={{ ...styles.ringBtn, opacity: locked ? 0.25 : 1 }} disabled={disabled || locked} onClick={() => onChange((index + 1) % 9)} aria-label="Rotate ring up">▲</button>
+      <div style={{ ...styles.ringWindow, ...(locked ? styles.ringWindowLocked : {}) }}>
+        <Glyph def={glyph} size={72} active={locked} />
       </div>
-      <button style={styles.ringBtn} disabled={disabled} onClick={() => onChange((index + 8) % 9)} aria-label="Rotate ring down">▼</button>
-      <div style={styles.ringLabel}>{glyph.name}</div>
+      <button style={{ ...styles.ringBtn, opacity: locked ? 0.25 : 1 }} disabled={disabled || locked} onClick={() => onChange((index + 8) % 9)} aria-label="Rotate ring down">▼</button>
+      <div style={{ ...styles.ringLabel, color: locked ? "#E8CFC0" : "#6E76B8" }}>
+        {glyph.name}{locked ? " ✓" : ""}
+      </div>
     </div>
   );
 }
 
 export default function Cryptex() {
   const [rings, setRings] = useState([0, 0, 0]);
+  const [locked, setLocked] = useState([false, false, false]);
   const [status, setStatus] = useState("idle");
-  const [showHint, setShowHint] = useState(false);
 
   const setRingIndex = useCallback((ringIdx, newVal) => {
-    setStatus("idle");
     setRings((prev) => {
       const next = [...prev];
       next[ringIdx] = newVal;
@@ -86,10 +87,11 @@ export default function Cryptex() {
   }, []);
 
   const attempt = () => {
-    const solved = rings.every((v, i) => v === SOLUTION[i]);
-    if (solved) {
+    const newLocked = rings.map((v, i) => locked[i] || v === SOLUTION[i]);
+    setLocked(newLocked);
+    if (newLocked.every(Boolean)) {
       setStatus("open");
-    } else {
+    } else if (!newLocked.some(Boolean)) {
       setStatus("shake");
       setTimeout(() => setStatus("idle"), 500);
     }
@@ -98,6 +100,7 @@ export default function Cryptex() {
   const reset = () => {
     setStatus("idle");
     setRings([0, 0, 0]);
+    setLocked([false, false, false]);
   };
 
   return (
@@ -116,14 +119,13 @@ export default function Cryptex() {
         }
         .cryptex-shake { animation: shakeX 0.4s ease; }
         .message-appear { animation: fadeUp 0.6s ease; }
-        .cryptex-input::placeholder { color: #565B8F; }
       `}</style>
 
       <div style={styles.frame}>
         <div className={status === "shake" ? "cryptex-shake" : ""} style={styles.body}>
           <div style={styles.ringsRow}>
             {rings.map((val, i) => (
-              <Ring key={i} index={val} disabled={status === "open"} onChange={(newVal) => setRingIndex(i, newVal)} />
+              <Ring key={i} index={val} disabled={status === "open"} locked={locked[i]} onChange={(newVal) => setRingIndex(i, newVal)} />
             ))}
           </div>
 
@@ -131,10 +133,17 @@ export default function Cryptex() {
             <div className="message-appear" style={styles.revealBox}>
               <div style={styles.revealLabel}>the seal opens</div>
               <div style={styles.revealText}>{HIDDEN_MESSAGE}</div>
+              <a href="/transmission" style={styles.secretLink}>
+                a second signal follows the first &rarr;
+              </a>
             </div>
           ) : (
             <div style={styles.hintZone}>
-              <div style={styles.hintText}>Turn each ring. Find the order the mechanism accepts.</div>
+              <div style={styles.hintText}>
+                {locked.some(Boolean)
+                  ? "Correct rings hold their place. Keep turning the rest."
+                  : "Turn each ring. Find the order the mechanism accepts."}
+              </div>
             </div>
           )}
 
@@ -145,14 +154,6 @@ export default function Cryptex() {
               <button style={styles.actionBtn} onClick={attempt}>Turn</button>
             )}
           </div>
-
-          {status !== "open" && (
-            <div style={styles.hintLinkWrap}>
-              <span className="mono" style={styles.hintLink} onClick={() => setShowHint((s) => !s)}>
-                {showHint ? `prototype hint — solution: ${SOLUTION.map((i) => GLYPHS[i].name).join(" · ")}` : "having trouble? (prototype hint)"}
-              </span>
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -167,12 +168,14 @@ const styles = {
   ringCol: { display: "flex", flexDirection: "column", alignItems: "center" },
   ringBtn: { background: "none", border: "1px solid #3A3E75", borderRadius: 3, color: "#8B95F6", fontSize: 11, width: 28, height: 20, cursor: "pointer", lineHeight: 1 },
   ringWindow: { background: "#0C0E28", border: "1px solid #4C5192", borderRadius: 3, padding: "10px 8px", margin: "6px 0" },
+  ringWindowLocked: { border: "1px solid #E8CFC0", boxShadow: "0 0 12px rgba(232,207,192,0.35)" },
   ringLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#6E76B8", textAlign: "center", maxWidth: 76 },
   hintZone: { minHeight: 40, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4px 10px 16px" },
   hintText: { fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#565B8F", fontStyle: "italic" },
   revealBox: { textAlign: "center", padding: "6px 8px 18px", maxWidth: 380 },
   revealLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#6E76B8", letterSpacing: "1px", marginBottom: 8 },
   revealText: { fontFamily: "'JetBrains Mono', 'Courier New', monospace", fontSize: 15, lineHeight: 1.6, color: "#E8CFC0" },
+  secretLink: { display: "block", marginTop: 16, fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#4C5192", textDecoration: "none", letterSpacing: "0.5px" },
   actions: { marginTop: 4 },
   actionBtn: { background: "none", border: "1px solid #3A3E75", borderRadius: 3, color: "#B9C0FF", fontFamily: "'Inter', sans-serif", fontSize: 13, padding: "9px 24px", cursor: "pointer" },
   hintLinkWrap: { marginTop: 16 },

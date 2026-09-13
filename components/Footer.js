@@ -11,7 +11,8 @@ export default function Footer() {
         <EmailSignup />
       </div>
 
-      <div style={{ display: "flex", justifyContent: "center", gap: 18, marginBottom: 16 }}>
+      <div style={{ display: "flex", justifyContent: "center", gap: 18, marginBottom: 16, flexWrap: "wrap" }}>
+        <Link href="/guestbook" style={{ color: "#6E76B8" }}>Guestbook</Link>
         <Link href="/about" style={{ color: "#6E76B8" }}>About</Link>
         <Link href="/contact" style={{ color: "#6E76B8" }}>Contact</Link>
       </div>
