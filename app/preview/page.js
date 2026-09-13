@@ -1,5 +1,6 @@
 import Link from "next/link";
 import GravityWaves from "../../components/GravityWaves";
+import LogoWithRipple from "../../components/LogoWithRipple";
 
 const sections = [
   { title: "The Book", blurb: "First contact, told from three perspectives — two human, one not." },
@@ -37,10 +38,10 @@ export default function PreviewGravityWaves() {
           <div className="mono" style={{ fontSize: 11, color: "#9A8A95", letterSpacing: "1px", marginBottom: 20 }}>
             LOOK PREVIEW &mdash; GRAVITY WAVES
           </div>
-          <img src="/13i-logo.png" alt="13i" style={{ width: 140, height: "auto", marginBottom: 20, filter: "drop-shadow(0 0 30px rgba(232,207,192,0.2))" }} />
+          <LogoWithRipple size={140} />
           <div
             className="mono"
-            style={{ fontSize: 13, color: "#C9A896", letterSpacing: "2px", marginBottom: 16 }}
+            style={{ fontSize: 13, color: "#C9A896", letterSpacing: "2px", marginBottom: 16, marginTop: 20 }}
           >
             a signal, translated
           </div>

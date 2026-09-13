@@ -9,7 +9,6 @@ export default function GravityWaves() {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let raf;
-    let rings = [];
     let cx, cy;
 
     const resize = () => {
@@ -20,12 +19,6 @@ export default function GravityWaves() {
     };
     resize();
     window.addEventListener("resize", resize);
-
-    const spawnRing = () => {
-      rings.push({ r: 0, alpha: 0.5 });
-    };
-    spawnRing();
-    let sinceLastSpawn = 0;
 
     const drawGrid = () => {
       ctx.strokeStyle = "rgba(200, 150, 130, 0.045)";
@@ -56,23 +49,6 @@ export default function GravityWaves() {
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
       drawGrid();
-
-      sinceLastSpawn += 1;
-      if (sinceLastSpawn > 90) {
-        spawnRing();
-        sinceLastSpawn = 0;
-      }
-
-      rings.forEach((ring) => {
-        ring.r += 1.4;
-        ring.alpha = Math.max(0, 0.45 - ring.r / 900);
-        ctx.beginPath();
-        ctx.arc(cx, cy, ring.r, 0, Math.PI * 2);
-        ctx.strokeStyle = `rgba(232, 207, 192, ${ring.alpha})`;
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
-      });
-      rings = rings.filter((r) => r.alpha > 0.005);
 
       raf = requestAnimationFrame(draw);
     };

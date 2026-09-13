@@ -12,10 +12,12 @@ export default function Nav() {
         <li><Link href="/oracle">Oracle</Link></li>
         <li className="nav-dropdown">
           <Link href="/games">Games</Link>
-          <ul className="nav-dropdown-menu">
-            <li><Link href="/games/nemesis-command">NEMESIS Command</Link></li>
-            <li><Link href="/games/13i-vs-nemesis">13i vs NEMESIS</Link></li>
-          </ul>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/games/nemesis-command">NEMESIS Command</Link></li>
+              <li><Link href="/games/13i-vs-nemesis">13i vs NEMESIS</Link></li>
+            </ul>
+          </div>
         </li>
       </ul>
     </nav>
