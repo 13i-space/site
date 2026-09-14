@@ -13,11 +13,11 @@ export default function CountdownPage() {
         <SignalLogo />
       </div>
       <div className="mono" style={styles.subtitle}>
-        a signal, translated
+        a signal, received
       </div>
       <p style={styles.tagline}>
-        We have been watching for some time. What we found, we are choosing
-        to share.
+        We have been watching for some time. What we found, we are about to
+        share.
       </p>
       <Countdown />
       <p className="mono" style={styles.footNote}>

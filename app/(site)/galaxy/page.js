@@ -11,6 +11,11 @@ const sections = [
     title: "Galaxy Facts",
     blurb: "Size, star count, shape, age — the basics, for scale.",
   },
+  {
+    href: "/galaxy/quiz",
+    title: "Galaxy Quiz",
+    blurb: "Trivia beyond the basics, with a score at the end.",
+  },
 ];
 
 export default function GalaxyHub() {

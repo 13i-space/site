@@ -55,13 +55,13 @@ const FACE_W = 78;
 const FACE_H = 130;
 const RADIUS = Math.round(FACE_W / 2 / Math.tan(Math.PI / 9));
 const STEP = 360 / 9;
+const LIGHT_COUNT = 7;
 
 export default function Ninefold() {
   const [question, setQuestion] = useState("");
-  const [phase, setPhase] = useState("idle"); // idle -> shaking -> settling -> revealed
+  const [phase, setPhase] = useState("idle"); // idle -> spinning -> revealed
   const [finalTip, setFinalTip] = useState(null);
   const [spinAmount, setSpinAmount] = useState(0);
-  const [jitter, setJitter] = useState(false);
   const timeoutsRef = useRef([]);
 
   const clearTimers = () => {
@@ -69,31 +69,25 @@ export default function Ninefold() {
     timeoutsRef.current = [];
   };
 
-  const shake = useCallback(() => {
-    if (phase === "shaking" || phase === "settling") return;
+  const spin = useCallback(() => {
+    if (phase === "spinning") return;
     clearTimers();
     setFinalTip(null);
-    setPhase("shaking");
-    setJitter(true);
+    setPhase("spinning");
 
     const chosen = Math.floor(Math.random() * 9);
-    const extraSpins = 3 + Math.floor(Math.random() * 2);
+    const extraSpins = 4 + Math.floor(Math.random() * 2);
 
-    const t1 = setTimeout(() => {
-      setJitter(false);
-      setPhase("settling");
-      // Land so that face `chosen` ends up rotated to 0deg (facing the viewer).
-      const base = Math.ceil(spinAmount / 360) * 360 + extraSpins * 360;
-      const landing = base - chosen * STEP;
-      setSpinAmount(landing);
-    }, 550);
-    timeoutsRef.current.push(t1);
+    // Land so that face `chosen` ends up rotated to 0deg (facing the viewer).
+    const base = Math.ceil(spinAmount / 360) * 360 + extraSpins * 360;
+    const landing = base - chosen * STEP;
+    setSpinAmount(landing);
 
-    const t2 = setTimeout(() => {
+    const t = setTimeout(() => {
       setFinalTip(chosen);
       setPhase("revealed");
-    }, 550 + 1400);
-    timeoutsRef.current.push(t2);
+    }, 1900);
+    timeoutsRef.current.push(t);
   }, [phase, spinAmount]);
 
   const reset = () => {
@@ -103,85 +97,98 @@ export default function Ninefold() {
     setQuestion("");
   };
 
+  const isSpinning = phase === "spinning";
+
   return (
     <div style={styles.page}>
       <style>{`
-        @keyframes dieJitter {
-          0%, 100% { transform: translate(0,0) rotate(0deg); }
-          20% { transform: translate(-3px, 2px) rotate(-1deg); }
-          40% { transform: translate(3px, -2px) rotate(1deg); }
-          60% { transform: translate(-2px, -1px) rotate(-0.6deg); }
-          80% { transform: translate(2px, 1px) rotate(0.6deg); }
-        }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .die-jitter { animation: dieJitter 0.15s ease-in-out infinite; }
-        .die-group { transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.15, 1); }
+        @keyframes lightChase {
+          0%, 100% { opacity: 0.25; }
+          50% { opacity: 1; }
+        }
+        .die-group { transition: transform 1.9s cubic-bezier(0.15, 0.7, 0.1, 1); }
         .answer-text { animation: fadeUp 0.5s ease; }
+        .cabinet-light { animation: lightChase 0.9s ease-in-out infinite; }
+        .cabinet-light.idle { animation: none; opacity: 0.35; }
       `}</style>
 
       <div style={styles.frame}>
-        <div style={styles.pyramidWrap}>
-          <svg viewBox="0 0 360 380" width="100%" style={{ maxWidth: 360, position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)" }}>
-            <defs>
-              <linearGradient id="nfPyr" x1="0%" y1="0%" x2="0%" y2="100%">
-                <stop offset="0%" stopColor="#1C1F48" />
-                <stop offset="100%" stopColor="#08091E" />
-              </linearGradient>
-            </defs>
-            <polygon points="180,10 20,360 340,360" fill="url(#nfPyr)" stroke="#3A3E75" strokeWidth="1.5" />
-            <line x1="180" y1="10" x2="180" y2="360" stroke="#262A55" strokeWidth="1" opacity="0.5" />
-          </svg>
+        {/* --- Cabinet --- */}
+        <div style={styles.cabinet}>
+          {/* arch top with rivets */}
+          <div style={styles.archTop}>
+            {Array.from({ length: 9 }).map((_, i) => (
+              <span key={i} style={styles.rivet} />
+            ))}
+          </div>
 
-          <div style={styles.scene} className={jitter ? "die-jitter" : ""}>
-            <div
-              style={{
-                ...styles.dieGroupOuter,
-              }}
-            >
-              <div
-                className="die-group"
-                style={{
-                  ...styles.dieGroup,
-                  transform: `rotateX(-6deg) rotateY(${spinAmount}deg)`,
-                }}
-              >
-                {ANSWERS.map((_, i) => {
-                  const isFront = phase === "revealed" && finalTip === i;
-                  return (
-                    <div
-                      key={i}
-                      style={{
-                        ...styles.face,
-                        transform: `rotateY(${i * STEP}deg) translateZ(${RADIUS}px)`,
-                        background: isFront
-                          ? "linear-gradient(180deg, #262A6A, #12153A)"
-                          : "linear-gradient(180deg, #181B42, #0C0E28)",
-                        borderColor: isFront ? "#E8CFC0" : "#3A3E75",
-                        boxShadow: isFront ? "0 0 18px rgba(232,207,192,0.35)" : "none",
-                      }}
-                    >
-                      <GlyphIcon index={i} glow={isFront} />
-                    </div>
-                  );
-                })}
+          <div style={styles.marquee}>
+            <span className="mono" style={styles.marqueeText}>THE NINEFOLD</span>
+          </div>
+
+          <div style={styles.cabinetBody}>
+            {/* left light column */}
+            <LightColumn active={isSpinning} />
+
+            {/* viewing window */}
+            <div style={styles.window}>
+              <div style={styles.windowGlass} />
+              <div style={styles.scene}>
+                <div style={styles.dieGroupOuter}>
+                  <div
+                    className="die-group"
+                    style={{
+                      ...styles.dieGroup,
+                      transform: `rotateX(-4deg) rotateY(${spinAmount}deg)`,
+                    }}
+                  >
+                    {ANSWERS.map((_, i) => {
+                      const isFront = phase === "revealed" && finalTip === i;
+                      return (
+                        <div
+                          key={i}
+                          style={{
+                            ...styles.face,
+                            transform: `rotateY(${i * STEP}deg) translateZ(${RADIUS}px)`,
+                            background: isFront
+                              ? "linear-gradient(180deg, #262A6A, #12153A)"
+                              : "linear-gradient(180deg, #181B42, #0C0E28)",
+                            borderColor: isFront ? "#E8CFC0" : "#3A3E75",
+                            boxShadow: isFront ? "0 0 18px rgba(232,207,192,0.35)" : "none",
+                          }}
+                        >
+                          <GlyphIcon index={i} glow={isFront} />
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* right light column */}
+            <LightColumn active={isSpinning} />
           </div>
         </div>
 
+        {/* --- Answer / status --- */}
         <div style={styles.answerZone}>
           {phase === "revealed" && finalTip !== null ? (
             <div className="answer-text" style={styles.answerText}>
               <div style={styles.answerLabel}>{ANSWERS[finalTip].label}</div>
               {ANSWERS[finalTip].text}
             </div>
-          ) : phase === "shaking" || phase === "settling" ? (
+          ) : isSpinning ? (
             <div style={styles.shufflingText}>...</div>
           ) : (
-            <div style={styles.hint}>Ask a question. Shake to see which face answers.</div>
+            <div style={styles.hint}>
+              Ask a yes-or-no question. Pull the lever and the Ninefold spins
+              to answer.
+            </div>
           )}
         </div>
 
@@ -190,24 +197,24 @@ export default function Ninefold() {
             style={styles.input}
             type="text"
             value={question}
-            placeholder="What do you want to ask 13i?"
-            disabled={phase === "shaking" || phase === "settling"}
+            placeholder="Ask a yes-or-no question..."
+            disabled={isSpinning}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
-                phase === "revealed" ? reset() : shake();
+                phase === "revealed" ? reset() : spin();
               }
             }}
           />
           <button
-            onClick={phase === "revealed" ? reset : shake}
-            disabled={phase === "shaking" || phase === "settling"}
+            onClick={phase === "revealed" ? reset : spin}
+            disabled={isSpinning}
             style={{
               ...styles.actionBtn,
-              opacity: phase === "shaking" || phase === "settling" ? 0.4 : 1,
+              opacity: isSpinning ? 0.4 : 1,
             }}
           >
-            {phase === "revealed" ? "Shake again" : "Shake"}
+            {phase === "revealed" ? "Pull again" : "Pull"}
           </button>
         </div>
       </div>
@@ -215,10 +222,92 @@ export default function Ninefold() {
   );
 }
 
+function LightColumn({ active }) {
+  return (
+    <div style={styles.lightColumn}>
+      {Array.from({ length: LIGHT_COUNT }).map((_, i) => (
+        <span
+          key={i}
+          className={`cabinet-light${active ? "" : " idle"}`}
+          style={{ ...styles.light, animationDelay: `${i * 0.1}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
 const styles = {
   page: { display: "flex", justifyContent: "center" },
   frame: { width: "100%", maxWidth: 420 },
-  pyramidWrap: { position: "relative", height: 340, marginBottom: 8, display: "flex", justifyContent: "center", alignItems: "center" },
+
+  cabinet: {
+    position: "relative",
+    background: "linear-gradient(180deg, #1C1F48 0%, #0C0E28 100%)",
+    border: "1px solid #3A3E75",
+    borderRadius: "120px 120px 10px 10px",
+    padding: "22px 16px 20px",
+    marginBottom: 8,
+  },
+  archTop: {
+    display: "flex",
+    justifyContent: "center",
+    gap: 10,
+    marginBottom: 10,
+  },
+  rivet: {
+    width: 5,
+    height: 5,
+    borderRadius: "50%",
+    background: "#8B95F6",
+    opacity: 0.6,
+    display: "inline-block",
+  },
+  marquee: {
+    textAlign: "center",
+    marginBottom: 14,
+  },
+  marqueeText: {
+    fontSize: 11,
+    letterSpacing: "3px",
+    color: "#E8CFC0",
+  },
+  cabinetBody: {
+    display: "flex",
+    alignItems: "stretch",
+    gap: 10,
+  },
+  lightColumn: {
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-evenly",
+    alignItems: "center",
+    width: 12,
+  },
+  light: {
+    width: 6,
+    height: 6,
+    borderRadius: "50%",
+    background: "#E8CFC0",
+  },
+  window: {
+    position: "relative",
+    flex: 1,
+    minHeight: 280,
+    background: "radial-gradient(ellipse at center, #0A0B1C 0%, #060712 100%)",
+    border: "1px solid #262A55",
+    borderRadius: 10,
+    overflow: "hidden",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  windowGlass: {
+    position: "absolute",
+    inset: 0,
+    background: "linear-gradient(115deg, rgba(185,192,255,0.08) 0%, rgba(185,192,255,0) 35%)",
+    pointerEvents: "none",
+    zIndex: 2,
+  },
   scene: { position: "relative", zIndex: 1, perspective: 900 },
   dieGroupOuter: { transformStyle: "preserve-3d" },
   dieGroup: { position: "relative", width: FACE_W, height: FACE_H, transformStyle: "preserve-3d" },
@@ -241,7 +330,7 @@ const styles = {
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
-    padding: "6px 10px 18px",
+    padding: "16px 10px 18px",
   },
   answerLabel: {
     fontFamily: "'JetBrains Mono', monospace",

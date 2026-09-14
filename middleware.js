@@ -14,24 +14,35 @@ export async function middleware(request) {
 
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(url, anonKey, {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+  // Belt-and-suspenders: env vars can be *present* but malformed (stray
+  // whitespace, wrong value pasted into the wrong field, etc). That still
+  // throws inside createServerClient / getUser() and previously took the
+  // whole site down. Catch it here too and just pass the request through -
+  // worst case, auth silently doesn't refresh for that request, instead of
+  // every page on the site 500ing.
+  try {
+    const supabase = createServerClient(url, anonKey, {
+        cookies: {
+          getAll() {
+            return request.cookies.getAll();
+          },
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+            response = NextResponse.next({ request });
+            cookiesToSet.forEach(({ name, value, options }) =>
+              response.cookies.set(name, value, options)
+            );
+          },
         },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          );
-        },
-      },
-    }
-  );
+      }
+    );
 
-  // Touching getUser() is what actually triggers a token refresh if needed.
-  await supabase.auth.getUser();
+    // Touching getUser() is what actually triggers a token refresh if needed.
+    await supabase.auth.getUser();
+  } catch (err) {
+    console.error("Middleware: Supabase auth check failed, passing request through:", err);
+    return NextResponse.next({ request });
+  }
 
   return response;
 }
