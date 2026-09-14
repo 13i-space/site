@@ -5,8 +5,8 @@ export default function SignalLogo({ src = "/13i-logo.png" }) {
     <div className="signal-logo-stage">
       <style>{`
         .signal-logo-stage {
-          --eye-x: 75.5%;
-          --eye-y: 28.5%;
+          --eye-x: 74.8%;
+          --eye-y: 29.2%;
           --eye-size: 7.0%;
           position: relative;
           width: 100%;

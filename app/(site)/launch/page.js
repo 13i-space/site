@@ -1,4 +1,5 @@
 import Link from "next/link";
+import SignalLogo from "../../../components/SignalLogo";
 
 const sections = [
   {
@@ -47,7 +48,9 @@ export default function LaunchHome() {
   return (
     <div>
       <div style={{ textAlign: "center", padding: "20px 0 50px" }}>
-        <img src="/13i-logo.png" alt="13i" style={{ width: 160, height: "auto", marginBottom: 20 }} />
+        <div style={{ maxWidth: 160, margin: "0 auto 20px" }}>
+          <SignalLogo />
+        </div>
         <div className="page-subtitle" style={{ marginBottom: 0 }}>a signal, translated</div>
         <p style={{ color: "#B7BADF", maxWidth: 520, margin: "16px auto 0" }}>
           A working preview of the 13i universe — the book, the music, and

@@ -14,26 +14,54 @@ const ANSWERS = [
   { label: "TWO PATHS", text: "We see two paths. You are already choosing one." },
 ];
 
-const CX = 150;
-const CY = 172;
-const NONA_R = 46;
-const LABEL_R = 63;
-
-function pt(cx, cy, angleDeg, radius) {
+// Same nine-glyph marks used on the Cryptex - decorative here, so a face
+// never spells out its answer until the die actually lands on it.
+const GLYPH_DEFS = [
+  { edges: [], dots: [0] },
+  { edges: [[0, 1]], dots: [0, 1] },
+  { edges: [[0, 2]], dots: [0, 2] },
+  { edges: [[0, 3], [3, 6], [6, 0]], dots: [0, 3, 6] },
+  { edges: [[0, 4]], dots: [0, 4] },
+  { edges: [[0, 4], [2, 6]], dots: [0, 2, 4, 6] },
+  { edges: [[0, 3], [3, 6], [6, 0], [1, 4], [4, 7], [7, 1]], dots: [0, 1, 3, 4, 6, 7] },
+  { edges: "full", dots: "all" },
+  { edges: [], dots: [] },
+];
+const GCX = 30, GCY = 30, GR = 20;
+function gpt(angleDeg, radius) {
   const rad = (angleDeg * Math.PI) / 180;
-  return [cx + radius * Math.cos(rad), cy + radius * Math.sin(rad)];
+  return [GCX + radius * Math.cos(rad), GCY + radius * Math.sin(rad)];
+}
+const GANGLES = Array.from({ length: 9 }, (_, i) => -90 + i * 40);
+const GPOINTS = GANGLES.map((a) => gpt(a, GR));
+
+function GlyphIcon({ index, glow }) {
+  const def = GLYPH_DEFS[index];
+  const dotSet = def.dots === "all" ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : def.dots;
+  const edgeList = def.edges === "full" ? Array.from({ length: 9 }, (_, i) => [i, (i + 1) % 9]) : def.edges;
+  return (
+    <svg width={44} height={44} viewBox="0 0 60 60">
+      {edgeList.map(([a, b], i) => (
+        <line key={i} x1={GPOINTS[a][0]} y1={GPOINTS[a][1]} x2={GPOINTS[b][0]} y2={GPOINTS[b][1]} stroke={glow ? "#E8CFC0" : "#6E76B8"} strokeWidth="1.3" opacity="0.9" />
+      ))}
+      {GPOINTS.map((p, i) => (
+        <circle key={i} cx={p[0]} cy={p[1]} r={dotSet.includes(i) ? 2.4 : 1} fill={dotSet.includes(i) ? (glow ? "#E8CFC0" : "#8B95F6") : "#3A3E75"} />
+      ))}
+    </svg>
+  );
 }
 
-const ANGLES = Array.from({ length: 9 }, (_, i) => -90 + i * 40);
-const NONA_POINTS = ANGLES.map((a) => pt(CX, CY, a, NONA_R));
-const NONA_PATH = NONA_POINTS.map((p) => p.join(",")).join(" ");
-const LABEL_POINTS = ANGLES.map((a) => pt(CX, CY, a, LABEL_R));
+const FACE_W = 78;
+const FACE_H = 130;
+const RADIUS = Math.round(FACE_W / 2 / Math.tan(Math.PI / 9));
+const STEP = 360 / 9;
 
 export default function Ninefold() {
   const [question, setQuestion] = useState("");
-  const [phase, setPhase] = useState("idle");
+  const [phase, setPhase] = useState("idle"); // idle -> shaking -> settling -> revealed
   const [finalTip, setFinalTip] = useState(null);
   const [spinAmount, setSpinAmount] = useState(0);
+  const [jitter, setJitter] = useState(false);
   const timeoutsRef = useRef([]);
 
   const clearTimers = () => {
@@ -42,21 +70,31 @@ export default function Ninefold() {
   };
 
   const shake = useCallback(() => {
-    if (phase === "shaking") return;
+    if (phase === "shaking" || phase === "settling") return;
     clearTimers();
     setFinalTip(null);
     setPhase("shaking");
-
-    const spins = 4 + Math.floor(Math.random() * 2);
-    setSpinAmount((prev) => prev + spins * 360);
+    setJitter(true);
 
     const chosen = Math.floor(Math.random() * 9);
-    const t = setTimeout(() => {
+    const extraSpins = 3 + Math.floor(Math.random() * 2);
+
+    const t1 = setTimeout(() => {
+      setJitter(false);
+      setPhase("settling");
+      // Land so that face `chosen` ends up rotated to 0deg (facing the viewer).
+      const base = Math.ceil(spinAmount / 360) * 360 + extraSpins * 360;
+      const landing = base - chosen * STEP;
+      setSpinAmount(landing);
+    }, 550);
+    timeoutsRef.current.push(t1);
+
+    const t2 = setTimeout(() => {
       setFinalTip(chosen);
       setPhase("revealed");
-    }, 1300);
-    timeoutsRef.current.push(t);
-  }, [phase]);
+    }, 550 + 1400);
+    timeoutsRef.current.push(t2);
+  }, [phase, spinAmount]);
 
   const reset = () => {
     clearTimers();
@@ -68,117 +106,79 @@ export default function Ninefold() {
   return (
     <div style={styles.page}>
       <style>{`
-        @keyframes pyramidShake {
-          0%, 100% { transform: translateX(0) rotate(0deg); }
-          15% { transform: translateX(-4px) rotate(-1.2deg); }
-          30% { transform: translateX(4px) rotate(1.2deg); }
-          45% { transform: translateX(-3px) rotate(-0.8deg); }
-          60% { transform: translateX(3px) rotate(0.8deg); }
-          75% { transform: translateX(-2px) rotate(-0.4deg); }
-          90% { transform: translateX(2px) rotate(0.4deg); }
-        }
-        @keyframes vertexIdle {
-          0%, 100% { opacity: 0.6; }
-          50% { opacity: 1; }
+        @keyframes dieJitter {
+          0%, 100% { transform: translate(0,0) rotate(0deg); }
+          20% { transform: translate(-3px, 2px) rotate(-1deg); }
+          40% { transform: translate(3px, -2px) rotate(1deg); }
+          60% { transform: translate(-2px, -1px) rotate(-0.6deg); }
+          80% { transform: translate(2px, 1px) rotate(0.6deg); }
         }
         @keyframes fadeUp {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
-        .pyramid-shaking { animation: pyramidShake 0.35s ease-in-out 4; }
-        .nonagon-spin { transition: transform 1.3s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        .die-jitter { animation: dieJitter 0.15s ease-in-out infinite; }
+        .die-group { transition: transform 1.4s cubic-bezier(0.2, 0.7, 0.15, 1); }
         .answer-text { animation: fadeUp 0.5s ease; }
-        .ninefold-input::placeholder { color: #565B8F; }
       `}</style>
 
       <div style={styles.frame}>
-        <div style={styles.stage}>
-          <svg
-            className={phase === "shaking" ? "pyramid-shaking" : ""}
-            viewBox="0 0 300 340"
-            width="270"
-            height="306"
-          >
+        <div style={styles.pyramidWrap}>
+          <svg viewBox="0 0 360 380" width="100%" style={{ maxWidth: 360, position: "absolute", top: 0, left: "50%", transform: "translateX(-50%)" }}>
             <defs>
-              <linearGradient id="pyrFace" x1="0%" y1="0%" x2="0%" y2="100%">
+              <linearGradient id="nfPyr" x1="0%" y1="0%" x2="0%" y2="100%">
                 <stop offset="0%" stopColor="#1C1F48" />
-                <stop offset="100%" stopColor="#0C0E28" />
-              </linearGradient>
-              <radialGradient id="windowGlass" cx="50%" cy="42%" r="65%">
-                <stop offset="0%" stopColor="#181B42" />
                 <stop offset="100%" stopColor="#08091E" />
-              </radialGradient>
+              </linearGradient>
             </defs>
+            <polygon points="180,10 20,360 340,360" fill="url(#nfPyr)" stroke="#3A3E75" strokeWidth="1.5" />
+            <line x1="180" y1="10" x2="180" y2="360" stroke="#262A55" strokeWidth="1" opacity="0.5" />
+          </svg>
 
-            <polygon
-              points="150,26 46,308 254,308"
-              fill="url(#pyrFace)"
-              stroke="#3A3E75"
-              strokeWidth="1.5"
-            />
-            <line x1="150" y1="26" x2="150" y2="308" stroke="#262A55" strokeWidth="1" opacity="0.6" />
-
-            <circle cx={CX} cy={CY} r="80" fill="url(#windowGlass)" stroke="#4C5192" strokeWidth="1.5" />
-
-            <g
-              className="nonagon-spin"
+          <div style={styles.scene} className={jitter ? "die-jitter" : ""}>
+            <div
               style={{
-                transformOrigin: `${CX}px ${CY}px`,
-                transform: `rotate(${spinAmount}deg)`,
+                ...styles.dieGroupOuter,
               }}
             >
-              <polygon
-                points={NONA_PATH}
-                fill="none"
-                stroke="#4C5192"
-                strokeWidth="1.5"
-                opacity="0.8"
-              />
-              {NONA_POINTS.map((p, i) => (
-                <circle
-                  key={`v-${i}`}
-                  cx={p[0]}
-                  cy={p[1]}
-                  r={phase === "revealed" && finalTip === i ? 5.5 : 3}
-                  fill={phase === "revealed" && finalTip === i ? "#E8CFC0" : "#8B95F6"}
-                  style={{
-                    animation:
-                      phase === "idle" ? `vertexIdle 2.6s ease-in-out infinite` : "none",
-                    animationDelay: `${i * 0.15}s`,
-                    transition: "r 0.2s ease, fill 0.25s ease",
-                  }}
-                />
-              ))}
-              {LABEL_POINTS.map((p, i) => (
-                <text
-                  key={`l-${i}`}
-                  x={p[0]}
-                  y={p[1]}
-                  textAnchor="middle"
-                  dominantBaseline="middle"
-                  style={{
-                    fontFamily: "'JetBrains Mono', monospace",
-                    fontSize: 7.5,
-                    fill: phase === "revealed" && finalTip === i ? "#E8CFC0" : "#565B8F",
-                    letterSpacing: "0.3px",
-                    transform: `rotate(${-spinAmount}deg)`,
-                    transformOrigin: `${p[0]}px ${p[1]}px`,
-                    transition: "fill 0.25s ease",
-                  }}
-                >
-                  {ANSWERS[i].label}
-                </text>
-              ))}
-            </g>
-          </svg>
+              <div
+                className="die-group"
+                style={{
+                  ...styles.dieGroup,
+                  transform: `rotateX(-6deg) rotateY(${spinAmount}deg)`,
+                }}
+              >
+                {ANSWERS.map((_, i) => {
+                  const isFront = phase === "revealed" && finalTip === i;
+                  return (
+                    <div
+                      key={i}
+                      style={{
+                        ...styles.face,
+                        transform: `rotateY(${i * STEP}deg) translateZ(${RADIUS}px)`,
+                        background: isFront
+                          ? "linear-gradient(180deg, #262A6A, #12153A)"
+                          : "linear-gradient(180deg, #181B42, #0C0E28)",
+                        borderColor: isFront ? "#E8CFC0" : "#3A3E75",
+                        boxShadow: isFront ? "0 0 18px rgba(232,207,192,0.35)" : "none",
+                      }}
+                    >
+                      <GlyphIcon index={i} glow={isFront} />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div style={styles.answerZone}>
           {phase === "revealed" && finalTip !== null ? (
             <div className="answer-text" style={styles.answerText}>
+              <div style={styles.answerLabel}>{ANSWERS[finalTip].label}</div>
               {ANSWERS[finalTip].text}
             </div>
-          ) : phase === "shaking" ? (
+          ) : phase === "shaking" || phase === "settling" ? (
             <div style={styles.shufflingText}>...</div>
           ) : (
             <div style={styles.hint}>Ask a question. Shake to see which face answers.</div>
@@ -187,12 +187,11 @@ export default function Ninefold() {
 
         <div style={styles.inputBar}>
           <input
-            className="ninefold-input"
             style={styles.input}
             type="text"
             value={question}
             placeholder="What do you want to ask 13i?"
-            disabled={phase === "shaking"}
+            disabled={phase === "shaking" || phase === "settling"}
             onChange={(e) => setQuestion(e.target.value)}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
@@ -202,10 +201,10 @@ export default function Ninefold() {
           />
           <button
             onClick={phase === "revealed" ? reset : shake}
-            disabled={phase === "shaking"}
+            disabled={phase === "shaking" || phase === "settling"}
             style={{
               ...styles.actionBtn,
-              opacity: phase === "shaking" ? 0.4 : 1,
+              opacity: phase === "shaking" || phase === "settling" ? 0.4 : 1,
             }}
           >
             {phase === "revealed" ? "Shake again" : "Shake"}
@@ -218,15 +217,38 @@ export default function Ninefold() {
 
 const styles = {
   page: { display: "flex", justifyContent: "center" },
-  frame: { width: "100%", maxWidth: 460 },
-  stage: { display: "flex", justifyContent: "center", padding: "2px 0 0" },
+  frame: { width: "100%", maxWidth: 420 },
+  pyramidWrap: { position: "relative", height: 340, marginBottom: 8, display: "flex", justifyContent: "center", alignItems: "center" },
+  scene: { position: "relative", zIndex: 1, perspective: 900 },
+  dieGroupOuter: { transformStyle: "preserve-3d" },
+  dieGroup: { position: "relative", width: FACE_W, height: FACE_H, transformStyle: "preserve-3d" },
+  face: {
+    position: "absolute",
+    width: FACE_W,
+    height: FACE_H,
+    left: 0,
+    top: 0,
+    border: "1px solid #3A3E75",
+    borderRadius: 4,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    backfaceVisibility: "hidden",
+  },
   answerZone: {
-    minHeight: 64,
+    minHeight: 70,
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
     textAlign: "center",
     padding: "6px 10px 18px",
+  },
+  answerLabel: {
+    fontFamily: "'JetBrains Mono', monospace",
+    fontSize: 11,
+    color: "#8B95F6",
+    letterSpacing: "1px",
+    marginBottom: 6,
   },
   answerText: {
     fontFamily: "'JetBrains Mono', 'Courier New', monospace",

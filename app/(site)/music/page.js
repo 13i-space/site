@@ -65,6 +65,12 @@ function parseTrack(entry) {
   return { file, label };
 }
 
+function releaseDateFor(globalIndex) {
+  const d = new Date(2027, 3, 6); // April 6, 2027, month is 0-indexed
+  d.setMonth(d.getMonth() + globalIndex);
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
 export default function MusicPage() {
   return (
     <div>
@@ -94,19 +100,19 @@ export default function MusicPage() {
         </p>
       </div>
 
-      {albums.map((album) => (
+      {albums.map((album, albumIdx) => (
         <div key={album.title} style={{ marginBottom: 44 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 16 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 20, marginBottom: 16, flexWrap: "wrap" }}>
             <img
               src={album.cover}
               alt={album.title}
-              style={{ width: 64, height: 64, borderRadius: 4, objectFit: "cover" }}
+              style={{ width: 160, height: 160, borderRadius: 6, objectFit: "cover", border: "1px solid #262A55" }}
             />
             <div>
-              <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF" }}>
+              <div className="wordmark" style={{ fontSize: 28, color: "#DCDFFF" }}>
                 {album.title}
               </div>
-              <div className="mono" style={{ fontSize: 11, color: "#6E76B8" }}>
+              <div className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
                 {album.year}
               </div>
             </div>
@@ -115,6 +121,7 @@ export default function MusicPage() {
           <div className="panel" style={{ padding: "8px 20px" }}>
             {album.tracks.map((entry, i) => {
               const { file, label } = parseTrack(entry);
+              const globalIndex = albumIdx * 12 + i;
               return (
                 <div
                   key={file}
@@ -124,15 +131,19 @@ export default function MusicPage() {
                     gap: 16,
                     padding: "12px 0",
                     borderBottom: i < album.tracks.length - 1 ? "1px solid #21244A" : "none",
+                    flexWrap: "wrap",
                   }}
                 >
                   <div className="mono" style={{ fontSize: 12, color: "#565B8F", width: 20 }}>
                     {i + 1}
                   </div>
-                  <div style={{ flex: "0 0 200px", fontSize: 14, color: "#D9DCFF" }}>
+                  <div style={{ flex: "0 0 190px", fontSize: 14, color: "#D9DCFF" }}>
                     {label}
                   </div>
-                  <audio controls preload="none" style={{ flex: 1, height: 32 }}>
+                  <div className="mono" style={{ flex: "0 0 100px", fontSize: 11, color: "#6E76B8" }}>
+                    {releaseDateFor(globalIndex)}
+                  </div>
+                  <audio controls preload="none" style={{ flex: 1, minWidth: 180, height: 32 }}>
                     <source src={BASE + file + ".mp3"} type="audio/mpeg" />
                   </audio>
                 </div>

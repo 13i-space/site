@@ -30,7 +30,16 @@ export default function Nav() {
         </li>
         <li><Link href="/wiki">Wiki</Link></li>
         <li><Link href="/assignments">Assignments</Link></li>
-        <li><Link href="/galaxy">Galaxy</Link></li>
+        <li className="nav-dropdown">
+          <Link href="/galaxy">Galaxy</Link>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/galaxy/map">The Map</Link></li>
+              <li><Link href="/galaxy/facts">Galaxy Facts</Link></li>
+            </ul>
+          </div>
+        </li>
+        <li><Link href="/account">Account</Link></li>
       </ul>
     </nav>
   );
