@@ -7,11 +7,13 @@ export default function BookPage() {
       <div className="page-subtitle">book one of three &middot; rough draft</div>
 
       <div style={{ display: "flex", gap: 32, flexWrap: "wrap", alignItems: "flex-start", marginBottom: 24 }}>
-        <img
-          src="/13i-book-cover.png"
-          alt="13i book cover"
-          style={{ width: 220, maxWidth: "100%", borderRadius: 4, border: "1px solid #262A55", flexShrink: 0 }}
-        />
+        <Link href="/book/chapter-1" style={{ flexShrink: 0 }}>
+          <img
+            src="/13i-book-cover.png"
+            alt="13i book cover"
+            style={{ width: 220, maxWidth: "100%", borderRadius: 4, border: "1px solid #262A55", cursor: "pointer" }}
+          />
+        </Link>
         <div className="panel" style={{ flex: 1, minWidth: 260 }}>
           <p>
             First contact, told from three perspectives — two human, one not.

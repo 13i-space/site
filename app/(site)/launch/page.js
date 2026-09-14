@@ -1,5 +1,5 @@
 import Link from "next/link";
-import SignalLogo from "../../../components/SignalLogo";
+import ThemedHero from "../../../components/ThemedHero";
 
 const sections = [
   {
@@ -49,7 +49,7 @@ export default function LaunchHome() {
     <div>
       <div style={{ textAlign: "center", padding: "20px 0 50px" }}>
         <div style={{ maxWidth: 160, margin: "0 auto 20px" }}>
-          <SignalLogo />
+          <ThemedHero background={false} />
         </div>
         <div className="page-subtitle" style={{ marginBottom: 0 }}>a signal, translated</div>
         <p style={{ color: "#B7BADF", maxWidth: 520, margin: "16px auto 0" }}>

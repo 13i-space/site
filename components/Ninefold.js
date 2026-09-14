@@ -86,7 +86,7 @@ export default function Ninefold() {
     const t = setTimeout(() => {
       setFinalTip(chosen);
       setPhase("revealed");
-    }, 1900);
+    }, 3800);
     timeoutsRef.current.push(t);
   }, [phase, spinAmount]);
 
@@ -110,7 +110,7 @@ export default function Ninefold() {
           0%, 100% { opacity: 0.25; }
           50% { opacity: 1; }
         }
-        .die-group { transition: transform 1.9s cubic-bezier(0.15, 0.7, 0.1, 1); }
+        .die-group { transition: transform 3.8s cubic-bezier(0.15, 0.7, 0.1, 1); }
         .answer-text { animation: fadeUp 0.5s ease; }
         .cabinet-light { animation: lightChase 0.9s ease-in-out infinite; }
         .cabinet-light.idle { animation: none; opacity: 0.35; }
@@ -143,7 +143,7 @@ export default function Ninefold() {
                     className="die-group"
                     style={{
                       ...styles.dieGroup,
-                      transform: `rotateX(-4deg) rotateY(${spinAmount}deg)`,
+                      transform: `rotateY(-4deg) rotateX(${spinAmount}deg)`,
                     }}
                   >
                     {ANSWERS.map((_, i) => {
@@ -153,7 +153,7 @@ export default function Ninefold() {
                           key={i}
                           style={{
                             ...styles.face,
-                            transform: `rotateY(${i * STEP}deg) translateZ(${RADIUS}px)`,
+                            transform: `rotateX(${i * STEP}deg) translateZ(${RADIUS}px)`,
                             background: isFront
                               ? "linear-gradient(180deg, #262A6A, #12153A)"
                               : "linear-gradient(180deg, #181B42, #0C0E28)",

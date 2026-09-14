@@ -1,6 +1,20 @@
 import Link from "next/link";
+import { createClient } from "../lib/supabaseServer";
 
-export default function Nav() {
+export default async function Nav() {
+  let user = null;
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user: authUser },
+    } = await supabase.auth.getUser();
+    user = authUser;
+  } catch (e) {
+    // Auth not configured yet, or a transient error - nav should never
+    // break the whole site over this, just show the signed-out state.
+    user = null;
+  }
+
   return (
     <nav className="site-nav">
       <Link href="/launch" className="logo wordmark">
@@ -36,10 +50,15 @@ export default function Nav() {
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/galaxy/map">The Map</Link></li>
               <li><Link href="/galaxy/facts">Galaxy Facts</Link></li>
+              <li><Link href="/galaxy/quiz">Galaxy Quiz</Link></li>
             </ul>
           </div>
         </li>
-        <li><Link href="/account">Account</Link></li>
+        <li>
+          <Link href="/account" style={user ? { color: "#B9C0FF" } : undefined}>
+            {user ? `Signed in \u2013 ${user.email}` : "Account"}
+          </Link>
+        </li>
       </ul>
     </nav>
   );

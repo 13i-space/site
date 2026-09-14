@@ -1,17 +1,13 @@
 import "./globals.css";
 import Countdown from "../components/Countdown";
-import StarField from "../components/StarField";
+import ThemedHero from "../components/ThemedHero";
 import EmailSignup from "../components/EmailSignup";
-import SignalLogo from "../components/SignalLogo";
 
 export default function CountdownPage() {
   return (
     <div style={styles.page}>
-      <StarField density={160} />
+      <ThemedHero logoWrapStyle={styles.logoWrap} />
       <div style={styles.glow} />
-      <div style={styles.logoWrap}>
-        <SignalLogo />
-      </div>
       <div className="mono" style={styles.subtitle}>
         a signal, received
       </div>
