@@ -25,9 +25,8 @@ export default function AssignmentsPage() {
         Submit your own
       </div>
       <p style={{ fontSize: 13.5, color: "#8A8FBF", marginBottom: 20 }}>
-        For now, submissions come straight here and go directly to Paul by
-        email. There's no public gallery yet — that's coming as this
-        section grows.
+        For now, submissions are saved here for Paul to read directly.
+        There's no public gallery yet — that's coming as this section grows.
       </p>
       <SubmissionForm />
     </div>

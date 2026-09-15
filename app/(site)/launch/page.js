@@ -61,6 +61,7 @@ export default function LaunchHome() {
       <div style={styles.grid}>
         {sections.map((s) => (
           <Link key={s.href} href={s.href} style={styles.card}>
+            <div style={styles.cardCorner} />
             <div className="wordmark" style={styles.cardTitle}>{s.title}</div>
             <p style={styles.cardBlurb}>{s.blurb}</p>
           </Link>
@@ -77,6 +78,7 @@ const styles = {
     gap: 20,
   },
   card: {
+    position: "relative",
     display: "block",
     background: "rgba(14, 16, 38, 0.72)",
     border: "1px solid #262A55",
@@ -84,6 +86,17 @@ const styles = {
     padding: "24px 20px",
     color: "inherit",
     textDecoration: "none",
+    overflow: "hidden",
+  },
+  cardCorner: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    borderStyle: "solid",
+    borderWidth: "0 22px 22px 0",
+    borderColor: "transparent rgba(139,149,246,0.14) transparent transparent",
   },
   cardTitle: { fontSize: 22, color: "#DCDFFF", marginBottom: 8 },
   cardBlurb: { fontSize: 13, color: "#8A8FBF", lineHeight: 1.6, margin: 0 },

@@ -29,6 +29,7 @@ export default async function Nav() {
           <div className="nav-dropdown-menu">
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/games/nemesis-command">NEMESIS Command</Link></li>
+              <li><Link href="/games/meteoroids">Meteoroids</Link></li>
               <li><Link href="/games/13i-vs-nemesis">13i vs NEMESIS</Link></li>
             </ul>
           </div>

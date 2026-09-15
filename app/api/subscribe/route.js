@@ -11,7 +11,8 @@ export async function POST(request) {
   }
 
   const { email } = await request.json();
-  if (!email || !email.includes("@")) {
+  const email_address = email;
+  if (!email_address || !email_address.includes("@")) {
     return Response.json({ error: "Please enter a valid email address." }, { status: 400 });
   }
 
@@ -22,7 +23,7 @@ export async function POST(request) {
         "Content-Type": "application/json",
         Authorization: `Token ${apiKey}`,
       },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email_address }),
     });
 
     if (!response.ok) {

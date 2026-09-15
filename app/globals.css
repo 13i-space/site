@@ -106,7 +106,7 @@ a:hover {
 }
 .nav-dropdown-menu-inner a {
   display: block;
-  padding: 10px 16px;
+  padding: 6px 16px;
   white-space: nowrap;
   color: var(--muted);
   line-height: 1.3;

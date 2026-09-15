@@ -4,10 +4,12 @@ import { useRef } from "react";
 import SignalLogo from "./SignalLogo";
 import OrbitalLogo from "./OrbitalLogo";
 import RadarLogo from "./RadarLogo";
+import FibonacciLogo from "./FibonacciLogo";
 import GravityLens from "./GravityLens";
 import StarField from "./StarField";
 import ConstellationField from "./ConstellationField";
 import RadarField from "./RadarField";
+import FibonacciField from "./FibonacciField";
 import { ACTIVE_THEME } from "../lib/theme";
 
 // Renders the full hero treatment (background + logo together) for
@@ -49,6 +51,17 @@ export default function ThemedHero({ src, background = true, logoWrapStyle }) {
         {background && <RadarField />}
         <div style={logoWrapStyle}>
           <RadarLogo src={src} />
+        </div>
+      </>
+    );
+  }
+
+  if (ACTIVE_THEME === "fibonacci") {
+    return (
+      <>
+        {background && <FibonacciField />}
+        <div style={logoWrapStyle}>
+          <FibonacciLogo src={src} />
         </div>
       </>
     );

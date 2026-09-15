@@ -2,17 +2,25 @@
 
 import React, { useState, useRef, useCallback } from "react";
 
-const ANSWERS = [
-  { label: "AFFIRMED", text: "Yes. The pattern supports it." },
-  { label: "DENIED", text: "No. The pattern does not." },
-  { label: "UNKNOWN", text: "We do not have enough transmissions to answer." },
-  { label: "SHIFTING", text: "The answer changes depending on what you do next." },
-  { label: "ALREADY KNOWN", text: "Ask again when you already know the answer." },
-  { label: "UNSTATED", text: "This depends on a fear you have not stated." },
-  { label: "LIKELY", text: "Likely. Little in what we have observed suggests otherwise." },
-  { label: "RECONSIDER", text: "Unlikely. Reconsider the assumption beneath the question." },
-  { label: "TWO PATHS", text: "We see two paths. You are already choosing one." },
+// Nine "sides", each with three possible readings depending on where the
+// top dial lands - 9 x 3 = 27 total responses. The dial's three positions
+// are never labeled on screen; which one means what is something a
+// visitor has to notice for themselves after a few pulls.
+//
+// dialIndex 0 / 1 / 2 map to Yes / Neutral / No, in that fixed order,
+// every time - the mapping never changes, it's just never printed.
+const RESPONSES = [
+  { yes: "It is certain. We have seen this pattern complete before.", neutral: "The pattern has not finished. Ask again when it has.", no: "It is certain that this will not happen." },
+  { yes: "Without a doubt.", neutral: "We are watching, but the signal is still weak.", no: "Without a doubt, no." },
+  { yes: "You may rely on this.", neutral: "We would rather not say yet.", no: "Do not rely on this." },
+  { yes: "As we see it, yes.", neutral: "From here, it could still go either way.", no: "As we see it, no." },
+  { yes: "Likely. Very likely.", neutral: "Concentrate, and ask again.", no: "Unlikely. Very unlikely." },
+  { yes: "The outlook is good.", neutral: "The outlook is hazy from here.", no: "The outlook is not good." },
+  { yes: "Yes.", neutral: "We cannot predict this one yet.", no: "No." },
+  { yes: "The signs point to yes.", neutral: "The signs are not clear enough to read.", no: "Our sources say no." },
+  { yes: "Of the paths we see, this is the one you are already choosing.", neutral: "We see two paths, and neither is decided yet.", no: "Of the paths we see, this is not the one." },
 ];
+const DIAL_KEYS = ["yes", "neutral", "no"];
 
 // Same nine-glyph marks used on the Cryptex - decorative here, so a face
 // never spells out its answer until the die actually lands on it.
@@ -28,9 +36,9 @@ const GLYPH_DEFS = [
   { edges: [], dots: [] },
 ];
 const GCX = 30, GCY = 30, GR = 20;
-function gpt(angleDeg, radius) {
+function gpt(angleDeg, radius, cx = GCX, cy = GCY) {
   const rad = (angleDeg * Math.PI) / 180;
-  return [GCX + radius * Math.cos(rad), GCY + radius * Math.sin(rad)];
+  return [cx + radius * Math.cos(rad), cy + radius * Math.sin(rad)];
 }
 const GANGLES = Array.from({ length: 9 }, (_, i) => -90 + i * 40);
 const GPOINTS = GANGLES.map((a) => gpt(a, GR));
@@ -40,7 +48,7 @@ function GlyphIcon({ index, glow }) {
   const dotSet = def.dots === "all" ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : def.dots;
   const edgeList = def.edges === "full" ? Array.from({ length: 9 }, (_, i) => [i, (i + 1) % 9]) : def.edges;
   return (
-    <svg width={44} height={44} viewBox="0 0 60 60">
+    <svg width={52} height={52} viewBox="0 0 60 60">
       {edgeList.map(([a, b], i) => (
         <line key={i} x1={GPOINTS[a][0]} y1={GPOINTS[a][1]} x2={GPOINTS[b][0]} y2={GPOINTS[b][1]} stroke={glow ? "#E8CFC0" : "#6E76B8"} strokeWidth="1.3" opacity="0.9" />
       ))}
@@ -51,17 +59,73 @@ function GlyphIcon({ index, glow }) {
   );
 }
 
-const FACE_W = 78;
-const FACE_H = 130;
-const RADIUS = Math.round(FACE_W / 2 / Math.tan(Math.PI / 9));
+// The card's visual width is purely cosmetic now (it no longer factors
+// into the drum's geometry) so it's set responsively below, up close to
+// the full width of the viewing window.
+const FACE_W_CSS = "min(300px, 72vw)";
+const FACE_H = 150;
+// For a drum spinning around a horizontal (up/down) axis, the relevant
+// "chord" dimension for the radius is the face's HEIGHT, not its width -
+// this was flipped before, which is what made the drum look off.
+const RADIUS = Math.round(FACE_H / 2 / Math.tan(Math.PI / 9));
 const STEP = 360 / 9;
+const DIAL_STEP = 360 / 3;
 const LIGHT_COUNT = 7;
+const SPIN_MS = 3800;
+
+// A short synthesized "reel" sound so nothing here depends on an audio
+// file or a third-party sound library - just the Web Audio API already
+// built into the browser.
+function playSpinSound() {
+  try {
+    const Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    const ctx = new Ctx();
+    const now = ctx.currentTime;
+    let elapsed = 0;
+    const tickCount = 34;
+    for (let i = 0; i < tickCount; i++) {
+      const progress = i / tickCount;
+      const gap = 0.028 + progress * progress * 0.24; // ticks spread out as the spin slows
+      elapsed += gap;
+      const t = now + elapsed;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.value = 480 - progress * 220;
+      gain.gain.setValueAtTime(0.0001, t);
+      gain.gain.exponentialRampToValueAtTime(0.13, t + 0.004);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.05);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.06);
+    }
+    // a soft low "thunk" as it lands
+    const thunk = ctx.createOscillator();
+    const thunkGain = ctx.createGain();
+    thunk.type = "sine";
+    thunk.frequency.value = 90;
+    const landTime = now + elapsed + 0.05;
+    thunkGain.gain.setValueAtTime(0.0001, landTime);
+    thunkGain.gain.exponentialRampToValueAtTime(0.2, landTime + 0.01);
+    thunkGain.gain.exponentialRampToValueAtTime(0.0001, landTime + 0.25);
+    thunk.connect(thunkGain).connect(ctx.destination);
+    thunk.start(landTime);
+    thunk.stop(landTime + 0.3);
+
+    setTimeout(() => ctx.close(), (elapsed + 0.6) * 1000);
+  } catch (e) {
+    // sound is a nice-to-have, never block the game over it
+  }
+}
 
 export default function Ninefold() {
   const [question, setQuestion] = useState("");
   const [phase, setPhase] = useState("idle"); // idle -> spinning -> revealed
-  const [finalTip, setFinalTip] = useState(null);
+  const [finalFace, setFinalFace] = useState(null);
+  const [finalDial, setFinalDial] = useState(null);
   const [spinAmount, setSpinAmount] = useState(0);
+  const [dialSpinAmount, setDialSpinAmount] = useState(0);
   const timeoutsRef = useRef([]);
 
   const clearTimers = () => {
@@ -72,32 +136,43 @@ export default function Ninefold() {
   const spin = useCallback(() => {
     if (phase === "spinning") return;
     clearTimers();
-    setFinalTip(null);
+    setFinalFace(null);
+    setFinalDial(null);
     setPhase("spinning");
+    playSpinSound();
 
-    const chosen = Math.floor(Math.random() * 9);
+    const chosenFace = Math.floor(Math.random() * 9);
+    const chosenDial = Math.floor(Math.random() * 3);
     const extraSpins = 4 + Math.floor(Math.random() * 2);
+    const extraDialSpins = 3 + Math.floor(Math.random() * 2);
 
-    // Land so that face `chosen` ends up rotated to 0deg (facing the viewer).
     const base = Math.ceil(spinAmount / 360) * 360 + extraSpins * 360;
-    const landing = base - chosen * STEP;
-    setSpinAmount(landing);
+    setSpinAmount(base - chosenFace * STEP);
+
+    const dialBase = Math.ceil(dialSpinAmount / 360) * 360 + extraDialSpins * 360;
+    setDialSpinAmount(dialBase - chosenDial * DIAL_STEP);
 
     const t = setTimeout(() => {
-      setFinalTip(chosen);
+      setFinalFace(chosenFace);
+      setFinalDial(chosenDial);
       setPhase("revealed");
-    }, 3800);
+    }, SPIN_MS);
     timeoutsRef.current.push(t);
-  }, [phase, spinAmount]);
+  }, [phase, spinAmount, dialSpinAmount]);
 
   const reset = () => {
     clearTimers();
     setPhase("idle");
-    setFinalTip(null);
+    setFinalFace(null);
+    setFinalDial(null);
     setQuestion("");
   };
 
   const isSpinning = phase === "spinning";
+  const revealedText =
+    phase === "revealed" && finalFace !== null && finalDial !== null
+      ? RESPONSES[finalFace][DIAL_KEYS[finalDial]]
+      : null;
 
   return (
     <div style={styles.page}>
@@ -110,7 +185,9 @@ export default function Ninefold() {
           0%, 100% { opacity: 0.25; }
           50% { opacity: 1; }
         }
-        .die-group { transition: transform 3.8s cubic-bezier(0.15, 0.7, 0.1, 1); }
+        .die-group, .dial-needle {
+          transition: transform ${SPIN_MS / 1000}s cubic-bezier(0.15, 0.7, 0.1, 1);
+        }
         .answer-text { animation: fadeUp 0.5s ease; }
         .cabinet-light { animation: lightChase 0.9s ease-in-out infinite; }
         .cabinet-light.idle { animation: none; opacity: 0.35; }
@@ -119,22 +196,15 @@ export default function Ninefold() {
       <div style={styles.frame}>
         {/* --- Cabinet --- */}
         <div style={styles.cabinet}>
-          {/* arch top with rivets */}
-          <div style={styles.archTop}>
-            {Array.from({ length: 9 }).map((_, i) => (
-              <span key={i} style={styles.rivet} />
-            ))}
-          </div>
+          <TopDial rotation={dialSpinAmount} />
 
           <div style={styles.marquee}>
             <span className="mono" style={styles.marqueeText}>THE NINEFOLD</span>
           </div>
 
           <div style={styles.cabinetBody}>
-            {/* left light column */}
             <LightColumn active={isSpinning} />
 
-            {/* viewing window */}
             <div style={styles.window}>
               <div style={styles.windowGlass} />
               <div style={styles.scene}>
@@ -146,8 +216,8 @@ export default function Ninefold() {
                       transform: `rotateY(-4deg) rotateX(${spinAmount}deg)`,
                     }}
                   >
-                    {ANSWERS.map((_, i) => {
-                      const isFront = phase === "revealed" && finalTip === i;
+                    {RESPONSES.map((_, i) => {
+                      const isFront = phase === "revealed" && finalFace === i;
                       return (
                         <div
                           key={i}
@@ -170,24 +240,22 @@ export default function Ninefold() {
               </div>
             </div>
 
-            {/* right light column */}
             <LightColumn active={isSpinning} />
           </div>
         </div>
 
         {/* --- Answer / status --- */}
         <div style={styles.answerZone}>
-          {phase === "revealed" && finalTip !== null ? (
+          {revealedText ? (
             <div className="answer-text" style={styles.answerText}>
-              <div style={styles.answerLabel}>{ANSWERS[finalTip].label}</div>
-              {ANSWERS[finalTip].text}
+              {revealedText}
             </div>
           ) : isSpinning ? (
             <div style={styles.shufflingText}>...</div>
           ) : (
             <div style={styles.hint}>
-              Ask a yes-or-no question. Pull the lever and the Ninefold spins
-              to answer.
+              Ask a yes-or-no question. Pull the lever - the wheel and the
+              dial up top both spin to answer.
             </div>
           )}
         </div>
@@ -209,15 +277,36 @@ export default function Ninefold() {
           <button
             onClick={phase === "revealed" ? reset : spin}
             disabled={isSpinning}
-            style={{
-              ...styles.actionBtn,
-              opacity: isSpinning ? 0.4 : 1,
-            }}
+            style={{ ...styles.actionBtn, opacity: isSpinning ? 0.4 : 1 }}
           >
             {phase === "revealed" ? "Pull again" : "Pull"}
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Three static marker dots on a small ring, plus one needle that spins
+// and settles pointing at one of them. Which marker "means" what is
+// intentionally never labeled.
+function TopDial({ rotation }) {
+  const cx = 30, cy = 30, markerR = 20, needleLen = 17;
+  const markerAngles = [-90, 30, 150]; // evenly spaced, arbitrary starting orientation
+  const markerPoints = markerAngles.map((a) => gpt(a, markerR, cx, cy));
+
+  return (
+    <div style={styles.dialWrap}>
+      <svg width={60} height={60} viewBox="0 0 60 60">
+        <circle cx={cx} cy={cy} r={markerR + 4} fill="none" stroke="#262A55" strokeWidth="1" />
+        {markerPoints.map((p, i) => (
+          <circle key={i} cx={p[0]} cy={p[1]} r={4.5} fill="#1C1F48" stroke="#8B95F6" strokeWidth="1.4" />
+        ))}
+        <g className="dial-needle" style={{ transform: `rotate(${rotation}deg)`, transformOrigin: `${cx}px ${cy}px` }}>
+          <line x1={cx} y1={cy} x2={cx} y2={cy - needleLen} stroke="#E8CFC0" strokeWidth="2.4" strokeLinecap="round" />
+          <circle cx={cx} cy={cy} r={3} fill="#E8CFC0" />
+        </g>
+      </svg>
     </div>
   );
 }
@@ -238,29 +327,20 @@ function LightColumn({ active }) {
 
 const styles = {
   page: { display: "flex", justifyContent: "center" },
-  frame: { width: "100%", maxWidth: 420 },
+  frame: { width: "100%", maxWidth: 480 },
 
   cabinet: {
     position: "relative",
     background: "linear-gradient(180deg, #1C1F48 0%, #0C0E28 100%)",
     border: "1px solid #3A3E75",
     borderRadius: "120px 120px 10px 10px",
-    padding: "22px 16px 20px",
+    padding: "18px 16px 20px",
     marginBottom: 8,
   },
-  archTop: {
+  dialWrap: {
     display: "flex",
     justifyContent: "center",
-    gap: 10,
-    marginBottom: 10,
-  },
-  rivet: {
-    width: 5,
-    height: 5,
-    borderRadius: "50%",
-    background: "#8B95F6",
-    opacity: 0.6,
-    display: "inline-block",
+    marginBottom: 4,
   },
   marquee: {
     textAlign: "center",
@@ -292,7 +372,7 @@ const styles = {
   window: {
     position: "relative",
     flex: 1,
-    minHeight: 280,
+    minHeight: 300,
     background: "radial-gradient(ellipse at center, #0A0B1C 0%, #060712 100%)",
     border: "1px solid #262A55",
     borderRadius: 10,
@@ -310,10 +390,10 @@ const styles = {
   },
   scene: { position: "relative", zIndex: 1, perspective: 900 },
   dieGroupOuter: { transformStyle: "preserve-3d" },
-  dieGroup: { position: "relative", width: FACE_W, height: FACE_H, transformStyle: "preserve-3d" },
+  dieGroup: { position: "relative", width: FACE_W_CSS, height: FACE_H, transformStyle: "preserve-3d" },
   face: {
     position: "absolute",
-    width: FACE_W,
+    width: FACE_W_CSS,
     height: FACE_H,
     left: 0,
     top: 0,
@@ -331,13 +411,6 @@ const styles = {
     justifyContent: "center",
     textAlign: "center",
     padding: "16px 10px 18px",
-  },
-  answerLabel: {
-    fontFamily: "'JetBrains Mono', monospace",
-    fontSize: 11,
-    color: "#8B95F6",
-    letterSpacing: "1px",
-    marginBottom: 6,
   },
   answerText: {
     fontFamily: "'JetBrains Mono', 'Courier New', monospace",

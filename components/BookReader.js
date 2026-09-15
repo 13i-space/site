@@ -20,7 +20,7 @@ export default function BookReader({ meta, pages, inProgress }) {
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", width: "100%" }}>
+    <div style={{ maxWidth: 1080, margin: "0 auto", width: "100%" }}>
       <div style={{ marginBottom: 6, textAlign: "center" }}>
         <div className="mono" style={{ fontSize: 11, color: "#565B8F", letterSpacing: "1px" }}>
           {meta.book.toUpperCase()} &middot; {meta.part.toUpperCase()}

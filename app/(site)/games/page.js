@@ -7,6 +7,11 @@ const games = [
     blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic.",
   },
   {
+    href: "/games/meteoroids",
+    title: "Meteoroids",
+    blurb: "An Asteroids-style original — outfly a mining ship before it scatters twelve tungsten rods.",
+  },
+  {
     href: "/games/13i-vs-nemesis",
     title: "13i vs NEMESIS",
     blurb: "Defend Earth across five zones of approach, with multiple weapons and countermeasures.",
