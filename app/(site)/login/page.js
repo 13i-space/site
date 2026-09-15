@@ -32,9 +32,13 @@ const btnStyle = (disabled) => ({
 
 export default function LoginPage() {
   const router = useRouter();
-  const [tab, setTab] = useState("login"); // login | signup | magic
+  const [tab, setTab] = useState("login"); // login | signup | magic | forgot
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  // forgot password
+  const [forgotEmail, setForgotEmail] = useState("");
+  const [forgotSent, setForgotSent] = useState(false);
 
   // login
   const [identifier, setIdentifier] = useState("");
@@ -126,6 +130,22 @@ export default function LoginPage() {
     setMagicSent(true);
   };
 
+  const doForgot = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    const supabase = createClient();
+    const { error: authError } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/account/reset-password`,
+    });
+    setLoading(false);
+    if (authError) {
+      setError(authError.message);
+      return;
+    }
+    setForgotSent(true);
+  };
+
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">
@@ -145,14 +165,52 @@ export default function LoginPage() {
             {loading ? "Signing in..." : "Log in"}
           </button>
           {error && <p style={{ color: "#C97B6E", fontSize: 12, marginTop: 12 }}>{error}</p>}
-          <button
-            type="button"
-            onClick={() => { setTab("magic"); setError(""); }}
-            style={{ background: "none", border: "none", color: "#565B8F", fontSize: 12, marginTop: 14, cursor: "pointer", textDecoration: "underline" }}
-          >
-            or sign in with a magic link instead
-          </button>
+          <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14 }}>
+            <button
+              type="button"
+              onClick={() => { setTab("forgot"); setError(""); }}
+              style={{ background: "none", border: "none", color: "#565B8F", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+            >
+              forgot password?
+            </button>
+            <button
+              type="button"
+              onClick={() => { setTab("magic"); setError(""); }}
+              style={{ background: "none", border: "none", color: "#565B8F", fontSize: 12, cursor: "pointer", textDecoration: "underline" }}
+            >
+              use a magic link instead
+            </button>
+          </div>
         </form>
+      )}
+
+      {tab === "forgot" && (
+        forgotSent ? (
+          <div className="panel">
+            <p style={{ color: "#B7BADF" }}>
+              We sent a link to <strong>{forgotEmail}</strong>. Click it to set a new password.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={doForgot} className="panel">
+            <p style={{ fontSize: 12.5, color: "#8A8FBF", marginBottom: 14 }}>
+              Already have an account from the old email sign-in? Enter your
+              email and we'll send a link to set a password for it.
+            </p>
+            <input style={inputStyle} required type="email" value={forgotEmail} onChange={(e) => setForgotEmail(e.target.value)} placeholder="your email" />
+            <button type="submit" disabled={loading} style={btnStyle(loading)}>
+              {loading ? "Sending..." : "Send password-set link"}
+            </button>
+            {error && <p style={{ color: "#C97B6E", fontSize: 12, marginTop: 12 }}>{error}</p>}
+            <button
+              type="button"
+              onClick={() => { setTab("login"); setError(""); }}
+              style={{ background: "none", border: "none", color: "#565B8F", fontSize: 12, marginTop: 14, cursor: "pointer", textDecoration: "underline" }}
+            >
+              back to log in
+            </button>
+          </form>
+        )
       )}
 
       {tab === "signup" && (

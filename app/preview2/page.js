@@ -1,6 +1,6 @@
 import Link from "next/link";
-import NebulaField from "../../components/NebulaField";
-import NebulaLogo from "../../components/NebulaLogo";
+import HubbleField from "../../components/HubbleField";
+import HubbleLogo from "../../components/HubbleLogo";
 
 const sections = [
   { title: "The Book", blurb: "First contact, told from three perspectives — two human, one not." },
@@ -9,10 +9,10 @@ const sections = [
   { title: "Artifacts", blurb: "The Ninefold, the Cryptex, and more to come." },
 ];
 
-export default function PreviewNebula() {
+export default function PreviewHubble() {
   return (
     <div style={{ position: "relative", minHeight: "100vh" }}>
-      <NebulaField />
+      <HubbleField />
       <div style={{ position: "relative", zIndex: 1, maxWidth: 1000, margin: "0 auto", padding: "48px 32px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 60 }}>
           <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF" }}>
@@ -25,17 +25,17 @@ export default function PreviewNebula() {
 
         <div style={{ textAlign: "center", marginBottom: 50 }}>
           <div className="mono" style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "1px", marginBottom: 20 }}>
-            LOOK PREVIEW &mdash; NEBULA
+            LOOK PREVIEW &mdash; HUBBLE
           </div>
           <div style={{ maxWidth: 340, margin: "0 auto" }}>
-            <NebulaLogo />
+            <HubbleLogo />
           </div>
           <div className="mono" style={{ fontSize: 13, color: "#8B95F6", letterSpacing: "2px", marginBottom: 16, marginTop: 24 }}>
             a signal, received
           </div>
           <p style={{ color: "#B7BADF", maxWidth: 520, margin: "0 auto" }}>
-            Soft, slow, and breathing — like something enormous is still
-            gathering itself just out of frame.
+            The kind of image that made people fall in love with space in
+            the first place — color where there shouldn't be any, this far out.
           </p>
         </div>
 

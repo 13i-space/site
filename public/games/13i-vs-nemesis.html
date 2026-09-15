@@ -237,8 +237,69 @@
       key:'laser', label:'DIRECTED LASER', unlockAt:25,
       ammoMax:null, cooldown:4,
     },
-    emp: {key:'emp', label:'EMP BURST', unlockAt:70, locked:true},
-    nuke:{key:'nuke', label:'ORBITAL WARHEAD', unlockAt:90, locked:true},
+    emp: {key:'emp', label:'EMP BURST', unlockAt:70, cooldown:22},
+    nuke:{key:'nuke', label:'ORBITAL WARHEAD', unlockAt:90, oneShot:true},
+  };
+
+  // ---------- SOUND (synthesized in-browser, no files/services) ----------
+  let audioCtx = null;
+  function getAudioCtx(){
+    try {
+      if (!audioCtx) {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (!Ctx) return null;
+        audioCtx = new Ctx();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    } catch(e){ return null; }
+  }
+  function sBlip({freq=440, duration=0.08, type='square', volume=0.15, glideTo=null, delay=0}){
+    const c = getAudioCtx(); if (!c) return;
+    const t = c.currentTime + delay;
+    const osc = c.createOscillator(); const gain = c.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, t);
+    if (glideTo !== null) osc.frequency.exponentialRampToValueAtTime(Math.max(1,glideTo), t+duration);
+    gain.gain.setValueAtTime(0.0001, t);
+    gain.gain.exponentialRampToValueAtTime(volume, t+0.008);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+duration);
+    osc.connect(gain).connect(c.destination);
+    osc.start(t); osc.stop(t+duration+0.02);
+  }
+  function sNoise({duration=0.3, volume=0.22, freqStart=900, delay=0}){
+    const c = getAudioCtx(); if (!c) return;
+    const t = c.currentTime + delay;
+    const bufferSize = Math.floor(c.sampleRate*duration);
+    const buffer = c.createBuffer(1, bufferSize, c.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i=0;i<bufferSize;i++) data[i] = (Math.random()*2-1) * (1 - i/bufferSize);
+    const src = c.createBufferSource(); src.buffer = buffer;
+    const filter = c.createBiquadFilter(); filter.type='lowpass';
+    filter.frequency.setValueAtTime(freqStart, t);
+    filter.frequency.exponentialRampToValueAtTime(180, t+duration);
+    const gain = c.createGain();
+    gain.gain.setValueAtTime(volume, t);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t+duration);
+    src.connect(filter).connect(gain).connect(c.destination);
+    src.start(t);
+  }
+  const sfx = {
+    fireKinetic(){ sBlip({freq:620, glideTo:280, duration:0.09, type:'square', volume:0.12}); },
+    fireLaser(){ sBlip({freq:900, glideTo:1400, duration:0.18, type:'sawtooth', volume:0.1}); },
+    hit(){ sBlip({freq:320, glideTo:110, duration:0.1, type:'triangle', volume:0.16}); },
+    miss(){ sBlip({freq:200, duration:0.06, type:'square', volume:0.06}); },
+    deflect(){ sBlip({freq:700, duration:0.12, type:'sine', volume:0.1}); sBlip({freq:1000, duration:0.1, type:'sine', volume:0.08, delay:0.05}); },
+    empCharge(){ sBlip({freq:120, glideTo:900, duration:0.5, type:'sawtooth', volume:0.14}); },
+    empPulse(){ sNoise({duration:0.4, volume:0.25, freqStart:2200}); },
+    nukeArm(){ sBlip({freq:90, duration:1.1, type:'sawtooth', volume:0.12}); },
+    nukeLaunch(){ sBlip({freq:160, glideTo:60, duration:0.6, type:'sawtooth', volume:0.18}); },
+    nukeImpact(){ sNoise({duration:0.7, volume:0.32, freqStart:1400}); sBlip({freq:70,duration:0.5,type:'sine',volume:0.22,delay:0.05}); },
+    zoneEnter(){ sBlip({freq:440, duration:0.1, type:'square', volume:0.1}); sBlip({freq:660, duration:0.14, type:'square', volume:0.1, delay:0.09}); },
+    gameOver(kind){
+      if (kind === 'ARRIVED') sNoise({duration:0.9, volume:0.3, freqStart:1600});
+      else sBlip({freq:500, glideTo:900, duration:0.5, type:'square', volume:0.16});
+    },
   };
 
   let state;
@@ -254,7 +315,10 @@
       score:0,
       ammo:{kinetic:WEAPONS.kinetic.ammoMax},
       rechargeAt:{kinetic:0},
-      cooldownUntil:{laser:0},
+      cooldownUntil:{laser:0, emp:0},
+      empUntil:0,
+      nukeUsed:false,
+      lastZone:0,
       encounter:null,
       lastTime:null,
       over:null,
@@ -315,6 +379,13 @@
         const ready = state.t >= (state.cooldownUntil.laser||0);
         sub = ready ? 'READY' : 'RECHARGING';
         disabled = state.mode !== 'map' || !ready;
+      } else if (w.key === 'emp'){
+        const ready = state.t >= (state.cooldownUntil.emp||0);
+        sub = ready ? 'READY' : 'RECHARGING';
+        disabled = state.mode !== 'map' || !ready;
+      } else if (w.key === 'nuke'){
+        sub = state.nukeUsed ? 'EXPENDED' : 'ONE SHOT ONLY';
+        disabled = state.mode !== 'map' || state.nukeUsed;
       }
       // only touch the DOM when something actually changed, to keep the
       // button nodes stable across mousedown/mouseup (fixes dead clicks on Safari)
@@ -334,6 +405,93 @@
     renderWeaponButtons();
   }
 
+  // ---------- SHARED VISUALS ----------
+  // Same ring-eye-fin "13i" design used in NEMESIS Command / Asteroid Belt
+  function draw13iShip(x, y, angle, damaged, critical){
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    const r = 10;
+    const color = critical ? '#ff8a80' : (damaged ? '#c9a8ff' : '#9b6bff');
+    // trailing fin
+    ctx.beginPath();
+    ctx.moveTo(-r*0.55, -r*0.4);
+    ctx.lineTo(-r*0.55, r*0.4);
+    ctx.lineTo(-r*1.7, 0);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    // ring body
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 1.8;
+    ctx.shadowColor = color; ctx.shadowBlur = 12;
+    ctx.beginPath();
+    ctx.arc(0, 0, r, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.shadowBlur = 0;
+    // eye
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(0, 0, r*0.4, 0, Math.PI*2);
+    ctx.fill();
+    if (damaged){
+      for(let i=0;i<3;i++){
+        const jx = (Math.random()-0.5)*10, jy = 6+Math.random()*10;
+        ctx.fillStyle = critical ? 'rgba(255,65,54,0.6)' : 'rgba(255,176,32,0.5)';
+        ctx.beginPath(); ctx.arc(jx, jy, 1.6, 0, Math.PI*2); ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  // A small, believable, slowly-rotating Earth - green continents drifting
+  // across a blue ocean, built entirely from shapes (no image asset needed)
+  const CONTINENTS = [
+    {a:0.2, w:1.1, h:0.7},
+    {a:2.1, w:0.8, h:0.9},
+    {a:3.6, w:1.3, h:0.6},
+    {a:5.0, w:0.7, h:0.5},
+  ];
+  function drawEarth(cx, cy, r){
+    ctx.save();
+    // ocean base
+    const grad = ctx.createRadialGradient(cx-r*0.35, cy-r*0.35, r*0.1, cx, cy, r);
+    grad.addColorStop(0, '#5fd4ff');
+    grad.addColorStop(0.55, '#1f7fd6');
+    grad.addColorStop(1, '#0b3f7a');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.fillStyle = grad;
+    ctx.shadowColor = '#2fe6c4'; ctx.shadowBlur = 14;
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // continents, clipped to the circle, slowly rotating around it
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.clip();
+    const spin = state.t * 0.15;
+    CONTINENTS.forEach(c=>{
+      const a = c.a + spin;
+      const px = cx + Math.cos(a) * r * 0.55;
+      const py = cy + Math.sin(a) * r * 0.4;
+      ctx.beginPath();
+      ctx.ellipse(px, py, r*c.w*0.42, r*c.h*0.42, a, 0, Math.PI*2);
+      ctx.fillStyle = '#3fae5c';
+      ctx.fill();
+    });
+    ctx.restore();
+
+    // atmosphere rim
+    ctx.beginPath();
+    ctx.arc(cx, cy, r+1.5, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(95,212,255,0.5)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.restore();
+  }
+
   // ---------- MAP VIEW ----------
   function drawMap(){
     ctx.clearRect(0,0,W,H);
@@ -343,9 +501,12 @@
     drawStars();
 
     const cx = W*0.5, cy = H*0.52;
-    // orbit rings for each zone boundary
+    const EARTH_R = 18;
+    // orbit rings for each zone boundary - same radius formula as the ship,
+    // so the innermost ring sits right at Earth's edge rather than a fixed
+    // gap short of it
     ZONES.forEach((z,i)=>{
-      const r = 40 + (100-z.min) * 3.6;
+      const r = EARTH_R + (100-z.min) * 3.82;
       ctx.beginPath();
       ctx.ellipse(cx, cy, r, r*0.42, 0, 0, Math.PI*2);
       ctx.strokeStyle = 'rgba(18,48,73,0.9)';
@@ -353,29 +514,23 @@
       ctx.stroke();
     });
 
-    // earth
-    ctx.beginPath();
-    ctx.arc(cx, cy, 16, 0, Math.PI*2);
-    ctx.fillStyle = '#2fe6c4';
-    ctx.shadowColor = '#2fe6c4'; ctx.shadowBlur = 14;
-    ctx.fill();
-    ctx.shadowBlur = 0;
+    drawEarth(cx, cy, EARTH_R);
     ctx.fillStyle = '#cfe3ee';
     ctx.font = "10px 'JetBrains Mono'";
     ctx.textAlign = 'center';
-    ctx.fillText('EARTH', cx, cy+34);
+    ctx.fillText('EARTH', cx, cy+EARTH_R+18);
 
-    // 13i position: progress 0 -> far ring, 100 -> earth
-    const r = 40 + (100-state.progress) * 3.6;
+    // 13i position: progress 0 -> far ring, 100 -> earth's surface
+    const r = EARTH_R + (100-state.progress) * 3.82;
     const angle = -Math.PI/2 + (state.progress/100)*1.4 + Math.sin(state.t*0.4)*0.02;
     const sx = cx + Math.cos(angle)*r;
     const sy = cy + Math.sin(angle)*r*0.42;
 
     // trail
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(-Math.PI/2)*(40+100*3.6), cy + Math.sin(-Math.PI/2)*(40+100*3.6)*0.42);
+    ctx.moveTo(cx + Math.cos(-Math.PI/2)*(EARTH_R+100*3.82), cy + Math.sin(-Math.PI/2)*(EARTH_R+100*3.82)*0.42);
     for(let p=0; p<=state.progress; p+=2){
-      const rr = 40 + (100-p)*3.6;
+      const rr = EARTH_R + (100-p)*3.82;
       const aa = -Math.PI/2 + (p/100)*1.4;
       ctx.lineTo(cx+Math.cos(aa)*rr, cy+Math.sin(aa)*rr*0.42);
     }
@@ -386,25 +541,7 @@
     // 13i ship — condition reflected visually
     const damaged = state.hull < 60;
     const critical = state.hull < 30;
-    ctx.save();
-    ctx.translate(sx, sy);
-    ctx.rotate(angle + Math.PI/2);
-    ctx.beginPath();
-    ctx.moveTo(0,-10); ctx.lineTo(7,8); ctx.lineTo(0,4); ctx.lineTo(-7,8);
-    ctx.closePath();
-    ctx.fillStyle = critical ? '#ff8a80' : (damaged ? '#c9a8ff' : '#9b6bff');
-    ctx.shadowColor = '#9b6bff'; ctx.shadowBlur = 12;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    if (damaged){
-      // venting particles
-      for(let i=0;i<3;i++){
-        const jx = (Math.random()-0.5)*10, jy = 6+Math.random()*10;
-        ctx.fillStyle = critical ? 'rgba(255,65,54,0.6)' : 'rgba(255,176,32,0.5)';
-        ctx.beginPath(); ctx.arc(jx, jy, 1.6, 0, Math.PI*2); ctx.fill();
-      }
-    }
-    ctx.restore();
+    draw13iShip(sx, sy, angle + Math.PI/2, damaged, critical);
 
     // readouts panel
     ctx.textAlign = 'left';
@@ -453,10 +590,15 @@
     };
     if (type === 'kinetic') state.ammo.kinetic = Math.max(0, state.ammo.kinetic);
     hintEl.style.display = 'block';
-    hintEl.textContent = type === 'kinetic'
-      ? 'CLICK/TAP ANYWHERE ON THE VIEW TO LAUNCH'
-      : 'HOLD ANYWHERE ON THE VIEW, RELEASE TO FIRE';
-    showToast(type === 'kinetic' ? 'CLICK THE VIEW TO FIRE' : 'HOLD THE VIEW TO CHARGE', 'deflect');
+    if (type === 'kinetic') hintEl.textContent = 'CLICK/TAP ANYWHERE ON THE VIEW TO LAUNCH';
+    else if (type === 'laser') hintEl.textContent = 'HOLD ANYWHERE ON THE VIEW, RELEASE TO FIRE';
+    else if (type === 'emp') hintEl.textContent = 'CLICK/TAP ANYWHERE TO DISCHARGE THE PULSE';
+    else if (type === 'nuke') hintEl.textContent = 'HOLD TO ARM THE WARHEAD, RELEASE TO LAUNCH';
+    let toastMsg = 'CLICK THE VIEW TO FIRE';
+    if (type === 'laser') toastMsg = 'HOLD THE VIEW TO CHARGE';
+    if (type === 'emp') toastMsg = 'DISCHARGE THE EMP PULSE';
+    if (type === 'nuke') toastMsg = 'ARM THE ORBITAL WARHEAD';
+    showToast(toastMsg, 'deflect');
   }
 
   function targetPos(et){
@@ -468,6 +610,7 @@
   }
 
   function deflectionActive(et){
+    if (state.empUntil > state.t) return false;
     return (et % 2.5) < 0.6;
   }
 
@@ -483,7 +626,7 @@
     e.target.jukeOffset.x += (e.target.jukeTarget.x - e.target.jukeOffset.x) * Math.min(1, dt*4);
     e.target.jukeOffset.y += (e.target.jukeTarget.y - e.target.jukeOffset.y) * Math.min(1, dt*4);
 
-    if (e.type === 'kinetic'){
+    if (e.type === 'kinetic' || e.type === 'emp' || e.type === 'nuke'){
       e.projectiles.forEach(p=>{
         p.t += dt / p.flight;
       });
@@ -492,20 +635,39 @@
           p.resolved = true;
           const tp = targetPos(et);
           const dist = Math.hypot(p.tx - tp.x, p.ty - tp.y);
-          if (dist <= 30){
-            if (deflectionActive(et)){
-              e.deflects++;
-              showToast('DEFLECTED — GRAVITY WELL', 'deflect');
+          if (e.type === 'kinetic'){
+            if (dist <= 30){
+              if (deflectionActive(et)){
+                e.deflects++;
+                sfx.deflect();
+                showToast('DEFLECTED — GRAVITY WELL', 'deflect');
+              } else {
+                e.hits++;
+                sfx.hit();
+                const dmg = 6 + Math.random()*5;
+                state.hull = Math.max(0, state.hull - dmg);
+                state.score += Math.round(dmg*10);
+                showToast('HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
+              }
             } else {
-              e.hits++;
-              const dmg = 6 + Math.random()*5;
-              state.hull = Math.max(0, state.hull - dmg);
-              state.score += Math.round(dmg*10);
-              showToast('HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
+              e.misses++;
+              sfx.miss();
+              showToast('MISS', 'miss');
             }
-          } else {
-            e.misses++;
-            showToast('MISS', 'miss');
+          } else if (e.type === 'emp'){
+            // area pulse: always connects within its wide radius, deflection
+            // physics can't dodge an EMP the way it dodges a precise shot
+            e.hits++;
+            sfx.empPulse();
+            state.empUntil = state.t + 6;
+            showToast('EMP DISCHARGED — 13i SLOWED & EXPOSED', 'deflect');
+          } else if (e.type === 'nuke'){
+            e.hits++;
+            sfx.nukeImpact();
+            const dmg = 45 + Math.random()*15;
+            state.hull = Math.max(0, state.hull - dmg);
+            state.score += Math.round(dmg*10);
+            showToast('DIRECT HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
           }
         }
         return p.t < 1.15;
@@ -523,6 +685,8 @@
 
     if (et >= e.duration){
       endEncounter();
+    } else if ((e.type === 'emp' || e.type === 'nuke') && e.firedAt !== undefined && state.t - e.firedAt > 1.8 && e.projectiles.length === 0){
+      endEncounter();
     }
   }
 
@@ -531,9 +695,40 @@
     if (state.ammo.kinetic <= 0) return;
     state.ammo.kinetic--;
     state.rechargeAt.kinetic = state.t + WEAPONS.kinetic.rechargeTime;
+    sfx.fireKinetic();
     e.projectiles.push({
       sx: W/2, sy: H-24, tx:x, ty:y, t:0, flight:0.9, resolved:false
     });
+  }
+
+  function fireEMP(x,y){
+    const e = state.encounter;
+    state.cooldownUntil.emp = state.t + WEAPONS.emp.cooldown;
+    sfx.empCharge();
+    e.projectiles.push({
+      sx: W/2, sy: H-24, tx:x, ty:y, t:0, flight:0.5, resolved:false
+    });
+    e.firedAt = state.t;
+  }
+
+  function armNuke(){
+    const e = state.encounter;
+    e.chargeStart = state.t;
+    sfx.nukeArm();
+  }
+
+  function launchNuke(x,y){
+    const e = state.encounter;
+    if (!e.chargeStart) return;
+    const charge = state.t - e.chargeStart;
+    e.chargeStart = null;
+    if (charge < 0.9){ showToast('RELEASED TOO SOON — NOT ARMED', 'miss'); return; }
+    state.nukeUsed = true;
+    sfx.nukeLaunch();
+    e.projectiles.push({
+      sx: W/2, sy: H-24, tx:x, ty:y, t:0, flight:1.5, resolved:false
+    });
+    e.firedAt = state.t;
   }
 
   function tryFireLaser(){
@@ -547,14 +742,17 @@
     const dist = Math.hypot(e.reticle.x - tp.x, e.reticle.y - tp.y);
     e.beam = {x:e.reticle.x, y:e.reticle.y, life:0.25};
     state.cooldownUntil.laser = state.t + WEAPONS.laser.cooldown;
+    sfx.fireLaser();
     if (dist <= 22){
       e.hits++;
+      sfx.hit();
       const dmg = 8 + Math.random()*6;
       state.hull = Math.max(0, state.hull - dmg);
       state.score += Math.round(dmg*12);
       showToast('DIRECT HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
     } else {
       e.misses++;
+      sfx.miss();
       showToast('MISS — OFF TARGET', 'miss');
     }
   }
@@ -594,29 +792,30 @@
     }
 
     // target (13i)
-    ctx.save();
-    ctx.translate(tp.x, tp.y);
-    ctx.beginPath();
-    ctx.moveTo(0,-12); ctx.lineTo(9,9); ctx.lineTo(0,4); ctx.lineTo(-9,9);
-    ctx.closePath();
-    ctx.fillStyle = '#9b6bff';
-    ctx.shadowColor = '#9b6bff'; ctx.shadowBlur = 14;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-    ctx.restore();
+    draw13iShip(tp.x, tp.y, 0, state.hull < 60, state.hull < 30);
 
-    if (e.type === 'kinetic'){
+    if (e.type === 'kinetic' || e.type === 'emp' || e.type === 'nuke'){
       e.projectiles.forEach(p=>{
         const t = Math.min(p.t,1);
         const x = p.sx + (p.tx-p.sx)*t;
         const y = p.sy + (p.ty-p.sy)*t - Math.sin(t*Math.PI)*90;
+        const size = e.type === 'nuke' ? 7 : (e.type === 'emp' ? 6 : 4);
+        const color = e.type === 'nuke' ? '#ff4136' : (e.type === 'emp' ? '#9b6bff' : '#ffb020');
         ctx.beginPath();
-        ctx.arc(x,y,4,0,Math.PI*2);
-        ctx.fillStyle = '#ffb020';
-        ctx.shadowColor='#ffb020'; ctx.shadowBlur=8;
+        ctx.arc(x,y,size,0,Math.PI*2);
+        ctx.fillStyle = color;
+        ctx.shadowColor=color; ctx.shadowBlur=e.type==='nuke'?16:8;
         ctx.fill();
         ctx.shadowBlur = 0;
       });
+      if (e.type === 'nuke' && e.chargeStart){
+        const chargeAmt = Math.min(1, (state.t-e.chargeStart)/0.9);
+        ctx.beginPath();
+        ctx.arc(W/2, H-24, 20 + chargeAmt*10, 0, Math.PI*2);
+        ctx.strokeStyle = '#ff4136';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+      }
       // aim reticle preview follows pointer via CSS cursor already; draw crosshair at last known pointer
       if (e.pointer){
         ctx.strokeStyle = 'rgba(255,176,32,0.5)';
@@ -659,7 +858,10 @@
     ctx.font = "12px 'JetBrains Mono'";
     ctx.fillStyle = 'rgba(255,176,32,0.85)';
     ctx.fillText(
-      e.type === 'kinetic' ? 'CLICK / TAP ANYWHERE HERE TO FIRE' : 'HOLD ANYWHERE HERE, RELEASE TO FIRE',
+      e.type === 'kinetic' ? 'CLICK / TAP ANYWHERE HERE TO FIRE' :
+      e.type === 'emp' ? 'CLICK / TAP ANYWHERE HERE TO DISCHARGE' :
+      e.type === 'nuke' ? 'HOLD ANYWHERE HERE TO ARM, RELEASE TO LAUNCH' :
+      'HOLD ANYWHERE HERE, RELEASE TO FIRE',
       W/2, H-14
     );
   }
@@ -686,11 +888,14 @@
     const pos = canvasPos(evt);
     if (e.type === 'laser') e.chargeStart = state.t;
     if (e.type === 'kinetic') fireKinetic(pos.x, pos.y);
+    if (e.type === 'emp') fireEMP(pos.x, pos.y);
+    if (e.type === 'nuke') armNuke();
   });
-  canvas.addEventListener('mouseup', ()=>{
+  canvas.addEventListener('mouseup', (evt)=>{
     if (state.mode !== 'encounter') return;
     const e = state.encounter;
     if (e.type === 'laser') tryFireLaser();
+    if (e.type === 'nuke') launchNuke(canvasPos(evt).x, canvasPos(evt).y);
   });
   canvas.addEventListener('touchstart', (evt)=>{
     if (state.mode !== 'encounter') return;
@@ -700,12 +905,15 @@
     e.pointer = pos;
     if (e.type === 'laser') e.chargeStart = state.t;
     if (e.type === 'kinetic') fireKinetic(pos.x, pos.y);
+    if (e.type === 'emp') fireEMP(pos.x, pos.y);
+    if (e.type === 'nuke') armNuke();
   }, {passive:false});
   canvas.addEventListener('touchend', (evt)=>{
     if (state.mode !== 'encounter') return;
     evt.preventDefault();
     const e = state.encounter;
     if (e.type === 'laser') tryFireLaser();
+    if (e.type === 'nuke') launchNuke(e.pointer ? e.pointer.x : W/2, e.pointer ? e.pointer.y : H*0.35);
   }, {passive:false});
 
   // ---------- MAIN LOOP ----------
@@ -726,8 +934,15 @@
 
       if (state.mode === 'map'){
         const slow = 1 - Math.min(state.deviation,60)/120;
-        state.progress += state.speed * slow * dt * (100/100);
+        const empSlow = state.empUntil > state.t ? 0.4 : 1;
+        state.progress += state.speed * slow * empSlow * dt * (100/100);
         state.progress = Math.min(100, state.progress);
+        const zi = currentZoneIndex(state.progress);
+        if (zi > state.lastZone){
+          state.lastZone = zi;
+          sfx.zoneEnter();
+          showToast('ENTERING ' + ZONES[zi].name, 'deflect');
+        }
         drawMap();
       } else if (state.mode === 'encounter'){
         updateEncounter(dt);
@@ -755,6 +970,7 @@
 
   function endGame(kind, title, text){
     state.mode = 'over';
+    sfx.gameOver(kind);
     overlayTitle.textContent = title;
     overlayText.textContent = text;
     overlayStats.innerHTML = 'THREAT SCORE: ' + state.score + '&nbsp;&nbsp;&nbsp;HULL REMAINING: ' + Math.round(Math.max(0,state.hull)) + '%';

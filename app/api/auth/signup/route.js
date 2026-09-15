@@ -61,7 +61,10 @@ export async function POST(request) {
 
   if (!createRes.ok) {
     const errBody = await createRes.json().catch(() => ({}));
-    const msg = errBody.msg || errBody.error_description || errBody.error || "Could not create account.";
+    let msg = errBody.msg || errBody.error_description || errBody.error || "Could not create account.";
+    if (/already been registered|already exists/i.test(msg)) {
+      msg = "That email already has an account (maybe from signing in with a link before). Use \u201cforgot password\u201d on the login page to set a password for it instead.";
+    }
     return Response.json({ error: msg }, { status: 400 });
   }
 

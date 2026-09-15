@@ -5,23 +5,23 @@ import SignalLogo from "./SignalLogo";
 import OrbitalLogo from "./OrbitalLogo";
 import RadarLogo from "./RadarLogo";
 import FibonacciLogo from "./FibonacciLogo";
-import NebulaLogo from "./NebulaLogo";
+import HubbleLogo from "./HubbleLogo";
 import StarField from "./StarField";
 import ConstellationField from "./ConstellationField";
 import RadarField from "./RadarField";
 import FibonacciField from "./FibonacciField";
-import NebulaField from "./NebulaField";
+import HubbleField from "./HubbleField";
 import { ACTIVE_THEME } from "../lib/theme";
 
 export default function ThemedHero({ src, background = true, logoWrapStyle }) {
   const logoRef = useRef(null);
 
-  if (ACTIVE_THEME === "nebula") {
+  if (ACTIVE_THEME === "hubble") {
     return (
       <>
-        {background && <NebulaField />}
+        {background && <HubbleField />}
         <div style={logoWrapStyle}>
-          <NebulaLogo src={src} />
+          <HubbleLogo src={src} />
         </div>
       </>
     );
