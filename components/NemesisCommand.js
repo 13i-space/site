@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useCallback } from "react";
+import { sfx } from "../lib/sfx";
 
 const LEVELS = [
   { target: 50, speedMin: 0.6, speedMax: 1.0, spawnMs: 1800 },
@@ -82,6 +83,7 @@ export default function NemesisCommand() {
         vx: Math.cos(s.aimAngle) * 7,
         vy: Math.sin(s.aimAngle) * 7,
       });
+      sfx.fire();
     };
 
     const updateAim = (x, y) => {
@@ -214,6 +216,7 @@ export default function NemesisCommand() {
             p.hit = true;
             s.score += 10;
             s.explosions.push({ x: th.x, y: th.y, age: 0 });
+            sfx.explosion("small");
           }
         }
       }
@@ -221,6 +224,7 @@ export default function NemesisCommand() {
         if (th.hit) return false;
         if (th.y > canvas.height - 40) {
           s.lives -= 1;
+          sfx.lifeLost();
           return false;
         }
         return true;
@@ -237,6 +241,7 @@ export default function NemesisCommand() {
         setGameOver(true);
         setStarted(false);
         running = false;
+        sfx.gameOver();
         return;
       }
 

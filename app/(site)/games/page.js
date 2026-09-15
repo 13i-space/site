@@ -7,9 +7,9 @@ const games = [
     blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic.",
   },
   {
-    href: "/games/meteoroids",
-    title: "Meteoroids",
-    blurb: "An Asteroids-style original — outfly a mining ship before it scatters twelve tungsten rods.",
+    href: "/games/asteroid-belt",
+    title: "Asteroid Belt",
+    blurb: "An Asteroids-style original — clear the belt, and watch for the mining ship's twelve tungsten rods.",
   },
   {
     href: "/games/13i-vs-nemesis",

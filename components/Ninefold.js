@@ -62,7 +62,7 @@ function GlyphIcon({ index, glow }) {
 // The card's visual width is purely cosmetic now (it no longer factors
 // into the drum's geometry) so it's set responsively below, up close to
 // the full width of the viewing window.
-const FACE_W_CSS = "min(300px, 72vw)";
+const FACE_W_CSS = "min(240px, 58vw)";
 const FACE_H = 150;
 // For a drum spinning around a horizontal (up/down) axis, the relevant
 // "chord" dimension for the radius is the face's HEIGHT, not its width -
@@ -388,8 +388,8 @@ const styles = {
     pointerEvents: "none",
     zIndex: 2,
   },
-  scene: { position: "relative", zIndex: 1, perspective: 900 },
-  dieGroupOuter: { transformStyle: "preserve-3d" },
+  scene: { position: "relative", zIndex: 1, perspective: 900, width: "100%", display: "flex", justifyContent: "center", alignItems: "center" },
+  dieGroupOuter: { transformStyle: "preserve-3d", margin: "0 auto" },
   dieGroup: { position: "relative", width: FACE_W_CSS, height: FACE_H, transformStyle: "preserve-3d" },
   face: {
     position: "absolute",
