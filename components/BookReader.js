@@ -1,12 +1,46 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function BookReader({ meta, pages, inProgress }) {
   const [pageIndex, setPageIndex] = useState(0);
+  const [speaking, setSpeaking] = useState(false);
+  const [voiceSupported, setVoiceSupported] = useState(false);
   const totalPages = pages.length + (inProgress ? 1 : 0);
   const onLastWrittenPage = pageIndex === pages.length - 1;
   const onInProgressPage = inProgress && pageIndex === pages.length;
+
+  useEffect(() => {
+    setVoiceSupported(typeof window !== "undefined" && "speechSynthesis" in window);
+    return () => {
+      if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+    };
+  }, []);
+
+  // stop reading whenever the page changes
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.speechSynthesis) window.speechSynthesis.cancel();
+    setSpeaking(false);
+  }, [pageIndex]);
+
+  const toggleRead = (e) => {
+    e.stopPropagation();
+    if (!voiceSupported || onInProgressPage) return;
+    const synth = window.speechSynthesis;
+    if (speaking) {
+      synth.cancel();
+      setSpeaking(false);
+      return;
+    }
+    const text = pages[pageIndex].join(" ");
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 0.95;
+    utter.onend = () => setSpeaking(false);
+    utter.onerror = () => setSpeaking(false);
+    synth.cancel();
+    synth.speak(utter);
+    setSpeaking(true);
+  };
 
   const goNext = () => {
     if (pageIndex < totalPages - 1) setPageIndex((p) => p + 1);
@@ -31,6 +65,25 @@ export default function BookReader({ meta, pages, inProgress }) {
         <div className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
           {meta.subtitle}
         </div>
+        {voiceSupported && !onInProgressPage && (
+          <button
+            onClick={toggleRead}
+            className="mono"
+            style={{
+              marginTop: 10,
+              background: "none",
+              border: "1px solid #262A55",
+              borderRadius: 4,
+              color: speaking ? "#E8CFC0" : "#B9C0FF",
+              fontSize: 11,
+              letterSpacing: "0.5px",
+              padding: "5px 12px",
+              cursor: "pointer",
+            }}
+          >
+            {speaking ? "\u23F8 Stop reading" : "\u25B6 Read this page aloud"}
+          </button>
+        )}
       </div>
 
       <div

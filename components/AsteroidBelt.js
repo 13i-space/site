@@ -23,7 +23,7 @@ const ASTEROID_TIERS = {
 };
 
 function levelForScore(score) {
-  return Math.min(Math.floor(score / 400), 10);
+  return Math.floor(score / 650);
 }
 
 function wrap(v, max) {
@@ -49,6 +49,7 @@ export default function AsteroidBelt() {
   const [level, setLevel] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const sizeCanvas = useCallback((canvas) => {
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -89,7 +90,7 @@ export default function AsteroidBelt() {
       else if (edge === 2) { x = Math.random() * w; y = 0; }
       else { x = Math.random() * w; y = h; }
     }
-    const speedMult = 1 + lvl * 0.12;
+    const speedMult = 1 + lvl * 0.07;
     const angle = biasAngle !== undefined ? biasAngle + (Math.random() - 0.5) * 1.4 : Math.random() * Math.PI * 2;
     const speed = (0.4 + Math.random() * 0.6) * speedMult;
     return {
@@ -105,11 +106,9 @@ export default function AsteroidBelt() {
   }, []);
 
   const spawnWave = useCallback((canvas, lvl, state) => {
-    const count = 3 + lvl;
-    for (let i = 0; i < count; i++) {
-      state.asteroids.push(spawnAsteroid(canvas, "large", lvl));
-    }
-  }, [spawnAsteroid]);
+    const count = Math.min(3 + Math.ceil(lvl * 0.8), 16);
+    state.pendingSpawns = { remaining: count, lvl, timer: 0 };
+  }, []);
 
   const initState = useCallback((canvas) => {
     const stars = Array.from({ length: 70 }, () => ({
@@ -130,6 +129,7 @@ export default function AsteroidBelt() {
       level: 0,
       fireCooldown: 0,
       miningSpawnCooldown: 200,
+      pendingSpawns: null,
     };
     spawnWave(canvas, 0, state);
     return state;
@@ -169,6 +169,7 @@ export default function AsteroidBelt() {
 
     const handleResize = () => {
       sizeCanvas(canvas);
+      setIsFullscreen(!!document.fullscreenElement);
       // regenerate stars for the new size so they cover the whole canvas
       const s = stateRef.current;
       if (s) {
@@ -274,7 +275,16 @@ export default function AsteroidBelt() {
         }
       });
       s.asteroids = s.asteroids.filter((a) => a.alive);
-      if (s.asteroids.length === 0) {
+
+      if (s.pendingSpawns) {
+        s.pendingSpawns.timer--;
+        if (s.pendingSpawns.timer <= 0 && s.pendingSpawns.remaining > 0) {
+          s.asteroids.push(spawnAsteroid(canvas, "large", s.pendingSpawns.lvl));
+          s.pendingSpawns.remaining--;
+          s.pendingSpawns.timer = 22;
+        }
+        if (s.pendingSpawns.remaining <= 0) s.pendingSpawns = null;
+      } else if (s.asteroids.length === 0) {
         spawnWave(canvas, lvl, s);
         sfx.levelUp();
       }
@@ -389,40 +399,36 @@ export default function AsteroidBelt() {
         ctx.fill();
       });
 
-      // ship - the "i" mark: a slim stem with an open eye-ring at the nose
+      // ship - same 13i design used in NEMESIS Command: a ringed eye with
+      // a trailing fin, rotated to face the direction of travel
       if (ship.invuln === 0 || Math.floor(ship.invuln / 5) % 2 === 0) {
         ctx.save();
         ctx.translate(ship.x, ship.y);
         ctx.rotate(ship.angle);
-        ctx.strokeStyle = "#B9C0FF";
-        ctx.lineWidth = 2;
-        ctx.lineCap = "round";
+        const r = SHIP_RADIUS;
+        // trailing fin
         ctx.beginPath();
-        ctx.moveTo(-SHIP_RADIUS * 0.5, 0);
-        ctx.lineTo(SHIP_RADIUS * 0.35, 0);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(SHIP_RADIUS * 0.35 + 5, 0, 5, 0, Math.PI * 2);
-        ctx.strokeStyle = "#E8CFC0";
-        ctx.lineWidth = 1.8;
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.arc(SHIP_RADIUS * 0.35 + 5, 0, 1.6, 0, Math.PI * 2);
-        ctx.fillStyle = "#E8CFC0";
+        ctx.moveTo(-r * 0.55, -r * 0.4);
+        ctx.lineTo(-r * 0.55, r * 0.4);
+        ctx.lineTo(-r * 1.8, 0);
+        ctx.closePath();
+        ctx.fillStyle = "#C97B6E";
         ctx.fill();
-        // small stabilizer fins for a readable "ship" silhouette
+        // ring body
+        ctx.strokeStyle = "#C97B6E";
+        ctx.lineWidth = 1.6;
         ctx.beginPath();
-        ctx.moveTo(-SHIP_RADIUS * 0.5, 0);
-        ctx.lineTo(-SHIP_RADIUS, SHIP_RADIUS * 0.55);
-        ctx.moveTo(-SHIP_RADIUS * 0.5, 0);
-        ctx.lineTo(-SHIP_RADIUS, -SHIP_RADIUS * 0.55);
-        ctx.strokeStyle = "#6E76B8";
-        ctx.lineWidth = 1.4;
+        ctx.arc(0, 0, r, 0, Math.PI * 2);
         ctx.stroke();
+        // eye
+        ctx.fillStyle = "#E8CFC0";
+        ctx.beginPath();
+        ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
+        ctx.fill();
         if (keys.thrust) {
           ctx.beginPath();
-          ctx.moveTo(-SHIP_RADIUS * 0.5, 0);
-          ctx.lineTo(-SHIP_RADIUS * 1.7, 0);
+          ctx.moveTo(-r * 1.8, 0);
+          ctx.lineTo(-r * 2.6, 0);
           ctx.strokeStyle = "#E8CFC0";
           ctx.lineWidth = 1.6;
           ctx.stroke();
@@ -527,7 +533,18 @@ export default function AsteroidBelt() {
   };
 
   return (
-    <div ref={containerRef} style={{ background: "#060712", padding: 12, borderRadius: 4, touchAction: "none" }}>
+    <div
+      ref={containerRef}
+      style={{
+        background: "#060712",
+        padding: 12,
+        borderRadius: 4,
+        touchAction: "none",
+        ...(isFullscreen
+          ? { height: "100vh", display: "flex", flexDirection: "column", justifyContent: "center" }
+          : {}),
+      }}
+    >
       <div style={styles.hud}>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           {Array.from({ length: START_LIVES }).map((_, i) => (
@@ -544,7 +561,7 @@ export default function AsteroidBelt() {
       <div style={{ position: "relative" }}>
         <canvas
           ref={canvasRef}
-          style={{ width: "100%", height: 420, display: "block", background: "#060712", borderRadius: 4, touchAction: "none" }}
+          style={{ width: "100%", height: isFullscreen ? "100%" : 420, flex: isFullscreen ? 1 : undefined, display: "block", background: "#060712", borderRadius: 4, touchAction: "none" }}
         />
 
         {!started && (
@@ -591,9 +608,11 @@ export default function AsteroidBelt() {
 function LifeIcon({ lost }) {
   return (
     <svg width={26} height={26} viewBox="0 0 26 26" style={{ opacity: lost ? 0.22 : 1 }}>
-      <line x1="13" y1="10" x2="13" y2="23" stroke="#B9C0FF" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="13" cy="4.5" r="4" fill="none" stroke="#E8CFC0" strokeWidth="2" />
-      <circle cx="13" cy="4.5" r="1.4" fill="#E8CFC0" />
+      <g transform="translate(13,13) rotate(-90)">
+        <path d="M -6 -4.4 L -6 4.4 L -18 0 Z" fill="#C97B6E" />
+        <circle cx="0" cy="0" r="10" fill="none" stroke="#C97B6E" strokeWidth="1.8" />
+        <circle cx="0" cy="0" r="4.2" fill="#E8CFC0" />
+      </g>
     </svg>
   );
 }
@@ -601,11 +620,11 @@ function LifeIcon({ lost }) {
 function CtrlBtn({ label, onDown, onUp, wide, accent }) {
   return (
     <button
-      onMouseDown={onDown}
-      onMouseUp={onUp}
-      onMouseLeave={onUp}
-      onTouchStart={onDown}
-      onTouchEnd={onUp}
+      onPointerDown={onDown}
+      onPointerUp={onUp}
+      onPointerCancel={onUp}
+      onPointerLeave={onUp}
+      onContextMenu={(e) => e.preventDefault()}
       style={{
         width: wide ? 96 : 52,
         height: 52,

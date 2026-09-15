@@ -20,12 +20,12 @@ const sections = [
   {
     href: "/games",
     title: "Games",
-    blurb: "NEMESIS Command, and 13i vs NEMESIS.",
+    blurb: "NEMESIS Command, Asteroid Belt, and 13i vs NEMESIS.",
   },
   {
     href: "/artifacts",
     title: "Artifacts",
-    blurb: "The Ninefold and the Cryptex — objects from inside the story.",
+    blurb: "The Ninefold and the Cryptex — puzzles from beyond.",
   },
   {
     href: "/wiki",
@@ -60,7 +60,7 @@ export default function LaunchHome() {
 
       <div style={styles.grid}>
         {sections.map((s) => (
-          <Link key={s.href} href={s.href} style={styles.card}>
+          <Link key={s.href} href={s.href} className="launch-card" style={styles.card}>
             <div style={styles.cardCorner} />
             <div className="wordmark" style={styles.cardTitle}>{s.title}</div>
             <p style={styles.cardBlurb}>{s.blurb}</p>

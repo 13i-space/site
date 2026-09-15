@@ -48,5 +48,28 @@ export async function POST(request) {
     return Response.json({ error: `Could not save submission: ${errText}` }, { status: 502 });
   }
 
+  // Best-effort email notification on top of the saved record - if
+  // Resend isn't configured or the send fails, the submission is still
+  // safely saved above, so this never blocks a successful response.
+  if (process.env.RESEND_API_KEY) {
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          from: "13i Assignments <onboarding@resend.dev>",
+          to: "pjdonaghy@gmail.com",
+          subject: `New assignment submission from ${name || "Anonymous"}`,
+          text: `Name: ${name || "Anonymous"}\nEmail: ${email || "(not provided)"}\n\n${story.trim()}`,
+        }),
+      });
+    } catch (e) {
+      // ignore - the submission is already saved
+    }
+  }
+
   return Response.json({ ok: true });
 }

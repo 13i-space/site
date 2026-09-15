@@ -3,12 +3,21 @@ import { createClient } from "../lib/supabaseServer";
 
 export default async function Nav() {
   let user = null;
+  let username = null;
   try {
     const supabase = await createClient();
     const {
       data: { user: authUser },
     } = await supabase.auth.getUser();
     user = authUser;
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("username")
+        .eq("id", user.id)
+        .single();
+      username = profile?.username || null;
+    }
   } catch (e) {
     // Auth not configured yet, or a transient error - nav should never
     // break the whole site over this, just show the signed-out state.
@@ -56,8 +65,8 @@ export default async function Nav() {
           </div>
         </li>
         <li>
-          <Link href="/account" style={user ? { color: "#B9C0FF" } : undefined}>
-            {user ? `Signed in \u2013 ${user.email}` : "Account"}
+          <Link href={user ? "/account" : "/login"} style={user ? { color: "#B9C0FF" } : undefined}>
+            {user ? (username || user.email) : "Login"}
           </Link>
         </li>
       </ul>

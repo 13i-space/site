@@ -168,3 +168,12 @@ main {
 .book-page:hover {
   border-color: #3A3E75;
 }
+
+.launch-card {
+  transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s ease;
+}
+.launch-card:hover {
+  border-color: #8B95F6;
+  transform: translateY(-3px);
+  background: rgba(20, 23, 55, 0.85);
+}

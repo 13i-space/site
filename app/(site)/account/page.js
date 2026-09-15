@@ -11,12 +11,19 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
+  const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">Your Account</div>
       <div className="panel">
+        {profile?.username && (
+          <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF", marginBottom: 4 }}>
+            {profile.username}
+          </p>
+        )}
         <p style={{ color: "#B7BADF", marginBottom: 16 }}>
-          Signed in as <strong>{user.email}</strong>
+          {user.email}
         </p>
         <form action="/auth/signout" method="post">
           <button
