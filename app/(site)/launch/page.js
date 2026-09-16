@@ -3,6 +3,11 @@ import ThemedHero from "../../../components/ThemedHero";
 
 const sections = [
   {
+    href: "/forum",
+    title: "Forum",
+    blurb: "A meeting place for Kin — new guests always welcome.",
+  },
+  {
     href: "/book",
     title: "The Book",
     blurb: "First contact, told from three perspectives — two human, one not. Read the rough draft now.",

@@ -1,6 +1,8 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
 import ClaimUsername from "../../../components/ClaimUsername";
+import EditProfile from "../../../components/EditProfile";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -12,22 +14,43 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("username, bio, avatar_url")
+    .eq("id", user.id)
+    .single();
 
   return (
-    <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
-      <div className="page-title">Your Account</div>
+    <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
+      <div className="page-title">Your Node</div>
+      <div className="page-subtitle">{user.email}</div>
+
       <div className="panel">
         {profile?.username ? (
-          <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF", marginBottom: 4 }}>
-            {profile.username}
-          </p>
+          <>
+            <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF", marginBottom: 14 }}>
+              {profile.username}
+            </p>
+            <EditProfile
+              userId={user.id}
+              username={profile.username}
+              initialBio={profile.bio}
+              initialAvatarUrl={profile.avatar_url}
+            />
+            <Link
+              href={`/kin/${profile.username}`}
+              className="mono"
+              style={{ display: "inline-block", marginTop: 16, fontSize: 11, color: "#6E76B8" }}
+            >
+              view your public profile &rarr;
+            </Link>
+          </>
         ) : (
           <ClaimUsername />
         )}
-        <p style={{ color: "#B7BADF", marginBottom: 16 }}>
-          {user.email}
-        </p>
+      </div>
+
+      <div className="panel" style={{ marginTop: 16 }}>
         <form action="/auth/signout" method="post">
           <button
             type="submit"
@@ -46,9 +69,10 @@ export default async function AccountPage() {
           </button>
         </form>
       </div>
+
       <p style={{ fontSize: 12, color: "#565B8F", marginTop: 20 }}>
-        This is the foundation everything else — submission history, your
-        own assignments, the community space — will attach to next.
+        Assignment history, high scores, and the rest of your progress will
+        show up here as those pieces come online.
       </p>
     </div>
   );
