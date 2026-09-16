@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
+import ClaimUsername from "../../../components/ClaimUsername";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -17,10 +18,12 @@ export default async function AccountPage() {
     <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">Your Account</div>
       <div className="panel">
-        {profile?.username && (
+        {profile?.username ? (
           <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF", marginBottom: 4 }}>
             {profile.username}
           </p>
+        ) : (
+          <ClaimUsername />
         )}
         <p style={{ color: "#B7BADF", marginBottom: 16 }}>
           {user.email}
