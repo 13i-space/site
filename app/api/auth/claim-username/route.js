@@ -29,6 +29,11 @@ export async function POST(request) {
   const existing = await admin.query(`profiles?username=eq.${encodeURIComponent(username)}&select=id`);
   const existingRows = existing.ok ? await existing.json() : [];
   if (existingRows.length > 0) {
+    if (existingRows[0].id === user.id) {
+      // it's already your own username (e.g. a retried request after a
+      // session hiccup) - nothing to do, this isn't actually a conflict
+      return Response.json({ ok: true });
+    }
     return Response.json({ error: "That username is taken." }, { status: 409 });
   }
 

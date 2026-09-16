@@ -1,15 +1,27 @@
 import Link from "next/link";
 import EmailSignup from "./EmailSignup";
+import { createClient } from "../lib/supabaseServer";
 
-export default function Footer() {
+export default async function Footer() {
+  let signedIn = false;
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    signedIn = !!user;
+  } catch (e) {
+    signedIn = false;
+  }
+
   return (
     <footer className="site-footer">
-      <div style={{ marginBottom: 24 }}>
-        <div className="mono" style={{ fontSize: 11, color: "#8A8FBF", marginBottom: 10 }}>
-          Get updates as the launch approaches
+      {!signedIn && (
+        <div style={{ marginBottom: 24 }}>
+          <div className="mono" style={{ fontSize: 11, color: "#8A8FBF", marginBottom: 10 }}>
+            Get updates as the launch approaches
+          </div>
+          <EmailSignup />
         </div>
-        <EmailSignup />
-      </div>
+      )}
 
       <div style={{ display: "flex", justifyContent: "center", gap: 18, marginBottom: 16, flexWrap: "wrap" }}>
         <Link href="/guestbook" style={{ color: "#6E76B8" }}>Guestbook</Link>
