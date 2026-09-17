@@ -3,11 +3,6 @@ import ThemedHero from "../../../components/ThemedHero";
 
 const sections = [
   {
-    href: "/forum",
-    title: "Forum",
-    blurb: "A meeting place for Kin — new guests always welcome.",
-  },
-  {
     href: "/book",
     title: "The Book",
     blurb: "First contact, told from three perspectives — two human, one not. Read the rough draft now.",
@@ -23,29 +18,9 @@ const sections = [
     blurb: "Speak to 13i directly.",
   },
   {
-    href: "/games",
-    title: "Games",
-    blurb: "NEMESIS Command, Asteroid Belt, and 13i vs NEMESIS.",
-  },
-  {
-    href: "/artifacts",
-    title: "Artifacts",
-    blurb: "The Ninefold and the Cryptex — puzzles from beyond.",
-  },
-  {
-    href: "/wiki",
-    title: "The Wiki",
-    blurb: "The basics — characters, terms, the shape of the world so far.",
-  },
-  {
-    href: "/assignments",
-    title: "Assignments",
-    blurb: "A growing community collection of short stories.",
-  },
-  {
-    href: "/galaxy",
-    title: "The Galaxy",
-    blurb: "Where this all takes place, with Earth marked on the map.",
+    href: "/forum",
+    title: "Forum",
+    blurb: "A meeting place for Kin — new guests always welcome.",
   },
 ];
 

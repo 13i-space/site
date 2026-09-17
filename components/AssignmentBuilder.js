@@ -1,8 +1,7 @@
 "use client";
 
-import { useState } from "react";
-
-const CATEGORIES = ["Civilization", "Species", "Technology", "Biological phenomenon", "Threat", "Anomaly", "Unknown", "Other"];
+import { useState, useEffect, useRef } from "react";
+import { createClient } from "../lib/supabaseBrowser";
 
 const CHECKLIST = [
   "Uses \u201cwe\u201d as the voice of 13i",
@@ -17,135 +16,159 @@ const CHECKLIST = [
   "Tells a story, rather than just explaining an idea",
 ];
 
-export default function AssignmentBuilder({ nextNumber }) {
-  const [step, setStep] = useState("identify"); // identify | write | done
-  const [designation, setDesignation] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [destination, setDestination] = useState("");
-  const [era, setEra] = useState("");
-  const [category, setCategory] = useState("");
-  const [objective, setObjective] = useState("");
+function randomAssignmentNumber() {
+  return Math.floor(50000 + Math.random() * 200000);
+}
+
+export default function AssignmentBuilder() {
+  const [ready, setReady] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [assignmentNumber, setAssignmentNumber] = useState(null);
+  const [title, setTitle] = useState("");
+  const [story, setStory] = useState("");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [story, setStory] = useState("");
   const [checked, setChecked] = useState({});
-  const [status, setStatus] = useState("idle");
+  const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
+  const [submitStatus, setSubmitStatus] = useState("idle");
   const [error, setError] = useState("");
+  const loadedDraft = useRef(false);
+
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setReady(true);
+        return;
+      }
+      setUserId(user.id);
+      setEmail(user.email || "");
+
+      const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+      if (profile?.username) setName(profile.username);
+
+      const { data: draft } = await supabase.from("assignment_drafts").select("*").eq("user_id", user.id).single();
+      if (draft) {
+        setAssignmentNumber(draft.assignment_number);
+        setTitle(draft.title || "");
+        setStory(draft.story || "");
+        loadedDraft.current = true;
+      } else {
+        setAssignmentNumber(randomAssignmentNumber());
+      }
+      setReady(true);
+    })();
+  }, []);
 
   const wordCount = story.trim() ? story.trim().split(/\s+/).length : 0;
 
+  const saveProgress = async () => {
+    if (!userId) return;
+    setSaveStatus("saving");
+    const supabase = createClient();
+    await supabase.from("assignment_drafts").upsert({
+      user_id: userId,
+      assignment_number: assignmentNumber,
+      title,
+      story,
+      updated_at: new Date().toISOString(),
+    });
+    setSaveStatus("saved");
+    setTimeout(() => setSaveStatus("idle"), 2000);
+  };
+
   const submit = async (e) => {
     e.preventDefault();
-    setStatus("loading");
+    setSubmitStatus("loading");
     setError("");
     try {
       const res = await fetch("/api/submit-assignment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, story, designation, origin, destination, era, category, objective }),
+        body: JSON.stringify({ name, email, story, title, assignmentNumber }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      setStatus("done");
+      setSubmitStatus("done");
     } catch (err) {
-      setStatus("idle");
+      setSubmitStatus("idle");
       setError(err.message);
     }
   };
 
-  if (status === "done") {
+  if (!ready) return null;
+
+  if (!userId) {
     return (
       <div className="panel" style={{ textAlign: "center" }}>
-        <p style={{ margin: 0, color: "#8B95F6" }}>
-          Received. Assignment {String(nextNumber).padStart(7, "0")} has been submitted.
+        <p style={{ margin: 0, color: "#8A8FBF" }}>
+          You need to be logged in to write an Assignment \u2014 it's tied to
+          your Node so you can save progress and come back to it.
         </p>
+        <a
+          href="/login"
+          className="mono"
+          style={{ display: "inline-block", marginTop: 14, fontSize: 12, color: "#B9C0FF", border: "1px solid #3A3E75", borderRadius: 4, padding: "8px 18px" }}
+        >
+          Log in
+        </a>
       </div>
     );
   }
 
-  if (step === "identify") {
+  if (submitStatus === "done") {
     return (
-      <div className="panel">
-        <div className="mono" style={{ fontSize: 11, color: "#565B8F", letterSpacing: "1px", marginBottom: 4 }}>
-          ASSIGNMENT NUMBER
-        </div>
-        <div className="mono" style={{ fontSize: 22, color: "#E8CFC0", marginBottom: 20 }}>
-          {String(nextNumber).padStart(7, "0")}
-        </div>
-
-        <Field label="Designation" value={designation} onChange={setDesignation} placeholder="A name for this Assignment" />
-        <Field label="Origin" value={origin} onChange={setOrigin} placeholder="Where 13i begins" />
-        <Field label="Destination" value={destination} onChange={setDestination} placeholder="Where 13i is sent (can be unknown)" />
-        <Field label="Era" value={era} onChange={setEra} placeholder="When this takes place" />
-
-        <div style={{ marginBottom: 16 }}>
-          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>
-            WHAT ARE YOU INVESTIGATING? (OPTIONAL)
-          </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
-            {CATEGORIES.map((c) => (
-              <button
-                key={c}
-                type="button"
-                onClick={() => setCategory(category === c ? "" : c)}
-                style={{
-                  background: category === c ? "rgba(139,149,246,0.15)" : "none",
-                  border: `1px solid ${category === c ? "#8B95F6" : "#262A55"}`,
-                  borderRadius: 4,
-                  color: category === c ? "#DCDFFF" : "#6E76B8",
-                  fontSize: 12,
-                  padding: "6px 12px",
-                  cursor: "pointer",
-                }}
-              >
-                {c}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <Field
-          label="Initial objective (optional)"
-          value={objective}
-          onChange={setObjective}
-          placeholder="What does 13i expect to find?"
-          textarea
-        />
-
-        <button
-          type="button"
-          onClick={() => setStep("write")}
-          disabled={!designation.trim()}
-          style={{
-            background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#B9C0FF",
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 13, padding: "10px 22px",
-            cursor: designation.trim() ? "pointer" : "default", opacity: designation.trim() ? 1 : 0.4,
-          }}
-        >
-          Begin Assignment &rarr;
-        </button>
+      <div className="panel" style={{ textAlign: "center" }}>
+        <p style={{ margin: 0, color: "#8B95F6" }}>
+          Received. Assignment {assignmentNumber.toLocaleString()} has been submitted.
+        </p>
       </div>
     );
   }
 
   return (
     <form onSubmit={submit} className="panel">
-      <div className="mono" style={{ fontSize: 11, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
-        ASSIGNMENT {String(nextNumber).padStart(7, "0")} &middot; {designation}
+      <div className="mono" style={{ fontSize: 11, color: "#565B8F", letterSpacing: "1px", marginBottom: 4 }}>
+        ASSIGNMENT NUMBER
       </div>
+      <div className="mono" style={{ fontSize: 20, color: "#E8CFC0", marginBottom: 18 }}>
+        {assignmentNumber?.toLocaleString()}
+      </div>
+
+      <input
+        required
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="Title"
+        style={{ ...inputStyle, width: "100%", marginBottom: 12, boxSizing: "border-box", fontSize: 16 }}
+      />
 
       <textarea
         required
-        placeholder="Begin writing here..."
+        placeholder="Begin writing here or paste story here..."
         value={story}
         onChange={(e) => setStory(e.target.value)}
         rows={16}
-        style={{ ...inputStyle, width: "100%", resize: "vertical", fontFamily: "'Inter', sans-serif", lineHeight: 1.6 }}
+        style={{ ...inputStyle, width: "100%", resize: "vertical", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, boxSizing: "border-box" }}
       />
-      <div className="mono" style={{ fontSize: 11, color: "#565B8F", marginTop: 6, marginBottom: 4 }}>
-        {wordCount.toLocaleString()} words &middot; 1,500\u20135,000 is a guideline, not a rule
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, marginBottom: 4 }}>
+        <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>
+          {wordCount.toLocaleString()} words &middot; 1,500\u20135,000 is a guideline, not a rule
+        </span>
+        <button
+          type="button"
+          onClick={saveProgress}
+          disabled={saveStatus === "saving"}
+          className="mono"
+          style={{ background: "none", border: "1px solid #262A55", borderRadius: 4, color: "#B9C0FF", fontSize: 11, padding: "5px 12px", cursor: "pointer" }}
+        >
+          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved \u2713" : "Save progress"}
+        </button>
       </div>
-      <p style={{ fontSize: 12.5, color: "#6E76B8", fontStyle: "italic", marginBottom: 20 }}>
+
+      <p style={{ fontSize: 12.5, color: "#6E76B8", fontStyle: "italic", marginTop: 14, marginBottom: 20 }}>
         Remember: you are 13i. Think collectively. You don't know everything. Let the Assignment change you.
       </p>
 
@@ -168,72 +191,46 @@ export default function AssignmentBuilder({ nextNumber }) {
         </div>
       </div>
 
-      <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-        <input
-          type="text"
-          placeholder="Your name (optional)"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          style={inputStyle}
-        />
-        <input
-          type="email"
-          placeholder="Your email (optional, so Paul can reply)"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={inputStyle}
-        />
+      <div style={{ marginBottom: 16 }}>
+        <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>
+          CREDIT & CONTACT
+        </div>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <input
+            type="text"
+            placeholder="Your name or username"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={inputStyle}
+          />
+          <input
+            type="email"
+            placeholder="Email for feedback"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={inputStyle}
+          />
+        </div>
+        <p style={{ fontSize: 11, color: "#3A3E75", marginTop: 6 }}>
+          Defaults to your account \u2014 change either if you'd rather use something else for this Assignment.
+        </p>
       </div>
 
-      <div style={{ marginTop: 16, display: "flex", alignItems: "center", gap: 14 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
         <button
           type="submit"
-          disabled={status === "loading"}
+          disabled={submitStatus === "loading"}
           style={{
             background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#B9C0FF",
             fontFamily: "'JetBrains Mono', monospace", fontSize: 13, padding: "10px 22px",
-            cursor: "pointer", opacity: status === "loading" ? 0.5 : 1,
+            cursor: "pointer", opacity: submitStatus === "loading" ? 0.5 : 1,
           }}
         >
-          {status === "loading" ? "Sending..." : "Submit Assignment"}
-        </button>
-        <button
-          type="button"
-          onClick={() => setStep("identify")}
-          style={{ background: "none", border: "none", color: "#565B8F", fontSize: 12, textDecoration: "underline", cursor: "pointer" }}
-        >
-          back to identification
+          {submitStatus === "loading" ? "Sending..." : "Submit Assignment"}
         </button>
         {error && <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{error}</span>}
       </div>
     </form>
-  );
-}
-
-function Field({ label, value, onChange, placeholder, textarea }) {
-  return (
-    <div style={{ marginBottom: 14 }}>
-      <label className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px" }}>
-        {label.toUpperCase()}
-      </label>
-      {textarea ? (
-        <textarea
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          rows={2}
-          style={{ ...inputStyle, width: "100%", resize: "none", marginTop: 6, fontFamily: "'Inter', sans-serif" }}
-        />
-      ) : (
-        <input
-          type="text"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={placeholder}
-          style={{ ...inputStyle, width: "100%", marginTop: 6, boxSizing: "border-box" }}
-        />
-      )}
-    </div>
   );
 }
 
@@ -246,5 +243,4 @@ const inputStyle = {
   fontSize: 13,
   padding: "9px 12px",
   outline: "none",
-  boxSizing: "border-box",
 };

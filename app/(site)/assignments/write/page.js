@@ -1,18 +1,7 @@
 import Link from "next/link";
-import { getSupabaseAdmin } from "../../../../lib/supabaseAdmin";
 import AssignmentBuilder from "../../../../components/AssignmentBuilder";
 
-export default async function WriteAssignmentPage() {
-  let nextNumber = 2;
-  const admin = getSupabaseAdmin();
-  if (admin) {
-    const res = await admin.query("assignment_submissions?select=id");
-    if (res.ok) {
-      const rows = await res.json();
-      nextNumber = rows.length + 2; // 0000001 is canon
-    }
-  }
-
+export default function WriteAssignmentPage() {
   return (
     <div style={{ maxWidth: 680, margin: "0 auto" }}>
       <Link href="/assignments" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
@@ -50,8 +39,8 @@ export default async function WriteAssignmentPage() {
         <p>
           An Assignment begins with a purpose &mdash; investigate a threat, discover a new
           technology, study a civilization, understand a biological phenomenon, evaluate a
-          potential danger, or simply answer a question. You decide what it's about, and the
-          objective is free to change as 13i learns more.
+          potential danger, or simply answer a question. The objective is free to change as 13i
+          learns more.
         </p>
         <p>
           13i can intervene. There's no requirement to remain an observer &mdash; it may
@@ -81,15 +70,7 @@ export default async function WriteAssignmentPage() {
         </p>
       </div>
 
-      <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 20, color: "#DCDFFF", marginBottom: 10 }}>
-        You create
-      </div>
-      <p style={{ fontSize: 13.5, color: "#8A8FBF", marginBottom: 20 }}>
-        The world, the inhabitants, the problem, the technology, the outcome &mdash; all yours to
-        decide. The established 13i universe provides the boundaries. You provide the unknown.
-      </p>
-
-      <AssignmentBuilder nextNumber={nextNumber} />
+      <AssignmentBuilder />
 
       <p className="mono" style={{ fontSize: 10.5, color: "#3A3E75", marginTop: 24, textAlign: "center" }}>
         submissions move through SUBMITTED &rarr; ARCHIVED &rarr; CANON as they're reviewed

@@ -35,6 +35,7 @@ export default async function Nav() {
         <li><Link href="/book">Book</Link></li>
         <li><Link href="/music">Music</Link></li>
         <li><Link href="/oracle">Oracle</Link></li>
+        <li><Link href="/forum">Forum</Link></li>
         <li className="nav-dropdown">
           <Link href="/games">Games</Link>
           <div className="nav-dropdown-menu">
@@ -54,9 +55,7 @@ export default async function Nav() {
             </ul>
           </div>
         </li>
-        <li><Link href="/wiki">Wiki</Link></li>
         <li><Link href="/assignments">Assignments</Link></li>
-        <li><Link href="/forum">Forum</Link></li>
         <li className="nav-dropdown">
           <Link href="/galaxy">Galaxy</Link>
           <div className="nav-dropdown-menu">
@@ -67,6 +66,7 @@ export default async function Nav() {
             </ul>
           </div>
         </li>
+        <li><Link href="/wiki">Wiki</Link></li>
         <li>
           <Link href={user ? "/account" : "/login"} style={{ display: "flex", alignItems: "center", gap: 6, color: user ? "#B9C0FF" : undefined }}>
             {user && (
