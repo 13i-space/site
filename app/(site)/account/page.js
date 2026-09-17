@@ -14,7 +14,7 @@ export default async function AccountPage() {
     redirect("/login");
   }
 
-  const { data: profile, error: profileError } = await supabase
+  const { data: profile } = await supabase
     .from("profiles")
     .select("username, bio, avatar_url")
     .eq("id", user.id)
@@ -24,16 +24,6 @@ export default async function AccountPage() {
     <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">Your Node</div>
       <div className="page-subtitle">{user.email}</div>
-
-      {/* temporary diagnostic - remove once the profile-lookup issue is confirmed fixed */}
-      <div className="mono" style={{ fontSize: 10, color: "#3A3E75", marginBottom: 14, wordBreak: "break-all" }}>
-        DEBUG &middot; signed-in user id: {user.id}
-        {profileError && (
-          <>
-            <br />DEBUG &middot; profile lookup error: {profileError.message} (code {profileError.code || "n/a"})
-          </>
-        )}
-      </div>
 
       <div className="panel">
         {profile?.username ? (

@@ -1,4 +1,4 @@
-import SubmissionForm from "../../../components/SubmissionForm";
+import Link from "next/link";
 
 export default function AssignmentsPage() {
   return (
@@ -6,29 +6,49 @@ export default function AssignmentsPage() {
       <div className="page-title">Assignments</div>
       <div className="page-subtitle">a community collection of short stories</div>
 
-      <div className="panel" style={{ marginBottom: 28 }}>
-        <p style={{ marginBottom: 14 }}>
-          13i issues assignments — small tasks, given to individuals, meant
+      <div className="panel" style={{ marginBottom: 20 }}>
+        <p style={{ margin: 0 }}>
+          13i issues assignments \u2014 small tasks, given to individuals, meant
           to surface something true about what people share rather than
-          what divides them. This is where the community's own responses to
-          those assignments live.
-        </p>
-        <p style={{ margin: 0, color: "#8A8FBF", fontSize: 13.5 }}>
-          Assignment 1 — the first, written to double as a guide for what
-          this can look like — is coming soon. Full submission guidelines
-          (length, tone, how closely to write in 13i's voice) will be
-          posted here alongside it.
+          what divides them.
         </p>
       </div>
 
-      <div style={{ marginBottom: 16, fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 20, color: "#DCDFFF" }}>
-        Submit your own
-      </div>
-      <p style={{ fontSize: 13.5, color: "#8A8FBF", marginBottom: 20 }}>
-        For now, submissions are saved here for Paul to read directly.
-        There's no public gallery yet — that's coming as this section grows.
-      </p>
-      <SubmissionForm />
+      <Link
+        href="/assignments/0000001"
+        className="launch-card"
+        style={{
+          display: "block", background: "rgba(14,16,38,0.72)", border: "1px solid #262A55",
+          borderRadius: 4, padding: "20px 22px", marginBottom: 14, textDecoration: "none", color: "inherit",
+        }}
+      >
+        <div className="mono" style={{ fontSize: 10.5, color: "#565B8F", letterSpacing: "1px", marginBottom: 6 }}>
+          ASSIGNMENT 0000001 &middot; CANON
+        </div>
+        <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF", marginBottom: 6 }}>
+          The First Silence
+        </div>
+        <p style={{ fontSize: 13, color: "#8A8FBF", margin: 0 }}>
+          The first Assignment on record. Read it in the browser, have it
+          read aloud, or download the PDF.
+        </p>
+      </Link>
+
+      <Link
+        href="/assignments/write"
+        className="launch-card"
+        style={{
+          display: "block", background: "rgba(14,16,38,0.72)", border: "1px solid #3A3E75",
+          borderRadius: 4, padding: "20px 22px", textDecoration: "none", color: "inherit",
+        }}
+      >
+        <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF", marginBottom: 6 }}>
+          Write an Assignment
+        </div>
+        <p style={{ fontSize: 13, color: "#8A8FBF", margin: 0 }}>
+          You are 13i. You have been sent somewhere. Tell us what happens.
+        </p>
+      </Link>
     </div>
   );
 }

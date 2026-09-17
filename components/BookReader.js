@@ -2,13 +2,17 @@
 
 import { useState, useEffect } from "react";
 
-export default function BookReader({ meta, pages, inProgress }) {
+export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel }) {
   const [pageIndex, setPageIndex] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
   const totalPages = pages.length + (inProgress ? 1 : 0);
   const onLastWrittenPage = pageIndex === pages.length - 1;
   const onInProgressPage = inProgress && pageIndex === pages.length;
+
+  const currentPage = onInProgressPage ? null : pages[pageIndex];
+  const currentHeading = currentPage && !Array.isArray(currentPage) ? currentPage.heading : null;
+  const currentParagraphs = currentPage ? (Array.isArray(currentPage) ? currentPage : currentPage.paragraphs) : [];
 
   useEffect(() => {
     setVoiceSupported(typeof window !== "undefined" && "speechSynthesis" in window);
@@ -32,7 +36,7 @@ export default function BookReader({ meta, pages, inProgress }) {
       setSpeaking(false);
       return;
     }
-    const text = pages[pageIndex].join(" ");
+    const text = currentParagraphs.join(" ");
     const utter = new SpeechSynthesisUtterance(text);
     utter.rate = 0.95;
     utter.onend = () => setSpeaking(false);
@@ -65,25 +69,44 @@ export default function BookReader({ meta, pages, inProgress }) {
         <div className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
           {meta.subtitle}
         </div>
-        {voiceSupported && !onInProgressPage && (
-          <button
-            onClick={toggleRead}
-            className="mono"
-            style={{
-              marginTop: 10,
-              background: "none",
-              border: "1px solid #262A55",
-              borderRadius: 4,
-              color: speaking ? "#E8CFC0" : "#B9C0FF",
-              fontSize: 11,
-              letterSpacing: "0.5px",
-              padding: "5px 12px",
-              cursor: "pointer",
-            }}
-          >
-            {speaking ? "\u23F8 Stop reading" : "\u25B6 Read this page aloud"}
-          </button>
-        )}
+        <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 10, flexWrap: "wrap" }}>
+          {voiceSupported && !onInProgressPage && (
+            <button
+              onClick={toggleRead}
+              className="mono"
+              style={{
+                background: "none",
+                border: "1px solid #262A55",
+                borderRadius: 4,
+                color: speaking ? "#E8CFC0" : "#B9C0FF",
+                fontSize: 11,
+                letterSpacing: "0.5px",
+                padding: "5px 12px",
+                cursor: "pointer",
+              }}
+            >
+              {speaking ? "\u23F8 Stop reading" : "\u25B6 Read this page aloud"}
+            </button>
+          )}
+          {downloadHref && (
+            <a
+              href={downloadHref}
+              download
+              className="mono"
+              style={{
+                border: "1px solid #262A55",
+                borderRadius: 4,
+                color: "#B9C0FF",
+                fontSize: 11,
+                letterSpacing: "0.5px",
+                padding: "5px 12px",
+                textDecoration: "none",
+              }}
+            >
+              &#8681; {downloadLabel || "Download PDF"}
+            </a>
+          )}
+        </div>
       </div>
 
       <div
@@ -116,7 +139,16 @@ export default function BookReader({ meta, pages, inProgress }) {
             </p>
           </div>
         ) : (
-          pages[pageIndex].map((p, i) => (
+          <>
+            {currentHeading && (
+              <div
+                className="mono"
+                style={{ fontSize: 13, color: "#8B95F6", letterSpacing: "1.5px", marginBottom: 16, textTransform: "uppercase" }}
+              >
+                {currentHeading}
+              </div>
+            )}
+            {currentParagraphs.map((p, i) => (
             <p
               key={i}
               style={{
@@ -129,7 +161,8 @@ export default function BookReader({ meta, pages, inProgress }) {
             >
               {p}
             </p>
-          ))
+          ))}
+          </>
         )}
 
         {!onInProgressPage && (
