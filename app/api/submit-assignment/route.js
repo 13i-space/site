@@ -21,7 +21,7 @@ export async function POST(request) {
     );
   }
 
-  const { name, email, story, title, assignmentNumber } = await request.json();
+  const { name, email, story, title, assignmentNumber, coverUrl } = await request.json();
   if (!story || story.trim().length < 10) {
     return Response.json({ error: "Please write a bit more before submitting." }, { status: 400 });
   }
@@ -35,6 +35,9 @@ export async function POST(request) {
       story: story.trim(),
       designation: title ? title.slice(0, 120) : null,
       assignment_number: assignmentNumber || null,
+      cover_url: coverUrl || null,
+      thumb_url: coverUrl || null,
+      type: "human",
       status: "submitted",
     }),
   });

@@ -2,17 +2,21 @@
 
 import { useState, useEffect } from "react";
 
-export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel }) {
+export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification }) {
   const [pageIndex, setPageIndex] = useState(0);
   const [speaking, setSpeaking] = useState(false);
   const [voiceSupported, setVoiceSupported] = useState(false);
-  const totalPages = pages.length + (inProgress ? 1 : 0);
-  const onLastWrittenPage = pageIndex === pages.length - 1;
-  const onInProgressPage = inProgress && pageIndex === pages.length;
+  const offset = coverImage ? 1 : 0;
+  const totalPages = pages.length + offset + (inProgress ? 1 : 0);
+  const onCoverPage = coverImage && pageIndex === 0;
+  const onInProgressPage = inProgress && pageIndex === pages.length + offset;
+  const contentIndex = pageIndex - offset;
+  const onLastWrittenPage = contentIndex === pages.length - 1;
 
-  const currentPage = onInProgressPage ? null : pages[pageIndex];
+  const currentPage = onCoverPage || onInProgressPage ? null : pages[contentIndex];
   const currentHeading = currentPage && !Array.isArray(currentPage) ? currentPage.heading : null;
   const currentParagraphs = currentPage ? (Array.isArray(currentPage) ? currentPage : currentPage.paragraphs) : [];
+  const showIdentification = identification && contentIndex === 0 && !onCoverPage;
 
   useEffect(() => {
     setVoiceSupported(typeof window !== "undefined" && "speechSynthesis" in window);
@@ -29,7 +33,7 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
 
   const toggleRead = (e) => {
     e.stopPropagation();
-    if (!voiceSupported || onInProgressPage) return;
+    if (!voiceSupported || onInProgressPage || onCoverPage) return;
     const synth = window.speechSynthesis;
     if (speaking) {
       synth.cancel();
@@ -70,7 +74,7 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
           {meta.subtitle}
         </div>
         <div style={{ display: "flex", justifyContent: "center", gap: 12, marginTop: 10, flexWrap: "wrap" }}>
-          {voiceSupported && !onInProgressPage && (
+          {voiceSupported && !onInProgressPage && !onCoverPage && (
             <button
               onClick={toggleRead}
               className="mono"
@@ -116,18 +120,26 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
           marginTop: 28,
           width: "100%",
           minHeight: 380,
-          padding: "36px 8vw 30px",
+          padding: onCoverPage ? 0 : "36px 8vw 30px",
           display: "flex",
           flexDirection: "column",
           justifyContent: onInProgressPage ? "center" : "flex-start",
+          alignItems: onCoverPage ? "center" : "stretch",
           cursor: onInProgressPage ? "default" : "pointer",
           boxSizing: "border-box",
+          overflow: onCoverPage ? "hidden" : "visible",
         }}
       >
-        {onInProgressPage ? (
+        {onCoverPage ? (
+          <img
+            src={coverImage}
+            alt={meta.chapter}
+            style={{ width: "100%", height: "auto", display: "block", maxHeight: 640, objectFit: "contain" }}
+          />
+        ) : onInProgressPage ? (
           <div style={{ textAlign: "center" }}>
             <div className="mono" style={{ fontSize: 12, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
-              PAGE {pages.length + 1}
+              PAGE {pages.length + offset + 1}
             </div>
             <p style={{ fontSize: 14, color: "#8A8FBF", fontStyle: "italic" }}>
               More of Chapter One is coming as the manuscript is finalized.
@@ -140,6 +152,21 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
           </div>
         ) : (
           <>
+            {showIdentification && (
+              <div
+                className="mono"
+                style={{
+                  fontSize: 11.5, color: "#6E76B8", lineHeight: 1.9, marginBottom: 22,
+                  paddingBottom: 16, borderBottom: "1px solid #21244A",
+                }}
+              >
+                {Object.entries(identification).map(([label, value]) => (
+                  <div key={label}>
+                    <span style={{ color: "#3A3E75" }}>{label}:</span> {value}
+                  </div>
+                ))}
+              </div>
+            )}
             {currentHeading && (
               <div
                 className="mono"

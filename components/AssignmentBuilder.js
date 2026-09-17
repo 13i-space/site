@@ -29,6 +29,8 @@ export default function AssignmentBuilder() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [checked, setChecked] = useState({});
+  const [coverFile, setCoverFile] = useState(null);
+  const [coverPreview, setCoverPreview] = useState(null);
   const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
   const [submitStatus, setSubmitStatus] = useState("idle");
   const [error, setError] = useState("");
@@ -83,10 +85,23 @@ export default function AssignmentBuilder() {
     setSubmitStatus("loading");
     setError("");
     try {
+      let coverUrl = null;
+      if (coverFile) {
+        const supabase = createClient();
+        const ext = coverFile.name.split(".").pop();
+        const path = `${userId}/${Date.now()}.${ext}`;
+        const { error: uploadError } = await supabase.storage
+          .from("assignment-covers")
+          .upload(path, coverFile);
+        if (uploadError) throw new Error(`Cover upload failed: ${uploadError.message}`);
+        const { data } = supabase.storage.from("assignment-covers").getPublicUrl(path);
+        coverUrl = data.publicUrl;
+      }
+
       const res = await fetch("/api/submit-assignment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, story, title, assignmentNumber }),
+        body: JSON.stringify({ name, email, story, title, assignmentNumber, coverUrl }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -121,7 +136,7 @@ export default function AssignmentBuilder() {
     return (
       <div className="panel" style={{ textAlign: "center" }}>
         <p style={{ margin: 0, color: "#8B95F6" }}>
-          Received. Assignment {assignmentNumber.toLocaleString()} has been submitted.
+          Received. Assignment {String(assignmentNumber).padStart(7, "0")} has been submitted.
         </p>
       </div>
     );
@@ -133,7 +148,7 @@ export default function AssignmentBuilder() {
         ASSIGNMENT NUMBER
       </div>
       <div className="mono" style={{ fontSize: 20, color: "#E8CFC0", marginBottom: 18 }}>
-        {assignmentNumber?.toLocaleString()}
+        {assignmentNumber ? String(assignmentNumber).padStart(7, "0") : ""}
       </div>
 
       <input
@@ -188,6 +203,34 @@ export default function AssignmentBuilder() {
               {item}
             </label>
           ))}
+        </div>
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>
+          COVER IMAGE (OPTIONAL)
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          {coverPreview && (
+            <img src={coverPreview} alt="" style={{ width: 52, height: 78, objectFit: "cover", borderRadius: 3, border: "1px solid #3A3E75" }} />
+          )}
+          <label
+            className="mono"
+            style={{ fontSize: 11, color: "#B9C0FF", border: "1px solid #3A3E75", borderRadius: 4, padding: "7px 14px", cursor: "pointer" }}
+          >
+            {coverFile ? "Change image" : "Upload a cover"}
+            <input
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) return;
+                setCoverFile(file);
+                setCoverPreview(URL.createObjectURL(file));
+              }}
+            />
+          </label>
         </div>
       </div>
 
