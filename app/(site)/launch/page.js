@@ -3,24 +3,24 @@ import ThemedHero from "../../../components/ThemedHero";
 
 const sections = [
   {
-    href: "/book",
-    title: "The Book",
-    blurb: "First contact, told from three perspectives — two human, one not. Read the rough draft now.",
+    href: "/explore",
+    title: "Explore",
+    blurb: "The book, the music, the archive of short stories, the galaxy, the wiki.",
   },
   {
-    href: "/music",
-    title: "The Music",
-    blurb: "Three albums, 36 signals. What you hear is a translation of something felt, not heard.",
+    href: "/play",
+    title: "Play",
+    blurb: "The Oracle, the games, the artifacts \u2014 the universe, interactive.",
   },
   {
-    href: "/oracle",
-    title: "The Oracle",
-    blurb: "Speak to 13i directly.",
+    href: "/create",
+    title: "Create",
+    blurb: "Write your own Assignment. You are 13i. Tell us what happens.",
   },
   {
-    href: "/forum",
-    title: "Forum",
-    blurb: "A meeting place for Kin — new guests always welcome.",
+    href: "/kinship",
+    title: "Kinship",
+    blurb: "The Forum, the Guestbook \u2014 you are not the only one who found this.",
   },
 ];
 

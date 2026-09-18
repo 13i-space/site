@@ -32,41 +32,10 @@ export default async function Nav() {
         13i
       </Link>
       <ul>
-        <li><Link href="/book">Book</Link></li>
-        <li><Link href="/music">Music</Link></li>
-        <li><Link href="/oracle">Oracle</Link></li>
-        <li><Link href="/forum">Forum</Link></li>
-        <li className="nav-dropdown">
-          <Link href="/games">Games</Link>
-          <div className="nav-dropdown-menu">
-            <ul className="nav-dropdown-menu-inner">
-              <li><Link href="/games/nemesis-command">NEMESIS Command</Link></li>
-              <li><Link href="/games/asteroid-belt">Asteroid Belt</Link></li>
-              <li><Link href="/games/13i-vs-nemesis">13i vs NEMESIS</Link></li>
-            </ul>
-          </div>
-        </li>
-        <li className="nav-dropdown">
-          <Link href="/artifacts">Artifacts</Link>
-          <div className="nav-dropdown-menu">
-            <ul className="nav-dropdown-menu-inner">
-              <li><Link href="/artifacts/ninefold">The Ninefold</Link></li>
-              <li><Link href="/artifacts/cryptex">The Cryptex</Link></li>
-            </ul>
-          </div>
-        </li>
-        <li><Link href="/assignments">Assignments</Link></li>
-        <li className="nav-dropdown">
-          <Link href="/galaxy">Galaxy</Link>
-          <div className="nav-dropdown-menu">
-            <ul className="nav-dropdown-menu-inner">
-              <li><Link href="/galaxy/map">The Map</Link></li>
-              <li><Link href="/galaxy/facts">Galaxy Facts</Link></li>
-              <li><Link href="/galaxy/quiz">Galaxy Quiz</Link></li>
-            </ul>
-          </div>
-        </li>
-        <li><Link href="/wiki">Wiki</Link></li>
+        <li><Link href="/explore">Explore</Link></li>
+        <li><Link href="/play">Play</Link></li>
+        <li><Link href="/create">Create</Link></li>
+        <li><Link href="/kinship">Kinship</Link></li>
         <li>
           <Link href={user ? "/account" : "/login"} style={{ display: "flex", alignItems: "center", gap: 6, color: user ? "#B9C0FF" : undefined }}>
             {user && (
