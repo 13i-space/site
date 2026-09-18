@@ -26,7 +26,7 @@ export default async function AssignmentsPage() {
               title="The First Silence"
               author="Paul Donaghy"
               type="human"
-              thumbUrl={null}
+              thumbUrl="/covers/assignment-0000001-thumb.jpg"
               href="/assignments/0000001"
             />
             {(rows || []).map((r) => (

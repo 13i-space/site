@@ -32,10 +32,46 @@ export default async function Nav() {
         13i
       </Link>
       <ul>
-        <li><Link href="/explore">Explore</Link></li>
-        <li><Link href="/play">Play</Link></li>
-        <li><Link href="/create">Create</Link></li>
-        <li><Link href="/kinship">Kinship</Link></li>
+        <li className="nav-dropdown">
+          <Link href="/explore">Explore</Link>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/book">Book</Link></li>
+              <li><Link href="/music">Music</Link></li>
+              <li><Link href="/assignments">Short Stories</Link></li>
+              <li><Link href="/galaxy">Galaxy</Link></li>
+              <li><Link href="/wiki">Wiki</Link></li>
+            </ul>
+          </div>
+        </li>
+        <li className="nav-dropdown">
+          <Link href="/play">Play</Link>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/oracle">Oracle</Link></li>
+              <li><Link href="/games">Games</Link></li>
+              <li><Link href="/artifacts">Artifacts</Link></li>
+              <li><Link href="/galaxy/quiz">Galaxy Quiz</Link></li>
+            </ul>
+          </div>
+        </li>
+        <li className="nav-dropdown">
+          <Link href="/create">Create</Link>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/assignments/write">Write an Assignment</Link></li>
+            </ul>
+          </div>
+        </li>
+        <li className="nav-dropdown">
+          <Link href="/kinship">Kinship</Link>
+          <div className="nav-dropdown-menu">
+            <ul className="nav-dropdown-menu-inner">
+              <li><Link href="/forum">Forum</Link></li>
+              <li><Link href="/guestbook">Guestbook</Link></li>
+            </ul>
+          </div>
+        </li>
         <li>
           <Link href={user ? "/account" : "/login"} style={{ display: "flex", alignItems: "center", gap: 6, color: user ? "#B9C0FF" : undefined }}>
             {user && (

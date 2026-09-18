@@ -13,6 +13,7 @@ export default function AssignmentOnePage() {
         <BookReader
           meta={assignmentMeta}
           pages={pages}
+          coverImage="/covers/assignment-0000001.jpg"
           downloadHref="/downloads/assignment-0000001.pdf"
           downloadLabel="Download the PDF"
         />

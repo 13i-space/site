@@ -16,9 +16,9 @@ const LOOKS = [
   },
   {
     n: "2",
-    name: "Aurora",
+    name: "Cockpit",
     href: "/preview2",
-    desc: "Soft vertical curtains of color light, slowly swaying, like an aurora that shouldn't be there.",
+    desc: "A spacecraft control panel \u2014 brushed metal, HUD readout lines, a scanline sweep across the logo viewport.",
   },
   {
     n: "3",
