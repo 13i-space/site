@@ -1,14 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
+import { searchSite } from "../lib/siteSearchIndex";
 
-// Keyed by path prefix, longest/most specific match wins. This is Lyra's
-// current entire "understanding" of the site - deliberately simple for
-// v1. Later phases (memory of what a visitor has actually done, an
-// evolving tone as she's used more) build on top of this same component
-// without changing how she's mounted or how she behaves when idle.
 const TIPS = [
   { prefix: "/explore", text: "Start with the Book or a short story \u2014 everything else on the site connects back to something in here." },
   { prefix: "/play", text: "The Oracle answers as \u201cwe,\u201d never \u201cI.\u201d That's not a typo \u2014 ask it why, if you want." },
@@ -33,27 +30,47 @@ function tipFor(pathname) {
 export default function LyraCompanion() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const [hasMet, setHasMet] = useState(true); // default true so we never flash the intro before checking
   const [username, setUsername] = useState(null);
-  const [greeted, setGreeted] = useState(false);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [query, setQuery] = useState("");
 
   useEffect(() => {
+    try {
+      setHasMet(!!localStorage.getItem("lyra_met"));
+    } catch (e) {
+      // ignore - private browsing etc, just skip the "met" memory
+    }
     (async () => {
       try {
         const supabase = createClient();
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
+        setLoggedIn(true);
         const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
         if (profile?.username) setUsername(profile.username);
       } catch (e) {
-        // quietly do nothing - Lyra just won't have a name to use
+        // quietly do nothing
       }
     })();
   }, []);
 
   const toggle = () => {
-    setOpen((o) => !o);
-    setGreeted(true);
+    setOpen((o) => {
+      const next = !o;
+      if (next && !hasMet) {
+        try { localStorage.setItem("lyra_met", "1"); } catch (e) {}
+      }
+      return next;
+    });
   };
+
+  const closeAndReset = () => {
+    setOpen(false);
+    setQuery("");
+  };
+
+  const results = searchSite(query);
 
   return (
     <div style={styles.wrap}>
@@ -74,20 +91,46 @@ export default function LyraCompanion() {
         <div className="lyra-panel" style={styles.panel}>
           <div style={styles.panelHeader}>
             <span className="mono" style={styles.panelLabel}>LYRA</span>
-            <button onClick={toggle} style={styles.closeBtn} aria-label="Close">&times;</button>
+            <button onClick={closeAndReset} style={styles.closeBtn} aria-label="Close">&times;</button>
           </div>
+
           <p style={styles.panelText}>
-            {!greeted || !username ? null : `Welcome back, ${username}. `}
-            {tipFor(pathname || "")}
+            {!loggedIn
+              ? "I'm Lyra. Sign in and I'll start remembering what you've found here."
+              : !hasMet
+              ? (username ? `Hello, ${username}. I'm Lyra.` : "Hello. I'm Lyra.")
+              : tipFor(pathname || "")}
           </p>
+
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search the site..."
+            style={styles.searchInput}
+          />
+
+          {query.trim() && (
+            <div style={styles.results}>
+              {results.length === 0 ? (
+                <p style={styles.noResults}>Nothing found for that.</p>
+              ) : (
+                results.map((r) => (
+                  <Link key={r.href} href={r.href} onClick={closeAndReset} style={styles.resultLink}>
+                    {r.title}
+                  </Link>
+                ))
+              )}
+            </div>
+          )}
         </div>
       )}
 
       <button onClick={toggle} style={styles.orbBtn} aria-label="Lyra">
-        <span className="lyra-orb" style={styles.orb}>
+        <span className={loggedIn ? "lyra-orb" : ""} style={{ ...styles.orb, opacity: loggedIn ? 1 : 0.55 }}>
           <svg width="22" height="22" viewBox="0 0 22 22">
-            <circle cx="11" cy="11" r="7.5" fill="none" stroke="#E8CFC0" strokeWidth="1.8" />
-            <circle cx="11" cy="11" r="2.6" fill="#E8CFC0" />
+            <circle cx="11" cy="11" r="7.5" fill="none" stroke="#E8CFC0" strokeWidth="1.8" opacity={loggedIn ? 1 : 0.7} />
+            <circle cx="11" cy="11" r="2.6" fill="#E8CFC0" opacity={loggedIn ? 1 : 0.7} />
           </svg>
         </span>
       </button>
@@ -123,7 +166,7 @@ const styles = {
     justifyContent: "center",
   },
   panel: {
-    width: 240,
+    width: 250,
     background: "linear-gradient(180deg, rgba(16,18,44,0.97), rgba(8,9,24,0.98))",
     border: "1px solid #3A3E75",
     borderRadius: 8,
@@ -154,6 +197,36 @@ const styles = {
     fontSize: 12.5,
     lineHeight: 1.55,
     color: "#D9DCFF",
-    margin: 0,
+    margin: "0 0 10px",
+  },
+  searchInput: {
+    width: "100%",
+    background: "rgba(4,5,14,0.6)",
+    border: "1px solid #262A55",
+    borderRadius: 4,
+    color: "#E4E4EF",
+    fontSize: 12,
+    padding: "7px 10px",
+    outline: "none",
+    boxSizing: "border-box",
+  },
+  results: {
+    marginTop: 8,
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+  },
+  resultLink: {
+    fontSize: 12.5,
+    color: "#B9C0FF",
+    padding: "6px 8px",
+    borderRadius: 3,
+    textDecoration: "none",
+  },
+  noResults: {
+    fontSize: 12,
+    color: "#565B8F",
+    fontStyle: "italic",
+    margin: "4px 0 0",
   },
 };

@@ -38,6 +38,12 @@ const LOOKS = [
     href: "/preview5",
     desc: "A painterly deep-space nebula field with layered color clouds and bright spiked stars.",
   },
+  {
+    n: "6",
+    name: "Jet",
+    href: "/preview6",
+    desc: "The inside of a fighter cockpit \u2014 canopy HUD reticle, and each content box its own instrument panel (radar, comms, switches, gauge).",
+  },
 ];
 
 export default function PreviewIndex() {
