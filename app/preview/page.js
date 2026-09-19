@@ -44,6 +44,12 @@ const LOOKS = [
     href: "/preview6",
     desc: "The inside of a fighter cockpit \u2014 canopy HUD reticle, and each content box its own instrument panel (radar, comms, switches, gauge).",
   },
+  {
+    n: "13",
+    name: "Big Bang",
+    href: "/preview13",
+    desc: "A single point, rapid expansion, settling into the starfield and logo \u2014 a one-time origin moment, not yet wired to real triggers.",
+  },
 ];
 
 export default function PreviewIndex() {

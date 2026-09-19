@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
 import { paginateStory } from "../../../../lib/paginateStory";
 import BookReader from "../../../../components/BookReader";
+import TrackStoryRead from "../../../../components/TrackStoryRead";
 
 export default async function DynamicAssignmentPage({ params }) {
   const supabase = await createClient();
@@ -30,6 +31,7 @@ export default async function DynamicAssignmentPage({ params }) {
 
   return (
     <div>
+      <TrackStoryRead number={row.assignment_number} />
       <Link href="/assignments" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
         &larr; back to Assignments
       </Link>

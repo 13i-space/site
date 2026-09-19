@@ -20,6 +20,33 @@ export default async function AccountPage() {
     .eq("id", user.id)
     .single();
 
+  const { data: reading } = await supabase
+    .from("reading_progress")
+    .select("assignment_number, read_at")
+    .eq("user_id", user.id)
+    .order("read_at", { ascending: false });
+
+  const otherNumbers = (reading || []).map((r) => r.assignment_number).filter((n) => n !== 1);
+  let titleByNumber = { 1: "The First Silence" };
+  if (otherNumbers.length > 0) {
+    const { data: titledRows } = await supabase
+      .from("assignment_submissions")
+      .select("assignment_number, designation")
+      .in("assignment_number", otherNumbers);
+    (titledRows || []).forEach((r) => { titleByNumber[r.assignment_number] = r.designation; });
+  }
+
+  const { data: scores } = await supabase
+    .from("high_scores")
+    .select("game, score")
+    .eq("user_id", user.id)
+    .order("score", { ascending: false });
+
+  const GAME_LABELS = {
+    "nemesis-command": "NEMESIS Command",
+    "asteroid-belt": "Asteroid Belt",
+  };
+
   return (
     <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">Your Node</div>
@@ -50,6 +77,37 @@ export default async function AccountPage() {
         )}
       </div>
 
+      {scores && scores.length > 0 && (
+        <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
+          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
+            HIGH SCORES
+          </div>
+          {scores.map((s) => (
+            <div key={s.game} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "#D9DCFF", padding: "6px 0", borderBottom: "1px solid #21244A" }}>
+              <span>{GAME_LABELS[s.game] || s.game}</span>
+              <span className="mono" style={{ color: "#E8CFC0" }}>{s.score.toLocaleString()}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {reading && reading.length > 0 && (
+        <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
+          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
+            STORIES READ
+          </div>
+          {reading.map((r) => (
+            <Link
+              key={r.assignment_number}
+              href={r.assignment_number === 1 ? "/assignments/0000001" : `/assignments/${r.assignment_number}`}
+              style={{ display: "block", fontSize: 13.5, color: "#B9C0FF", padding: "6px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
+            >
+              {titleByNumber[r.assignment_number] || `Assignment ${r.assignment_number}`}
+            </Link>
+          ))}
+        </div>
+      )}
+
       <div className="panel" style={{ marginTop: 16 }}>
         <form action="/auth/signout" method="post">
           <button
@@ -71,8 +129,7 @@ export default async function AccountPage() {
       </div>
 
       <p style={{ fontSize: 12, color: "#565B8F", marginTop: 20 }}>
-        Assignment history, high scores, and the rest of your progress will
-        show up here as those pieces come online.
+        More of your progress will show up here as new pieces come online.
       </p>
     </div>
   );

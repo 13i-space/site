@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import FullscreenButton from "./FullscreenButton";
 import { sfx } from "../lib/sfx";
+import { recordGamePlay, recordHighScore } from "../lib/trackActivity";
 
 const SHIP_RADIUS = 12;
 const ROD_COUNT = 12;
@@ -144,6 +145,7 @@ export default function AsteroidBelt() {
     setLevel(0);
     setGameOver(false);
     setStarted(true);
+    recordGamePlay("asteroid-belt");
   }, [initState, sizeCanvas]);
 
   const explode = (state, x, y, count = 14, color = "#E8CFC0") => {
@@ -386,6 +388,7 @@ export default function AsteroidBelt() {
         sfx.gameOver();
         setGameOver(true);
         setStarted(false);
+        recordHighScore("asteroid-belt", s.score);
         return;
       }
 

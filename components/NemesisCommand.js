@@ -2,6 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { sfx } from "../lib/sfx";
+import { recordGamePlay, recordHighScore } from "../lib/trackActivity";
 
 const LEVELS = [
   { target: 50, speedMin: 0.6, speedMax: 1.0, spawnMs: 1800 },
@@ -55,6 +56,7 @@ export default function NemesisCommand() {
     setLevel(0);
     setGameOver(false);
     setStarted(true);
+    recordGamePlay("nemesis-command");
   }, [initState]);
 
   useEffect(() => {
@@ -242,6 +244,7 @@ export default function NemesisCommand() {
         setStarted(false);
         running = false;
         sfx.gameOver();
+        recordHighScore("nemesis-command", s.score);
         return;
       }
 

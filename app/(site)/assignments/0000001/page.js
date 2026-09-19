@@ -1,10 +1,12 @@
 import Link from "next/link";
 import BookReader from "../../../../components/BookReader";
+import TrackStoryRead from "../../../../components/TrackStoryRead";
 import { pages, assignmentMeta } from "../../../../lib/assignment1";
 
 export default function AssignmentOnePage() {
   return (
     <div>
+      <TrackStoryRead number={1} />
       <Link href="/assignments" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
         &larr; back to Assignments
       </Link>
