@@ -20,6 +20,15 @@ const TIPS = [
 ];
 const DEFAULT_TIP = "Look for the ring-and-eye mark \u2014 it's 13i, wherever it shows up.";
 
+const GAME_INSTRUCTIONS = [
+  { prefix: "/games/asteroid-belt", game: "asteroid-belt", text: "Clear the belt, and watch for the mining ship \u2014 destroy its hull before the timer runs out, or its twelve tungsten rods scatter and you'll be clearing those too." },
+  { prefix: "/games/nemesis-command", game: "nemesis-command", text: "Move your mouse (or drag on mobile) to aim. Click, tap, or press X to fire. Levels get faster the higher your score \u2014 it never truly stops." },
+  { prefix: "/games/13i-vs-nemesis", game: "13i-vs-nemesis", text: "Defend Earth as 13i closes in across five zones. Switch weapons as new ones unlock \u2014 EMP disrupts its defenses, letting your other shots land clean." },
+];
+function gameInstructionFor(pathname) {
+  return GAME_INSTRUCTIONS.find((g) => pathname.startsWith(g.prefix)) || null;
+}
+
 function tipFor(pathname) {
   const matches = TIPS.filter((t) => pathname.startsWith(t.prefix));
   if (matches.length === 0) return DEFAULT_TIP;
@@ -34,6 +43,52 @@ export default function LyraCompanion() {
   const [username, setUsername] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [query, setQuery] = useState("");
+  const [gameMessage, setGameMessage] = useState(null); // instruction text currently being auto-shown
+
+  // Auto-deliver game instructions: first time on a given game, they stay
+  // up until dismissed; after that, a brief reminder that closes itself.
+  // This is a deliberate, narrow exception to "Lyra never opens herself" -
+  // scoped only to the moment someone lands on a game, since that's
+  // exactly when unsolicited help is actually expected, not intrusive.
+  useEffect(() => {
+    if (!loggedIn) return;
+    const g = gameInstructionFor(pathname || "");
+    if (!g) return;
+
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user || cancelled) return;
+        const { data: existing } = await supabase
+          .from("game_plays")
+          .select("play_count")
+          .eq("user_id", user.id)
+          .eq("game", g.game)
+          .single();
+        if (cancelled) return;
+        const firstTime = !existing;
+        setGameMessage(g.text);
+        setOpen(true);
+        if (!firstTime) {
+          setTimeout(() => {
+            if (!cancelled) {
+              setOpen(false);
+              setGameMessage(null);
+            }
+          }, 5000);
+        }
+      } catch (e) {
+        // no record yet counts as first-time; show and leave it up
+        setGameMessage(g.text);
+        setOpen(true);
+      }
+    })();
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, loggedIn]);
 
   useEffect(() => {
     try {
@@ -68,6 +123,7 @@ export default function LyraCompanion() {
   const closeAndReset = () => {
     setOpen(false);
     setQuery("");
+    setGameMessage(null);
   };
 
   const results = searchSite(query);
@@ -95,7 +151,9 @@ export default function LyraCompanion() {
           </div>
 
           <p style={styles.panelText}>
-            {!loggedIn
+            {gameMessage
+              ? gameMessage
+              : !loggedIn
               ? "I'm Lyra. Sign in and I'll start remembering what you've found here."
               : !hasMet
               ? (username ? `Hello, ${username}. I'm Lyra.` : "Hello. I'm Lyra.")

@@ -2,10 +2,10 @@ import Link from "next/link";
 
 const items = [
   { href: "/assignments/write", title: "Write an Assignment", blurb: "You are 13i. You have been sent somewhere. Tell us what happens." },
+  { href: "/create/alien-lab", title: "The Alien Lab", blurb: "Build a species, question by question \u2014 the environment, the body, the mind." },
 ];
 
 const comingSoon = [
-  { title: "Alien Species Generator", blurb: "Build a species, guided by prompts, no writing experience required." },
   { title: "Music Generation", blurb: "Create a track within the 13i sound, translated the way the real songs are." },
 ];
 

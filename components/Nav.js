@@ -60,6 +60,7 @@ export default async function Nav() {
           <div className="nav-dropdown-menu">
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/assignments/write">Write an Assignment</Link></li>
+              <li><Link href="/create/alien-lab">The Alien Lab</Link></li>
             </ul>
           </div>
         </li>

@@ -7,7 +7,7 @@ const DOT_END = 900;
 const BURST_END = 3800;
 const SETTLE_END = 6500;
 
-export default function BigBangField({ onSettled }) {
+export default function BigBangField({ onSettled, originXPct = 0.5, originYPct = 0.5 }) {
   const canvasRef = useRef(null);
   const [phase, setPhase] = useState("dot"); // dot | burst | settle | done
 
@@ -27,8 +27,8 @@ export default function BigBangField({ onSettled }) {
     resize();
     window.addEventListener("resize", resize);
 
-    const cx = () => canvas.width / 2;
-    const cy = () => canvas.height / 2;
+    const cx = () => canvas.width * originXPct;
+    const cy = () => canvas.height * originYPct;
 
     const makeBurst = () => {
       const count = 260;
@@ -141,7 +141,7 @@ export default function BigBangField({ onSettled }) {
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
     };
-  }, [onSettled]);
+  }, [onSettled, originXPct, originYPct]);
 
   return (
     <canvas

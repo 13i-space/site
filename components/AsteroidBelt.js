@@ -3,7 +3,8 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import FullscreenButton from "./FullscreenButton";
 import { sfx } from "../lib/sfx";
-import { recordGamePlay, recordHighScore } from "../lib/trackActivity";
+import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest } from "../lib/trackActivity";
+import Leaderboard from "./Leaderboard";
 
 const SHIP_RADIUS = 12;
 const ROD_COUNT = 12;
@@ -51,6 +52,12 @@ export default function AsteroidBelt() {
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [personalBest, setPersonalBest] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    getPersonalBest("asteroid-belt").then(setPersonalBest);
+  }, []);
 
   const sizeCanvas = useCallback((canvas) => {
     const rect = canvas.parentElement.getBoundingClientRect();
@@ -389,6 +396,9 @@ export default function AsteroidBelt() {
         setGameOver(true);
         setStarted(false);
         recordHighScore("asteroid-belt", s.score);
+        recordDailyScore("asteroid-belt", s.score);
+        getPersonalBest("asteroid-belt").then(setPersonalBest);
+        setRefreshKey((k) => k + 1);
         return;
       }
 
@@ -557,6 +567,7 @@ export default function AsteroidBelt() {
         <div className="mono" style={{ color: "#B9C0FF", fontSize: 14, display: "flex", gap: 16, alignItems: "center" }}>
           <span>LEVEL {level + 1}</span>
           <span>SCORE {score}</span>
+          {personalBest !== null && <span style={{ color: "#565B8F" }}>BEST {personalBest.toLocaleString()}</span>}
           <FullscreenButton targetRef={containerRef} />
         </div>
       </div>
@@ -577,11 +588,6 @@ export default function AsteroidBelt() {
             ) : (
               <div style={styles.overlayTitle}>Asteroid Belt</div>
             )}
-            <p style={{ fontSize: 13, color: "#8A8FBF", maxWidth: 360, textAlign: "center", marginBottom: 18 }}>
-              Clear the belt, and watch for the mining ship — destroy its
-              hull before the timer runs out, or its twelve tungsten rods
-              scatter and you'll be clearing those too.
-            </p>
             <button onClick={start} style={styles.startBtn}>
               {gameOver ? "Play again" : "Start"}
             </button>
@@ -604,6 +610,7 @@ export default function AsteroidBelt() {
       <p className="mono" style={{ fontSize: 11, color: "#565B8F", textAlign: "center", marginTop: 10 }}>
         keyboard: arrow keys or WASD to move, space to fire
       </p>
+      <Leaderboard game="asteroid-belt" refreshKey={refreshKey} />
     </div>
   );
 }

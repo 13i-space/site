@@ -2,7 +2,8 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { sfx } from "../lib/sfx";
-import { recordGamePlay, recordHighScore } from "../lib/trackActivity";
+import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest } from "../lib/trackActivity";
+import Leaderboard from "./Leaderboard";
 
 const LEVELS = [
   { target: 50, speedMin: 0.6, speedMax: 1.0, spawnMs: 1800 },
@@ -26,6 +27,12 @@ export default function NemesisCommand() {
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(5);
   const [level, setLevel] = useState(0);
+  const [personalBest, setPersonalBest] = useState(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  useEffect(() => {
+    getPersonalBest("nemesis-command").then(setPersonalBest);
+  }, []);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
 
@@ -245,6 +252,9 @@ export default function NemesisCommand() {
         running = false;
         sfx.gameOver();
         recordHighScore("nemesis-command", s.score);
+        recordDailyScore("nemesis-command", s.score);
+        getPersonalBest("nemesis-command").then(setPersonalBest);
+        setRefreshKey((k) => k + 1);
         return;
       }
 
@@ -310,6 +320,7 @@ export default function NemesisCommand() {
         <span>score: {score}</span>
         <span>level {level + 1} &middot; {nextLevelText}</span>
         <span>lives: {lives}</span>
+        {personalBest !== null && <span style={{ color: "#565B8F" }}>best: {personalBest.toLocaleString()}</span>}
       </div>
       <canvas
         ref={canvasRef}
@@ -340,11 +351,7 @@ export default function NemesisCommand() {
           </button>
         </div>
       )}
-      <p style={{ fontSize: 12, color: "#565B8F", marginTop: 16 }}>
-        Move your mouse (or drag on mobile) to aim. Click, tap, or press{" "}
-        <strong>X</strong> to fire. Levels get faster the higher your score —
-        it never truly stops.
-      </p>
+      <Leaderboard game="nemesis-command" refreshKey={refreshKey} />
     </div>
   );
 }

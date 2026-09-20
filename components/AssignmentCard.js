@@ -4,7 +4,7 @@ function pad(n) {
   return String(n).padStart(7, "0");
 }
 
-export default function AssignmentCard({ number, title, author, type, thumbUrl, href }) {
+export default function AssignmentCard({ number, title, author, type, thumbUrl, href, alreadyRead }) {
   return (
     <Link
       href={href}
@@ -13,12 +13,13 @@ export default function AssignmentCard({ number, title, author, type, thumbUrl, 
         display: "flex",
         alignItems: "center",
         gap: 14,
-        background: "rgba(14,16,38,0.72)",
+        background: alreadyRead ? "rgba(139, 149, 246, 0.08)" : "rgba(14,16,38,0.72)",
         border: "1px solid #262A55",
         borderRadius: 4,
         padding: "14px 16px",
         textDecoration: "none",
         color: "inherit",
+        opacity: alreadyRead ? 0.7 : 1,
       }}
     >
       <div

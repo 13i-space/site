@@ -10,6 +10,16 @@ export default async function AssignmentsPage() {
     .in("status", ["canon", "archived"])
     .order("assignment_number", { ascending: true });
 
+  const { data: { user } } = await supabase.auth.getUser();
+  let readNumbers = new Set();
+  if (user) {
+    const { data: reading } = await supabase
+      .from("reading_progress")
+      .select("assignment_number")
+      .eq("user_id", user.id);
+    readNumbers = new Set((reading || []).map((r) => r.assignment_number));
+  }
+
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <div className="page-title">Assignments</div>
@@ -28,6 +38,7 @@ export default async function AssignmentsPage() {
               type="human"
               thumbUrl="/covers/assignment-0000001-thumb.jpg"
               href="/assignments/0000001"
+              alreadyRead={readNumbers.has(1)}
             />
             {(rows || []).map((r) => (
               <AssignmentCard
@@ -38,6 +49,7 @@ export default async function AssignmentsPage() {
                 type={r.type}
                 thumbUrl={r.thumb_url}
                 href={`/assignments/${r.assignment_number}`}
+                alreadyRead={readNumbers.has(r.assignment_number)}
               />
             ))}
           </div>
