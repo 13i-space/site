@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState, useCallback } from "react";
 import FullscreenButton from "./FullscreenButton";
 import { sfx } from "../lib/sfx";
-import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest } from "../lib/trackActivity";
+import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 import Leaderboard from "./Leaderboard";
 
 const SHIP_RADIUS = 12;
@@ -395,7 +395,9 @@ export default function AsteroidBelt() {
         sfx.gameOver();
         setGameOver(true);
         setStarted(false);
-        recordHighScore("asteroid-belt", s.score);
+        recordHighScore("asteroid-belt", s.score).then((isNewBest) => {
+          if (isNewBest) celebrateNewBest("asteroid-belt", s.score);
+        });
         recordDailyScore("asteroid-belt", s.score);
         getPersonalBest("asteroid-belt").then(setPersonalBest);
         setRefreshKey((k) => k + 1);

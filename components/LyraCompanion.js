@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
@@ -9,16 +9,35 @@ import { searchSite } from "../lib/siteSearchIndex";
 const TIPS = [
   { prefix: "/explore", text: "Start with the Book or a short story \u2014 everything else on the site connects back to something in here." },
   { prefix: "/play", text: "The Oracle answers as \u201cwe,\u201d never \u201cI.\u201d That's not a typo \u2014 ask it why, if you want." },
+  { prefix: "/create/alien-lab", text: "There's no wrong answer here \u2014 pick \u201cOther\u201d any time the choices don't fit what you're imagining." },
   { prefix: "/create", text: "You don't need a plan. Start writing as 13i and see where the Assignment takes you." },
   { prefix: "/assignments/write", text: "Stuck partway through? Save progress \u2014 it'll be waiting exactly where you left it." },
+  { prefix: "/assignments", text: "Covers cost nothing to skip \u2014 the story underneath is the same either way." },
   { prefix: "/kinship", text: "New here is fine. Most threads welcome a first post more than you'd expect." },
   { prefix: "/forum", text: "New here is fine. Most threads welcome a first post more than you'd expect." },
+  { prefix: "/guestbook", text: "Just a line is enough \u2014 you don't need to write an essay to sign in." },
   { prefix: "/oracle", text: "Short questions tend to get the most interesting answers." },
-  { prefix: "/galaxy", text: "The Quiz uses different trivia than the Facts page \u2014 worth both." },
+  { prefix: "/galaxy/quiz", text: "The questions here are different from the Facts page \u2014 no overlap." },
+  { prefix: "/galaxy/facts", text: "This is the real data \u2014 the Quiz next door tests different trivia entirely." },
+  { prefix: "/galaxy", text: "Drag to rotate the map \u2014 Earth is marked, if you're looking for scale." },
   { prefix: "/book", text: "There's a \u201cread aloud\u201d button on every page of the reader, if you'd rather listen." },
+  { prefix: "/wiki", text: "Kept deliberately spoiler-light \u2014 nothing here gives away anything past what you've already read." },
+  { prefix: "/music", text: "Every track has its release date listed \u2014 one goes live each month." },
+  { prefix: "/artifacts/ninefold", text: "It answers in 27 different ways \u2014 the wheel and the dial up top both matter." },
+  { prefix: "/artifacts/cryptex", text: "This isn't decorative \u2014 solve it and something real unlocks." },
+  { prefix: "/artifacts", text: "Both artifacts here are real puzzles, not just props \u2014 worth actually solving." },
+  { prefix: "/kin/", text: "This is what other Kin see when they look you up \u2014 or you, them." },
   { prefix: "/account", text: "This is your Node. More of it will fill in as the site remembers more about what you've done." },
+  { prefix: "/login", text: "Forgot your password rather than never had one? Use \u201cforgot password?\u201d, not sign up." },
 ];
 const DEFAULT_TIP = "Look for the ring-and-eye mark \u2014 it's 13i, wherever it shows up.";
+
+function tipFor(pathname) {
+  const matches = TIPS.filter((t) => pathname.startsWith(t.prefix));
+  if (matches.length === 0) return DEFAULT_TIP;
+  matches.sort((a, b) => b.prefix.length - a.prefix.length);
+  return matches[0].text;
+}
 
 const GAME_INSTRUCTIONS = [
   { prefix: "/games/asteroid-belt", game: "asteroid-belt", text: "Clear the belt, and watch for the mining ship \u2014 destroy its hull before the timer runs out, or its twelve tungsten rods scatter and you'll be clearing those too." },
@@ -29,12 +48,11 @@ function gameInstructionFor(pathname) {
   return GAME_INSTRUCTIONS.find((g) => pathname.startsWith(g.prefix)) || null;
 }
 
-function tipFor(pathname) {
-  const matches = TIPS.filter((t) => pathname.startsWith(t.prefix));
-  if (matches.length === 0) return DEFAULT_TIP;
-  matches.sort((a, b) => b.prefix.length - a.prefix.length);
-  return matches[0].text;
-}
+const GAME_LABELS = {
+  "asteroid-belt": "Asteroid Belt",
+  "nemesis-command": "NEMESIS Command",
+  "13i-vs-nemesis": "13i vs NEMESIS",
+};
 
 export default function LyraCompanion() {
   const pathname = usePathname();
@@ -43,53 +61,12 @@ export default function LyraCompanion() {
   const [username, setUsername] = useState(null);
   const [loggedIn, setLoggedIn] = useState(false);
   const [query, setQuery] = useState("");
-  const [gameMessage, setGameMessage] = useState(null); // instruction text currently being auto-shown
+  const [autoMessage, setAutoMessage] = useState(null); // last auto-delivered message - stays set (even after auto-close) so hovering can bring it back
+  const [celebrating, setCelebrating] = useState(false);
+  const celebrateTimer = useRef(null);
+  const autoCloseTimer = useRef(null);
 
-  // Auto-deliver game instructions: first time on a given game, they stay
-  // up until dismissed; after that, a brief reminder that closes itself.
-  // This is a deliberate, narrow exception to "Lyra never opens herself" -
-  // scoped only to the moment someone lands on a game, since that's
-  // exactly when unsolicited help is actually expected, not intrusive.
-  useEffect(() => {
-    if (!loggedIn) return;
-    const g = gameInstructionFor(pathname || "");
-    if (!g) return;
-
-    let cancelled = false;
-    (async () => {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user || cancelled) return;
-        const { data: existing } = await supabase
-          .from("game_plays")
-          .select("play_count")
-          .eq("user_id", user.id)
-          .eq("game", g.game)
-          .single();
-        if (cancelled) return;
-        const firstTime = !existing;
-        setGameMessage(g.text);
-        setOpen(true);
-        if (!firstTime) {
-          setTimeout(() => {
-            if (!cancelled) {
-              setOpen(false);
-              setGameMessage(null);
-            }
-          }, 5000);
-        }
-      } catch (e) {
-        // no record yet counts as first-time; show and leave it up
-        setGameMessage(g.text);
-        setOpen(true);
-      }
-    })();
-
-    return () => { cancelled = true; };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname, loggedIn]);
-
+  // Initial identity check
   useEffect(() => {
     try {
       setHasMet(!!localStorage.getItem("lyra_met"));
@@ -110,6 +87,80 @@ export default function LyraCompanion() {
     })();
   }, []);
 
+  // Celebrate a new personal best, from anywhere on the site
+  useEffect(() => {
+    const onCelebrate = (e) => {
+      const { game, score } = e.detail || {};
+      const label = GAME_LABELS[game] || game;
+      setAutoMessage(`New personal best on ${label}: ${score.toLocaleString()}!`);
+      setCelebrating(true);
+      setOpen(true);
+      clearTimeout(celebrateTimer.current);
+      celebrateTimer.current = setTimeout(() => setCelebrating(false), 2600);
+      clearTimeout(autoCloseTimer.current);
+      autoCloseTimer.current = setTimeout(() => setOpen(false), 6000);
+    };
+    window.addEventListener("lyra:celebrate", onCelebrate);
+    return () => window.removeEventListener("lyra:celebrate", onCelebrate);
+  }, []);
+
+  // Auto-deliver help per page. Games get their own play-count-aware
+  // version (stays up the very first time, brief after); every other
+  // page gets a lighter version of the same idea, tracked per-browser via
+  // localStorage rather than the database, since it's low-stakes enough
+  // not to need an account. This is a deliberate, scoped exception to
+  // "Lyra never opens herself" - only at the moment of arriving somewhere
+  // new, never mid-read or mid-game.
+  useEffect(() => {
+    if (!loggedIn || !pathname) return;
+    clearTimeout(autoCloseTimer.current);
+    let cancelled = false;
+
+    const showAndMaybeClose = (text, stayOpen) => {
+      if (cancelled) return;
+      setAutoMessage(text);
+      setOpen(true);
+      if (!stayOpen) {
+        autoCloseTimer.current = setTimeout(() => {
+          if (!cancelled) setOpen(false);
+        }, 5000);
+      }
+    };
+
+    const g = gameInstructionFor(pathname);
+    if (g) {
+      (async () => {
+        try {
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user || cancelled) return;
+          const { data: existing } = await supabase
+            .from("game_plays")
+            .select("play_count")
+            .eq("user_id", user.id)
+            .eq("game", g.game)
+            .single();
+          showAndMaybeClose(g.text, !existing);
+        } catch (e) {
+          showAndMaybeClose(g.text, true);
+        }
+      })();
+      return () => { cancelled = true; };
+    }
+
+    // non-game pages: once per browser per path
+    const seenKey = `lyra_seen_${pathname}`;
+    let seen = true;
+    try { seen = !!localStorage.getItem(seenKey); } catch (e) {}
+    showAndMaybeClose(tipFor(pathname), !seen);
+    if (!seen) {
+      try { localStorage.setItem(seenKey, "1"); } catch (e) {}
+    }
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname, loggedIn]);
+
   const toggle = () => {
     setOpen((o) => {
       const next = !o;
@@ -120,13 +171,23 @@ export default function LyraCompanion() {
     });
   };
 
+  const onHover = () => {
+    if (autoMessage) setOpen(true);
+  };
+
   const closeAndReset = () => {
     setOpen(false);
     setQuery("");
-    setGameMessage(null);
   };
 
   const results = searchSite(query);
+  const displayText = autoMessage
+    ? autoMessage
+    : !loggedIn
+    ? "I'm Lyra. Sign in and I'll start remembering what you've found here."
+    : !hasMet
+    ? (username ? `Hello, ${username}. I'm Lyra.` : "Hello. I'm Lyra.")
+    : tipFor(pathname || "");
 
   return (
     <div style={styles.wrap}>
@@ -139,8 +200,13 @@ export default function LyraCompanion() {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes lyraCelebrate {
+          0%, 100% { color: #D9DCFF; }
+          50% { color: #E8CFC0; }
+        }
         .lyra-orb { animation: lyraPulse 3.2s ease-in-out infinite; }
         .lyra-panel { animation: lyraFadeIn 0.22s ease; }
+        .lyra-celebrate { animation: lyraCelebrate 0.45s ease-in-out 4; }
       `}</style>
 
       {open && (
@@ -150,14 +216,8 @@ export default function LyraCompanion() {
             <button onClick={closeAndReset} style={styles.closeBtn} aria-label="Close">&times;</button>
           </div>
 
-          <p style={styles.panelText}>
-            {gameMessage
-              ? gameMessage
-              : !loggedIn
-              ? "I'm Lyra. Sign in and I'll start remembering what you've found here."
-              : !hasMet
-              ? (username ? `Hello, ${username}. I'm Lyra.` : "Hello. I'm Lyra.")
-              : tipFor(pathname || "")}
+          <p className={celebrating ? "lyra-celebrate" : ""} style={styles.panelText}>
+            {displayText}
           </p>
 
           <input
@@ -184,7 +244,7 @@ export default function LyraCompanion() {
         </div>
       )}
 
-      <button onClick={toggle} style={styles.orbBtn} aria-label="Lyra">
+      <button onClick={toggle} onMouseEnter={onHover} style={styles.orbBtn} aria-label="Lyra">
         <span className={loggedIn ? "lyra-orb" : ""} style={{ ...styles.orb, opacity: loggedIn ? 1 : 0.55 }}>
           <svg width="22" height="22" viewBox="0 0 22 22">
             <circle cx="11" cy="11" r="7.5" fill="none" stroke="#E8CFC0" strokeWidth="1.8" opacity={loggedIn ? 1 : 0.7} />

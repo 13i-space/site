@@ -37,7 +37,7 @@ export default function Leaderboard({ game, limit = 8, refreshKey }) {
           <span className="mono" style={styles.score}>{r.score.toLocaleString()}</span>
         </div>
       ))}
-      <div className="mono" style={styles.reset}>resets at 12:00 UTC</div>
+      <div className="mono" style={styles.reset}>resets at 00:00 UTC</div>
     </div>
   );
 }

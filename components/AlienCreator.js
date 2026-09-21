@@ -17,9 +17,8 @@ export default function AlienCreator({ loggedIn }) {
   const [error, setError] = useState("");
 
   const total = ALIEN_QUESTIONS.length;
-  const onNaming = step === total;
-  const onSheet = step === total + 1;
-  const current = !onNaming && !onSheet ? ALIEN_QUESTIONS[step] : null;
+  const onSheet = step === total;
+  const current = !onSheet ? ALIEN_QUESTIONS[step] : null;
 
   const choose = (option) => {
     setAnswers((a) => ({ ...a, [current.id]: option }));

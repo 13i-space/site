@@ -2,7 +2,7 @@
 
 import { useRef, useEffect, useState, useCallback } from "react";
 import { sfx } from "../lib/sfx";
-import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest } from "../lib/trackActivity";
+import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 import Leaderboard from "./Leaderboard";
 
 const LEVELS = [
@@ -251,7 +251,9 @@ export default function NemesisCommand() {
         setStarted(false);
         running = false;
         sfx.gameOver();
-        recordHighScore("nemesis-command", s.score);
+        recordHighScore("nemesis-command", s.score).then((isNewBest) => {
+          if (isNewBest) celebrateNewBest("nemesis-command", s.score);
+        });
         recordDailyScore("nemesis-command", s.score);
         getPersonalBest("nemesis-command").then(setPersonalBest);
         setRefreshKey((k) => k + 1);

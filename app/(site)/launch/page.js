@@ -1,5 +1,9 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 import ThemedHero from "../../../components/ThemedHero";
+import BigBangField from "../../../components/BigBangField";
 
 const sections = [
   {
@@ -10,7 +14,7 @@ const sections = [
   {
     href: "/play",
     title: "Play",
-    blurb: "The Oracle, the games, the artifacts \u2014 the universe, interactive.",
+    blurb: "The Oracle, the games, the artifacts — the universe, interactive.",
   },
   {
     href: "/create",
@@ -20,32 +24,41 @@ const sections = [
   {
     href: "/kinship",
     title: "Kinship",
-    blurb: "The Forum, the Guestbook \u2014 you are not the only one who found this.",
+    blurb: "The Forum, the Guestbook — you are not the only one who found this.",
   },
 ];
 
 export default function LaunchHome() {
-  return (
-    <div>
-      <div style={{ textAlign: "center", padding: "20px 0 50px" }}>
-        <div style={{ maxWidth: 160, margin: "0 auto 20px" }}>
-          <ThemedHero background={false} />
-        </div>
-        <div className="page-subtitle" style={{ marginBottom: 0 }}>a signal, translated</div>
-        <p style={{ color: "#B7BADF", maxWidth: 520, margin: "16px auto 0" }}>
-          A working preview of the 13i universe — the book, the music, and
-          the tools built around them. Everything here is in progress.
-        </p>
-      </div>
+  // Playing this on every visit for now, per Paul's ask - the more
+  // selective version (first-visit-only, plus the live countdown-zero
+  // trigger) is the natural next refinement once this placement feels right.
+  const [revealed, setRevealed] = useState(false);
 
-      <div style={styles.grid}>
-        {sections.map((s) => (
-          <Link key={s.href} href={s.href} className="launch-card" style={styles.card}>
-            <div style={styles.cardCorner} />
-            <div className="wordmark" style={styles.cardTitle}>{s.title}</div>
-            <p style={styles.cardBlurb}>{s.blurb}</p>
-          </Link>
-        ))}
+  return (
+    <div style={{ position: "relative" }}>
+      {!revealed && <BigBangField onSettled={() => setRevealed(true)} originXPct={0.5} originYPct={0.28} />}
+
+      <div style={{ opacity: revealed ? 1 : 0, transition: "opacity 1.2s ease" }}>
+        <div style={{ textAlign: "center", padding: "20px 0 50px" }}>
+          <div style={{ maxWidth: 160, margin: "0 auto 20px" }}>
+            <ThemedHero background={false} />
+          </div>
+          <div className="page-subtitle" style={{ marginBottom: 0 }}>a signal, translated</div>
+          <p style={{ color: "#B7BADF", maxWidth: 520, margin: "16px auto 0" }}>
+            A working preview of the 13i universe — the book, the music, and
+            the tools built around them. Everything here is in progress.
+          </p>
+        </div>
+
+        <div style={styles.grid}>
+          {sections.map((s) => (
+            <Link key={s.href} href={s.href} className="launch-card" style={styles.card}>
+              <div style={styles.cardCorner} />
+              <div className="wordmark" style={styles.cardTitle}>{s.title}</div>
+              <p style={styles.cardBlurb}>{s.blurb}</p>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
