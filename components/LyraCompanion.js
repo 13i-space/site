@@ -66,25 +66,42 @@ export default function LyraCompanion() {
   const celebrateTimer = useRef(null);
   const autoCloseTimer = useRef(null);
 
-  // Initial identity check
+  // Identity check, plus a live subscription - Lyra is mounted once in the
+  // persistent site layout and doesn't remount on client-side navigation,
+  // so a one-time check alone would miss logging in mid-session (only a
+  // full reload would pick it up). onAuthStateChange fires the moment the
+  // session actually changes, no reload needed.
   useEffect(() => {
     try {
       setHasMet(!!localStorage.getItem("lyra_met"));
     } catch (e) {
       // ignore - private browsing etc, just skip the "met" memory
     }
-    (async () => {
-      try {
-        const supabase = createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
-        setLoggedIn(true);
-        const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
-        if (profile?.username) setUsername(profile.username);
-      } catch (e) {
-        // quietly do nothing
+
+    const supabase = createClient();
+
+    const applyUser = async (user) => {
+      if (!user) {
+        setLoggedIn(false);
+        setUsername(null);
+        return;
       }
-    })();
+      setLoggedIn(true);
+      try {
+        const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
+        setUsername(profile?.username || null);
+      } catch (e) {
+        setUsername(null);
+      }
+    };
+
+    supabase.auth.getUser().then(({ data: { user } }) => applyUser(user)).catch(() => {});
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      applyUser(session?.user || null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   // Celebrate a new personal best, from anywhere on the site

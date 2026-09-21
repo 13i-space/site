@@ -20,6 +20,8 @@ export default async function AssignmentsPage() {
     readNumbers = new Set((reading || []).map((r) => r.assignment_number));
   }
 
+  const aiRows = (rows || []).filter((r) => r.type === "ai");
+
   return (
     <div style={{ maxWidth: 900, margin: "0 auto" }}>
       <div className="page-title">Assignments</div>
@@ -29,7 +31,7 @@ export default async function AssignmentsPage() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 28, marginTop: 30 }}>
         <div>
-          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>Read</div>
+          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>Human Written Short Stories</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <AssignmentCard
               number={1}
@@ -40,7 +42,29 @@ export default async function AssignmentsPage() {
               href="/assignments/0000001"
               alreadyRead={readNumbers.has(1)}
             />
-            {(rows || []).map((r) => (
+          </div>
+
+          <Link
+            href="/assignments/write"
+            className="launch-card"
+            style={{
+              display: "block", background: "rgba(14,16,38,0.72)", border: "1px solid #3A3E75",
+              borderRadius: 4, padding: "20px 22px", textDecoration: "none", color: "inherit", marginTop: 10,
+            }}
+          >
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginBottom: 6 }}>
+              Write an Assignment
+            </div>
+            <p style={{ fontSize: 13, color: "#8A8FBF", margin: 0 }}>
+              You are 13i. You have been sent somewhere. Tell us what happens.
+            </p>
+          </Link>
+        </div>
+
+        <div>
+          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>AI Written Short Stories</div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {aiRows.map((r) => (
               <AssignmentCard
                 key={r.assignment_number}
                 number={r.assignment_number}
@@ -53,25 +77,6 @@ export default async function AssignmentsPage() {
               />
             ))}
           </div>
-        </div>
-
-        <div>
-          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>Write</div>
-          <Link
-            href="/assignments/write"
-            className="launch-card"
-            style={{
-              display: "block", background: "rgba(14,16,38,0.72)", border: "1px solid #3A3E75",
-              borderRadius: 4, padding: "20px 22px", textDecoration: "none", color: "inherit",
-            }}
-          >
-            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginBottom: 6 }}>
-              Write an Assignment
-            </div>
-            <p style={{ fontSize: 13, color: "#8A8FBF", margin: 0 }}>
-              You are 13i. You have been sent somewhere. Tell us what happens.
-            </p>
-          </Link>
         </div>
       </div>
     </div>
