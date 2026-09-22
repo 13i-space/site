@@ -6,9 +6,9 @@ export default async function AssignmentsPage() {
   const supabase = await createClient();
   const { data: rows } = await supabase
     .from("assignment_submissions")
-    .select("assignment_number, designation, name, type, thumb_url, status")
+    .select("assignment_number, designation, name, type, thumb_url, status, created_at")
     .in("status", ["canon", "archived"])
-    .order("assignment_number", { ascending: true });
+    .order("created_at", { ascending: false });
 
   const { data: { user } } = await supabase.auth.getUser();
   let readNumbers = new Set();

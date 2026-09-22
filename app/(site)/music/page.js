@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef, useState } from "react";
+
 const BASE = "https://tempogoatstudios.com/wp-content/uploads/2026/09/";
 
 const albums = [
@@ -72,6 +76,41 @@ function releaseDateFor(globalIndex) {
 }
 
 export default function MusicPage() {
+  const audioRefs = useRef({});
+  const [playingAlbum, setPlayingAlbum] = useState(null);
+  const [playingTrack, setPlayingTrack] = useState(null);
+
+  const stopAll = () => {
+    Object.values(audioRefs.current).forEach((el) => {
+      if (el) { el.pause(); el.currentTime = 0; }
+    });
+  };
+
+  const playTrackAt = (albumIdx, trackIdx) => {
+    if (trackIdx >= albums[albumIdx].tracks.length) {
+      setPlayingAlbum(null);
+      setPlayingTrack(null);
+      return;
+    }
+    const el = audioRefs.current[`${albumIdx}_${trackIdx}`];
+    if (!el) return;
+    setPlayingAlbum(albumIdx);
+    setPlayingTrack(trackIdx);
+    el.currentTime = 0;
+    el.play().catch(() => {});
+  };
+
+  const playAll = (albumIdx) => {
+    stopAll();
+    playTrackAt(albumIdx, 0);
+  };
+
+  const handleEnded = (albumIdx, trackIdx) => {
+    if (playingAlbum === albumIdx) {
+      playTrackAt(albumIdx, trackIdx + 1);
+    }
+  };
+
   return (
     <div>
       <div className="page-title">The Music</div>
@@ -115,6 +154,16 @@ export default function MusicPage() {
               <div className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
                 {album.year}
               </div>
+              <button
+                onClick={() => playAll(albumIdx)}
+                className="mono"
+                style={{
+                  marginTop: 8, background: "none", border: "1px solid #3A3E75", borderRadius: 4,
+                  color: "#B9C0FF", fontSize: 11, letterSpacing: "0.5px", padding: "6px 14px", cursor: "pointer",
+                }}
+              >
+                {playingAlbum === albumIdx ? "\u25B6 Playing..." : "\u25B6 Play all"}
+              </button>
             </div>
           </div>
 
@@ -143,7 +192,13 @@ export default function MusicPage() {
                   <div className="mono" style={{ flex: "0 0 100px", fontSize: 11, color: "#6E76B8" }}>
                     {releaseDateFor(globalIndex)}
                   </div>
-                  <audio controls preload="none" style={{ flex: 1, minWidth: 180, height: 32 }}>
+                  <audio
+                    ref={(el) => { audioRefs.current[`${albumIdx}_${i}`] = el; }}
+                    onEnded={() => handleEnded(albumIdx, i)}
+                    controls
+                    preload="none"
+                    style={{ flex: 1, minWidth: 180, height: 32 }}
+                  >
                     <source src={BASE + file + ".mp3"} type="audio/mpeg" />
                   </audio>
                 </div>
