@@ -1,5 +1,3 @@
-import AlienPlaceholder from "../../../components/AlienPlaceholder";
-
 const paragraphs = [
   "Paul Donaghy was born in Birmingham, England, on April 6, 1967, and moved to the United States with his family when he was three. Raised in Michigan, he developed an early fascination with dinosaurs, the natural world, and the possibilities of life beyond Earth.",
   "After earning a degree in Marketing from Michigan State University and an MBA from Wayne State University, Paul spent more than two decades in business leadership, eventually leaving corporate America to pursue his passion for soccer. He founded a youth soccer academy, worked in professional and semi-professional soccer and futsal, and built businesses along the way.",
@@ -20,7 +18,19 @@ const paragraphs = [
 export default function AboutPage() {
   return (
     <div style={{ maxWidth: 620, margin: "0 auto", textAlign: "center" }}>
-      <AlienPlaceholder size={180} />
+      <img
+        src="/paul-photo.jpg"
+        alt="Paul Donaghy"
+        style={{
+          width: 180,
+          height: 180,
+          borderRadius: "50%",
+          objectFit: "cover",
+          objectPosition: "center 20%",
+          border: "1px solid #262A55",
+          display: "inline-block",
+        }}
+      />
       <div style={{ marginTop: 20 }}>
         <div className="page-title" style={{ marginBottom: 4 }}>
           Paul Donaghy

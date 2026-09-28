@@ -36,7 +36,7 @@ export default function BookPage() {
               Read Chapter One
             </Link>
             <a
-              href="/downloads/13i-rough-draft.pdf"
+              href="/downloads/13i-chapters-1-2.pdf"
               download
               style={{
                 display: "inline-block",
@@ -48,7 +48,7 @@ export default function BookPage() {
                 fontSize: 13,
               }}
             >
-              Download the full rough draft (PDF)
+              Download First Two Chapters (PDF)
             </a>
           </div>
           <p style={{ fontSize: 12, color: "#565B8F", marginTop: 16 }}>

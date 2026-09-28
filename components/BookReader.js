@@ -142,10 +142,10 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
               PAGE {pages.length + offset + 1}
             </div>
             <p style={{ fontSize: 14, color: "#8A8FBF", fontStyle: "italic" }}>
-              More of Chapter One is coming as the manuscript is finalized.
-              Want the whole rough draft now?{" "}
-              <a href="/downloads/13i-rough-draft.pdf" download>
-                Download the full PDF
+              More of the book is coming as the manuscript is finalized.
+              Want what's written so far?{" "}
+              <a href={downloadHref || "/downloads/13i-chapters-1-2.pdf"} download>
+                Download the PDF
               </a>
               .
             </p>

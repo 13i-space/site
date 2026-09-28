@@ -10,7 +10,13 @@ export default function ChapterOne() {
       </Link>
 
       <div style={{ marginTop: 20 }}>
-        <BookReader meta={chapterMeta} pages={pages} inProgress={chapterInProgress} />
+        <BookReader
+          meta={chapterMeta}
+          pages={pages}
+          inProgress={chapterInProgress}
+          downloadHref="/downloads/13i-chapters-1-2.pdf"
+          downloadLabel="Download First Two Chapters (PDF)"
+        />
       </div>
     </div>
   );
