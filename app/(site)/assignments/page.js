@@ -31,7 +31,7 @@ export default async function AssignmentsPage() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 28, marginTop: 30 }}>
         <div>
-          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>Human Written Short Stories</div>
+          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>Human Written 13i Short Stories</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             <AssignmentCard
               number={1}
@@ -62,7 +62,7 @@ export default async function AssignmentsPage() {
         </div>
 
         <div>
-          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>AI Written Short Stories</div>
+          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF", marginBottom: 14 }}>AI Written 13i Short Stories</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {aiRows.map((r) => (
               <AssignmentCard

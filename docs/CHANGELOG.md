@@ -3,6 +3,33 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 4.7 — polish batch: Oracle, Assignments hub, Big Bang, first easter egg
+Cleared the batch of polish items that had been paused mid-task during the
+documentation pass: the Oracle's post-intro hint now reads "Ask 13i
+anything — we will answer," and its footer Assignment number is fixed at
+317811 (the Earth assignment number) instead of a random, incrementing
+one. The Assignments hub's two column headers now read "Human Written 13i
+Short Stories" and "AI Written 13i Short Stories," and Lyra's tip on that
+page was rewritten (the old "covers cost nothing to skip" line wasn't
+landing). The Big Bang animation on `/launch` now plays its full ~10s
+sequence only on a browser's first visit (tracked via localStorage), then
+a fast ~2s version on every visit after; its ending also now cross-fades
+into the real, persistent starfield already rendered behind it (by
+fading the canvas's own opacity) rather than drawing a synthetic final
+starfield of its own. Also shipped the first site easter egg: clicking the
+dot in the logo's eye on `/launch` swaps the page's look to the Radar
+(preview3) field and logo, and swaps back on a second click.
+
+## Update 4.6 — two-chapter book reader + about photo
+Replaced the single hand-coded Chapter One placeholder with the edited,
+proofed first two chapters, sourced from a supplied PDF and paginated to
+match its own page breaks. The Book hub and the reader page both link to
+a "Download First Two Chapters (PDF)" download instead of the old
+full-draft-PDF link; the reader's built-in "more is coming" page was
+generalized from "more of Chapter One" to "more of the book" to match.
+Also replaced the About page's placeholder alien icon with an actual
+photo of Paul.
+
 ## Documentation system established
 Created CLAUDE.md, PROJECT.md, DESIGN.md, WORLD.md, CURRENT.md, and this
 file, so the repository itself (rather than one long conversation thread)

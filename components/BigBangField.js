@@ -2,23 +2,41 @@
 
 import { useRef, useEffect, useState } from "react";
 
-// Phase timings, in ms from animation start
-const DOT_END = 900;
-const BURST_END = 3800;
-const SETTLE_END = 6500;
+// Phase boundaries are expressed as ratios of the total animation length
+// (totalMs) rather than fixed numbers, so the same sequence can play out
+// long on a first visit and fast on every visit after — see the
+// totalMs prop below. These ratios match the original fixed timings
+// (900 / 3800 / 6500ms).
+const DOT_RATIO = 900 / 6500;
+const BURST_RATIO = 3800 / 6500;
 
-export default function BigBangField({ onSettled, originXPct = 0.5, originYPct = 0.5 }) {
+// Once the settle phase is this far along, we start fading the whole
+// canvas out (rather than drawing our own synthetic final starfield) so
+// the real, persistent starfield already rendered behind this component
+// (ThemedBackground, mounted by the site layout) shows through smoothly.
+// onSettled fires at the same point, so the real page content can start
+// fading in while this canvas is still fading out — a true crossfade
+// rather than a hard cut.
+const REVEAL_START = 0.35;
+
+export default function BigBangField({ onSettled, originXPct = 0.5, originYPct = 0.5, totalMs = 6500 }) {
   const canvasRef = useRef(null);
   const [phase, setPhase] = useState("dot"); // dot | burst | settle | done
 
   useEffect(() => {
+    const DOT_END = totalMs * DOT_RATIO;
+    const BURST_END = totalMs * BURST_RATIO;
+    const SETTLE_END = totalMs;
+
     const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     let raf;
     let start = null;
     let particles = [];
-    let stars = [];
     let settledCalled = false;
+    let stopped = false;
+
+    canvas.style.opacity = "1";
 
     const resize = () => {
       canvas.width = window.innerWidth;
@@ -45,16 +63,8 @@ export default function BigBangField({ onSettled, originXPct = 0.5, originYPct =
       });
     };
 
-    const makeStars = () => {
-      stars = Array.from({ length: 180 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 1.1 + 0.3,
-        phase: Math.random() * Math.PI * 2,
-      }));
-    };
-
     const draw = (ts) => {
+      if (stopped) return;
       if (start === null) start = ts;
       const t = ts - start;
 
@@ -93,7 +103,6 @@ export default function BigBangField({ onSettled, originXPct = 0.5, originYPct =
           ctx.fill();
         });
       } else if (t < SETTLE_END) {
-        if (stars.length === 0) makeStars();
         setPhase("settle");
         const st = (t - BURST_END) / (SETTLE_END - BURST_END);
         // fading remnants of the burst continue drifting outward, faintly
@@ -101,7 +110,7 @@ export default function BigBangField({ onSettled, originXPct = 0.5, originYPct =
           p.x += p.vx * 0.3;
           p.y += p.vy * 0.3;
         });
-        ctx.globalAlpha = Math.max(0, 1 - st * 1.4);
+        ctx.globalAlpha = Math.max(0, 1 - st * 1.2);
         particles.forEach((p) => {
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
@@ -110,27 +119,27 @@ export default function BigBangField({ onSettled, originXPct = 0.5, originYPct =
         });
         ctx.globalAlpha = 1;
 
-        stars.forEach((s) => {
-          const a = Math.min(1, st * 1.6) * (0.4 + Math.sin(t * 0.002 + s.phase) * 0.3);
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220,223,255,${Math.max(0, a)})`;
-          ctx.fill();
-        });
+        // Cross-fade: instead of drawing our own settle-phase starfield,
+        // fade this whole canvas's opacity down so the real starfield
+        // already rendered behind it (by ThemedBackground) shows through.
+        const fadeProgress = Math.max(0, (st - REVEAL_START) / (1 - REVEAL_START));
+        canvas.style.opacity = String(Math.max(0, 1 - fadeProgress));
 
-        if (!settledCalled && st > 0.55) {
+        if (!settledCalled && st > REVEAL_START) {
           settledCalled = true;
           onSettled && onSettled();
         }
       } else {
+        // Fully revealed — nothing left for this canvas to draw or
+        // show, so stop the loop instead of animating forever unseen.
+        canvas.style.opacity = "0";
+        if (!settledCalled) {
+          settledCalled = true;
+          onSettled && onSettled();
+        }
         setPhase("done");
-        stars.forEach((s) => {
-          const a = 0.4 + Math.sin(t * 0.002 + s.phase) * 0.3;
-          ctx.beginPath();
-          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(220,223,255,${Math.max(0, a)})`;
-          ctx.fill();
-        });
+        stopped = true;
+        return;
       }
 
       raf = requestAnimationFrame(draw);
@@ -138,15 +147,16 @@ export default function BigBangField({ onSettled, originXPct = 0.5, originYPct =
     raf = requestAnimationFrame(draw);
 
     return () => {
+      stopped = true;
       cancelAnimationFrame(raf);
       window.removeEventListener("resize", resize);
     };
-  }, [onSettled, originXPct, originYPct]);
+  }, [onSettled, originXPct, originYPct, totalMs]);
 
   return (
     <canvas
       ref={canvasRef}
-      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0 }}
+      style={{ position: "fixed", inset: 0, width: "100%", height: "100%", zIndex: 0, transition: "opacity 0.05s linear" }}
     />
   );
 }

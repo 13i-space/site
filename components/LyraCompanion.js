@@ -12,7 +12,7 @@ const TIPS = [
   { prefix: "/create/alien-lab", text: "There's no wrong answer here \u2014 pick \u201cOther\u201d any time the choices don't fit what you're imagining." },
   { prefix: "/create", text: "You don't need a plan. Start writing as 13i and see where the Assignment takes you." },
   { prefix: "/assignments/write", text: "Stuck partway through? Save progress \u2014 it'll be waiting exactly where you left it." },
-  { prefix: "/assignments", text: "Covers cost nothing to skip \u2014 the story underneath is the same either way." },
+  { prefix: "/assignments", text: "Click on a story and explore a new chapter in 13i's assignments." },
   { prefix: "/kinship", text: "New here is fine. Most threads welcome a first post more than you'd expect." },
   { prefix: "/forum", text: "New here is fine. Most threads welcome a first post more than you'd expect." },
   { prefix: "/guestbook", text: "Just a line is enough \u2014 you don't need to write an essay to sign in." },

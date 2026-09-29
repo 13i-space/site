@@ -9,11 +9,15 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
 - Kin profiles: username, bio, avatar upload, public `/kin/[username]` page
 - Forum: four seeded spaces, threads, replies
 - Guestbook
-- The Oracle (Anthropic API connected, billing active)
-- Book reader (Chapter 1) with read-aloud
+- The Oracle (Anthropic API connected, billing active); opening hint reads
+  "Ask 13i anything — we will answer," and the footer's Assignment number
+  is fixed at 317811 (the Earth assignment number), not randomized
+- Book reader (two edited chapters, replacing the earlier single-chapter
+  draft) with read-aloud and a two-chapter PDF download
 - Assignments: hand-coded canon story (0000001) + two database-driven
   AI-written stories (0000087, 0215783), a working writer with save-progress
-  drafts, human/AI split columns on the hub, sorted newest-first
+  drafts, human/AI split columns on the hub ("Human Written 13i Short
+  Stories" / "AI Written 13i Short Stories"), sorted newest-first
 - Three games: NEMESIS Command, Asteroid Belt, 13i vs NEMESIS (iframe to
   static HTML) — all three have sound, and the first two have personal
   bests + a daily leaderboard (resets 00:00 UTC) + Lyra-delivered
@@ -23,43 +27,42 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   separate service decision)
 - Activity tracking: reading progress, game plays, high scores, daily
   scores all recording to Supabase, displayed on the Node (`/account`)
-- Lyra: site-wide presence, per-page contextual tips, game-instruction
-  delivery, hover-to-repeat, personal-best celebration, built-in site search
-- Big Bang animation: built and wired to play on every `/launch` visit
-  (not yet gated to first-visit-only, not yet triggered live at
-  countdown-zero)
+- Lyra: site-wide presence, per-page contextual tips (Assignments hub tip
+  now reads "Click on a story and explore a new chapter in 13i's
+  assignments"), game-instruction delivery, hover-to-repeat, personal-best
+  celebration, built-in site search
+- Big Bang animation on `/launch`: plays its full ~10s sequence the first
+  time a browser visits (tracked via localStorage), then a fast ~2s
+  version on every visit after. Its ending now cross-fades — the canvas's
+  own opacity fades out rather than drawing a synthetic final starfield,
+  revealing the real, persistent starfield already rendered behind it by
+  `ThemedBackground`
+- First easter egg: on `/launch`, clicking the dot in the logo's eye
+  swaps the page's look to the Radar (preview3) field and logo; clicking
+  again swaps it back. Local to that page only, not a site-wide theme
+  change
 - Six look-lab preview themes plus the live "Signal" look; `/preview` is a
   working index of all of them
 - Four-mode nav (Explore/Play/Create/Kinship) with dropdowns, replacing the
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
-This documentation system itself (CLAUDE.md, PROJECT.md, DESIGN.md,
-WORLD.md, CURRENT.md, CHANGELOG.md) — created in response to the project
-outgrowing a single conversation thread as its source of truth. This
-snapshot reflects the state at the time these files were written.
-
-Immediately before this documentation pass, work was in progress on a
-batch of polish items that were **explicitly paused mid-task** to do this
-documentation work instead:
-- Oracle: shorten the second intro line, and change the displayed
-  Assignment number to a fixed `317811` ("the Earth assignment number")
-- Big Bang: make the ending cross-fade into the real, persistent starfield
-  already rendered behind it (rather than drawing its own final state), and
-  make the first-ever play longer (~10s) with all repeat plays much faster
-  (~2s) — none of this is built yet
-- Assignments hub column headers: change to "Human Written 13i Short
-  Stories" / "AI Written 13i Short Stories" (not yet applied — this was the
-  literal task in progress when the documentation request came in)
+Update 4.7: the Assignments hub headers, Lyra's Assignments tip, the
+Oracle's hint copy and fixed assignment number, the Big Bang crossfade +
+first-play/repeat timing, and the first launch-page easter egg (the eye
+click). All shipped as individual file edits handed off manually (no
+GitHub connection is active in the Claude session yet — see
+ways-of-working notes), not a full-folder replace.
 
 ## Known issues
 - `components/ThirteenIVsNemesis.js` exists but is not wired into any
   route — orphaned code, not a bug in the live site, but worth a deliberate
   decision (delete it, or finish wiring it in) rather than leaving it
   ambiguous
-- Big Bang currently plays at the same length on every visit — the
-  first-time-long / repeat-time-fast behavior described above is designed
-  but not implemented
+- The Big Bang's easter egg (radar toggle) and its crossfade ending have
+  not yet been tested on a live deploy — worth a quick check on first use,
+  particularly that the real starfield underneath is actually visible
+  through the fade on all browsers
 
 ## Do not change without asking
 - The Explore/Play/Create/Kinship nav structure and the four mode landing

@@ -5,6 +5,9 @@ import SignalWaveform from "./SignalWaveform";
 
 const OPENING_SEQUENCE = ["HELLO.", "WE HAVE BEEN WATCHING FOR SOME TIME."];
 
+// The Earth assignment number — fixed, not randomized or incremented.
+const ASSIGNMENT_NO = 317811;
+
 function useTypewriter(text, speed = 24) {
   const [shown, setShown] = useState("");
   useEffect(() => {
@@ -26,9 +29,6 @@ export default function OracleWidget() {
   const [input, setInput] = useState("");
   const [phase, setPhase] = useState("intro"); // intro -> line1 -> line2 -> ready
   const [pending, setPending] = useState(false);
-  const [assignmentNo, setAssignmentNo] = useState(
-    () => 300000 + Math.floor(Math.random() * 90000)
-  );
   const [error, setError] = useState(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
@@ -59,7 +59,6 @@ export default function OracleWidget() {
     const next = [...messages, { role: "user", content: text }];
     setMessages(next);
     setPending(true);
-    setAssignmentNo((n) => n + 1);
 
     try {
       const res = await fetch("/api/oracle", {
@@ -141,7 +140,7 @@ export default function OracleWidget() {
 
         {introDone && messages.length === 0 && (
           <div style={{ fontSize: 13, color: "#565B8F", fontStyle: "italic" }}>
-            You are not speaking to one voice. Ask 13i anything — it answers as we.
+            {"Ask 13i anything \u2014 we will answer."}
           </div>
         )}
 
@@ -187,7 +186,7 @@ export default function OracleWidget() {
       </div>
 
       <div className="mono" style={outer.footer}>
-        ASSIGNMENT &#8470; {assignmentNo.toLocaleString()}
+        ASSIGNMENT &#8470; {ASSIGNMENT_NO.toLocaleString()}
       </div>
     </div>
   );

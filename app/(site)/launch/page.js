@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import ThemedHero from "../../../components/ThemedHero";
 import BigBangField from "../../../components/BigBangField";
+import RadarField from "../../../components/RadarField";
+import RadarLogo from "../../../components/RadarLogo";
 
 const sections = [
   {
@@ -28,20 +30,66 @@ const sections = [
   },
 ];
 
+// First-ever play runs long (~10s) so the origin moment actually lands;
+// every visit after that is fast (~2s) since the visitor has already seen
+// it. Tracked per-browser via localStorage, same pattern Lyra uses.
+const FIRST_PLAY_MS = 10000;
+const REPEAT_PLAY_MS = 2000;
+const SEEN_KEY = "bigbang_seen";
+
 export default function LaunchHome() {
-  // Playing this on every visit for now, per Paul's ask - the more
-  // selective version (first-visit-only, plus the live countdown-zero
-  // trigger) is the natural next refinement once this placement feels right.
   const [revealed, setRevealed] = useState(false);
+  const [bigBangMs, setBigBangMs] = useState(null); // null = not decided yet
+  const [radarMode, setRadarMode] = useState(false); // easter egg: click the eye
+
+  useEffect(() => {
+    let seen = false;
+    try {
+      seen = !!localStorage.getItem(SEEN_KEY);
+      if (!seen) localStorage.setItem(SEEN_KEY, "1");
+    } catch (e) {
+      // private browsing etc. — just default to the fast version below
+      seen = true;
+    }
+    setBigBangMs(seen ? REPEAT_PLAY_MS : FIRST_PLAY_MS);
+  }, []);
+
+  // Avoid a flash of the wrong-length animation before we know which one
+  // to play — this resolves in well under a frame in practice.
+  if (bigBangMs === null) return null;
 
   return (
     <div style={{ position: "relative" }}>
-      {!revealed && <BigBangField onSettled={() => setRevealed(true)} originXPct={0.5} originYPct={0.28} />}
+      {!revealed && (
+        <BigBangField onSettled={() => setRevealed(true)} originXPct={0.5} originYPct={0.28} totalMs={bigBangMs} />
+      )}
+
+      {radarMode && <RadarField />}
 
       <div style={{ opacity: revealed ? 1 : 0, transition: "opacity 1.2s ease" }}>
         <div style={{ textAlign: "center", padding: "20px 0 50px" }}>
-          <div style={{ maxWidth: 160, margin: "0 auto 20px" }}>
-            <ThemedHero background={false} />
+          <div style={{ maxWidth: 160, margin: "0 auto 20px", position: "relative" }}>
+            {radarMode ? <RadarLogo /> : <ThemedHero background={false} />}
+            {/* a quiet easter egg: the dot in the eye toggles the Radar look */}
+            <button
+              onClick={() => setRadarMode((v) => !v)}
+              tabIndex={-1}
+              aria-hidden="true"
+              style={{
+                position: "absolute",
+                left: "74.8%",
+                top: "29.2%",
+                width: "11%",
+                aspectRatio: "1",
+                transform: "translate(-50%, -50%)",
+                borderRadius: "50%",
+                background: "transparent",
+                border: "none",
+                padding: 0,
+                cursor: "pointer",
+                zIndex: 5,
+              }}
+            />
           </div>
           <div className="page-subtitle" style={{ marginBottom: 0 }}>a signal, translated</div>
           <p style={{ color: "#B7BADF", maxWidth: 520, margin: "16px auto 0" }}>
