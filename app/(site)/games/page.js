@@ -23,7 +23,7 @@ export default function GamesHub() {
   return (
     <div>
       <div className="page-title">Games</div>
-      <div className="page-subtitle">two ways to play</div>
+      <div className="page-subtitle">Time to have some fun.</div>
 
       <div style={styles.grid}>
         {games.map((g) => (
@@ -32,6 +32,14 @@ export default function GamesHub() {
             <p style={styles.cardBlurb}>{g.blurb}</p>
           </Link>
         ))}
+      </div>
+
+      <div style={styles.divider} />
+      <div className="page-title" style={{ fontSize: 30 }}>Games from Short Stories</div>
+      <div className="page-subtitle">
+        <Link href="/assignments" style={{ color: "inherit" }}>Read Short Stories</Link> to Unlock Games
+      </div>
+      <div style={styles.grid}>
         <StoryGameCards cardStyle={styles.card} titleStyle={styles.cardTitle} blurbStyle={styles.cardBlurb} />
       </div>
     </div>
@@ -53,6 +61,7 @@ const styles = {
     color: "inherit",
     textDecoration: "none",
   },
+  divider: { height: 1, background: "#262A55", margin: "48px 0 32px" },
   cardTitle: { fontSize: 22, color: "#DCDFFF", marginBottom: 8 },
   cardBlurb: { fontSize: 13, color: "#8A8FBF", lineHeight: 1.6, margin: 0 },
 };

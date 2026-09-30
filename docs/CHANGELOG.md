@@ -3,6 +3,23 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.2 — Games page sections, Lyra nudges, Orbit look, more news, Alien Lab portraits
+The Games page now reads "Time to have some fun." and is split in two:
+the arcade games, then **Games from Short Stories** ("Read Short Stories
+to Unlock Games"), where locked story games show which story unlocks
+them. On the Games page Lyra now picks a different line each visit: a game
+you haven't tried, a personal best to beat, or a story game still locked.
+New look-lab **preview 8 — Orbit** (`components/OrbitField.js`): a
+low-orbit view of an alien world turning beneath you. Space News added
+Spaceflight Now, Universe Today, Phys.org and Space.com (whose feed was
+publishing empty on 2026-09-30), capped at 10 headlines per source. The
+**Alien Lab** can now suggest a name and generate a portrait: Claude
+(`claude-opus-5-5`, via `app/api/alien`, signed-in users only) draws the
+species as SVG line art from its answers, saved with the species
+(`portrait_svg` column, `docs/v5.2-alien-portraits.sql`). Claude can't
+generate photographic images; Paul chose drawn line art over adding a
+separate image service.
+
 ## Update 5.1 — 13i: The Deep Signal, Novaux-4, fixes
 Built **13i: The Deep Signal**, the first game tied to a short story (The
 Deep Walkers): a top-down exploration / puzzle / survival game with four

@@ -19,7 +19,7 @@ const sections = [
   {
     href: "/galaxy/news",
     title: "Space News",
-    blurb: "Current headlines from NASA, ESA and SpaceNews, refreshed through the day.",
+    blurb: "Current headlines from NASA, ESA, Spaceflight Now, Universe Today and more, refreshed through the day.",
   },
 ];
 

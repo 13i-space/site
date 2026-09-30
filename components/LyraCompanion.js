@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
 import { searchSite } from "../lib/siteSearchIndex";
+import { STORY_GAMES, openedStories } from "../lib/storyGames";
 
 const TIPS = [
   { prefix: "/explore", text: "Start with the Book or a short story \u2014 everything else on the site connects back to something in here." },
@@ -16,8 +17,9 @@ const TIPS = [
   { prefix: "/kinship", text: "New here is fine. Most threads welcome a first post more than you'd expect." },
   { prefix: "/forum", text: "New here is fine. Most threads welcome a first post more than you'd expect." },
   { prefix: "/guestbook", text: "Just a line is enough \u2014 you don't need to write an essay to sign in." },
+  { prefix: "/games", text: "Pick one and play \u2014 the story games unlock as you read." },
   { prefix: "/oracle", text: "Short questions tend to get the most interesting answers." },
-  { prefix: "/galaxy/news", text: "Fresh from NASA, ESA and SpaceNews \u2014 each headline opens the full story in a new tab." },
+  { prefix: "/galaxy/news", text: "Fresh from NASA, ESA, Spaceflight Now and more \u2014 each headline opens the full story in a new tab." },
   { prefix: "/galaxy/map", text: "Drag to turn it, scroll or use +/\u2212 to zoom. Worlds from the Assignments appear here once you've read them." },
   { prefix: "/galaxy/quiz", text: "The questions here are different from the Facts page \u2014 no overlap." },
   { prefix: "/galaxy/facts", text: "This is the real data \u2014 the Quiz next door tests different trivia entirely." },
@@ -53,6 +55,56 @@ const GAME_INSTRUCTIONS = [
   { prefix: "/games/deep-signal", game: "deep-signal", text: "Not a shooter. Explore, scan with Space, and choose carefully what you connect to \u2014 something down there notices." },
   { prefix: "/games/13i-vs-nemesis", game: "13i-vs-nemesis", text: "Defend Earth as 13i closes in across five zones. Switch weapons as new ones unlock \u2014 EMP disrupts its defenses, letting your other shots land clean." },
 ];
+// The Games hub: a different nudge each visit - a game you haven't tried,
+// a best worth beating, or a story game still waiting to be unlocked.
+const pickOne = (arr) => arr[Math.floor(Math.random() * arr.length)];
+async function gamesHubMessage(supabase, user) {
+  const opened = await openedStories();
+  const available = Object.keys(GAME_LABELS).filter((g) => {
+    const story = STORY_GAMES.find((s) => s.game === g);
+    return !story || opened.has(story.assignment);
+  });
+  const lockedStory = STORY_GAMES.find((s) => !opened.has(s.assignment));
+  let played = new Set();
+  let bests = [];
+  try {
+    const [{ data: plays }, { data: scores }] = await Promise.all([
+      supabase.from("game_plays").select("game").eq("user_id", user.id),
+      supabase.from("high_scores").select("game, score").eq("user_id", user.id),
+    ]);
+    played = new Set((plays || []).map((p) => p.game));
+    bests = (scores || []).filter((s) => GAME_LABELS[s.game] && s.score > 0);
+  } catch (e) {
+    // fall through to the general lines
+  }
+  const options = [];
+  available.filter((g) => !played.has(g)).forEach((g) => {
+    const name = GAME_LABELS[g];
+    options.push(
+      `You haven't tried ${name} yet \u2014 maybe today's the day.`,
+      `${name} is still waiting for its first game from you.`,
+      `Something new? You've never played ${name}.`
+    );
+  });
+  bests.forEach(({ game, score }) => {
+    const name = GAME_LABELS[game];
+    const s = score.toLocaleString();
+    options.push(
+      `Your best on ${name} is ${s}. Think you can beat it?`,
+      `${s} on ${name} \u2014 that's the number to beat.`,
+      `Feeling sharp? Your ${name} record is ${s}. Go get it.`
+    );
+  });
+  if (lockedStory) options.push(`There's a game hidden in ${lockedStory.story} \u2014 read it and it unlocks.`);
+  if (!options.length) {
+    options.push(
+      "Every game here has a daily leaderboard \u2014 today's top spot is up for grabs.",
+      "Pick one and play. Nothing here is graded but the scoreboard."
+    );
+  }
+  return pickOne(options);
+}
+
 function gameInstructionFor(pathname) {
   return GAME_INSTRUCTIONS.find((g) => pathname.startsWith(g.prefix)) || null;
 }
@@ -172,6 +224,25 @@ export default function LyraCompanion() {
           showAndMaybeClose(g.text, !existing);
         } catch (e) {
           showAndMaybeClose(g.text, true);
+        }
+      })();
+      return () => { cancelled = true; };
+    }
+
+    // the Games hub: fresh encouragement every visit
+    if (pathname === "/games") {
+      (async () => {
+        try {
+          const supabase = createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user || cancelled) return;
+          const text = await gamesHubMessage(supabase, user);
+          const seenKey = "lyra_seen_/games";
+          let seen = true;
+          try { seen = !!localStorage.getItem(seenKey); localStorage.setItem(seenKey, "1"); } catch (e) {}
+          showAndMaybeClose(text, !seen);
+        } catch (e) {
+          // no message is fine
         }
       })();
       return () => { cancelled = true; };

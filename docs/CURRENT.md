@@ -27,9 +27,10 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   Deep Walkers; see docs/DEEP-SIGNAL.md). All have sound; all but 13i vs
   NEMESIS have personal bests + a daily leaderboard (resets 00:00 UTC) +
   Lyra-delivered instructions
-- The Alien Lab: full 15-question guided species builder, saves to the
-  Node; image generation is explicitly not built (flagged as needing a
-  separate service decision)
+- The Alien Lab: 17-question guided species builder, saves to the Node;
+  Claude suggests a name and draws an SVG line-art portrait on request
+  (`app/api/alien`, signed-in only; needs `docs/v5.2-alien-portraits.sql`
+  run to save portraits)
 - Activity tracking: reading progress, game plays, high scores, daily
   scores all recording to Supabase, displayed on the Node (`/account`)
 - Lyra: site-wide presence, per-page contextual tips (Assignments hub tip
@@ -46,12 +47,14 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   swaps the page's look to the Radar (preview3) field and logo; clicking
   again swaps it back. Local to that page only, not a site-wide theme
   change
-- Seven look-lab preview themes (1–7, plus 13 Big Bang) and the live
+- Eight look-lab preview themes (1–8, plus 13 Big Bang) and the live
   "Signal" look; `/preview` is a working index of all of them
 - Four-mode nav (Explore/Play/Create/Kinship) with dropdowns, replacing the
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
+Update 5.2 (see CHANGELOG): Games page sections, Lyra's Games nudges,
+preview 8 (Orbit), more Space News sources, Alien Lab names + portraits.
 Update 5.1 (see CHANGELOG): 13i: The Deep Signal, Novaux-4, the Alien Lab
 text fixes, .gitignore. Before that, Update 5.0: Book/story audio, Book
 hub options, Space News, the rebuilt Galaxy Map, preview 7 (Black Hole). Edited directly in
@@ -59,6 +62,10 @@ the local checkout by a Claude Code session and committed/pushed via
 GitHub Desktop, rather than handed off as zips.
 
 ## Known issues
+- The Alien Lab's Claude calls (name + portrait) were never run against the
+  real API during Update 5.2 (no key on the dev machine). The first real
+  portrait is the test, including how long it takes. Each portrait is one
+  Claude Opus 5.5 request (roughly 5–15 cents)
 - `.DS_Store` files were committed before the `.gitignore` existed; the
   new ignore rule stops new ones but doesn't remove the old ones from Git
 - The Deep Signal hasn't had a full human playthrough or a real-phone

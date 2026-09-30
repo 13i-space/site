@@ -15,6 +15,10 @@ export default function AlienCreator({ loggedIn }) {
   const [speciesName, setSpeciesName] = useState("");
   const [saveStatus, setSaveStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [portrait, setPortrait] = useState(null); // SVG markup from Claude
+  const [portraitStatus, setPortraitStatus] = useState("idle"); // idle | drawing | error
+  const [portraitNote, setPortraitNote] = useState("");
+  const [namingStatus, setNamingStatus] = useState("idle");
 
   const total = ALIEN_QUESTIONS.length;
   const onSheet = step === total;
@@ -40,6 +44,79 @@ export default function AlienCreator({ loggedIn }) {
     return a;
   };
 
+  const answersForClaude = () => {
+    const out = {};
+    ALIEN_QUESTIONS.forEach((q) => { out[`${q.category}: ${q.question}`] = displayAnswer(q) || ""; });
+    return out;
+  };
+
+  const suggestName = async () => {
+    setNamingStatus("loading");
+    setError("");
+    try {
+      const res = await fetch("/api/alien", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "name", answers: answersForClaude() }),
+      });
+      const data = await res.json();
+      if (data.name) setSpeciesName(data.name);
+      else setError(data.error || "No name came back. Try again.");
+    } catch (e) {
+      setError("No name came back. Try again.");
+    }
+    setNamingStatus("idle");
+  };
+
+  const generatePortrait = async () => {
+    setPortraitStatus("drawing");
+    setPortraitNote("");
+    setError("");
+    try {
+      const res = await fetch("/api/alien", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "portrait", answers: answersForClaude(), name: speciesName.trim() }),
+      });
+      if (!res.body || (res.headers.get("content-type") || "").includes("application/json")) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "The portrait couldn't be started.");
+      }
+      // newline-delimited JSON: progress pings, then the SVG (or an error)
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let result = null;
+      for (;;) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop();
+        lines.forEach((line) => {
+          if (!line.trim()) return;
+          try {
+            const msg = JSON.parse(line);
+            if (msg.svg || msg.error) result = msg;
+          } catch (e) {
+            // ignore a partial line
+          }
+        });
+      }
+      if (result && result.svg) {
+        // an SVG shown through <img> must declare its namespace
+        const svg = /xmlns=/.test(result.svg) ? result.svg : result.svg.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
+        setPortrait(svg);
+        setPortraitStatus("idle");
+      } else {
+        throw new Error((result && result.error) || "That portrait didn't come out. Try again.");
+      }
+    } catch (e) {
+      setPortraitNote(e.message);
+      setPortraitStatus("error");
+    }
+  };
+
   const save = async () => {
     setSaveStatus("loading");
     setError("");
@@ -49,11 +126,17 @@ export default function AlienCreator({ loggedIn }) {
       if (!user) throw new Error("You need to be logged in to save a species.");
       const finalAnswers = {};
       ALIEN_QUESTIONS.forEach((q) => { finalAnswers[q.category + " / " + q.question] = displayAnswer(q); });
-      const { error: insertError } = await supabase.from("alien_species").insert({
+      const row = {
         user_id: user.id,
         name: speciesName.trim() || "Unnamed species",
         answers: finalAnswers,
-      });
+      };
+      let { error: insertError } = await supabase.from("alien_species").insert(portrait ? { ...row, portrait_svg: portrait } : row);
+      // Until the portrait_svg column exists (see docs/v5.2-alien-portraits.sql),
+      // still save the species itself rather than failing outright.
+      if (insertError && portrait && /portrait_svg/.test(insertError.message)) {
+        ({ error: insertError } = await supabase.from("alien_species").insert(row));
+      }
       if (insertError) throw new Error(insertError.message);
       setSaveStatus("done");
     } catch (e) {
@@ -80,23 +163,50 @@ export default function AlienCreator({ loggedIn }) {
           SPECIES SHEET
         </div>
         {saveStatus !== "done" ? (
-          <>
+          <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
             <input
               value={speciesName}
               onChange={(e) => setSpeciesName(e.target.value)}
               placeholder="Name this species..."
               style={{
-                width: "100%", background: "transparent", border: "1px solid #262A55", borderRadius: 3,
-                color: "#E4E4EF", fontSize: 18, padding: "10px 12px", outline: "none", marginBottom: 16,
+                flex: "1 1 220px", background: "transparent", border: "1px solid #262A55", borderRadius: 3,
+                color: "#E4E4EF", fontSize: 18, padding: "10px 12px", outline: "none",
                 boxSizing: "border-box", fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
               }}
             />
-          </>
+            <button onClick={suggestName} disabled={namingStatus === "loading"} style={{ ...btnStyle, fontSize: 12 }}>
+              {namingStatus === "loading" ? "Thinking..." : "Suggest a name"}
+            </button>
+          </div>
         ) : (
           <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginBottom: 16 }}>
             {speciesName || "Unnamed species"}
           </div>
         )}
+
+        <div style={{ marginBottom: 20 }}>
+          {portrait ? (
+            <img
+              src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(portrait)}`}
+              alt={`Portrait of ${speciesName || "this species"}`}
+              style={{ width: "100%", maxWidth: 400, display: "block", margin: "0 auto", borderRadius: 4, border: "1px solid #262A55" }}
+            />
+          ) : (
+            <div style={{ aspectRatio: "1", maxWidth: 400, margin: "0 auto", border: "1px dashed #262A55", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 20, boxSizing: "border-box" }}>
+              <span className="mono" style={{ fontSize: 11, color: "#565B8F", lineHeight: 1.7 }}>
+                {portraitStatus === "drawing" ? "DRAWING YOUR SPECIES... THIS TAKES A MINUTE OR TWO" : "NO PORTRAIT YET"}
+              </span>
+            </div>
+          )}
+          {saveStatus !== "done" && (
+            <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
+              <button onClick={generatePortrait} disabled={portraitStatus === "drawing"} style={btnStyle}>
+                {portraitStatus === "drawing" ? "Drawing..." : portrait ? "Generate again" : "Generate Species"}
+              </button>
+            </div>
+          )}
+          {portraitNote && <p className="mono" style={{ fontSize: 11, color: "#C97B6E", textAlign: "center", margin: "8px 0 0" }}>{portraitNote}</p>}
+        </div>
 
         <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 20 }}>
           {ALIEN_QUESTIONS.map((q) => (
@@ -114,7 +224,7 @@ export default function AlienCreator({ loggedIn }) {
             <button onClick={save} disabled={saveStatus === "loading"} style={btnStyle}>
               {saveStatus === "loading" ? "Saving..." : "Save this species"}
             </button>
-            <button onClick={() => setStep(0)} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
+            <button onClick={() => { setStep(0); setPortrait(null); setPortraitStatus("idle"); }} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
               Start over
             </button>
             {error && <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{error}</span>}
@@ -122,9 +232,8 @@ export default function AlienCreator({ loggedIn }) {
         )}
 
         <p style={{ fontSize: 11.5, color: "#3A3E75", marginTop: 18, fontStyle: "italic" }}>
-          An illustration of your species isn't built yet &mdash; that needs its
-          own image-generation service, which is a deliberate next step, not
-          an oversight.
+          Portraits are drawn by Claude from your answers, as line art rather
+          than a painting, so each one is an interpretation.
         </p>
       </div>
     );

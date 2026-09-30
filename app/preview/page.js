@@ -51,6 +51,12 @@ const LOOKS = [
     desc: "A black hole at the logo's eye — lensed starfield, a Doppler-bright accretion disk crossing the shadow, matter spiraling in.",
   },
   {
+    n: "8",
+    name: "Orbit",
+    href: "/preview8",
+    desc: "The view from low orbit — an alien world's surface slowly turning beneath you: deserts, basalt seas, a rift, drifting cloud, the night side, a thin atmosphere at the horizon.",
+  },
+  {
     n: "13",
     name: "Big Bang",
     href: "/preview13",
