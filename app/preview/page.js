@@ -45,6 +45,12 @@ const LOOKS = [
     desc: "The inside of a fighter cockpit \u2014 canopy HUD reticle, and each content box its own instrument panel (radar, comms, switches, gauge).",
   },
   {
+    n: "7",
+    name: "Black Hole",
+    href: "/preview7",
+    desc: "A black hole at the logo's eye — lensed starfield, a Doppler-bright accretion disk crossing the shadow, matter spiraling in.",
+  },
+  {
     n: "13",
     name: "Big Bang",
     href: "/preview13",

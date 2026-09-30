@@ -3,6 +3,39 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.0 — audio, Space News, a real Galaxy Map, Black Hole look
+Narrated audio arrived: the three short stories and both book chapters now
+have MP3 recordings (`public/stories/<slug>/audio.mp3`,
+`public/audio/Chapter1.mp3` / `Chapter2.mp3`), played from a player at the
+top of the reader (`BookReader`'s `audioSrc` / `audioByHeading` props). In
+the book reader the player follows the chapter you're on, switching to
+Chapter 2's recording on Chapter 2's pages. The Book hub now offers four
+options — Read Chapters 1 & 2, Download Chapters 1 & 2, and a second row
+with Listen to Chapter 1 / Chapter 2 players — replacing the old links
+that pointed straight at the MP3 files. Lyra's Book tip was rewritten (it
+referred to a "read aloud" button that didn't exist).
+
+Added **Space News** (`/galaxy/news`): headlines from NASA, ESA and
+SpaceNews public RSS feeds, fetched server-side and cached for 30 minutes
+(`lib/spaceNews.js`); each opens on its original site in a new tab. No
+keys or accounts involved; each feed fails independently and quietly.
+
+Rebuilt the **Galaxy Map** (`components/GalaxyMap.js`) as a full-width,
+canvas-drawn 3D barred spiral: four named arms plus the Orion Spur,
+~17,000 stars, star-forming regions, drag to turn, scroll/pinch/buttons
+to zoom, tap or pick a marker to fly to it with an info card. Earth and
+Sagittarius A* are always shown; the worlds of the Assignments (13i's
+home world and its ringed twin, Veyra, Nerath) appear only once the
+signed-in visitor has read that Assignment. Their positions are invented
+for the map — see WORLD.md.
+
+New look-lab preview **7 — Black Hole** (`/preview7`,
+`components/BlackHoleField.js`): a lensed starfield, photon ring, lensed
+halo, and a Doppler-bright accretion disk crossing the shadow.
+
+Also: High Scores game names on the Node link to each game's page, and
+Lyra greets signed-in visitors on `/launch` by username.
+
 ## Update 4.7 — polish batch: Oracle, Assignments hub, Big Bang, first easter egg
 Cleared the batch of polish items that had been paused mid-task during the
 documentation pass: the Oracle's post-intro hint now reads "Ask 13i

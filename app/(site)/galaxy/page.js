@@ -4,7 +4,7 @@ const sections = [
   {
     href: "/galaxy/map",
     title: "The Map",
-    blurb: "A drag-to-rotate 3D view of the galaxy, with Earth marked.",
+    blurb: "A 3D view of the galaxy you can turn and zoom — with Earth, and the worlds of the Assignments you've read.",
   },
   {
     href: "/galaxy/facts",
@@ -15,6 +15,11 @@ const sections = [
     href: "/galaxy/quiz",
     title: "Galaxy Quiz",
     blurb: "Trivia beyond the basics, with a score at the end.",
+  },
+  {
+    href: "/galaxy/news",
+    title: "Space News",
+    blurb: "Current headlines from NASA, ESA and SpaceNews, refreshed through the day.",
   },
 ];
 

@@ -2,7 +2,19 @@
 
 import { useState, useEffect } from "react";
 
-export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification, audioSrc }) {
+// The heading of the section a content page belongs to - the nearest
+// page at or before it that starts with a heading (e.g. "Chapter 2 — ...").
+function sectionHeadingAt(pages, index) {
+  for (let i = Math.min(index, pages.length - 1); i >= 0; i--) {
+    if (pages[i] && !Array.isArray(pages[i]) && pages[i].heading) return pages[i].heading;
+  }
+  return null;
+}
+
+// audioSrc: one recording for the whole reader (short stories).
+// audioByHeading: { [section heading]: { label, src } } - the player follows
+// whichever section the reader is on (the book's chapters).
+export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification, audioSrc, audioByHeading }) {
   const [pageIndex, setPageIndex] = useState(0);
   const offset = coverImage ? 1 : 0;
   const totalPages = pages.length + offset + (inProgress ? 1 : 0);
@@ -15,6 +27,9 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
   const currentHeading = currentPage && !Array.isArray(currentPage) ? currentPage.heading : null;
   const currentParagraphs = currentPage ? (Array.isArray(currentPage) ? currentPage : currentPage.paragraphs) : [];
   const showIdentification = identification && contentIndex === 0 && !onCoverPage;
+
+  const sectionAudio = audioByHeading ? audioByHeading[sectionHeadingAt(pages, Math.max(contentIndex, 0))] : null;
+  const audio = sectionAudio || (audioSrc ? { label: "Listen to this story", src: audioSrc } : null);
 
   const goNext = () => {
     if (pageIndex < totalPages - 1) setPageIndex((p) => p + 1);
@@ -59,13 +74,15 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
             </a>
           </div>
         )}
-        {audioSrc && (
+        {audio && (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 14 }}>
             <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 6 }}>
-              LISTEN TO THIS STORY
+              {audio.label.toUpperCase()}
             </div>
-            <audio controls preload="none" style={{ width: "100%", maxWidth: 420, height: 36 }}>
-              <source src={audioSrc} type="audio/mpeg" />
+            {/* keyed by src so the player swaps recordings when the section
+                changes, but keeps playing while turning pages within one */}
+            <audio key={audio.src} controls preload="none" style={{ width: "100%", maxWidth: 420, height: 36 }}>
+              <source src={audio.src} type="audio/mpeg" />
             </audio>
           </div>
         )}

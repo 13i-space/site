@@ -100,6 +100,7 @@ Every alternate visual theme gets its own permanent, numbered route
 | 4 | Fibonacci | Golden-angle spiral (ties to the book's "Fibonacci Signal") |
 | 5 | Hubble | Painterly nebula field, spiked stars |
 | 6 | Jet | Fighter cockpit — each content box its own instrument panel (radar/comms/switches/gauge) |
+| 7 | Black Hole | Lensed starfield, photon ring, Doppler-bright accretion disk; the hole as the eye |
 | 13 | Big Bang | Origin-moment animation — see below |
 
 Switching the *live* site's look is a one-line edit in `lib/theme.js`.

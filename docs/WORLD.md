@@ -103,6 +103,19 @@ galaxy with specific invented geography, versus real-world astronomy used
 as flavor, is not established — treat as **developing** rather than
 assuming either way.
 
+## Galaxy map placements — developing (map only)
+Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
+invented purely for the map (Paul's call: "you can make up where they
+would appear"). None of this is canon: not the positions, not which spiral
+arm they sit in, and not that they share a galaxy with Earth. The labels
+avoid inventing names:
+- **"13i's home world"** (Assignment 0000001) — drawn with its ringed
+  binary twin beside it; neither planet is named in the story, so neither
+  is named on the map
+- **Veyra** (0000087) and **Nerath** (0215783) — names from their stories
+Placement lives in `lib/galaxyWorlds.js`; move them freely if canon ever
+says otherwise.
+
 ## Kin / Kinship — developing
 "Kin" is the established term for community members. "Kinship" as a
 deliberate concept — meant to mean more than generic community, aiming at

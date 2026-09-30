@@ -12,8 +12,12 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
 - The Oracle (Anthropic API connected, billing active); opening hint reads
   "Ask 13i anything — we will answer," and the footer's Assignment number
   is fixed at 317811 (the Earth assignment number), not randomized
-- Book reader (two edited chapters, replacing the earlier single-chapter
-  draft) with read-aloud and a two-chapter PDF download
+- Book reader (two edited chapters) with a narrated-audio player that
+  follows the current chapter, and a two-chapter PDF download; the Book hub
+  offers Read / Download / Listen to Chapter 1 / Listen to Chapter 2
+- Narrated audio on all three short stories (player at the top of the reader)
+- Galaxy: 3D Galaxy Map with story worlds unlocked by reading, Facts,
+  Quiz, and Space News (NASA/ESA/SpaceNews RSS, cached 30 min)
 - Assignments: hand-coded canon story (0000001) + two database-driven
   AI-written stories (0000087, 0215783), a working writer with save-progress
   drafts, human/AI split columns on the hub ("Human Written 13i Short
@@ -41,20 +45,25 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   swaps the page's look to the Radar (preview3) field and logo; clicking
   again swaps it back. Local to that page only, not a site-wide theme
   change
-- Six look-lab preview themes plus the live "Signal" look; `/preview` is a
-  working index of all of them
+- Seven look-lab preview themes (1–7, plus 13 Big Bang) and the live
+  "Signal" look; `/preview` is a working index of all of them
 - Four-mode nav (Explore/Play/Create/Kinship) with dropdowns, replacing the
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
-Update 4.7: the Assignments hub headers, Lyra's Assignments tip, the
-Oracle's hint copy and fixed assignment number, the Big Bang crossfade +
-first-play/repeat timing, and the first launch-page easter egg (the eye
-click). All shipped as individual file edits handed off manually (no
-GitHub connection is active in the Claude session yet — see
-ways-of-working notes), not a full-folder replace.
+Update 5.0 (see CHANGELOG): Book/story audio, Book hub options, Space
+News, the rebuilt Galaxy Map, preview 7 (Black Hole). Edited directly in
+the local checkout by a Claude Code session and committed/pushed via
+GitHub Desktop, rather than handed off as zips.
 
 ## Known issues
+- Update 5.0 was written without Node.js available locally, so it was
+  never run through `next build` before pushing. The Galaxy Map, Black
+  Hole preview and Space News parser were exercised in a browser test
+  harness; the Book/audio changes weren't. Check the Vercel build log and
+  each new page on first deploy
+- The "Download Chapters 1 & 2" option serves the existing PDF; there is no
+  separate ebook (.epub) file yet
 - `components/ThirteenIVsNemesis.js` exists but is not wired into any
   route — orphaned code, not a bug in the live site, but worth a deliberate
   decision (delete it, or finish wiring it in) rather than leaving it
