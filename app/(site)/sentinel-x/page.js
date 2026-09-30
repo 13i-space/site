@@ -16,6 +16,7 @@ const GAME_NAMES = {
   "asteroid-belt": "Asteroid Belt",
   "13i-vs-nemesis": "13i vs NEMESIS",
   "deep-signal": "13i: The Deep Signal",
+  sixteen: "SIXTEEN",
 };
 
 function ago(iso) {

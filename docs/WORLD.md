@@ -103,6 +103,17 @@ galaxy with specific invented geography, versus real-world astronomy used
 as flavor, is not established — treat as **developing** rather than
 assuming either way.
 
+## Nerathi — developing (from the SIXTEEN game)
+The game SIXTEEN calls the species of Nerath's Secret the **Nerathi**. It's
+a working name; the story itself never names them. The game also invents
+gameplay-level details that are **not canon**: limb specialties (grip,
+sense, anchor, signal), limb personalities, "trust", supply chambers, and
+the district layout. What the game takes from the story is canon as
+written: one central brain plus sixteen appendage minds, disagreement
+that can overrule the center, juveniles learning coordination, the
+grown/living city, the energy network and currents, and the old one's
+repair at the rupture. 13i does not appear in the game.
+
 ## The Warden — developing (from the Deep Signal game spec)
 An alien intelligence on the Deep Walkers' world, introduced by the game
 *13i: The Deep Signal*. **"The Warden" is a working name** from the game

@@ -54,6 +54,7 @@ function tipFor(pathname, username) {
 const GAME_INSTRUCTIONS = [
   { prefix: "/games/asteroid-belt", game: "asteroid-belt", text: "Clear the belt, and watch for the mining ship \u2014 destroy its hull before the timer runs out, or its twelve tungsten rods scatter and you'll be clearing those too." },
   { prefix: "/games/nemesis-command", game: "nemesis-command", text: "Move your mouse (or drag on mobile) to aim. Click, tap, or press X to fire. Levels get faster the higher your score \u2014 it never truly stops." },
+  { prefix: "/games/sixteen", game: "sixteen", text: "You are Nerathi. Click faults to send limbs, tap your body to anchor against currents \u2014 and when a limb disagrees, it's usually right." },
   { prefix: "/games/deep-signal", game: "deep-signal", text: "Not a shooter. Explore, scan with Space, and choose carefully what you connect to \u2014 something down there notices." },
   { prefix: "/games/13i-vs-nemesis", game: "13i-vs-nemesis", text: "Defend Earth as 13i closes in across five zones. Switch weapons as new ones unlock \u2014 EMP disrupts its defenses, letting your other shots land clean." },
 ];
@@ -116,6 +117,7 @@ const GAME_LABELS = {
   "nemesis-command": "NEMESIS Command",
   "13i-vs-nemesis": "13i vs NEMESIS",
   "deep-signal": "13i: The Deep Signal",
+  sixteen: "SIXTEEN",
 };
 
 export default function LyraCompanion() {

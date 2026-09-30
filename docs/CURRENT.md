@@ -22,9 +22,10 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   AI-written stories (0000087, 0215783), a working writer with save-progress
   drafts, human/AI split columns on the hub ("Human Written 13i Short
   Stories" / "AI Written 13i Short Stories"), sorted newest-first
-- Four games: NEMESIS Command, Asteroid Belt, 13i vs NEMESIS (iframe to
-  static HTML), and 13i: The Deep Signal (iframe, unlocked by opening The
-  Deep Walkers; see docs/DEEP-SIGNAL.md). All have sound, personal bests,
+- Five games: NEMESIS Command, Asteroid Belt, 13i vs NEMESIS (iframe to
+  static HTML), 13i: The Deep Signal (unlocked by The Deep Walkers; see
+  docs/DEEP-SIGNAL.md) and SIXTEEN (unlocked by Nerath's Secret; see
+  docs/SIXTEEN.md). All have sound, personal bests,
   a daily leaderboard (resets 00:00 UTC), Node high scores and
   Lyra-delivered instructions
 - Sentinel-X (`/sentinel-x`): site dashboard for Paul's two accounts only
@@ -58,6 +59,7 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
+Update 5.5: SIXTEEN, the Nerath's Secret game (docs/SIXTEEN.md).
 Update 5.4 (see CHANGELOG): Aliens of the Galaxy + delete on the Node,
 Universe Quiz, Wiki on the Book page, fullscreen fitting, the first
 easter-egg star, Signal Composer prototype.

@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.5 — SIXTEEN, the Nerath's Secret game
+A second story game, from the inside of the story rather than 13i's view:
+**SIXTEEN** (`public/games/sixteen/`, `/games/sixteen`). You are a young
+Nerathi - one central mind, sixteen in your limbs - keeping a deep-ocean
+city's energy network lit: send limbs to breaches, overloads and burnt
+components (many at once), anchor against currents, grow new limbs between
+tides, and decide when to listen to a limb that disagrees. Every fifth tide
+the Great Rupture replays the story's climax. Unlocks from Nerath's Secret;
+scores go to the Node. Story games now share `components/StoryGame.js`.
+Notes: `docs/SIXTEEN.md`.
+
 ## Update 5.4 — Aliens of the Galaxy, Universe Quiz, star easter egg, Signal Composer
 **Aliens of the Galaxy** (`/galaxy/aliens`): every Alien Lab species as a
 collectible card (`components/AlienCard.js`: name bar, portrait window,
