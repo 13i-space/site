@@ -199,6 +199,10 @@ main {
 .game-frame:fullscreen iframe, .game-frame:fullscreen .game-canvas { flex: 1; height: auto !important; min-height: 0 !important; }
 .game-frame:-webkit-full-screen iframe, .game-frame:-webkit-full-screen .game-canvas { flex: 1; height: auto !important; min-height: 0 !important; }
 .game-frame.pseudo-fullscreen iframe, .game-frame.pseudo-fullscreen .game-canvas { flex: 1; height: auto !important; min-height: 0 !important; }
+/* leaderboards and help text step aside so the play field gets the room */
+.game-frame:fullscreen .game-extra { display: none; }
+.game-frame:-webkit-full-screen .game-extra { display: none; }
+.game-frame.pseudo-fullscreen .game-extra { display: none; }
 
 /* ---- Phones: nav dropdowns open full-width under the nav ----
    Each menu used to hang off the right edge of its own label, which put

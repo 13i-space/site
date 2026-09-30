@@ -28,6 +28,10 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   a daily leaderboard (resets 00:00 UTC), Node high scores and
   Lyra-delivered instructions
 - Sentinel-X (`/sentinel-x`): site dashboard for Paul's two accounts only
+- Aliens of the Galaxy (`/galaxy/aliens`): public card gallery of species
+- Universe Quiz (`/quiz`): 10 questions, graded, latest result on the Node
+  (needs `docs/v5.4-quiz-results.sql`); swap quizzes in `lib/universeQuiz.js`
+- Signal Composer (`/create/signal-composer`): in-browser music prototype
 - The Alien Lab: 17-question guided species builder, saves to the Node;
   Claude suggests a name and draws an SVG line-art portrait on request
   (`app/api/alien`, signed-in only; needs `docs/v5.2-alien-portraits.sql`
@@ -54,6 +58,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
+Update 5.4 (see CHANGELOG): Aliens of the Galaxy + delete on the Node,
+Universe Quiz, Wiki on the Book page, fullscreen fitting, the first
+easter-egg star, Signal Composer prototype.
 Update 5.3 (see CHANGELOG): 13i vs NEMESIS scores, bigger NEMESIS
 Command, fullscreen fixes, mobile nav, Alien Lab timer + species on the
 Node, Sentinel-X.

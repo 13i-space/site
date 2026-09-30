@@ -575,7 +575,7 @@ export default function AsteroidBelt() {
         </div>
       </div>
 
-      <div style={{ position: "relative" }}>
+      <div style={{ position: "relative", ...(isFullscreen ? { flex: 1, minHeight: 0 } : {}) }}>
         <canvas
           ref={canvasRef}
           style={{ width: "100%", height: isFullscreen ? "100%" : 420, flex: isFullscreen ? 1 : undefined, display: "block", background: "#060712", borderRadius: 4, touchAction: "none" }}
@@ -610,10 +610,12 @@ export default function AsteroidBelt() {
           </div>
         </div>
       )}
-      <p className="mono" style={{ fontSize: 11, color: "#565B8F", textAlign: "center", marginTop: 10 }}>
-        keyboard: arrow keys or WASD to move, space to fire
-      </p>
-      <Leaderboard game="asteroid-belt" refreshKey={refreshKey} />
+      <div className="game-extra">
+        <p className="mono" style={{ fontSize: 11, color: "#565B8F", textAlign: "center", marginTop: 10 }}>
+          keyboard: arrow keys or WASD to move, space to fire
+        </p>
+        <Leaderboard game="asteroid-belt" refreshKey={refreshKey} />
+      </div>
     </div>
   );
 }

@@ -230,7 +230,9 @@ export default function AlienCreator({ loggedIn }) {
         </div>
 
         {saveStatus === "done" ? (
-          <p style={{ color: "#8B95F6", textAlign: "center", margin: 0 }}>Saved to your Node.</p>
+          <p style={{ color: "#8B95F6", textAlign: "center", margin: 0 }}>
+            Saved to your Node and added to <a href="/galaxy/aliens">Aliens of the Galaxy</a>.
+          </p>
         ) : (
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <button onClick={save} disabled={saveStatus === "loading"} style={btnStyle}>

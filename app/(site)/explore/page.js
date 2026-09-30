@@ -5,7 +5,6 @@ const items = [
   { href: "/music", title: "The Music", blurb: "Three albums, 36 signals. What you hear is a translation of something felt, not heard." },
   { href: "/assignments", title: "Short Stories", blurb: "A growing archive of Assignments \u2014 13i, sent somewhere, reporting back." },
   { href: "/galaxy", title: "The Galaxy", blurb: "Where this all takes place, with Earth marked on the map." },
-  { href: "/wiki", title: "The Wiki", blurb: "Characters, terms, and the shape of the world so far \u2014 spoiler-light." },
 ];
 
 export default function ExplorePage() {

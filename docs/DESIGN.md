@@ -56,7 +56,7 @@ reached through a mode's dropdown or landing page, not as top-level items.
 Not rigid content categories — **what the visitor is doing**, not what
 type of content it is. A piece of content can belong to more than one mode.
 - **Explore**: discovering existing content — Book, Music, Short Stories,
-  Galaxy, Wiki. Music stays here even once music generation exists in
+  Galaxy. (The Wiki lives on the Book page since Update 5.4.) Music stays here even once music generation exists in
   Create, because listening is discovery, not creation.
 - **Play**: interacting with the universe — Oracle, Games, Artifacts, the
   Galaxy Quiz (dual-listed with Explore).

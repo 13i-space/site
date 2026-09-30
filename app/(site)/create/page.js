@@ -3,11 +3,10 @@ import Link from "next/link";
 const items = [
   { href: "/assignments/write", title: "Write an Assignment", blurb: "You are 13i. You have been sent somewhere. Tell us what happens." },
   { href: "/create/alien-lab", title: "The Alien Lab", blurb: "Build a species, question by question \u2014 the environment, the body, the mind." },
+  { href: "/create/signal-composer", title: "Signal Composer", blurb: "A prototype: generate a loop in the 13i sound, shape it, or describe a feeling and let 13i compose it." },
 ];
 
-const comingSoon = [
-  { title: "Music Generation", blurb: "Create a track within the 13i sound, translated the way the real songs are." },
-];
+const comingSoon = [];
 
 export default function CreatePage() {
   return (

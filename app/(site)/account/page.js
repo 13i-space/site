@@ -4,6 +4,8 @@ import { createClient } from "../../../lib/supabaseServer";
 import ClaimUsername from "../../../components/ClaimUsername";
 import EditProfile from "../../../components/EditProfile";
 import { isSentinelUser } from "../../../lib/sentinel";
+import YourSpecies from "../../../components/YourSpecies";
+import { QUIZ } from "../../../lib/universeQuiz";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -59,6 +61,13 @@ export default async function AccountPage() {
       .order("created_at", { ascending: false })
       .limit(24));
   }
+
+  // Latest Universe Quiz result (needs docs/v5.4-quiz-results.sql)
+  const { data: quiz } = await supabase
+    .from("quiz_results")
+    .select("quiz_id, score, total, grade, taken_at")
+    .eq("user_id", user.id)
+    .maybeSingle();
 
   const sentinel = isSentinelUser(profile?.username);
 
@@ -135,6 +144,21 @@ export default async function AccountPage() {
         </div>
       )}
 
+      {quiz && (
+        <Link href="/quiz" className="panel" style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 16, textAlign: "left", textDecoration: "none" }}>
+          <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 38, color: "#DCDFFF", lineHeight: 1, minWidth: 56 }}>{quiz.grade}</span>
+          <span style={{ flex: 1 }}>
+            <span className="mono" style={{ display: "block", fontSize: 10, color: "#565B8F", letterSpacing: "1px" }}>UNIVERSE QUIZ &middot; LATEST</span>
+            <span style={{ display: "block", fontSize: 13.5, color: "#D9DCFF", marginTop: 2 }}>
+              {quiz.score} of {quiz.total} &middot; {new Date(quiz.taken_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+            </span>
+            <span className="mono" style={{ fontSize: 11, color: "#8B95F6" }}>
+              {quiz.quiz_id === QUIZ.id ? "retake the quiz →" : "a new quiz is up →"}
+            </span>
+          </span>
+        </Link>
+      )}
+
       {reading && reading.length > 0 && (
         <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
           <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
@@ -152,47 +176,7 @@ export default async function AccountPage() {
         </div>
       )}
 
-      {species && species.length > 0 && (
-        <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
-          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
-            YOUR SPECIES
-          </div>
-          {species.map((sp) => (
-            <details key={sp.id} style={{ padding: "8px 0", borderBottom: "1px solid #21244A" }}>
-              <summary style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", listStyle: "none" }}>
-                {sp.portrait_svg ? (
-                  <img
-                    src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(sp.portrait_svg)}`}
-                    alt=""
-                    style={{ width: 56, height: 56, borderRadius: 4, border: "1px solid #262A55", flexShrink: 0 }}
-                  />
-                ) : (
-                  <span style={{ width: 56, height: 56, borderRadius: 4, border: "1px dashed #262A55", flexShrink: 0 }} />
-                )}
-                <span style={{ flex: 1 }}>
-                  <span style={{ display: "block", fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 17, color: "#DCDFFF" }}>{sp.name}</span>
-                  <span className="mono" style={{ fontSize: 10, color: "#565B8F" }}>
-                    {new Date(sp.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
-                  </span>
-                </span>
-              </summary>
-              {sp.portrait_svg && (
-                <img
-                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(sp.portrait_svg)}`}
-                  alt={`Portrait of ${sp.name}`}
-                  style={{ width: "100%", borderRadius: 4, border: "1px solid #262A55", margin: "12px 0 8px", display: "block" }}
-                />
-              )}
-              {Object.entries(sp.answers || {}).map(([q, a]) => (
-                <div key={q} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12, padding: "4px 0" }}>
-                  <span style={{ color: "#565B8F" }}>{q.split(" / ")[0]}</span>
-                  <span style={{ color: "#B7BADF", textAlign: "right" }}>{String(a)}</span>
-                </div>
-              ))}
-            </details>
-          ))}
-        </div>
-      )}
+      <YourSpecies initial={species || []} username={profile?.username} />
 
       <div className="panel" style={{ marginTop: 16 }}>
         <form action="/auth/signout" method="post">

@@ -65,7 +65,7 @@
   canvas{
     background:#03050a;
     border:1px solid var(--panel-edge);
-    max-width:100%; max-height:100%;
+    /* sized by fitStage() below: as large as fits both ways, centered */
     width:100%; height:auto;
     aspect-ratio: 900/460;
     box-shadow: 0 0 60px rgba(155,107,255,0.05) inset;
@@ -1005,6 +1005,20 @@
   }
 
   restartBtn.addEventListener('click', resetGame);
+
+  // Scale the 900x460 field to the largest size that fits the space between
+  // the header and footer - in the page, in fullscreen, on any screen shape.
+  const stageWrap = document.getElementById('stage-wrap');
+  function fitStage(){
+    const r = stageWrap.getBoundingClientRect();
+    const availW = Math.max(100, r.width - 20), availH = Math.max(60, r.height - 20);
+    const scale = Math.min(availW / 900, availH / 460);
+    canvas.style.width = Math.floor(900 * scale) + 'px';
+    canvas.style.height = Math.floor(460 * scale) + 'px';
+  }
+  if (window.ResizeObserver) new ResizeObserver(fitStage).observe(stageWrap);
+  window.addEventListener('resize', fitStage);
+  fitStage();
 
   buildWeaponButtonsOnce();
   resetGame();

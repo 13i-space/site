@@ -12,9 +12,14 @@ const sections = [
     blurb: "Size, star count, shape, age — the basics, for scale.",
   },
   {
-    href: "/galaxy/quiz",
-    title: "Galaxy Quiz",
-    blurb: "Trivia beyond the basics, with a score at the end.",
+    href: "/quiz",
+    title: "Universe Quiz",
+    blurb: "Ten questions from across the cosmos, graded A+ to F.",
+  },
+  {
+    href: "/galaxy/aliens",
+    title: "Aliens of the Galaxy",
+    blurb: "Every species built in the Alien Lab, as collectible cards. Browse them, then make your own.",
   },
   {
     href: "/galaxy/news",

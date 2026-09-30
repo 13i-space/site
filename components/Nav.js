@@ -40,7 +40,6 @@ export default async function Nav() {
               <li><Link href="/music">Music</Link></li>
               <li><Link href="/assignments">Short Stories</Link></li>
               <li><Link href="/galaxy">Galaxy</Link></li>
-              <li><Link href="/wiki">Wiki</Link></li>
             </ul>
           </div>
         </li>
@@ -51,7 +50,7 @@ export default async function Nav() {
               <li><Link href="/oracle">Oracle</Link></li>
               <li><Link href="/games">Games</Link></li>
               <li><Link href="/artifacts">Artifacts</Link></li>
-              <li><Link href="/galaxy/quiz">Galaxy Quiz</Link></li>
+              <li><Link href="/quiz">Universe Quiz</Link></li>
             </ul>
           </div>
         </li>
@@ -60,6 +59,7 @@ export default async function Nav() {
           <div className="nav-dropdown-menu">
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/assignments/write">Write an Assignment</Link></li>
+              <li><Link href="/create/signal-composer">Signal Composer</Link></li>
               <li><Link href="/create/alien-lab">The Alien Lab</Link></li>
             </ul>
           </div>

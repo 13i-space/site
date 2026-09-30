@@ -6,6 +6,7 @@ import ThemedHero from "../../../components/ThemedHero";
 import BigBangField from "../../../components/BigBangField";
 import RadarField from "../../../components/RadarField";
 import RadarLogo from "../../../components/RadarLogo";
+import EasterStars from "../../../components/EasterStars";
 
 const sections = [
   {
@@ -65,6 +66,7 @@ export default function LaunchHome() {
       )}
 
       {radarMode && <RadarField />}
+      {revealed && <EasterStars />}
 
       <div style={{ opacity: revealed ? 1 : 0, transition: "opacity 1.2s ease" }}>
         <div style={{ textAlign: "center", padding: "20px 0 50px" }}>

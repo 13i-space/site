@@ -2,11 +2,13 @@ import "./globals.css";
 import Countdown from "../components/Countdown";
 import ThemedHero from "../components/ThemedHero";
 import EmailSignup from "../components/EmailSignup";
+import EasterStars from "../components/EasterStars";
 
 export default function CountdownPage() {
   return (
     <div style={styles.page}>
       <ThemedHero logoWrapStyle={styles.logoWrap} />
+      <EasterStars />
       <div style={styles.glow} />
       <div className="mono" style={styles.subtitle}>
         a signal, received

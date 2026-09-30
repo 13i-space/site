@@ -13,6 +13,9 @@ export default async function AlienLabPage() {
       </Link>
       <div className="page-title" style={{ marginTop: 14 }}>The Alien Lab</div>
       <div className="page-subtitle">answer as you go &mdash; there's no wrong version of a species</div>
+      <p className="mono" style={{ textAlign: "center", fontSize: 11, marginTop: -8, marginBottom: 20 }}>
+        <Link href="/galaxy/aliens" style={{ color: "#6E76B8" }}>browse Aliens of the Galaxy &rarr;</Link>
+      </p>
       <AlienCreator loggedIn={!!user} />
     </div>
   );

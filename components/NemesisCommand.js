@@ -386,7 +386,9 @@ export default function NemesisCommand() {
           </button>
         </div>
       )}
-      <Leaderboard game="nemesis-command" refreshKey={refreshKey} />
+      <div className="game-extra">
+        <Leaderboard game="nemesis-command" refreshKey={refreshKey} />
+      </div>
     </div>
   );
 }

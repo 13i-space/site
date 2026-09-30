@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.4 — Aliens of the Galaxy, Universe Quiz, star easter egg, Signal Composer
+**Aliens of the Galaxy** (`/galaxy/aliens`): every Alien Lab species as a
+collectible card (`components/AlienCard.js`: name bar, portrait window,
+flavour line, six traits, creator + date), with a "create your own" link
+to the Alien Lab, which links back. Species can be deleted from the Node,
+where they now show as cards. The **Galaxy Quiz became the Universe Quiz**
+(`/quiz`; `/galaxy/quiz` redirects), 10 questions from `lib/universeQuiz.js`
+(two added), graded A+ to F with a recap of misses. The latest result shows
+on the Node (`quiz_results`, `docs/v5.4-quiz-results.sql`). The Wiki moved
+off Explore and the nav onto the Book page, whose five options are now
+equal boxes. Fullscreen games now fit without cropping: 13i vs NEMESIS
+scales to the largest size that fits, and the others hide leaderboards in
+fullscreen. First **easter egg star**: a fixed bright star bottom-left on
+`/` and `/launch` shows a random alien card for 9 seconds
+(`components/EasterStars.js`; add more stars there). **Signal Composer**
+(`/create/signal-composer`), a music prototype: an in-browser synth
+(`lib/musicEngine.js`) with moods, generate, key/scale/tempo, chord and
+pattern editing, a layer mixer, WAV download, and "compose from words"
+where Claude writes the composition (`app/api/music`).
+
 ## Update 5.3 — scores for 13i vs NEMESIS, bigger NEMESIS Command, Sentinel-X
 13i vs NEMESIS now reports plays and scores to its page (a postMessage
 from `public/games/13i-vs-nemesis.html`), so it has personal bests, the

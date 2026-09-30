@@ -4,7 +4,7 @@ const items = [
   { href: "/oracle", title: "The Oracle", blurb: "Speak to 13i directly. You are not talking to one voice." },
   { href: "/games", title: "Games", blurb: "NEMESIS Command, Asteroid Belt, and 13i vs NEMESIS." },
   { href: "/artifacts", title: "Artifacts", blurb: "The Ninefold and the Cryptex \u2014 puzzles from beyond." },
-  { href: "/galaxy/quiz", title: "Galaxy Quiz", blurb: "Trivia beyond the basics, with a score at the end." },
+  { href: "/quiz", title: "Universe Quiz", blurb: "Ten questions from across the cosmos, graded A+ to F. A new set now and then." },
 ];
 
 export default function PlayPage() {
