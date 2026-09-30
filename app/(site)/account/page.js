@@ -42,6 +42,9 @@ export default async function AccountPage() {
     .eq("user_id", user.id)
     .order("score", { ascending: false });
 
+  // Both label and the game's own page, so a score in this list can link
+  // straight back to where it was earned (same idea as the Stories Read
+  // list below).
   const GAMES = {
     "nemesis-command": { label: "NEMESIS Command", href: "/games/nemesis-command" },
     "asteroid-belt": { label: "Asteroid Belt", href: "/games/asteroid-belt" },
@@ -85,12 +88,12 @@ export default async function AccountPage() {
           </div>
           {scores.map((s) => (
             <div key={s.game} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "#D9DCFF", padding: "6px 0", borderBottom: "1px solid #21244A" }}>
-              {GAMES[s.game] ? (
-                <Link href={GAMES[s.game].href} style={{ color: "#B9C0FF", textDecoration: "none" }}>
+              {GAMES[s.game]?.href ? (
+                <Link href={GAMES[s.game].href} style={{ color: "#B9C0FF" }}>
                   {GAMES[s.game].label}
                 </Link>
               ) : (
-                <span>{s.game}</span>
+                <span>{GAMES[s.game]?.label || s.game}</span>
               )}
               <span className="mono" style={{ color: "#E8CFC0" }}>{s.score.toLocaleString()}</span>
             </div>

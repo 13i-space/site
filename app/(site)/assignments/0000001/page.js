@@ -18,6 +18,7 @@ export default function AssignmentOnePage() {
           coverImage="/covers/assignment-0000001.jpg"
           downloadHref="/downloads/assignment-0000001.pdf"
           downloadLabel="Download the PDF"
+          audioSrc="/stories/first-silence/audio.mp3"
         />
       </div>
     </div>

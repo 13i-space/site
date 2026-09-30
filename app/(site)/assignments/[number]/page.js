@@ -4,6 +4,12 @@ import { paginateStory } from "../../../../lib/paginateStory";
 import BookReader from "../../../../components/BookReader";
 import TrackStoryRead from "../../../../components/TrackStoryRead";
 
+// Narrated audio for stories that have one, keyed by assignment number.
+const STORY_AUDIO = {
+  87: "/stories/deep-walkers/audio.mp3",
+  215783: "/stories/neraths-secret/audio.mp3",
+};
+
 export default async function DynamicAssignmentPage({ params }) {
   const supabase = await createClient();
   const { data: row } = await supabase
@@ -36,7 +42,7 @@ export default async function DynamicAssignmentPage({ params }) {
         &larr; back to Assignments
       </Link>
       <div style={{ marginTop: 20 }}>
-        <BookReader meta={meta} pages={pages} coverImage={row.cover_url} />
+        <BookReader meta={meta} pages={pages} coverImage={row.cover_url} audioSrc={STORY_AUDIO[row.assignment_number]} />
       </div>
     </div>
   );

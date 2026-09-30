@@ -21,20 +21,6 @@ export default function BookPage() {
             of the official launch on 4.6.2027.
           </p>
           <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginTop: 12 }}>
-            <Link
-              href="/book/chapter-1"
-              style={{
-                display: "inline-block",
-                padding: "10px 20px",
-                border: "1px solid #3A3E75",
-                borderRadius: 4,
-                color: "#B9C0FF",
-                fontFamily: "'JetBrains Mono', monospace",
-                fontSize: 13,
-              }}
-            >
-              Read Chapter One
-            </Link>
             <a
               href="/downloads/13i-chapters-1-2.pdf"
               download
@@ -50,6 +36,34 @@ export default function BookPage() {
             >
               Download First Two Chapters (PDF)
             </a>
+            <a
+              href="/audio/Chapter1.mp3"
+              style={{
+                display: "inline-block",
+                padding: "10px 20px",
+                border: "1px solid #3A3E75",
+                borderRadius: 4,
+                color: "#B9C0FF",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 13,
+              }}
+            >
+              &#9658; Read Chapter One
+            </a>
+            <a
+              href="/audio/Chapter2.mp3"
+              style={{
+                display: "inline-block",
+                padding: "10px 20px",
+                border: "1px solid #3A3E75",
+                borderRadius: 4,
+                color: "#B9C0FF",
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 13,
+              }}
+            >
+              &#9658; Read Chapter Two
+            </a>
           </div>
           <p style={{ fontSize: 12, color: "#565B8F", marginTop: 16 }}>
             This is an early, unedited draft shared for feedback — not the
@@ -57,6 +71,11 @@ export default function BookPage() {
           </p>
         </div>
       </div>
+
+      <p style={{ fontSize: 12, color: "#565B8F" }}>
+        Prefer to read it? The cover above still opens the on-site reader
+        for both chapters.
+      </p>
     </div>
   );
 }
