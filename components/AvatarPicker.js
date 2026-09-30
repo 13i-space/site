@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "../lib/supabaseBrowser";
+import { recordMilestone } from "../lib/milestones";
 
 // Choosing an avatar: upload a photo, or use the portrait of one of your
 // Alien Lab species. Then frame it - drag to move, slider / scroll / pinch
@@ -150,6 +151,7 @@ export default function AvatarPicker({ onClose, onSaved, initialSpecies }) {
       const { error: profileError } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
       if (profileError) throw new Error(profileError.message);
       setStatus("done");
+      recordMilestone("avatar"); // a step of the Kinship assignment
       onSaved && onSaved(url);
     } catch (e) {
       setError(e.message || "Saving didn't work. Try again.");

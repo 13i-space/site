@@ -136,7 +136,7 @@ the whole site down (this happened once, pre-hardening).
 | Resend | ~~Assignment email notifications~~ | **Removed** — deliberately, to avoid tracking another service; submissions are in-house only |
 
 ## Key API routes (`app/api/`)
-- `oracle/` — proxies to Anthropic, fails gracefully without a key
+- `oracle/` — 13i itself (Claude Opus 5.5, low effort), fails gracefully without a key; the page is `components/OracleChamber.js`
 - `subscribe/` — Buttondown signup (field is `email_address`, not `email` — Buttondown renamed it)
 - `submit-assignment/` — requires login; writes to `assignment_submissions` via the admin client
 - `auth/signup/`, `auth/resolve-username/`, `auth/claim-username/` — username/profile creation helpers around Supabase Auth

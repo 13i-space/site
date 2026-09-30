@@ -187,10 +187,13 @@ based on what you understand"). Provisional: Paul can overrule any of it.
 - **Kin species on the Galaxy Map**: every saved species gets a faint point
   of light somewhere along the spiral arms, chosen from its id. Like the
   story-world placements, map-only, not canon.
-- **Assignment 0000000 - "Your First"**: 13i's assignment for a new Kin,
-  objective "learn this universe", six steps (Oracle, read, play, create,
-  review, map). It's framing for the site's welcome path, not an Archive
-  story, and isn't numbered among the real Assignments.
+- **The Kin's assignments**: 13i's three assignments for a new Kin, three
+  steps each, unlocked in order (Update 5.11, `lib/assignments.js`):
+  I Contact (Oracle, read, play), II Creation (make a species, Continuance
+  Review, find it on the map), III Kinship (avatar, Survival Trials, forum).
+  Framing for the site's welcome path, not Archive stories, and not
+  numbered among the real Assignments (the earlier "Assignment 0000000"
+  label is retired).
 
 ## Intentionally unknown / open questions
 - What 13i's creators actually looked like, and what became of them, is

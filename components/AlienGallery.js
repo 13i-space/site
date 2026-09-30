@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import AlienCard from "./AlienCard";
 import { runTrials } from "../lib/alienTrials";
+import { recordMilestone } from "../lib/milestones";
 
 const A_COLOR = "#C9B98F";
 const B_COLOR = "#8B95F6";
@@ -80,6 +81,7 @@ function Trials({ a, b, onClose, onDone }) {
   }, [onClose]);
 
   const done = shown >= result.rounds.length;
+  useEffect(() => { if (done) recordMilestone("trials"); }, [done]); // a step of the Kinship assignment
   const name = (w) => (w === "a" ? a.name : b.name);
   const cardWidth = typeof window !== "undefined" && window.innerWidth < 520 ? 150 : 200;
 

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
+import { recordMilestone } from "../lib/milestones";
 
 export default function NewThreadForm({ spaceId, spaceSlug }) {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function NewThreadForm({ spaceId, spaceSlug }) {
       setError(insertError.message);
       return;
     }
+    recordMilestone("forum"); // a step of the Kinship assignment
     router.push(`/forum/${spaceSlug}/${data.id}`);
   };
 

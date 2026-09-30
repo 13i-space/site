@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
+import { recordMilestone } from "../lib/milestones";
 
 export default function ReplyForm({ threadId, loggedIn }) {
   const router = useRouter();
@@ -43,6 +44,7 @@ export default function ReplyForm({ threadId, loggedIn }) {
       return;
     }
     setBody("");
+    recordMilestone("forum"); // a step of the Kinship assignment
     router.refresh();
   };
 

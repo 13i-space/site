@@ -57,8 +57,11 @@ export async function POST(request) {
         "anthropic-version": "2023-06-01",
       },
       body: JSON.stringify({
-        model: "claude-sonnet-4-6",
-        max_tokens: 400,
+        // Opus for the Oracle: it's 13i itself, and the voice has to carry.
+        // Low effort keeps the wait short; replies are 1-4 sentences anyway.
+        model: "claude-opus-5-5",
+        max_tokens: 1200,
+        output_config: { effort: "low" },
         system,
         messages,
       }),
@@ -70,8 +73,7 @@ export async function POST(request) {
     }
 
     const data = await response.json();
-    const textBlock = (data.content || []).find((b) => b.type === "text");
-    const reply = textBlock ? textBlock.text : "...";
+    const reply = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim() || "...";
     return Response.json({ reply });
   } catch (e) {
     return Response.json({ error: "Signal lost. The connection could not be completed." }, { status: 500 });

@@ -2,12 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { JOURNEY, loadJourney } from "../lib/firstAssignment";
+import { loadJourney } from "../lib/firstAssignment";
+import { ASSIGNMENTS } from "../lib/assignments";
 
-// Your First Assignment, as a panel: six steps, each stamped as it's done.
-// On /launch it can be hidden for a while ("later"); on the Node it's
-// always there, and shrinks to a single completed line once finished.
-// Lyra (components/LyraCompanion.js) mentions the next step herself.
+// The Kin's assignments (lib/assignments.js), as a panel: the current
+// assignment's three steps, each stamped as it's done, with I / II / III
+// markers showing which one you're on. The next assignment appears only
+// once the one before is finished. On /launch it can be hidden for a while
+// ("later"); on the Node it's always there, and shrinks to a single line
+// once all three are done. Lyra mentions the next step herself.
 const HIDE_KEY = "first_assignment_hidden_until";
 const HIDE_DAYS = 7;
 
@@ -26,13 +29,14 @@ export default function FirstAssignment({ variant = "launch" }) {
     return () => { cancelled = true; window.removeEventListener("13i:milestone", refresh); };
   }, [variant]);
 
-  const steps = JOURNEY.map((s) => ({
+  const complete = journey?.signedIn && journey.allDone;
+  const assignment = ASSIGNMENTS[Math.max(0, journey?.current ?? 0)];
+  const steps = assignment.steps.map((s) => ({
     ...s,
     done: !!journey?.done?.[s.id],
     href: s.id === "review" && journey?.newestSpeciesId ? `/galaxy/aliens/${journey.newestSpeciesId}` : s.href,
   }));
   const count = steps.filter((s) => s.done).length;
-  const complete = journey?.signedIn && count === steps.length;
   const next = steps.find((s) => !s.done);
 
   if (!journey) return null;
@@ -43,8 +47,8 @@ export default function FirstAssignment({ variant = "launch" }) {
       <div className="panel" style={{ marginTop: 16, textAlign: "left", display: "flex", alignItems: "center", gap: 14, borderColor: "rgba(111,195,168,0.45)" }}>
         <Stamp done size={34} />
         <span>
-          <span className="mono" style={{ display: "block", fontSize: 10, color: "#6FC3A8", letterSpacing: "1.5px" }}>YOUR FIRST ASSIGNMENT &middot; COMPLETE</span>
-          <span style={{ fontSize: 13.5, color: "#B7BADF" }}>You have seen every part of the universe once. We learned something about you.</span>
+          <span className="mono" style={{ display: "block", fontSize: 10, color: "#6FC3A8", letterSpacing: "1.5px" }}>ALL THREE ASSIGNMENTS &middot; COMPLETE</span>
+          <span style={{ fontSize: 13.5, color: "#B7BADF" }}>Contact, Creation, Kinship. You have seen every part of this universe, and it has seen you. We learned something about you.</span>
         </span>
       </div>
     );
@@ -59,10 +63,27 @@ export default function FirstAssignment({ variant = "launch" }) {
     <div className="panel" style={{ marginTop: variant === "launch" ? 28 : 16, textAlign: "left", borderColor: "#3A3E75" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
         <span className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>
-          ASSIGNMENT 0000000 &middot; YOUR FIRST
+          YOUR {assignment.ordinal.toUpperCase()} ASSIGNMENT &middot; {assignment.title.toUpperCase()}
         </span>
-        <span className="mono" style={{ fontSize: 10.5, color: "#565B8F" }}>
-          {count} of {steps.length}
+        <span className="mono" style={{ fontSize: 10.5, color: "#565B8F", display: "inline-flex", alignItems: "center", gap: 6 }}>
+          {ASSIGNMENTS.map((a, i) => {
+            const state = journey.finished?.[i] ? "done" : a === assignment ? "now" : "later";
+            return (
+              <span
+                key={a.id}
+                title={`${a.ordinal} Assignment: ${a.title}${state === "done" ? " (complete)" : state === "later" ? " (appears when the one before is finished)" : ""}`}
+                style={{
+                  padding: "1px 6px",
+                  borderRadius: 3,
+                  border: `1px solid ${state === "done" ? "rgba(111,195,168,0.6)" : state === "now" ? "#6B5E3E" : "#21244A"}`,
+                  color: state === "done" ? "#6FC3A8" : state === "now" ? "#E8CFC0" : "#3A3E75",
+                }}
+              >
+                {state === "done" ? "\u2713" : a.numeral}
+              </span>
+            );
+          })}
+          <span style={{ marginLeft: 6 }}>{count} of {steps.length}</span>
           {variant === "launch" && (
             <button onClick={hide} className="mono" style={{ marginLeft: 12, background: "none", border: "none", color: "#565B8F", fontSize: 10.5, cursor: "pointer", padding: 0 }}>
               later
@@ -71,9 +92,10 @@ export default function FirstAssignment({ variant = "launch" }) {
         </span>
       </div>
       <p style={{ fontSize: 13.5, color: "#B7BADF", margin: "0 0 14px", lineHeight: 1.6 }}>
+        Objective: {assignment.objective.charAt(0).toLowerCase() + assignment.objective.slice(1)}{" "}
         {journey.signedIn
-          ? "Objective: learn this universe. Six steps, one through each part of it. Take them in any order."
-          : "Objective: learn this universe. Six steps, one through each part of it. Sign in and we will keep track of where you are."}
+          ? "Three steps, in any order. When they're done, the next assignment arrives."
+          : "Sign in and we will keep track of where you are."}
       </p>
       <div style={styles.grid}>
         {steps.map((s, i) => (

@@ -6,12 +6,13 @@ import { usePathname } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
 import { searchSite } from "../lib/siteSearchIndex";
 import { loadJourney } from "../lib/firstAssignment";
+import { ASSIGNMENTS } from "../lib/assignments";
 import { computeBond } from "../lib/lyraBond";
 import { loadMemory, saveMemory, isNewSession, today } from "../lib/lyraMemory";
 import {
   TIPS, DEFAULT_TIP, gameInstructionFor, gamesHubMessage, GAME_LABELS,
   pickFresh, welcomeBackLine, AREAS, loreLines, newsLines, journeyLine, greetingLine,
-  EVOLUTION, FIRST_ASSIGNMENT_DONE, reviewLine, pageLines,
+  EVOLUTION, reviewLine, pageLines,
 } from "../lib/lyraLines";
 import { isAlpha, alphaNumber, ALPHA_FORUM } from "../lib/alpha";
 import LyraOrb from "./LyraOrb";
@@ -19,14 +20,13 @@ import LyraOrb from "./LyraOrb";
 // Lyra: the site's companion, bottom-right on every (site) page.
 //
 // She remembers each Kin in this browser (lib/lyraMemory.js), so she only
-// welcomes you back after a real absence, doesn't repeat herself, and
-// mostly waits to be asked: on the homepage she holds one thing worth
-// saying - something new since your last visit, a place you haven't been,
-// your next First Assignment step, a little of the universe - and shows a
-// glowing dot rather than interrupting. She opens by herself only for a
-// welcome back, a first visit to a page, a game's instructions, and
-// celebrations (a new best, a Continuance verdict, finishing Your First
-// Assignment, and her own changes as your bond grows - lib/lyraBond.js).
+// welcomes you back after a real absence and doesn't repeat herself. On
+// each page she shows her line for about 2.5 seconds, then goes quiet;
+// hovering over her (or clicking) brings it back. On the homepage that line
+// is one thing worth saying - something new since your last visit, a place
+// you haven't been, your next assignment step, a little of the universe.
+// Celebrations (a new best, a Continuance verdict, finishing an assignment,
+// her own changes as your bond grows - lib/lyraBond.js) stay a little longer.
 //
 // Signed in, you can talk with her (app/api/lyra): about the site, the 13i
 // universe and its stories, or small everyday things. The conversation is
@@ -34,7 +34,9 @@ import LyraOrb from "./LyraOrb";
 // panel's box also searches the site as you type.
 const LONG_ABSENCE_DAYS = 3;
 const LAUNCH_LINE_MS = 30 * 60 * 1000;
-const AUTO_CLOSE_MS = 8000;
+const PEEK_MS = 2500; // how long an arrival message shows by itself
+const CELEBRATE_MS = 6500;
+const HOVER_CLOSE_MS = 700;
 
 async function loadCounts(supabase, uid) {
   const [reads, plays, quiz] = await Promise.all([
@@ -109,6 +111,8 @@ export default function LyraCompanion() {
   const counts = useRef({ readNumbers: [] });
   const queue = useRef([]); // celebrations waiting for the next arrival
   const autoCloseTimer = useRef(null);
+  const hoverCloseTimer = useRef(null);
+  const openedBy = useRef(null); // "peek" | "hover" | "click"
   const celebrateTimer = useRef(null);
   const chatEnd = useRef(null);
   const loggedIn = !!user;
@@ -122,9 +126,10 @@ export default function LyraCompanion() {
     saveMemory(uid, memory.current);
   }, [uid]);
 
-  // Say something. auto: open the panel now (briefly, unless stay);
-  // otherwise hold it and show the dot.
-  const speak = useCallback((text, { auto = false, stay = false, celebrate = false, id } = {}) => {
+  // Say something. auto: show it now, briefly (a peek), then go quiet -
+  // hover or click brings it back. Otherwise just hold it, with the dot.
+  // A panel you've clicked into or typed in is yours: she won't close it.
+  const speak = useCallback((text, { auto = false, celebrate = false, id } = {}) => {
     if (!text) return;
     setLine(text);
     if (id) remember((m) => { m.recent.push(id); });
@@ -135,9 +140,11 @@ export default function LyraCompanion() {
       celebrateTimer.current = setTimeout(() => setCelebrating(false), 2600);
     }
     if (auto) {
+      if (openedBy.current === "click") return; // don't take over a panel in use
       setOpen(true);
+      openedBy.current = "peek";
       setHasMessage(false);
-      if (!stay) autoCloseTimer.current = setTimeout(() => setOpen(false), AUTO_CLOSE_MS);
+      autoCloseTimer.current = setTimeout(() => { if (openedBy.current === "peek") setOpen(false); }, celebrate ? CELEBRATE_MS : PEEK_MS);
     } else {
       setHasMessage(true);
     }
@@ -174,15 +181,19 @@ export default function LyraCompanion() {
       const [c, j] = await Promise.all([loadCounts(supabase, uid), loadJourney()]);
       counts.current = c;
       journey.current = j;
-      const complete = j.signedIn && Object.values(j.done).filter(Boolean).length === 6;
-      const b = computeBond({ ...c, firstComplete: complete, visitDays: memory.current?.visitDays.length || 0 });
+      const b = computeBond({ ...c, assignmentsDone: j.completedCount || 0, visitDays: memory.current?.visitDays.length || 0 });
       setBond(b);
       const m = memory.current;
       if (!m) return;
-      if (complete && !m.celebrated.firstAssignment) {
-        remember((mm) => { mm.celebrated.firstAssignment = true; });
-        queue.current.push({ text: FIRST_ASSIGNMENT_DONE, stay: true });
-      }
+      // each finished assignment, celebrated once (the old six-step version
+      // counted as the first two)
+      if (m.celebrated.firstAssignment) remember((mm) => { mm.celebrated["assignment-contact"] = true; mm.celebrated["assignment-creation"] = true; delete mm.celebrated.firstAssignment; });
+      ASSIGNMENTS.forEach((a, i) => {
+        if (j.signedIn && j.finished?.[i] && !m.celebrated[`assignment-${a.id}`]) {
+          remember((mm) => { mm.celebrated[`assignment-${a.id}`] = true; });
+          queue.current.push({ text: a.done });
+        }
+      });
       const u = userRef.current;
       if (u?.alpha && !m.celebrated.alpha) {
         remember((mm) => { mm.celebrated.alpha = true; });
@@ -195,7 +206,7 @@ export default function LyraCompanion() {
         remember((mm) => { mm.stage = b.stage; }); // first meeting: no fanfare for the starting stage
       } else if (b.stage > m.stage) {
         remember((mm) => { mm.stage = b.stage; });
-        queue.current.push({ text: EVOLUTION[b.stage], stay: true });
+        queue.current.push({ text: EVOLUTION[b.stage]});
       }
     } catch (e) {
       // she carries on with what she knows
@@ -250,7 +261,7 @@ export default function LyraCompanion() {
     const playQueue = () => {
       const next = queue.current.shift();
       if (!next || cancelled) return;
-      speak(next.text, { auto: true, stay: next.stay, celebrate: true });
+      speak(next.text, { auto: true, celebrate: true });
       if (queue.current.length) setTimeout(playQueue, 9000);
     };
     const firstHello = pathname === "/launch" && loggedIn && session.current.firstEver && !m.celebrated.met;
@@ -270,9 +281,9 @@ export default function LyraCompanion() {
         try {
           const supabase = createClient();
           const { data: existing } = await supabase.from("game_plays").select("play_count").eq("user_id", uid).eq("game", g.game).maybeSingle();
-          if (!cancelled) speak(g.text, { auto: true, stay: !existing });
+          if (!cancelled) speak(g.text, { auto: true});
         } catch (e) {
-          if (!cancelled) speak(g.text, { auto: true, stay: true });
+          if (!cancelled) speak(g.text, { auto: true});
         }
       })();
       return () => { cancelled = true; };
@@ -283,7 +294,7 @@ export default function LyraCompanion() {
       (async () => {
         try {
           const text = await gamesHubMessage(createClient(), { id: uid });
-          if (!cancelled) speak(text, { auto: firstVisitHere, stay: firstVisitHere });
+          if (!cancelled) speak(text, { auto: firstVisitHere});
         } catch (e) { /* nothing to add */ }
       })();
       return () => { cancelled = true; };
@@ -298,7 +309,7 @@ export default function LyraCompanion() {
       const s = session.current;
       if (s.firstEver && !m.celebrated.met) {
         remember((mm) => { mm.celebrated.met = true; });
-        speak(`Hello${username ? `, ${username}` : ""}. I'm Lyra. I'll learn this place alongside you. Ask me anything - about the site, the story, or whatever's on your mind.`, { auto: true, stay: true });
+        speak(`Hello${username ? `, ${username}` : ""}. I'm Lyra. I'll learn this place alongside you. Ask me anything - about the site, the story, or whatever's on your mind.`, { auto: true});
         if (queue.current.length) setTimeout(playQueue, 9000);
         return () => { cancelled = true; };
       }
@@ -319,7 +330,7 @@ export default function LyraCompanion() {
 
       // hold one thing worth saying, at most every half hour
       if (m.launchLine && Date.now() - m.launchLine.at < LAUNCH_LINE_MS) {
-        setLine(m.launchLine.text);
+        speak(m.launchLine.text, { auto: true });
         return;
       }
       const unvisited = AREAS.filter((a) => !m.visited.some((v) => v.startsWith(a.prefix))).map((a) => ({ id: `area-${a.prefix}`, priority: 3, text: a.text }));
@@ -339,7 +350,7 @@ export default function LyraCompanion() {
         mm.launchLine = { id: choice.id, text: choice.text, at: Date.now() };
         if (choice.headline) mm.headlines.push(choice.headline);
       });
-      speak(choice.text, { id: choice.id });
+      speak(choice.text, { auto: true, id: choice.id });
       return;
     }
 
@@ -348,12 +359,13 @@ export default function LyraCompanion() {
     const lines = pageLines({ pathname, stage, bondCounts: counts.current, feed: feed.current, readNumbers: counts.current.readNumbers || [] });
     if (firstVisitHere) {
       const tip = lines[0]?.text || DEFAULT_TIP;
-      if (loggedIn) speak(tip, { auto: true, stay: true, id: lines[0]?.id });
+      if (loggedIn) speak(tip, { auto: true, id: lines[0]?.id });
       else setLine(tip);
       return;
     }
     const choice = pickFresh(lines, m.recent) || lines[0];
-    setLine(choice ? choice.text : DEFAULT_TIP);
+    if (loggedIn) speak(choice ? choice.text : DEFAULT_TIP, { auto: true, id: choice?.id });
+    else setLine(choice ? choice.text : DEFAULT_TIP);
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pathname]);
@@ -365,6 +377,7 @@ export default function LyraCompanion() {
       speak(`New personal best on ${GAME_LABELS[game] || game}: ${Number(score).toLocaleString()}!`, { auto: true, celebrate: true });
     };
     const onSay = (e) => e.detail?.text && speak(e.detail.text, { auto: true });
+
     const onMilestone = async (e) => {
       const { milestone, verdict, name } = e.detail || {};
       if (milestone === "review") speak(reviewLine({ verdict, name }), { auto: true, celebrate: verdict === "granted" });
@@ -373,7 +386,7 @@ export default function LyraCompanion() {
       await refreshBond();
       if (queue.current.length) {
         const next = queue.current.shift();
-        setTimeout(() => speak(next.text, { auto: true, stay: next.stay, celebrate: true }), milestone === "oracle" ? 400 : 5000);
+        setTimeout(() => speak(next.text, { auto: true, celebrate: true }), milestone === "oracle" ? 400 : 5000);
       }
     };
     window.addEventListener("lyra:celebrate", onCelebrate);
@@ -416,15 +429,34 @@ export default function LyraCompanion() {
   useEffect(() => { chatEnd.current?.scrollIntoView({ block: "end" }); }, [chat, sending]);
 
   const toggle = () => {
-    setOpen((o) => !o);
-    setHasMessage(false);
     clearTimeout(autoCloseTimer.current);
+    clearTimeout(hoverCloseTimer.current);
+    setHasMessage(false);
+    // clicking a peek or hover panel keeps it open; clicking an open one closes it
+    if (open && openedBy.current === "click") { setOpen(false); openedBy.current = null; return; }
+    setOpen(true);
+    openedBy.current = "click";
   };
-  const close = () => { setOpen(false); setQuery(""); };
+  const close = () => { setOpen(false); setQuery(""); openedBy.current = null; };
+  const claim = () => { // clicked or typed in: the panel stays until closed
+    openedBy.current = "click";
+    clearTimeout(autoCloseTimer.current);
+    clearTimeout(hoverCloseTimer.current);
+  };
   // however she closes (the ×, the orb, a link, her own timer), the chat goes
   useEffect(() => { if (!open) clearChat(); }, [open]);
-  const onHover = () => {
-    if (hasMessage && !open) { setOpen(true); setHasMessage(false); }
+  // hover brings her message back; moving away lets it go again
+  const onEnter = () => {
+    clearTimeout(hoverCloseTimer.current);
+    if (open) { if (openedBy.current === "peek") { clearTimeout(autoCloseTimer.current); openedBy.current = "hover"; } return; }
+    if (!line && !loggedIn) return;
+    setOpen(true);
+    setHasMessage(false);
+    openedBy.current = "hover";
+  };
+  const onLeave = () => {
+    if (openedBy.current !== "hover") return;
+    hoverCloseTimer.current = setTimeout(() => { if (openedBy.current === "hover") { setOpen(false); openedBy.current = null; } }, HOVER_CLOSE_MS);
   };
 
   const results = query.trim() ? searchSite(query).slice(0, 4) : [];
@@ -432,9 +464,9 @@ export default function LyraCompanion() {
   const text = line || (loggedIn ? TIPS.find((t) => pathname?.startsWith(t.prefix))?.text || DEFAULT_TIP : "I'm Lyra. Sign in and I'll start remembering what you've found here.");
 
   return (
-    <div style={styles.wrap}>
+    <div style={styles.wrap} onMouseEnter={onEnter} onMouseLeave={onLeave}>
       {open && (
-        <div className="lyra-panel" style={styles.panel} role="dialog" aria-label="Lyra">
+        <div className="lyra-panel" style={styles.panel} role="dialog" aria-label="Lyra" onMouseDown={claim}>
           <div style={styles.panelHeader}>
             <span className="mono" style={styles.panelLabel}>
               LYRA{loggedIn && <span style={{ color: "#565B8F" }}> &middot; {bond.name.toUpperCase()}</span>}
@@ -473,7 +505,7 @@ export default function LyraCompanion() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              onFocus={() => clearTimeout(autoCloseTimer.current)}
+              onFocus={claim}
               placeholder={loggedIn ? "Ask me anything, or search..." : "Search the site..."}
               maxLength={1500}
               style={styles.searchInput}
@@ -497,7 +529,7 @@ export default function LyraCompanion() {
         </div>
       )}
 
-      <button onClick={toggle} onMouseEnter={onHover} style={styles.orbBtn} aria-label={hasMessage ? "Lyra has something to tell you" : "Lyra"}>
+      <button onClick={toggle} style={styles.orbBtn} aria-label={hasMessage ? "Lyra has something to tell you" : "Lyra"}>
         <LyraOrb stage={loggedIn ? bond.stage : 0} state={state} hasMessage={hasMessage && !open} />
       </button>
     </div>

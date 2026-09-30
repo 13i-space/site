@@ -19,6 +19,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   the top of the reader); Nerath's Secret also has a "Comic version" box
   linking to an 8-page comic reader (`lib/comics.js`)
 - About hub: About Paul (ends with Contact Paul), The Origin of 13i, Mission & Values
+- Update 5.11: the Oracle chamber with sound; three sequential Kin
+  assignments (Contact, Creation, Kinship); Lyra peeks for 2.5s and
+  returns on hover
 - Update 5.10 (needs docs/v5.10-alpha-users.sql): Alpha Users (2026
   joiners + Paul's accounts) with numbers, badges and the Alpha Users forum
   space; full-width comic reader; briefer, spoiler-careful Lyra whose chat

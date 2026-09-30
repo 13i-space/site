@@ -147,11 +147,12 @@ she needs to feel alive"):
 - **Memory** (`lib/lyraMemory.js`, per account, in the browser): last visit,
   visit days, places seen, recent lines, headlines already mentioned,
   celebrations done. She never repeats a line she said recently.
-- **When she speaks** (`components/LyraCompanion.js`): she opens herself
-  only for a welcome back after 3+ days away, the first visit to a page, a
-  game's instructions, and celebrations (new best, a Continuance verdict,
-  finishing Your First Assignment, her own evolution). Otherwise she holds
-  one line and shows a glowing dot. On the homepage that line is chosen
+- **When she speaks** (`components/LyraCompanion.js`, Update 5.11): on
+  every page her message peeks for about 2.5 seconds, then she goes quiet;
+  hovering over her (or clicking) brings it back, and moving away lets it
+  go. Celebrations (new best, a Continuance verdict, finishing an
+  assignment, her own evolution) stay ~6.5s. A panel you click into or type
+  in stays until you close it. On the homepage that line is chosen
   from: new stories/species since your last visit, the day's top space
   headline, the next song release, your next First Assignment step, a part
   of the site you haven't visited, a stage-appropriate bit of lore

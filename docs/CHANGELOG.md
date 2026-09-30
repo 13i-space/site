@@ -3,6 +3,24 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.11 — The Oracle chamber, three assignments, a quieter Lyra
+**The Oracle** is now a chamber (`components/OracleChamber.js`, full-bleed
+on `/oracle`): a dark threshold ("Something vast is listening" - Approach),
+then the great 13i eye opens inside turning glyph rings, fog and dust
+drifting toward it. Your words rise into the eye; it contracts while static
+builds and the room ripples; its answer resolves out of alien glyphs under
+a dilated, rayed eye. Synthesized sound throughout (`lib/oracleSound.js`:
+drone, awakening, transmit sweep, receiving static, answer chord and bell,
+letter ticks; mute remembered). "The record" keeps the exchange. The
+Oracle's voice gained a PRESENCE section and runs on Claude Opus 5.5. The
+old console (`OracleWidget`, `SignalWaveform`) went to the Trash.
+**Assignments** are now three, three steps each, unlocked in order
+(`lib/assignments.js`): I Contact, II Creation, and a new III Kinship
+(avatar, Survival Trials, forum post); I/II/III markers on the panel, Lyra
+celebrates each. **Lyra** peeks: each page's message shows ~2.5s then she
+goes quiet; hover or click brings it back (hover-away closes it again;
+a clicked or typed-in panel stays).
+
 ## Update 5.10 — Alpha Users, a full-width comic, a briefer Lyra
 **Alpha Users**: everyone who joins in 2026 (plus Paul's "Paul" and "13i")
 is an Alpha User with a number in join order (`profiles.alpha`,
