@@ -6,6 +6,7 @@ import EditProfile from "../../../components/EditProfile";
 import { isSentinelUser } from "../../../lib/sentinel";
 import YourSpecies from "../../../components/YourSpecies";
 import FirstAssignment from "../../../components/FirstAssignment";
+import { gatherVisitor } from "../../../lib/visitorContext";
 import { QUIZ } from "../../../lib/universeQuiz";
 import { isAlpha, alphaNumber, ALPHA_FORUM } from "../../../lib/alpha";
 import AlphaBadge from "../../../components/AlphaBadge";
@@ -77,118 +78,164 @@ export default async function AccountPage() {
     sixteen: { label: "SIXTEEN", href: "/games/sixteen" },
   };
 
+  const alphaProfile = { ...profile, created_at: profile?.created_at || user.created_at };
+  const alpha = isAlpha(alphaProfile);
+
+  // unread private messages (docs/v5.12-forum-order-and-messages.sql)
+  const { count: unread } = await supabase
+    .from("direct_messages")
+    .select("id", { count: "exact", head: true })
+    .eq("recipient_id", user.id)
+    .is("read_at", null);
+
+  // Lyra's bond with this Kin (lib/lyraBond.js), for the vitals row
+  let bondName = null;
+  try { bondName = (await gatherVisitor(supabase))?.bond?.name || null; } catch (e) { bondName = null; }
+
+  const vitals = [
+    { label: "STORIES READ", value: (reading || []).length, href: "/assignments" },
+    { label: "SPECIES", value: (species || []).length, href: "/galaxy/aliens" },
+    { label: "GAMES SCORED", value: (scores || []).length, href: "/games" },
+    { label: "QUIZ", value: quiz?.grade || "\u2014", href: "/quiz" },
+    { label: "MESSAGES", value: unread ? `${unread} new` : "\u2709", href: "/messages", hot: !!unread },
+    bondName && { label: "LYRA", value: bondName, small: true },
+  ].filter(Boolean);
+
   return (
-    <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
-      <div className="page-title">Your Node</div>
-      <div className="page-subtitle">{user.email}</div>
-      {isAlpha({ ...profile, created_at: profile?.created_at || user.created_at }) && (
-        <div className="panel" style={{ marginTop: -6, marginBottom: 16, borderColor: "#6B5E3E", background: "rgba(201,185,143,0.05)" }}>
-          <AlphaBadge profile={{ ...profile, created_at: profile?.created_at || user.created_at }} variant="full" />
-          <p style={{ fontSize: 13.5, color: "#B7BADF", lineHeight: 1.65, margin: "12px 0 10px" }}>
-            You found 13i before Beta. You're one of the people testing it and
-            shaping what it becomes{alphaNumber(profile) ? `, Alpha ${alphaNumber(profile)}` : ""}. Thank you.
-          </p>
-          <Link href={ALPHA_FORUM} className="mono" style={{ fontSize: 11.5, color: "#E8CFC0" }}>
-            suggest a change in the Alpha Users forum &rarr;
+    <div className="node">
+      <div style={{ textAlign: "center" }}>
+        <div className="page-title">Your Node</div>
+        <div className="page-subtitle">{user.email}</div>
+        {sentinel && (
+          <Link
+            href="/sentinel-x"
+            className="panel"
+            style={{ display: "block", maxWidth: 420, margin: "0 auto 18px", borderColor: "#6B5E3E", textDecoration: "none" }}
+          >
+            <div className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>SITE DASHBOARD</div>
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginTop: 4 }}>
+              Sentinel-X &rarr;
+            </div>
           </Link>
-        </div>
-      )}
-
-      {sentinel && (
-        <Link
-          href="/sentinel-x"
-          className="panel"
-          style={{ display: "block", marginBottom: 16, borderColor: "#6B5E3E", textDecoration: "none" }}
-        >
-          <div className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>SITE DASHBOARD</div>
-          <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginTop: 4 }}>
-            Sentinel-X &rarr;
-          </div>
-        </Link>
-      )}
-
-      <div className="panel">
-        {profile?.username ? (
-          <>
-            <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF", marginBottom: 14 }}>
-              {profile.username}
-            </p>
-            <EditProfile
-              userId={user.id}
-              username={profile.username}
-              initialBio={profile.bio}
-              initialAvatarUrl={profile.avatar_url}
-            />
-            <Link
-              href={`/kin/${profile.username}`}
-              className="mono"
-              style={{ display: "inline-block", marginTop: 16, fontSize: 11, color: "#6E76B8" }}
-            >
-              view your public profile &rarr;
-            </Link>
-          </>
-        ) : (
-          <ClaimUsername />
         )}
       </div>
 
-      {scores && scores.length > 0 && (
-        <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
-          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
-            HIGH SCORES
-          </div>
-          {scores.map((s) => (
-            <div key={s.game} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "#D9DCFF", padding: "6px 0", borderBottom: "1px solid #21244A" }}>
-              {GAMES[s.game]?.href ? (
-                <Link href={GAMES[s.game].href} style={{ color: "#B9C0FF" }}>
-                  {GAMES[s.game].label}
+      <div className="node-vitals">
+        {vitals.map((v) => {
+          const inner = (
+            <>
+              <span className="mono" style={{ display: "block", fontSize: 9.5, letterSpacing: "1.5px", color: "#565B8F" }}>{v.label}</span>
+              <span style={{ display: "block", fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: v.small ? 18 : 26, color: v.hot ? "#E8CFC0" : "#DCDFFF", marginTop: 4, lineHeight: 1.1 }}>{v.value}</span>
+            </>
+          );
+          return v.href ? (
+            <Link key={v.label} href={v.href} className="node-tile launch-card">{inner}</Link>
+          ) : (
+            <div key={v.label} className="node-tile">{inner}</div>
+          );
+        })}
+      </div>
+
+      <div className="node-grid">
+        {/* left: who you are, and what 13i has asked of you */}
+        <div className="node-col">
+          <div className="panel">
+            <div className="mono node-label">KIN</div>
+            {profile?.username ? (
+              <>
+                <p style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF", margin: "0 0 14px" }}>
+                  {profile.username}
+                </p>
+                <EditProfile
+                  userId={user.id}
+                  username={profile.username}
+                  initialBio={profile.bio}
+                  initialAvatarUrl={profile.avatar_url}
+                />
+                <Link
+                  href={`/kin/${profile.username}`}
+                  className="mono"
+                  style={{ display: "inline-block", marginTop: 16, fontSize: 11, color: "#6E76B8" }}
+                >
+                  view your public profile &rarr;
                 </Link>
-              ) : (
-                <span>{GAMES[s.game]?.label || s.game}</span>
-              )}
-              <span className="mono" style={{ color: "#E8CFC0" }}>{s.score.toLocaleString()}</span>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {quiz && (
-        <Link href="/quiz" className="panel" style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 16, textAlign: "left", textDecoration: "none" }}>
-          <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 38, color: "#DCDFFF", lineHeight: 1, minWidth: 56 }}>{quiz.grade}</span>
-          <span style={{ flex: 1 }}>
-            <span className="mono" style={{ display: "block", fontSize: 10, color: "#565B8F", letterSpacing: "1px" }}>UNIVERSE QUIZ &middot; LATEST</span>
-            <span style={{ display: "block", fontSize: 13.5, color: "#D9DCFF", marginTop: 2 }}>
-              {quiz.score} of {quiz.total} &middot; {new Date(quiz.taken_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
-            </span>
-            <span className="mono" style={{ fontSize: 11, color: "#8B95F6" }}>
-              {quiz.quiz_id === QUIZ.id ? "retake the quiz →" : "a new quiz is up →"}
-            </span>
-          </span>
-        </Link>
-      )}
-
-      {reading && reading.length > 0 && (
-        <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
-          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
-            STORIES READ
+              </>
+            ) : (
+              <ClaimUsername />
+            )}
           </div>
-          {reading.map((r) => (
-            <Link
-              key={r.assignment_number}
-              href={r.assignment_number === 1 ? "/assignments/0000001" : `/assignments/${r.assignment_number}`}
-              style={{ display: "block", fontSize: 13.5, color: "#B9C0FF", padding: "6px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
-            >
-              {titleByNumber[r.assignment_number] || `Assignment ${r.assignment_number}`}
-            </Link>
-          ))}
+
+          {alpha && (
+            <div className="panel" style={{ borderColor: "#6B5E3E", background: "rgba(201,185,143,0.05)" }}>
+              <AlphaBadge profile={alphaProfile} variant="full" />
+              <p style={{ fontSize: 13.5, color: "#B7BADF", lineHeight: 1.65, margin: "12px 0 10px" }}>
+                You found 13i before Beta. You're one of the people testing it and
+                shaping what it becomes{alphaNumber(profile) ? `, Alpha ${alphaNumber(profile)}` : ""}. Thank you.
+              </p>
+              <Link href={ALPHA_FORUM} className="mono" style={{ fontSize: 11.5, color: "#E8CFC0" }}>
+                suggest a change in the Alpha Users Private Forum &rarr;
+              </Link>
+            </div>
+          )}
+
+          <FirstAssignment variant="node" />
         </div>
-      )}
 
-      <FirstAssignment variant="node" />
+        {/* right: what you've done here */}
+        <div className="node-col">
+          {scores && scores.length > 0 && (
+            <div className="panel">
+              <div className="mono node-label">HIGH SCORES</div>
+              {scores.map((s) => (
+                <div key={s.game} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "#D9DCFF", padding: "6px 0", borderBottom: "1px solid #21244A" }}>
+                  {GAMES[s.game]?.href ? (
+                    <Link href={GAMES[s.game].href} style={{ color: "#B9C0FF" }}>
+                      {GAMES[s.game].label}
+                    </Link>
+                  ) : (
+                    <span>{GAMES[s.game]?.label || s.game}</span>
+                  )}
+                  <span className="mono" style={{ color: "#E8CFC0" }}>{s.score.toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
-      <YourSpecies initial={species || []} username={profile?.username} />
+          {quiz && (
+            <Link href="/quiz" className="panel" style={{ display: "flex", alignItems: "center", gap: 16, textDecoration: "none" }}>
+              <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 38, color: "#DCDFFF", lineHeight: 1, minWidth: 56 }}>{quiz.grade}</span>
+              <span style={{ flex: 1 }}>
+                <span className="mono" style={{ display: "block", fontSize: 10, color: "#565B8F", letterSpacing: "1px" }}>UNIVERSE QUIZ &middot; LATEST</span>
+                <span style={{ display: "block", fontSize: 13.5, color: "#D9DCFF", marginTop: 2 }}>
+                  {quiz.score} of {quiz.total} &middot; {new Date(quiz.taken_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                </span>
+                <span className="mono" style={{ fontSize: 11, color: "#8B95F6" }}>
+                  {quiz.quiz_id === QUIZ.id ? "retake the quiz \u2192" : "a new quiz is up \u2192"}
+                </span>
+              </span>
+            </Link>
+          )}
 
-      <div className="panel" style={{ marginTop: 16 }}>
+          <YourSpecies initial={species || []} username={profile?.username} />
+
+          {reading && reading.length > 0 && (
+            <div className="panel">
+              <div className="mono node-label">STORIES READ</div>
+              {reading.map((r) => (
+                <Link
+                  key={r.assignment_number}
+                  href={r.assignment_number === 1 ? "/assignments/0000001" : `/assignments/${r.assignment_number}`}
+                  style={{ display: "block", fontSize: 13.5, color: "#B9C0FF", padding: "6px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
+                >
+                  {titleByNumber[r.assignment_number] || `Assignment ${r.assignment_number}`}
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div style={{ textAlign: "center", marginTop: 24 }}>
         <form action="/auth/signout" method="post">
           <button
             type="submit"
@@ -206,11 +253,10 @@ export default async function AccountPage() {
             Sign out
           </button>
         </form>
+        <p style={{ fontSize: 12, color: "#565B8F", marginTop: 16 }}>
+          More of your progress will show up here as new pieces come online.
+        </p>
       </div>
-
-      <p style={{ fontSize: 12, color: "#565B8F", marginTop: 20 }}>
-        More of your progress will show up here as new pieces come online.
-      </p>
     </div>
   );
 }

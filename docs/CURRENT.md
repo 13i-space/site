@@ -19,6 +19,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   the top of the reader); Nerath's Secret also has a "Comic version" box
   linking to an 8-page comic reader (`lib/comics.js`)
 - About hub: About Paul (ends with Contact Paul), The Origin of 13i, Mission & Values
+- Update 5.12 (needs docs/v5.12-forum-order-and-messages.sql): card flip
+  sound, Life Cycle stats, radar-revealed star contacts, Node dashboard,
+  private messages, forum reorder + private Alpha forum, Galaxy order
 - Update 5.11: the Oracle chamber with sound; three sequential Kin
   assignments (Contact, Creation, Kinship); Lyra peeks for 2.5s and
   returns on hover

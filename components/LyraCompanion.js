@@ -47,7 +47,13 @@ async function loadCounts(supabase, uid) {
   let { data: species, error } = await supabase.from("alien_species").select("id, name, review").eq("user_id", uid);
   if (error) ({ data: species } = await supabase.from("alien_species").select("id, name").eq("user_id", uid));
   const readNumbers = (reads.data || []).map((r) => r.assignment_number);
+  let unread = 0;
+  try {
+    const { count } = await supabase.from("direct_messages").select("id", { count: "exact", head: true }).eq("recipient_id", uid).is("read_at", null);
+    unread = count || 0;
+  } catch (e) { /* messages not switched on yet */ }
   return {
+    unread,
     readNumbers,
     reads: readNumbers.length,
     games: new Set((plays.data || []).map((p) => p.game)).size,
@@ -198,7 +204,7 @@ export default function LyraCompanion() {
       if (u?.alpha && !m.celebrated.alpha) {
         remember((mm) => { mm.celebrated.alpha = true; });
         queue.current.push({
-          text: `You're an Alpha User${u.alphaNumber ? ` - ${u.alphaNumber}` : ""}. You found 13i before Beta, so you get to help shape it. Anything you'd change, tell the others in [the Alpha Users forum](${ALPHA_FORUM}) - or just tell me.`,
+          text: `You're an Alpha User${u.alphaNumber ? ` - ${u.alphaNumber}` : ""}. You found 13i before Beta, so you get to help shape it. Anything you'd change, tell the others in [the Alpha Users Private Forum](${ALPHA_FORUM}) - or just tell me.`,
           stay: true,
         });
       }
@@ -316,7 +322,9 @@ export default function LyraCompanion() {
       const daysAway = s.prevSeen ? Math.floor((Date.now() - new Date(s.prevSeen)) / 86400000) : 0;
       const memoryForNews = { ...m, lastSeenAt: s.prevSeen };
       const news = newsLines({ feed: feed.current, memory: memoryForNews, userId: uid, readNumbers: counts.current.readNumbers || [] });
-      const extras = [...news, journeyLine(journey.current)].filter(Boolean).filter((l) => !m.recent.includes(l.id)).sort((a, b) => (b.priority || 0) - (a.priority || 0));
+      const unread = counts.current.unread || 0;
+      const messagesLine = unread ? { id: `dm-${unread}-${today()}`, priority: 10, text: `You have ${unread} unread private ${unread === 1 ? "message" : "messages"}. [Open messages](/messages).` } : null;
+      const extras = [messagesLine, ...news, journeyLine(journey.current)].filter(Boolean).filter((l) => !m.recent.includes(l.id)).sort((a, b) => (b.priority || 0) - (a.priority || 0));
 
       let welcomed = false;
       try { welcomed = !!sessionStorage.getItem(`lyra_welcomed_${uid}`); sessionStorage.setItem(`lyra_welcomed_${uid}`, "1"); } catch (e) { welcomed = true; }
@@ -335,7 +343,7 @@ export default function LyraCompanion() {
       }
       const unvisited = AREAS.filter((a) => !m.visited.some((v) => v.startsWith(a.prefix))).map((a) => ({ id: `area-${a.prefix}`, priority: 3, text: a.text }));
       if (userRef.current?.alpha && !m.visited.includes(ALPHA_FORUM)) {
-        unvisited.push({ id: "area-alpha", priority: 4, text: `As an Alpha User, your ideas change this place. Something bugging you, or something you wish existed? [The Alpha Users forum](${ALPHA_FORUM}).` });
+        unvisited.push({ id: "area-alpha", priority: 4, text: `As an Alpha User, your ideas change this place. Something bugging you, or something you wish existed? [The Alpha Users Private Forum](${ALPHA_FORUM}).` });
       }
       const pool = [
         ...extras,

@@ -71,7 +71,7 @@ function describeSpecies(sp) {
   const stats = sp.stats && typeof sp.stats === "object"
     ? Object.entries(sp.stats).map(([k, v]) => `${k}: ${v}`).join(", ")
     : "not set";
-  return `Species name: ${String(sp.name || "Unnamed").slice(0, 60)}\n${describe(sp.answers)}\nAttribute points (Physical 100, Mental 100, Ecological & Sensory 50): ${stats}`;
+  return `Species name: ${String(sp.name || "Unnamed").slice(0, 60)}\n${describe(sp.answers)}\nAttribute points (Physical 100, Mental 100, Ecological & Sensory 50, Life Cycle 50): ${stats}`;
 }
 
 async function writeReview(apiKey, supabase, userId, speciesId) {

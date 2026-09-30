@@ -1,6 +1,6 @@
 import { ALL_STATS } from "../lib/alienStats";
 
-// The ten stats as a radar: one spoke per stat, coloured by group, with
+// The twelve stats as a radar: one spoke per stat, coloured by group, with
 // the species' shape filled in. A stat at an even share of its pool sits
 // halfway out; everything in one stat reaches the rim (square-root scale,
 // so small differences still show).

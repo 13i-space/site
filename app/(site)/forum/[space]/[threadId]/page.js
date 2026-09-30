@@ -47,12 +47,12 @@ export default async function ThreadPage({ params }) {
       </Link>
 
       <div style={{ maxWidth: 640, margin: "24px auto 0" }}>
-        <Post profile={thread.profiles} body={thread.body} createdAt={thread.created_at} title={thread.title} />
+        <Post profile={thread.profiles} body={thread.body} createdAt={thread.created_at} title={thread.title} viewerId={user?.id} />
 
         {(replies || []).length > 0 && (
           <div style={{ marginTop: 24, display: "flex", flexDirection: "column", gap: 18 }}>
             {replies.map((r) => (
-              <Post key={r.id} profile={r.profiles} body={r.body} createdAt={r.created_at} reply />
+              <Post key={r.id} profile={r.profiles} body={r.body} createdAt={r.created_at} reply viewerId={user?.id} />
             ))}
           </div>
         )}
@@ -67,7 +67,7 @@ export default async function ThreadPage({ params }) {
   );
 }
 
-function Post({ profile, body, createdAt, title, reply }) {
+function Post({ profile, body, createdAt, title, reply, viewerId }) {
   return (
     <div style={{ display: "flex", gap: 14, paddingLeft: reply ? 20 : 0 }}>
       <Link href={profile?.username ? `/kin/${profile.username}` : "#"} style={{ flexShrink: 0 }}>
@@ -97,6 +97,12 @@ function Post({ profile, body, createdAt, title, reply }) {
           ) : "unknown"}
           {" \u00b7 "}
           {new Date(createdAt).toLocaleString()}
+          {viewerId && profile?.username && profile.id !== viewerId && (
+            <>
+              {" \u00b7 "}
+              <Link href={`/messages/${profile.username}`} style={{ color: "#8A8FBF" }} title={`Send ${profile.username} a private message`}>&#9993; message</Link>
+            </>
+          )}
         </div>
         <p style={{ fontSize: 14.5, lineHeight: 1.65, color: "#D9DCFF", whiteSpace: "pre-wrap", margin: 0 }}>
           {body}

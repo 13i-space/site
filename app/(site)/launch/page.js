@@ -67,7 +67,7 @@ export default function LaunchHome() {
       )}
 
       {radarMode && <RadarField />}
-      {revealed && <EasterStars />}
+      {revealed && <EasterStars radar={radarMode} />}
 
       <div style={{ opacity: revealed ? 1 : 0, transition: "opacity 1.2s ease" }}>
         <div style={{ textAlign: "center", padding: "20px 0 50px" }}>

@@ -38,9 +38,19 @@ export default async function SpacePage({ params }) {
     const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
     me = data ? { ...data, created_at: data.created_at || user.created_at } : null;
   }
-  if (alphaOnly) {
+  const locked = alphaOnly && !isAlpha(me); // the Alpha forum is private
+  if (alphaOnly && !locked) {
     const { data } = await supabase.from("profiles").select("*").eq("alpha", true).order("alpha_number", { ascending: true }).limit(200);
     roll = (data || []).filter((p) => p.username);
+  }
+  if (locked) {
+    return (
+      <div style={{ maxWidth: 480, margin: "0 auto", textAlign: "center" }}>
+        <div className="page-title">{space.name}</div>
+        <p style={{ color: "#8A8FBF" }}>This forum is private to Alpha Users, the first Kin testing 13i before Beta.</p>
+        <Link href="/forum" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>&larr; back to the forum</Link>
+      </div>
+    );
   }
   const canPost = !!user && (!alphaOnly || isAlpha(me));
 
@@ -58,7 +68,7 @@ export default async function SpacePage({ params }) {
           <div className="panel" style={{ borderColor: "#6B5E3E", background: "rgba(201,185,143,0.05)", marginBottom: 20 }}>
             <div className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px", marginBottom: 8 }}>&alpha; THE ALPHA ROLL</div>
             <p style={{ fontSize: 13, color: "#B7BADF", margin: "0 0 12px", lineHeight: 1.6 }}>
-              The first Kin, here before Beta. Anyone can read along; only Alpha Users can post.
+              The first Kin, here before Beta. Only Alpha Users can see this forum: suggest changes, report what's broken, shape what comes next.
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
               {roll.map((p) => (

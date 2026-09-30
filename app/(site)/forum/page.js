@@ -1,12 +1,25 @@
 import Link from "next/link";
 import { createClient } from "../../../lib/supabaseServer";
+import { isAlpha } from "../../../lib/alpha";
 
 export default async function ForumHub() {
   const supabase = await createClient();
-  const { data: spaces } = await supabase
+  const { data: allSpaces } = await supabase
     .from("forum_spaces")
-    .select("slug, name, description")
+    .select("*")
     .order("sort_order");
+
+  // the Alpha Users Private Forum is listed only for Alpha Users
+  const { data: { user } } = await supabase.auth.getUser();
+  let me = null;
+  let unread = 0;
+  if (user) {
+    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    me = data ? { ...data, created_at: data.created_at || user.created_at } : null;
+    const { count } = await supabase.from("direct_messages").select("id", { count: "exact", head: true }).eq("recipient_id", user.id).is("read_at", null);
+    unread = count || 0;
+  }
+  const spaces = (allSpaces || []).filter((s) => !(s.alpha_only || s.slug === "alpha") || isAlpha(me));
 
   // thread counts per space, done as a lightweight second query
   const { data: threads } = await supabase.from("forum_threads").select("space_id");
@@ -21,6 +34,14 @@ export default async function ForumHub() {
     <div>
       <div className="page-title">The Forum</div>
       <div className="page-subtitle">a meeting place for Kin — new guests always welcome</div>
+
+      {user && (
+        <div style={{ maxWidth: 640, margin: "0 auto 16px", display: "flex", justifyContent: "flex-end" }}>
+          <Link href="/messages" className="mono" style={{ fontSize: 12, color: unread ? "#E8CFC0" : "#B9C0FF", border: `1px solid ${unread ? "#6B5E3E" : "#3A3E75"}`, borderRadius: 4, padding: "7px 14px", textDecoration: "none" }}>
+            &#9993; messages{unread ? ` \u00b7 ${unread} new` : ""}
+          </Link>
+        </div>
+      )}
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 640, margin: "0 auto" }}>
         {(spaces || []).map((s) => (
@@ -39,7 +60,7 @@ export default async function ForumHub() {
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span className="wordmark" style={{ fontSize: 19, color: s.slug === "alpha" ? "#E8CFC0" : "#DCDFFF" }}>{s.slug === "alpha" ? "\u03b1 " : ""}{s.name}</span>
+              <span className="wordmark" style={{ fontSize: 19, color: s.slug === "alpha" ? "#E8CFC0" : "#DCDFFF" }}>{s.name}</span>
               <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>
                 {countBySlug[s.slug] || 0} {countBySlug[s.slug] === 1 ? "thread" : "threads"}
               </span>

@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.12 — Life Cycle stats, radar contacts, the Node dashboard, private messages
+**Cards** flip with a soft swish-and-tap (`lib/cardSound.js`) and gained a
+fourth stat group, **Life Cycle** (50 points: Longevity, Reproduction),
+shown beside Ecological & Sensory; older species keep every point they
+chose and get Life Cycle estimated from their answers; the Survival Trials
+weigh it. **Easter egg**: the hidden star is now faint; the home page's
+radar mode (click the eye's dot) unveils it and five more as pinging
+"contacts", each holding a different species' card
+(`components/EasterStars.js`). **The Node** is a dashboard: vitals row
+(stories, species, games, quiz, messages, Lyra's bond), then two columns on
+a laptop - profile, Alpha box, assignments | high scores, quiz, species,
+stories. **Private messages** between Kin (`/messages`, `/messages/<name>`,
+`direct_messages`): from Kin profiles, a "message" link on forum posts, the
+Kinship menu, the Node and Lyra. **Forum** reordered (13i Universe, The
+Signal Fire, Book, Music, Alpha) and the Alpha space is now the private
+**Alpha Users Private Forum** (hidden and unreadable to others). **Galaxy**
+page order: Map, Aliens, Space News, Quiz, Facts.
+SQL: `docs/v5.12-forum-order-and-messages.sql`.
+
 ## Update 5.11 — The Oracle chamber, three assignments, a quieter Lyra
 **The Oracle** is now a chamber (`components/OracleChamber.js`, full-bleed
 on `/oracle`): a dark threshold ("Something vast is listening" - Approach),

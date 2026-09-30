@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
 import { isAlpha } from "../../../../lib/alpha";
 import AlphaBadge from "../../../../components/AlphaBadge";
@@ -9,6 +10,8 @@ export default async function KinProfilePage({ params }) {
     .select("*")
     .eq("username", params.username)
     .single();
+
+  const { data: { user: viewer } } = await supabase.auth.getUser();
 
   if (!profile) {
     return (
@@ -51,6 +54,12 @@ export default async function KinProfilePage({ params }) {
         <div className="mono" style={{ fontSize: 11, color: "#565B8F", marginBottom: 18 }}>
           KIN SINCE {joined.toUpperCase()}
         </div>
+      )}
+
+      {viewer && viewer.id !== profile.id && (
+        <Link href={`/messages/${profile.username}`} className="mono" style={{ display: "inline-block", margin: "0 0 18px", fontSize: 12, color: "#E8CFC0", border: "1px solid #6B5E3E", borderRadius: 4, padding: "7px 14px", textDecoration: "none" }}>
+          &#9993; send a private message
+        </Link>
       )}
 
       {profile.bio && (

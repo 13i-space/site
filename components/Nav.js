@@ -70,6 +70,7 @@ export default async function Nav() {
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/forum">Forum</Link></li>
               <li><Link href="/guestbook">Guestbook</Link></li>
+              <li><Link href="/messages">Messages</Link></li>
             </ul>
           </div>
         </li>

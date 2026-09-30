@@ -5,10 +5,11 @@ import { backTraits, cardTagline, cardNumber } from "../lib/alienTraits";
 import { STAT_GROUPS, statsFor } from "../lib/alienStats";
 import { verdictFor } from "../lib/continuance";
 import { playSignal, stopSignal } from "../lib/speciesSignal";
+import { playFlip } from "../lib/cardSound";
 import StatRadar from "./StatRadar";
 
 // A collectible card for one Alien Lab species. The front has the name,
-// portrait, a line of flavour and the ten stats; click it and it flips to
+// portrait, a line of flavour and the twelve stats; click it (with a soft flip sound) and it turns to
 // a stats chart, the rest of its traits, its signal (lib/speciesSignal.js)
 // and a link to its own page. 13i's Continuance verdict, once it has one,
 // is stamped on the portrait. Used by the gallery,
@@ -41,7 +42,11 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
   const s = width / 280; // everything scales with the card's width
   const height = (width * 88) / 63;
 
-  const activate = () => (onSelect ? onSelect() : setFlipped((f) => !f));
+  const activate = () => {
+    if (onSelect) { onSelect(); return; }
+    playFlip();
+    setFlipped((f) => !f);
+  };
 
   const frame = {
     padding: 7 * s,
@@ -139,21 +144,26 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
               </div>
             )}
 
-            {/* the ten stats, by group */}
+            {/* the twelve stats: the four-stat groups get a row each, the two
+                two-stat groups (Ecological & Sensory, Life Cycle) share one */}
             <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", justifyContent: "center", gap: 5 * s }}>
-              {STAT_GROUPS.map((g) => (
-                <div key={g.id}>
-                  <div className="mono" style={{ fontSize: 7.5 * s, color: g.color, letterSpacing: "1px", marginBottom: 2 * s, opacity: 0.85 }}>
-                    {g.label.toUpperCase()}
-                  </div>
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 3 * s }}>
-                    {g.stats.map((st) => (
-                      <div key={st.id} title={`${st.label}: ${st.desc}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: `${2 * s}px ${4 * s}px`, borderRadius: 3 * s, background: "rgba(38,42,85,0.55)", borderLeft: `${2 * s}px solid ${g.color}` }}>
-                        <span className="mono" style={{ fontSize: 7.5 * s, color: "#8A8FBF" }}>{st.abbr}</span>
-                        <span className="mono" style={{ fontSize: 10.5 * s, color: "#E4E4EF" }}>{Math.round(stats[st.id])}</span>
+              {[STAT_GROUPS.filter((g) => g.stats.length === 4).map((g) => [g]), [STAT_GROUPS.filter((g) => g.stats.length === 2)]].flat().map((row) => (
+                <div key={row.map((g) => g.id).join("-")} style={{ display: "grid", gridTemplateColumns: `repeat(${row.length}, 1fr)`, gap: 3 * s }}>
+                  {row.map((g) => (
+                    <div key={g.id} style={{ minWidth: 0 }}>
+                      <div className="mono" style={{ fontSize: 7.5 * s, color: g.color, letterSpacing: "1px", marginBottom: 2 * s, opacity: 0.85, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {g.label.toUpperCase()}
                       </div>
-                    ))}
-                  </div>
+                      <div style={{ display: "grid", gridTemplateColumns: `repeat(${g.stats.length}, 1fr)`, gap: 3 * s }}>
+                        {g.stats.map((st) => (
+                          <div key={st.id} title={`${st.label}: ${st.desc}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", padding: `${2 * s}px ${4 * s}px`, borderRadius: 3 * s, background: "rgba(38,42,85,0.55)", borderLeft: `${2 * s}px solid ${g.color}` }}>
+                            <span className="mono" style={{ fontSize: 7.5 * s, color: "#8A8FBF" }}>{st.abbr}</span>
+                            <span className="mono" style={{ fontSize: 10.5 * s, color: "#E4E4EF" }}>{Math.round(stats[st.id])}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>

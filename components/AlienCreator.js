@@ -315,7 +315,7 @@ export default function AlienCreator({ loggedIn }) {
         </div>
         <p style={{ fontSize: 17, color: "#DCDFFF", margin: "0 0 6px" }}>Spend your points.</p>
         <p style={{ fontSize: 13, color: "#8A8FBF", margin: "0 0 18px", lineHeight: 1.6 }}>
-          Every species gets the same budget: 100 Physical, 100 Mental and 50 Ecological &amp; Sensory.
+          Every species gets the same budget: 100 Physical, 100 Mental, 50 Ecological &amp; Sensory and 50 Life Cycle.
           Spread them evenly or pour everything into one thing. These go on your card and decide how
           your species does in the Survival Trials.
         </p>

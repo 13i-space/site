@@ -516,3 +516,45 @@ main {
   .oracle-halo, .oracle-ring-a, .oracle-ring-b, .oracle-iris-lines, .oracle-rays, .oracle-approach, .oracle-status-live { animation: none; }
   .oracle-rising { animation-duration: 0.01s; }
 }
+
+/* ---- The Node (app/(site)/account/page.js): a dashboard ----
+   One column on a phone; two on a laptop - who you are and your
+   assignments on the left, what you've done on the right. */
+.node { max-width: 1040px; margin: 0 auto; }
+.node .panel { position: relative; text-align: left; }
+.node .panel::before {
+  content: "";
+  position: absolute;
+  top: -1px;
+  left: 14px;
+  right: 14px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(139,149,246,0.55), transparent);
+  pointer-events: none;
+}
+.node-label { font-size: 10px; color: #565B8F; letter-spacing: 1.5px; margin-bottom: 10px; }
+.node-vitals {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.node-tile {
+  display: block;
+  padding: 12px 14px;
+  border: 1px solid #262A55;
+  border-radius: 4px;
+  background: linear-gradient(180deg, rgba(20,22,58,0.8), rgba(10,11,28,0.8));
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.node-grid { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+.node-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.node-col > * { margin-top: 0 !important; margin-bottom: 0 !important; }
+@media (min-width: 900px) {
+  .node-grid { grid-template-columns: 1fr 1fr; }
+}

@@ -4,17 +4,7 @@ const sections = [
   {
     href: "/galaxy/map",
     title: "The Map",
-    blurb: "A 3D view of the galaxy you can turn and zoom — with Earth, and the worlds of the Assignments you've read.",
-  },
-  {
-    href: "/galaxy/facts",
-    title: "Galaxy Facts",
-    blurb: "Size, star count, shape, age — the basics, for scale.",
-  },
-  {
-    href: "/quiz",
-    title: "Universe Quiz",
-    blurb: "Ten questions from across the cosmos, graded A+ to F.",
+    blurb: "A 3D view of the galaxy you can turn and zoom — with Earth, the worlds of the Assignments you've read, and every Kin species.",
   },
   {
     href: "/galaxy/aliens",
@@ -25,6 +15,16 @@ const sections = [
     href: "/galaxy/news",
     title: "Space News",
     blurb: "Current headlines from NASA, ESA, Spaceflight Now, Universe Today and more, refreshed through the day.",
+  },
+  {
+    href: "/quiz",
+    title: "Universe Quiz",
+    blurb: "Ten questions from across the cosmos, graded A+ to F.",
+  },
+  {
+    href: "/galaxy/facts",
+    title: "Galaxy Facts",
+    blurb: "Size, star count, shape, age — the basics, for scale.",
   },
 ];
 
