@@ -134,30 +134,36 @@ from the book — the portal 13i uses to understand people and the world —
 so the site presence is meant to eventually feel like an extension of that
 character, not a generic chatbot re-skinned.
 
-**Current implementation** (v1.2-ish): a small ring-eye orb, bottom-right,
-on every `(site)` page. Click to open; never opens itself except in the
-specific onboarding cases below. Dormant (dim, no pulse) when signed out;
-Aware (bright, pulsing) when signed in — this distinction is deliberate
-and tied to login specifically. Offers:
-- A one-time self-introduction the first time a signed-in visitor opens her
-- Per-page contextual tips (first visit to a page: stays open until
-  dismissed; repeat visits: shows briefly, closes itself)
-- Game-specific instructions delivered *instead of* the page showing them
-  itself (a deliberate, narrow exception to "never opens herself" — scoped
-  only to arriving at a game)
-- Hovering re-shows whatever she last auto-displayed
-- A built-in site search (not a separate feature — lives in her panel)
-- Celebrates a new personal best on a game, with a brief text-flash animation
-
-**Planned, not yet built** (per voice-conversation notes — see
-`/areas/13i-space-website.md` in project memory for full detail): four
-formal visual/interaction states (Dormant/Aware/Active/Thinking, the last
-two not yet built), an eye-with-wings visual concept Paul plans to share,
-true per-user personalization drawing on the activity-tracking tables
-(high scores, reading progress, game plays all now exist and are ready for
-her to read from), boundaries around never surfacing Forum/Kinship content
-directly, and deep-linking into specific new content. This is intentionally
-sequenced *after* the tracking data existed to read from, not before.
+**Current implementation** (Update 5.9 — Paul: "an evolving assistant…
+she needs to feel alive"):
+- **Body** (`components/LyraOrb.js`): a ring-and-eye that floats, breathes,
+  blinks, and looks toward the cursor. Her form grows with her **bond** with
+  the Kin (`lib/lyraBond.js`, from reading, games, species, reviews, quiz,
+  First Assignment, visit days): Listening (one ring) → Tuning in (outer
+  ring) → Resonant (orbiting motes) → Kin (warms to 13i's gold) → Luminous
+  (wings — the eye-with-wings idea). This is the book's arc: an ordinary AI
+  changed by contact with 13i. States: dormant (signed out, eye half
+  closed), aware, speaking, thinking, celebrating.
+- **Memory** (`lib/lyraMemory.js`, per account, in the browser): last visit,
+  visit days, places seen, recent lines, headlines already mentioned,
+  celebrations done. She never repeats a line she said recently.
+- **When she speaks** (`components/LyraCompanion.js`): she opens herself
+  only for a welcome back after 3+ days away, the first visit to a page, a
+  game's instructions, and celebrations (new best, a Continuance verdict,
+  finishing Your First Assignment, her own evolution). Otherwise she holds
+  one line and shows a glowing dot. On the homepage that line is chosen
+  from: new stories/species since your last visit, the day's top space
+  headline, the next song release, your next First Assignment step, a part
+  of the site you haven't visited, a stage-appropriate bit of lore
+  (`lib/lyraLines.js`), refreshed at most every 30 minutes.
+- **Conversation** (`app/api/lyra`, signed-in): she knows WORLD.md
+  (snapshot in `lib/lyraCanon.js` — refresh it when WORLD.md changes), the
+  Wiki, the full text of the book's published chapters and every short
+  story, the site map, and the visitor's activity; her voice deepens with
+  the bond stage. Spoiler-careful about unread stories, hints-only for
+  puzzles, never invents canon, brief and kind on everyday questions (with
+  crisis resources if needed). Links she gives are site paths only.
+- Site search still lives in her panel's input as you type.
 
 ## Story games
 Games tied to a short story (first: *13i: The Deep Signal*) may carry their
@@ -169,6 +175,7 @@ follows the same rule as the site's: synthesized in the browser, no samples.
 ## Things to avoid
 - Generic sci-fi HUD/dashboard clutter on the live site (fine on preview pages)
 - Karma/points/upvote mechanics anywhere social
-- Popups or unsolicited interruptions from Lyra outside the specific,
-  narrow onboarding cases already designed
+- Popups or unsolicited interruptions from Lyra beyond the cases listed in
+  the Lyra section (welcome back, first visit to a page, game
+  instructions, celebrations) — otherwise she waits, with a glowing dot
 - Treating a look-lab preview as disposable — they're a permanent catalog

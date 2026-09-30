@@ -7,8 +7,7 @@ import { JOURNEY, loadJourney } from "../lib/firstAssignment";
 // Your First Assignment, as a panel: six steps, each stamped as it's done.
 // On /launch it can be hidden for a while ("later"); on the Node it's
 // always there, and shrinks to a single completed line once finished.
-// Lyra points at the next step once a session (see LyraCompanion's
-// "lyra:say" event).
+// Lyra (components/LyraCompanion.js) mentions the next step herself.
 const HIDE_KEY = "first_assignment_hidden_until";
 const HIDE_DAYS = 7;
 
@@ -35,18 +34,6 @@ export default function FirstAssignment({ variant = "launch" }) {
   const count = steps.filter((s) => s.done).length;
   const complete = journey?.signedIn && count === steps.length;
   const next = steps.find((s) => !s.done);
-
-  // Lyra names the next step, once per browser session, on the homepage
-  useEffect(() => {
-    if (variant !== "launch" || !journey?.signedIn || complete || hidden || !next) return;
-    let said = false;
-    try { said = !!sessionStorage.getItem("lyra_first_assignment"); sessionStorage.setItem("lyra_first_assignment", "1"); } catch (e) { /* ignore */ }
-    if (said) return;
-    const id = setTimeout(() => {
-      window.dispatchEvent(new CustomEvent("lyra:say", { detail: { text: `Your First Assignment, step ${count + 1}: ${next.title.toLowerCase()}. ${next.text}` } }));
-    }, 7000); // after her welcome
-    return () => clearTimeout(id);
-  }, [variant, journey, complete, hidden, next, count]);
 
   if (!journey) return null;
   if (variant === "launch" && (hidden || complete)) return null;

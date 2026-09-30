@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { VERDICTS } from "../lib/continuance";
 import { recordMilestone } from "../lib/milestones";
+import AvatarPicker from "./AvatarPicker";
 
 // 13i's Continuance Review of one species. Shows the review when there is
 // one; to the species' creator, offers to submit it (or submit it again).
@@ -11,6 +12,8 @@ export default function ContinuanceReview({ species, isOwner, compact }) {
   const [review, setReview] = useState(species.review || null);
   const [status, setStatus] = useState("idle"); // idle | waiting | error
   const [note, setNote] = useState("");
+  const [picking, setPicking] = useState(false);
+  const [avatarSet, setAvatarSet] = useState(false);
 
   const request = async () => {
     setStatus("waiting");
@@ -25,7 +28,7 @@ export default function ContinuanceReview({ species, isOwner, compact }) {
       if (!data.review) throw new Error(data.error || "No review came back. Try again.");
       setReview(data.review);
       if (data.saved === false) setNote(data.error || "");
-      else recordMilestone("review");
+      else recordMilestone("review", { verdict: data.review.verdict, name: species.name });
       setStatus("idle");
     } catch (e) {
       setNote(e.message);
@@ -65,7 +68,19 @@ export default function ContinuanceReview({ species, isOwner, compact }) {
             {status === "waiting" ? "13i is considering…" : review ? "Submit for review again" : "Submit to 13i for review"}
           </button>
           {status === "waiting" && <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>usually under half a minute</span>}
+          {review && species.portrait_svg && (
+            <button onClick={() => setPicking(true)} className="mono" style={{ ...btn, borderColor: "#6B5E3E", color: "#E8CFC0" }}>
+              {avatarSet ? "It's your avatar now \u2713" : "Make it my avatar"}
+            </button>
+          )}
         </div>
+      )}
+      {picking && (
+        <AvatarPicker
+          initialSpecies={species}
+          onClose={() => setPicking(false)}
+          onSaved={() => { setAvatarSet(true); setPicking(false); }}
+        />
       )}
       {note && <p className="mono" style={{ fontSize: 11, color: "#C97B6E", margin: "10px 0 0" }}>{note}</p>}
     </div>

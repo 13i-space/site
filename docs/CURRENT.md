@@ -19,6 +19,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   the top of the reader); Nerath's Secret also has a "Comic version" box
   linking to an 8-page comic reader (`lib/comics.js`)
 - About hub: About Paul (ends with Contact Paul), The Origin of 13i, Mission & Values
+- Update 5.9: Lyra rebuilt (living orb with bond stages, memory, fresh
+  homepage lines, celebrations, canon-aware chat at app/api/lyra), and
+  avatars from a photo or a species with pan/zoom framing
 - Update 5.8 (needs docs/v5.8-continuance-and-milestones.sql): Continuance
   Reviews, species pages with link previews, species signals, Kin species on
   the Galaxy Map, Your First Assignment on /launch and the Node, a

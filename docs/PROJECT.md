@@ -140,6 +140,7 @@ the whole site down (this happened once, pre-hardening).
 - `subscribe/` — Buttondown signup (field is `email_address`, not `email` — Buttondown renamed it)
 - `submit-assignment/` — requires login; writes to `assignment_submissions` via the admin client
 - `auth/signup/`, `auth/resolve-username/`, `auth/claim-username/` — username/profile creation helpers around Supabase Auth
+- `lyra/` — Lyra's conversation (signed in; model `claude-sonnet-5-5`, knowledge block prompt-cached). `lyra/feed` — what's new, cached 30 min. Her canon is `lib/lyraCanon.js`, a copy of docs/WORLD.md: **paste the new WORLD.md in whenever it changes**.
 - `alien/` — Alien Lab: `name`, `portrait` (streamed), `review` (13i's Continuance Review, owner only)
 - The one-time `admin/seed-assignment-*` story loaders were removed in Update 5.8 (they were unauthenticated GET routes). Load future stories the same way if needed, then delete the route straight after.
 

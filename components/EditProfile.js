@@ -3,43 +3,16 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
+import AvatarPicker from "./AvatarPicker";
 
 export default function EditProfile({ userId, username, initialBio, initialAvatarUrl }) {
   const router = useRouter();
   const [bio, setBio] = useState(initialBio || "");
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl || null);
-  const [uploading, setUploading] = useState(false);
+  const [picking, setPicking] = useState(false); // the avatar picker (components/AvatarPicker.js)
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [saved, setSaved] = useState(false);
-
-  const onAvatarChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 3 * 1024 * 1024) {
-      setError("Please choose an image under 3MB.");
-      return;
-    }
-    setUploading(true);
-    setError("");
-    const supabase = createClient();
-    const ext = file.name.split(".").pop();
-    const path = `${userId}/avatar.${ext}`;
-    const { error: uploadError } = await supabase.storage
-      .from("avatars")
-      .upload(path, file, { upsert: true });
-    if (uploadError) {
-      setUploading(false);
-      setError(uploadError.message);
-      return;
-    }
-    const { data } = supabase.storage.from("avatars").getPublicUrl(path);
-    // cache-bust so the new image shows immediately even with the same filename
-    const freshUrl = `${data.publicUrl}?t=${Date.now()}`;
-    await supabase.from("profiles").update({ avatar_url: freshUrl }).eq("id", userId);
-    setAvatarUrl(freshUrl);
-    setUploading(false);
-  };
 
   const saveBio = async (e) => {
     e.preventDefault();
@@ -75,17 +48,23 @@ export default function EditProfile({ userId, username, initialBio, initialAvata
             </span>
           )}
         </div>
-        <label
+        <button
+          onClick={() => setPicking(true)}
           className="mono"
           style={{
             fontSize: 11, color: "#B9C0FF", border: "1px solid #3A3E75", borderRadius: 4,
-            padding: "7px 14px", cursor: "pointer", opacity: uploading ? 0.5 : 1,
+            padding: "7px 14px", cursor: "pointer", background: "none",
           }}
         >
-          {uploading ? "Uploading..." : "Change avatar"}
-          <input type="file" accept="image/*" onChange={onAvatarChange} disabled={uploading} style={{ display: "none" }} />
-        </label>
+          Change avatar
+        </button>
       </div>
+      {picking && (
+        <AvatarPicker
+          onClose={() => setPicking(false)}
+          onSaved={(url) => { setAvatarUrl(url); setPicking(false); router.refresh(); }}
+        />
+      )}
 
       <form onSubmit={saveBio}>
         <label className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px" }}>

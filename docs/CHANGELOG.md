@@ -3,6 +3,29 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.9 — Lyra comes alive, alien avatars
+**Lyra** rebuilt as an evolving companion (see DESIGN.md "Lyra"). A living
+body (`components/LyraOrb.js`: floats, breathes, blinks, watches the
+cursor) whose form grows with her **bond** with each Kin (`lib/lyraBond.js`:
+Listening → Tuning in → Resonant → Kin → Luminous, with wings at the top),
+following her book arc of being changed by 13i. A per-account **memory**
+(`lib/lyraMemory.js`) ends the repetition: she welcomes you back only after
+3+ days away, holds one fresh homepage line (new stories/species since your
+last visit, the top space headline, the next song release, your next First
+Assignment step, somewhere you haven't been, stage-appropriate lore -
+`lib/lyraLines.js`, fed by `app/api/lyra/feed`) behind a glowing dot, and
+celebrates finishing Your First Assignment, Continuance verdicts, new bests
+and her own evolution. **Talk to her** (`app/api/lyra`, signed in): she knows
+WORLD.md (`lib/lyraCanon.js` snapshot), the Wiki (`lib/wikiEntries.js`),
+the book's published chapters and every short story in full, the site and
+the visitor; spoiler-careful, hints-only for puzzles, crisis-aware.
+The Oracle now shares `lib/visitorContext.js`; album data moved to
+`lib/musicReleases.js`. **Avatars**: "Change avatar" opens
+`components/AvatarPicker.js` - upload a photo or pick one of your species,
+then drag / zoom to frame it in the circle; a reviewed species' page offers
+"Make it my avatar". Three more stray Finder duplicates ("page 2.js") moved
+to the Trash.
+
 ## Update 5.8 — Continuance Reviews, species on the map, signals, Your First Assignment
 **Continuance Review**: a species' creator can submit it to 13i, which
 writes a short review in its own voice under the Continuance Rule and gives

@@ -282,3 +282,61 @@ main {
     padding: 10px 16px;
   }
 }
+
+/* ---- Lyra (components/LyraOrb.js, components/LyraCompanion.js) ---- */
+.lyra-body {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  animation: lyra-float 6.5s ease-in-out infinite;
+  transition: opacity 0.4s ease;
+}
+@keyframes lyra-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+.lyra-breath { animation: lyra-breathe 4.2s ease-in-out infinite; transform-origin: 0 0; } /* the SVG's 0,0 is her center */
+@keyframes lyra-breathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.92); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+.lyra-state-dormant .lyra-breath { animation-duration: 9s; }
+.lyra-state-speaking .lyra-breath { animation-duration: 2.2s; }
+.lyra-outer { animation: lyra-spin 48s linear infinite; transform-origin: 0 0; }
+.lyra-motes { animation: lyra-spin 18s linear infinite reverse; transform-origin: 0 0; }
+.lyra-state-thinking .lyra-outer { animation-duration: 2.4s; }
+.lyra-state-thinking .lyra-motes { animation-duration: 3s; }
+@keyframes lyra-spin { to { transform: rotate(360deg); } }
+.lyra-wing-l { animation: lyra-wing-l 5s ease-in-out infinite; transform-origin: -17px 0; }
+.lyra-wing-r { animation: lyra-wing-r 5s ease-in-out infinite; transform-origin: 17px 0; }
+@keyframes lyra-wing-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
+@keyframes lyra-wing-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+.lyra-spark { animation: lyra-spark 1.1s ease-out 2 forwards; }
+@keyframes lyra-spark {
+  from { transform: translate(0, 0); opacity: 1; }
+  to { transform: translate(var(--dx), var(--dy)); opacity: 0; }
+}
+.lyra-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #07081A;
+  animation: lyra-badge 2s ease-in-out infinite;
+}
+@keyframes lyra-badge { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
+.lyra-panel { animation: lyra-panel-in 0.22s ease; }
+@keyframes lyra-panel-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.lyra-celebrate { animation: lyra-celebrate-text 0.45s ease-in-out 4; }
+@keyframes lyra-celebrate-text { 0%, 100% { color: #D9DCFF; } 50% { color: #E8CFC0; } }
+.lyra-typing span { display: inline-block; width: 5px; height: 5px; margin-right: 4px; border-radius: 50%; background: #8B95F6; animation: lyra-typing 1.2s ease-in-out infinite; }
+.lyra-typing span:nth-child(2) { animation-delay: 0.15s; }
+.lyra-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes lyra-typing { 0%, 100% { opacity: 0.25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) {
+  .lyra-body, .lyra-breath, .lyra-outer, .lyra-motes, .lyra-wing-l, .lyra-wing-r, .lyra-badge { animation: none; }
+}
+
