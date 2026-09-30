@@ -15,7 +15,10 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
 - Book reader (two edited chapters) with a narrated-audio player that
   follows the current chapter, and a two-chapter PDF download; the Book hub
   offers Read / Download / Listen to Chapter 1 / Listen to Chapter 2
-- Narrated audio on all three short stories (player at the top of the reader)
+- Narrated audio on all three short stories (compact "Audio version" box at
+  the top of the reader); Nerath's Secret also has a "Comic version" box
+  linking to an 8-page comic reader (`lib/comics.js`)
+- About hub: About Paul, The Origin of 13i, Mission & Values, Contact Paul
 - Galaxy: 3D Galaxy Map with story worlds unlocked by reading, Facts,
   Quiz, and Space News (NASA/ESA/SpaceNews RSS, cached 30 min)
 - Assignments: hand-coded canon story (0000001) + two database-driven

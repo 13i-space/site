@@ -12,7 +12,7 @@ const sections = [
   {
     href: "/explore",
     title: "Explore",
-    blurb: "The book, the music, the archive of short stories, the galaxy, the wiki.",
+    blurb: "The book, the music, the archive of short stories, the galaxy.",
   },
   {
     href: "/play",
@@ -22,7 +22,7 @@ const sections = [
   {
     href: "/create",
     title: "Create",
-    blurb: "Write your own Assignment. You are 13i. Tell us what happens.",
+    blurb: "The Alien Lab, the Signal Composer, and Write an Assignment.",
   },
   {
     href: "/kinship",

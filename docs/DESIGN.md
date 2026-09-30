@@ -60,12 +60,18 @@ type of content it is. A piece of content can belong to more than one mode.
   Create, because listening is discovery, not creation.
 - **Play**: interacting with the universe — Oracle, Games, Artifacts, the
   Galaxy Quiz (dual-listed with Explore).
-- **Create**: expressing yourself inside the universe — Write an
-  Assignment, the Alien Lab, eventually music generation.
+- **Create**: expressing yourself inside the universe — the Alien Lab,
+  the Signal Composer, Write an Assignment (in that order, in the nav
+  dropdown and on the Create page alike).
 - **Kinship**: connecting with other people — Forum, Guestbook, Kin
   profiles. Deliberately more than "community" — meant to develop its own
   language and culture over time, not be treated as generic social
   functionality.
+
+The footer carries About and Contact only (Guestbook lives in Kinship).
+`/about` is a hub of three pages — About Paul, The Origin of 13i, Mission &
+Values (shared layout: `components/AboutProse.js`) — plus a Contact Paul
+link. The Origin and Mission texts are Paul's, lightly edited in his voice.
 
 Each mode's landing page ends with a one-line pointer to the next mode in
 the loop (Explore→Play→Create→Kinship→Explore), intended as a soft,

@@ -3,6 +3,18 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.6 — Comic version of Nerath's Secret, About section, home boxes
+First **comic version** of a story: Nerath's Secret as an 8-page comic
+(`public/comics/neraths-secret/`, read at `/assignments/215783/comic` in
+`components/ComicReader.js`). Comics are listed in `lib/comics.js`. Stories
+with extras now show compact boxes above the reader: **Audio version**
+(a small player) and **Comic version** (a link). Nerath's Secret has a new
+portrait cover. **About** is now a hub: About Paul (`/about/paul`), The
+Origin of 13i (`/about/origin`), Mission & Values (`/about/mission`), and
+Contact Paul. The launch-page Explore and Create boxes were rewritten, the
+Create order is now Alien Lab, Signal Composer, Write everywhere, and
+Guestbook left the footer.
+
 ## Update 5.5 — SIXTEEN, the Nerath's Secret game
 A second story game, from the inside of the story rather than 13i's view:
 **SIXTEEN** (`public/games/sixteen/`, `/games/sixteen`). You are a young

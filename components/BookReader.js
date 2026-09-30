@@ -14,7 +14,8 @@ function sectionHeadingAt(pages, index) {
 // audioSrc: one recording for the whole reader (short stories).
 // audioByHeading: { [section heading]: { label, src } } - the player follows
 // whichever section the reader is on (the book's chapters).
-export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification, audioSrc, audioByHeading }) {
+// comicHref: when a story has a comic version, a box beside the audio links to it.
+export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification, audioSrc, audioByHeading, comicHref }) {
   const [pageIndex, setPageIndex] = useState(0);
   const offset = coverImage ? 1 : 0;
   const totalPages = pages.length + offset + (inProgress ? 1 : 0);
@@ -74,16 +75,29 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
             </a>
           </div>
         )}
-        {audio && (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", marginTop: 14 }}>
-            <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 6 }}>
-              {audio.label.toUpperCase()}
-            </div>
-            {/* keyed by src so the player swaps recordings when the section
-                changes, but keeps playing while turning pages within one */}
-            <audio key={audio.src} controls preload="none" style={{ width: "100%", maxWidth: 420, height: 36 }}>
-              <source src={audio.src} type="audio/mpeg" />
-            </audio>
+        {(audio || comicHref) && (
+          <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
+            {audio && (
+              <div style={versionBox}>
+                <div className="mono" style={versionLabel}>AUDIO VERSION</div>
+                {/* keyed by src so the player swaps recordings when the section
+                    changes, but keeps playing while turning pages within one */}
+                <audio key={audio.src} controls preload="none" style={{ display: "block", width: "100%", minWidth: 0, height: 30 }} aria-label={audio.label}>
+                  <source src={audio.src} type="audio/mpeg" />
+                </audio>
+                {audio.label !== "Listen to this story" && (
+                  <div className="mono" style={{ fontSize: 9.5, color: "#565B8F", marginTop: 4 }}>{audio.label}</div>
+                )}
+              </div>
+            )}
+            {comicHref && (
+              <a href={comicHref} style={{ ...versionBox, textDecoration: "none", justifyContent: "center" }}>
+                <div className="mono" style={versionLabel}>COMIC VERSION</div>
+                <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 17, color: "#DCDFFF" }}>
+                  Read it as a comic &rarr;
+                </div>
+              </a>
+            )}
           </div>
         )}
       </div>
@@ -228,3 +242,19 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
     </div>
   );
 }
+
+const versionBox = {
+  display: "flex",
+  flexDirection: "column",
+  width: 280,
+  maxWidth: "100%",
+  minWidth: 0,
+  minHeight: 74,
+  boxSizing: "border-box",
+  padding: "10px 12px",
+  border: "1px solid #262A55",
+  borderRadius: 4,
+  background: "rgba(14,16,38,0.6)",
+  textAlign: "left",
+};
+const versionLabel = { fontSize: 9.5, color: "#6E76B8", letterSpacing: "1.5px", marginBottom: 8 };
