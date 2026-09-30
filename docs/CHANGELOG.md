@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.8 — Continuance Reviews, species on the map, signals, Your First Assignment
+**Continuance Review**: a species' creator can submit it to 13i, which
+writes a short review in its own voice under the Continuance Rule and gives
+a verdict (granted / under observation / not yet earned); saved as
+`alien_species.review`, stamped on the card, and the last of every
+Survival Trials is now **The Continuance Test**. Each species has its **own
+page** (`/galaxy/aliens/[id]`) with the review, a share button and a map
+link. **Signals**: every card's back plays a short piece generated from
+the species' stats by the Signal Composer's engine (`lib/speciesSignal.js`).
+**Galaxy Map**: every Kin species is a faint teal point along the arms,
+yours labelled; tap one for its card; `?species=<id>` flies to it.
+**Your First Assignment** (Assignment 0000000): six steps (Oracle, read,
+play, create, review, map) on `/launch` and the Node, with Lyra naming the
+next step (`components/FirstAssignment.js`, `kin_milestones`).
+**Link previews** for stories and species (`app/og/**`). **The Oracle**
+now knows the signed-in visitor's reading, games, species and quiz grade.
+Housekeeping: seed routes and duplicate docs moved to the Trash, look-lab
+previews gated to Sentinel accounts. Canon decisions recorded in WORLD.md.
+SQL: `docs/v5.8-continuance-and-milestones.sql`.
+
 ## Update 5.7 — Alien stats, flip cards, Survival Trials
 The Alien Lab gained a last step: spend **attribute points** (Physical 100
 across Strength / Endurance / Speed-Agility / Durability, Mental 100 across

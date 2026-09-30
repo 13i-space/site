@@ -11,6 +11,25 @@ const STORY_AUDIO = {
   215783: "/stories/neraths-secret/audio.mp3",
 };
 
+// Title, description and link-preview image (app/og/story/[number]).
+export async function generateMetadata({ params }) {
+  try {
+    const supabase = await createClient();
+    const { data: row } = await supabase
+      .from("assignment_submissions")
+      .select("assignment_number, designation, name, type, status")
+      .eq("assignment_number", Number(params.number))
+      .single();
+    if (!row || !["canon", "archived"].includes(row.status)) return {};
+    const title = `${row.designation} · The Archive`;
+    const description = `Assignment ${String(row.assignment_number).padStart(7, "0")}, a 13i short story. ${row.type === "ai" ? "An AI-originated Assignment." : `Written by ${row.name || "a Kin"}.`}`;
+    const image = { url: `/og/story/${row.assignment_number}`, width: 1200, height: 630 };
+    return { title, description, openGraph: { title, description, images: [image] }, twitter: { card: "summary_large_image", images: [image.url] } };
+  } catch (e) {
+    return {};
+  }
+}
+
 export default async function DynamicAssignmentPage({ params }) {
   const supabase = await createClient();
   const { data: row } = await supabase

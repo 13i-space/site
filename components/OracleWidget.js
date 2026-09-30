@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import SignalWaveform from "./SignalWaveform";
+import { recordMilestone } from "../lib/milestones";
 
 const OPENING_SEQUENCE = ["HELLO.", "WE HAVE BEEN WATCHING FOR SOME TIME."];
 
@@ -69,6 +70,7 @@ export default function OracleWidget() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unknown error");
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }]);
+      recordMilestone("oracle"); // a step of Your First Assignment
     } catch (e) {
       console.error("Oracle error:", e);
       setError(e.message || "Signal lost. The connection could not be completed.");

@@ -189,6 +189,30 @@ export default function LyraCompanion() {
     return () => window.removeEventListener("lyra:celebrate", onCelebrate);
   }, []);
 
+  // Anything on the site can ask Lyra to say something ("lyra:say", e.g.
+  // Your First Assignment's next step); a First Assignment milestone gets a
+  // quiet note of its own.
+  useEffect(() => {
+    const say = (text) => {
+      setAutoMessage(text);
+      setOpen(true);
+      clearTimeout(autoCloseTimer.current);
+      autoCloseTimer.current = setTimeout(() => setOpen(false), 8000);
+    };
+    const onSay = (e) => e.detail?.text && say(e.detail.text);
+    const onMilestone = (e) => {
+      const m = e.detail?.milestone;
+      if (m === "map") say("You found your species out there. That's a step of your First Assignment done.");
+      if (m === "review") say("13i has reviewed your species. Another step of your First Assignment done.");
+    };
+    window.addEventListener("lyra:say", onSay);
+    window.addEventListener("13i:milestone", onMilestone);
+    return () => {
+      window.removeEventListener("lyra:say", onSay);
+      window.removeEventListener("13i:milestone", onMilestone);
+    };
+  }, []);
+
   // Auto-deliver help per page. Games get their own play-count-aware
   // version (stays up the very first time, brief after); every other
   // page gets a lighter version of the same idea, tracked per-browser via

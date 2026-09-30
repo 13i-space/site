@@ -7,7 +7,9 @@ confirmed from code, it's marked accordingly rather than assumed.
 - **Framework**: Next.js (App Router), deployed on **Vercel**
 - **Database/Auth/Storage**: **Supabase** — Postgres with row-level security,
   built-in auth (email/password + magic link), Storage for uploaded images
-- **AI**: Anthropic API (Claude), powers the Oracle only
+- **AI**: Anthropic API (Claude): the Oracle (which now knows what a
+  signed-in visitor has read, played and made), and the Alien Lab's names,
+  portraits and Continuance Reviews (`app/api/alien`)
 - **Email**: Buttondown, for the pre-launch newsletter signup only (no
   transactional email service is in use — Resend was deliberately removed)
 - **Sound**: Web Audio API, synthesized in-browser via `lib/sfx.js` — no
@@ -67,7 +69,14 @@ docs/           SQL migration files, run manually in Supabase's SQL Editor (not 
   rather than the database, unlike every story added since.
 - **Look-lab previews** (`/preview`, `/preview1`...`/preview13`) are
   permanent, numbered, never overwritten — `/preview` itself is an index
-  page listing all of them.
+  page listing all of them. Since Update 5.8 only Sentinel-X accounts can
+  open them (checked in `middleware.js`); everyone else gets a 404.
+- **Link previews**: `app/og/route.js` (site default), `app/og/species/[id]`
+  and `app/og/story/[number]` draw the 1200×630 images shown when a link is
+  shared. Pages point at them from their metadata; `metadataBase` in
+  `app/layout.js` (`NEXT_PUBLIC_SITE_URL`, default https://13i.space)
+  makes them absolute. The image renderer needs `display: flex` on any div
+  with more than one child, and text (not bare numbers) as children.
 
 ## Database schema (Supabase / Postgres)
 Schema history lives in `docs/*.sql`, applied manually and cumulatively.
@@ -131,7 +140,8 @@ the whole site down (this happened once, pre-hardening).
 - `subscribe/` — Buttondown signup (field is `email_address`, not `email` — Buttondown renamed it)
 - `submit-assignment/` — requires login; writes to `assignment_submissions` via the admin client
 - `auth/signup/`, `auth/resolve-username/`, `auth/claim-username/` — username/profile creation helpers around Supabase Auth
-- `admin/seed-assignment-*/` — one-time GET-triggered loaders for AI-written stories (embed the story text as a JS string to avoid SQL-escaping risk); meant to be deleted after their one use
+- `alien/` — Alien Lab: `name`, `portrait` (streamed), `review` (13i's Continuance Review, owner only)
+- The one-time `admin/seed-assignment-*` story loaders were removed in Update 5.8 (they were unauthenticated GET routes). Load future stories the same way if needed, then delete the route straight after.
 
 ## Theming system
 `lib/theme.js` exports `ACTIVE_THEME`, a single string controlling the

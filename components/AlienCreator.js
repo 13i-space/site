@@ -24,6 +24,7 @@ export default function AlienCreator({ loggedIn }) {
   const [namingStatus, setNamingStatus] = useState("idle");
   const [drawSeconds, setDrawSeconds] = useState(0);
   const [stats, setStats] = useState(evenStats);
+  const [savedId, setSavedId] = useState(null);
 
   // elapsed-time clock while a portrait is being drawn
   useEffect(() => {
@@ -154,18 +155,20 @@ export default function AlienCreator({ loggedIn }) {
         answers: finalAnswers,
         stats,
       };
-      let { error: insertError } = await supabase.from("alien_species").insert(portrait ? { ...row, portrait_svg: portrait } : row);
+      const insert = (r) => supabase.from("alien_species").insert(r).select("id").single();
+      let { data: saved, error: insertError } = await insert(portrait ? { ...row, portrait_svg: portrait } : row);
       // Until the portrait_svg column exists (see docs/v5.2-alien-portraits.sql),
       // still save the species itself rather than failing outright.
       if (insertError && portrait && /portrait_svg/.test(insertError.message)) {
-        ({ error: insertError } = await supabase.from("alien_species").insert(row));
+        ({ data: saved, error: insertError } = await insert(row));
       }
       // Likewise before the stats column exists (docs/v5.7-alien-stats.sql).
       if (insertError && /stats/.test(insertError.message)) {
         const { stats: _unsaved, ...withoutStats } = row;
-        ({ error: insertError } = await supabase.from("alien_species").insert(portrait ? { ...withoutStats, portrait_svg: portrait } : withoutStats));
+        ({ data: saved, error: insertError } = await insert(portrait ? { ...withoutStats, portrait_svg: portrait } : withoutStats));
       }
       if (insertError) throw new Error(insertError.message);
+      setSavedId(saved?.id || null);
       setSaveStatus("done");
     } catch (e) {
       setError(e.message);
@@ -264,9 +267,16 @@ export default function AlienCreator({ loggedIn }) {
         </div>
 
         {saveStatus === "done" ? (
-          <p style={{ color: "#8B95F6", textAlign: "center", margin: 0 }}>
-            Saved to your Node and added to <a href="/galaxy/aliens">Aliens of the Galaxy</a>.
-          </p>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ color: "#8B95F6", margin: "0 0 14px" }}>
+              Saved to your Node and added to <a href="/galaxy/aliens">Aliens of the Galaxy</a>.
+            </p>
+            {savedId && (
+              <a href={`/galaxy/aliens/${savedId}`} className="mono" style={{ ...btnStyle, display: "inline-block", textDecoration: "none", borderColor: "#6B5E3E", color: "#E8CFC0" }}>
+                Submit it to 13i for its Continuance Review &rarr;
+              </a>
+            )}
+          </div>
         ) : (
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <button onClick={save} disabled={saveStatus === "loading"} style={btnStyle}>

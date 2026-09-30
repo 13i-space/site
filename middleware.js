@@ -1,5 +1,12 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
+import { isSentinelUser } from "./lib/sentinel";
+
+// The look-lab previews (/preview, /preview1 ... /preview13) are Paul's
+// workbench: only Sentinel-X accounts (lib/sentinel.js) can open them.
+// Everyone else gets the ordinary 404, like Sentinel-X itself.
+const PREVIEW_PATH = /^\/preview\d*(\/|$)/;
+const notFound = (request) => NextResponse.rewrite(new URL("/_not-found-preview", request.url));
 
 export async function middleware(request) {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -8,8 +15,9 @@ export async function middleware(request) {
   // If auth isn't configured yet, don't touch anything - let every
   // request through untouched rather than crashing the whole site over
   // an optional feature that hasn't been wired up.
+  const isPreview = PREVIEW_PATH.test(request.nextUrl.pathname);
   if (!url || !anonKey) {
-    return NextResponse.next();
+    return isPreview ? notFound(request) : NextResponse.next();
   }
 
   let response = NextResponse.next({ request });
@@ -38,10 +46,16 @@ export async function middleware(request) {
     );
 
     // Touching getUser() is what actually triggers a token refresh if needed.
-    await supabase.auth.getUser();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (isPreview) {
+      if (!user) return notFound(request);
+      const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
+      if (!isSentinelUser(profile?.username)) return notFound(request);
+    }
   } catch (err) {
     console.error("Middleware: Supabase auth check failed, passing request through:", err);
-    return NextResponse.next({ request });
+    return isPreview ? notFound(request) : NextResponse.next({ request });
   }
 
   return response;

@@ -5,6 +5,7 @@ import ClaimUsername from "../../../components/ClaimUsername";
 import EditProfile from "../../../components/EditProfile";
 import { isSentinelUser } from "../../../lib/sentinel";
 import YourSpecies from "../../../components/YourSpecies";
+import FirstAssignment from "../../../components/FirstAssignment";
 import { QUIZ } from "../../../lib/universeQuiz";
 
 export default async function AccountPage() {
@@ -168,6 +169,8 @@ export default async function AccountPage() {
           ))}
         </div>
       )}
+
+      <FirstAssignment variant="node" />
 
       <YourSpecies initial={species || []} username={profile?.username} />
 

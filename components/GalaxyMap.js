@@ -4,10 +4,13 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabaseBrowser";
 import { LANDMARKS, STORY_WORLDS } from "../lib/galaxyWorlds";
+import { recordMilestone } from "../lib/milestones";
+import AlienCard from "./AlienCard";
 
 // A canvas-drawn 3D model of the galaxy: a barred spiral with four major
 // arms, the Orion Spur (Earth's arm), a glowing bulge, star-forming knots,
-// and the worlds of the Assignments the visitor has read.
+// the worlds of the Assignments the visitor has read, and a faint point of
+// light for every species the Kin have made in the Alien Lab.
 //
 // Map units: center (0, 0), disk edge at radius 1. See lib/galaxyWorlds.js.
 
@@ -40,6 +43,23 @@ function mulberry32(seed) {
     t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
+}
+
+// Where a Kin species sits: somewhere along one of the arms, chosen by its
+// id, so it keeps its place every visit. Not canon - just a home on the map.
+const SPECIES_COLOR = "#6FC3A8";
+const SPECIES_LIMIT = 400;
+function speciesPosition(id) {
+  let h = 2166136261;
+  for (const c of String(id)) h = Math.imul(h ^ c.charCodeAt(0), 16777619);
+  const rand = mulberry32(h >>> 0);
+  const maxTheta = Math.log(1 / ARM_START_R) / PITCH;
+  const arm = ARMS[Math.floor(rand() * ARMS.length)];
+  const t = (0.3 + rand() * 0.65) * maxTheta;
+  const r = ARM_START_R * Math.exp(PITCH * t);
+  const a = arm.phase + t;
+  const spread = 0.02 + r * 0.03;
+  return { x: r * Math.cos(a) + (rand() - 0.5) * spread * 2, y: r * Math.sin(a) + (rand() - 0.5) * spread * 2 };
 }
 
 function buildGalaxy() {
@@ -142,6 +162,11 @@ export default function GalaxyMap() {
   const [selected, setSelected] = useState(null);
   const [readNumbers, setReadNumbers] = useState(null); // null = still checking / signed out
   const [signedIn, setSignedIn] = useState(false);
+  const [userId, setUserId] = useState(null);
+  const [kinSpecies, setKinSpecies] = useState([]); // light rows, no portraits
+  const [showSpecies, setShowSpecies] = useState(true);
+  const [speciesDetail, setSpeciesDetail] = useState(null); // full row of the selected species
+  const speciesRef = useRef([]);
 
   const galaxy = useMemo(() => buildGalaxy(), []);
 
@@ -152,6 +177,11 @@ export default function GalaxyMap() {
   const markers = useMemo(() => [...LANDMARKS, ...unlockedWorlds], [unlockedWorlds]);
   const markersRef = useRef(markers);
   markersRef.current = markers;
+  const speciesMarkers = useMemo(
+    () => kinSpecies.map((sp) => ({ id: `species:${sp.id}`, speciesId: sp.id, name: sp.name, own: sp.user_id === userId, ...speciesPosition(sp.id) })),
+    [kinSpecies, userId]
+  );
+  speciesRef.current = showSpecies ? speciesMarkers : [];
   selectedRef.current = selected;
 
   // Which Assignments has this visitor read? (RLS limits this to their own rows)
@@ -163,6 +193,7 @@ export default function GalaxyMap() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || cancelled) return;
         setSignedIn(true);
+        setUserId(user.id);
         const { data } = await supabase.from("reading_progress").select("assignment_number").eq("user_id", user.id);
         if (!cancelled) setReadNumbers((data || []).map((r) => r.assignment_number));
       } catch (e) {
@@ -171,6 +202,64 @@ export default function GalaxyMap() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  // Every Kin species, lightly (portraits load only for the one selected)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase
+          .from("alien_species")
+          .select("id, name, user_id, created_at")
+          .order("created_at", { ascending: false })
+          .limit(SPECIES_LIMIT);
+        if (!cancelled) setKinSpecies(data || []);
+      } catch (e) {
+        // the map works without them
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // The selected species' full row, for its card
+  const selectedSpeciesId = selected && selected.startsWith("species:") ? selected.slice(8) : null;
+  useEffect(() => {
+    if (!selectedSpeciesId) { setSpeciesDetail(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.from("alien_species").select("*").eq("id", selectedSpeciesId).maybeSingle();
+        if (cancelled || !data) return;
+        const { data: profile } = await supabase.from("profiles").select("username").eq("id", data.user_id).maybeSingle();
+        if (!cancelled) setSpeciesDetail({ ...data, creator: profile?.username });
+      } catch (e) {
+        // panel falls back to the name only
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [selectedSpeciesId]);
+
+  // Finding your own species here is a step of Your First Assignment
+  useEffect(() => {
+    const m = speciesMarkers.find((x) => x.id === selected);
+    if (m && m.own) recordMilestone("map");
+  }, [selected, speciesMarkers]);
+
+  // /galaxy/map?species=<id> flies straight to that species
+  const deepLinked = useRef(false);
+  useEffect(() => {
+    if (deepLinked.current || !speciesMarkers.length) return;
+    const want = new URLSearchParams(window.location.search).get("species");
+    const m = want && speciesMarkers.find((x) => x.speciesId === want);
+    if (m) {
+      deepLinked.current = true;
+      setShowSpecies(true);
+      setSelected(m.id);
+      target.current = { panX: m.x, panY: m.y, zoom: 3.6, tilt: 0.75 };
+    }
+  }, [speciesMarkers]);
 
   // Draw loop + interaction
   useEffect(() => {
@@ -299,9 +388,31 @@ export default function GalaxyMap() {
         });
       }
 
-      // markers: Earth, Sgr A*, and any Assignment worlds unlocked
+      // Kin species: faint teal points; your own a little brighter, with a name
       const onScreen = [];
       const sel = selectedRef.current;
+      speciesRef.current.forEach((m) => {
+        const [sx, sy] = project(m.x, m.y, 0, v, scale, cosY, sinY, cosT, sinT);
+        if (sx < -10 || sy < -10 || sx > w + 10 || sy > h + 10) return;
+        onScreen.push({ id: m.id, x: sx, y: sy, small: true });
+        const isSel = sel === m.id;
+        const twinkle = reduceMotion ? 1 : 0.75 + 0.25 * Math.sin(time / 900 + m.x * 40);
+        ctx.globalAlpha = (m.own || isSel ? 0.95 : 0.7) * twinkle;
+        ctx.fillStyle = SPECIES_COLOR;
+        ctx.beginPath(); ctx.arc(sx, sy, m.own || isSel ? 2.6 : 2, 0, Math.PI * 2); ctx.fill();
+        ctx.globalAlpha = 1;
+        if (m.own || isSel) {
+          ctx.strokeStyle = isSel ? "#E8CFC0" : "rgba(111,195,168,0.55)";
+          ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.arc(sx, sy, isSel ? 10 : 7, 0, Math.PI * 2); ctx.stroke();
+          ctx.font = "10px 'JetBrains Mono', monospace";
+          ctx.textAlign = "left";
+          ctx.fillStyle = isSel ? "#E8CFC0" : "rgba(111,195,168,0.85)";
+          ctx.fillText(m.name, sx + 12, sy + 3);
+        }
+      });
+
+      // markers: Earth, Sgr A*, and any Assignment worlds unlocked
       markersRef.current.forEach((m) => {
         const [sx, sy] = project(m.x, m.y, 0, v, scale, cosY, sinY, cosT, sinT);
         onScreen.push({ id: m.id, x: sx, y: sy });
@@ -367,7 +478,7 @@ export default function GalaxyMap() {
       if (!pointers.has(e.pointerId)) {
         // hover: pointer cursor over a marker
         const rect = canvas.getBoundingClientRect();
-        const hit = markersOnScreen.current.some((m) => Math.hypot(m.x - (e.clientX - rect.left), m.y - (e.clientY - rect.top)) < 14);
+        const hit = markersOnScreen.current.some((m) => Math.hypot(m.x - (e.clientX - rect.left), m.y - (e.clientY - rect.top)) < (m.small ? 8 : 14));
         canvas.style.cursor = hit ? "pointer" : "grab";
         return;
       }
@@ -390,8 +501,9 @@ export default function GalaxyMap() {
         const px = e.clientX - rect.left, py = e.clientY - rect.top;
         let best = null, bestD = 16;
         markersOnScreen.current.forEach((m) => {
-          const d = Math.hypot(m.x - px, m.y - py);
-          if (d < bestD) { best = m; bestD = d; }
+          // species points are tiny and many: a tighter radius, and landmarks win ties
+          const d = Math.hypot(m.x - px, m.y - py) + (m.small ? 4 : 0);
+          if (d < (m.small ? 12 : bestD) && d < bestD) { best = m; bestD = d; }
         });
         setSelected(best ? best.id : null);
       }
@@ -438,6 +550,8 @@ export default function GalaxyMap() {
   };
 
   const selectedMarker = markers.find((m) => m.id === selected);
+  const selectedSpecies = speciesMarkers.find((m) => m.id === selected);
+  const ownSpecies = speciesMarkers.filter((m) => m.own).slice(0, 6);
   const lockedCount = STORY_WORLDS.length - unlockedWorlds.length;
 
   return (
@@ -469,10 +583,50 @@ export default function GalaxyMap() {
             {m.name}
           </button>
         ))}
+        {speciesMarkers.length > 0 && (
+          <button
+            onClick={() => { setShowSpecies((s) => !s); if (selectedSpecies) setSelected(null); }}
+            style={{ ...styles.chip, borderColor: showSpecies ? "rgba(111,195,168,0.6)" : "#262A55", color: showSpecies ? SPECIES_COLOR : "#565B8F" }}
+          >
+            <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: showSpecies ? SPECIES_COLOR : "#3A3E75", marginRight: 7 }} />
+            Kin species ({speciesMarkers.length}) {showSpecies ? "shown" : "hidden"}
+          </button>
+        )}
+        {showSpecies && ownSpecies.map((m) => (
+          <button
+            key={m.id}
+            onClick={() => focusOn(m)}
+            style={{ ...styles.chip, borderColor: selected === m.id ? "#E8CFC0" : "rgba(111,195,168,0.35)", color: selected === m.id ? "#E8CFC0" : "#B9C0FF" }}
+          >
+            <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: SPECIES_COLOR, marginRight: 7 }} />
+            {m.name}
+          </button>
+        ))}
       </div>
 
       <div className="panel" style={{ marginTop: 14, minHeight: 64 }}>
-        {selectedMarker ? (
+        {selectedSpecies ? (
+          <div style={{ display: "flex", gap: 20, flexWrap: "wrap", alignItems: "flex-start" }}>
+            {speciesDetail && speciesDetail.id === selectedSpecies.speciesId && (
+              <AlienCard species={speciesDetail} creator={speciesDetail.creator} width={200} />
+            )}
+            <div style={{ flex: "1 1 220px" }}>
+              <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 6 }}>
+                {selectedSpecies.own ? "YOUR SPECIES" : "A SPECIES OF THE KIN"}
+              </div>
+              <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 20, color: "#DCDFFF", marginBottom: 6 }}>
+                {selectedSpecies.name}
+              </div>
+              <p style={{ margin: 0, fontSize: 13.5, color: "#B7BADF", lineHeight: 1.6 }}>
+                Made in the Alien Lab{speciesDetail?.creator ? ` by ${speciesDetail.creator}` : ""}. Every species the Kin create
+                finds a home somewhere in the arms of the galaxy.
+              </p>
+              <Link href={`/galaxy/aliens/${selectedSpecies.speciesId}`} className="mono" style={{ display: "inline-block", marginTop: 10, fontSize: 11, color: "#6E76B8" }}>
+                its page and 13i&rsquo;s review &rarr;
+              </Link>
+            </div>
+          </div>
+        ) : selectedMarker ? (
           <>
             <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 6 }}>
               {selectedMarker.story ? "A WORLD FROM THE ARCHIVE" : "LANDMARK"}

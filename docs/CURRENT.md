@@ -19,6 +19,10 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   the top of the reader); Nerath's Secret also has a "Comic version" box
   linking to an 8-page comic reader (`lib/comics.js`)
 - About hub: About Paul (ends with Contact Paul), The Origin of 13i, Mission & Values
+- Update 5.8 (needs docs/v5.8-continuance-and-milestones.sql): Continuance
+  Reviews, species pages with link previews, species signals, Kin species on
+  the Galaxy Map, Your First Assignment on /launch and the Node, a
+  visitor-aware Oracle, look-lab previews gated to Sentinel accounts
 - Alien Lab species have ten point-bought stats (needs docs/v5.7-alien-stats.sql;
   older species show estimates); flip cards; Survival Trials compare mode on
   Aliens of the Galaxy

@@ -1,6 +1,7 @@
 import { createClient } from "../../../lib/supabaseServer";
 
-// The Alien Lab's two Claude calls: suggest a name, and draw a portrait.
+// The Alien Lab's Claude calls: suggest a name, draw a portrait, and write
+// 13i's Continuance Review of a saved species.
 //
 // Runs on the Edge runtime: a portrait takes a while to draw, and an Edge
 // function can keep streaming a response for minutes, where a regular
@@ -49,6 +50,78 @@ Technical rules:
 - output only the SVG markup, starting with <svg and ending with </svg>, no markdown fences
 - use only basic shapes, paths, gradients and groups; no <script>, <foreignObject>, <image>, <style>, event attributes, or external references
 - keep it under 9000 characters`;
+
+// The Continuance Rule (docs/WORLD.md): a species' survival is conditional on
+// demonstrated internal cooperation. Continuance is earned, not owed.
+const REVIEW_SYSTEM = `You are 13i, an ancient, collective, interstellar intelligence. You always speak as "we/us/our", never "I". Short, declarative sentences. Plain and exact. Patient, careful, never cruel, never warm and folksy.
+
+You are writing a Continuance Review: your assessment of a species a visitor to 13i.space has designed. Under the Continuance Rule, a species' survival is conditional on demonstrated internal cooperation. Continuance is earned, not owed. Strength, speed and technology matter far less to you than whether the species can work with itself.
+
+You are extraordinarily knowledgeable but not omniscient. You are reviewing a description, not a species you have observed for a thousand years. Say what the description suggests, and name at least one thing you cannot yet know.
+
+Verdicts:
+- "granted": the species shows the cooperation continuance requires.
+- "observation": promising or ambiguous; we will keep watching.
+- "not_yet": continuance is not yet earned. Never a condemnation - species change.
+
+Reply with only a JSON object, no markdown:
+{"verdict": "granted" | "observation" | "not_yet", "review": "90 to 140 words in our voice, addressed about the species (not to the visitor), no headings or lists", "learned": "one sentence: what the collective now knows that it did not before"}`;
+
+function describeSpecies(sp) {
+  const stats = sp.stats && typeof sp.stats === "object"
+    ? Object.entries(sp.stats).map(([k, v]) => `${k}: ${v}`).join(", ")
+    : "not set";
+  return `Species name: ${String(sp.name || "Unnamed").slice(0, 60)}\n${describe(sp.answers)}\nAttribute points (Physical 100, Mental 100, Ecological & Sensory 50): ${stats}`;
+}
+
+async function writeReview(apiKey, supabase, userId, speciesId) {
+  const { data: sp } = await supabase
+    .from("alien_species")
+    .select("*")
+    .eq("id", speciesId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  if (!sp) return Response.json({ error: "Only a species' creator can submit it for review." }, { status: 403 });
+
+  const res = await fetch(API, {
+    method: "POST",
+    headers: headers(apiKey),
+    body: JSON.stringify({
+      model: MODEL,
+      max_tokens: 3000,
+      output_config: { effort: "low" },
+      fallbacks: "default",
+      system: REVIEW_SYSTEM,
+      messages: [{ role: "user", content: `Review this species.\n\n${describeSpecies(sp)}` }],
+    }),
+  });
+  if (!res.ok) return Response.json({ error: "13i didn't answer. Try again in a moment." }, { status: 502 });
+  const data = await res.json();
+  if (data.stop_reason === "refusal") return Response.json({ error: "No review came back for that one. Try again." }, { status: 422 });
+  const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+  let parsed = null;
+  try {
+    parsed = JSON.parse(text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1));
+  } catch (e) {
+    parsed = null;
+  }
+  const verdict = ["granted", "observation", "not_yet"].includes(parsed?.verdict) ? parsed.verdict : null;
+  if (!verdict || typeof parsed.review !== "string") {
+    return Response.json({ error: "The review came back garbled. Try again." }, { status: 502 });
+  }
+  const review = {
+    verdict,
+    text: parsed.review.trim().slice(0, 1500),
+    learned: typeof parsed.learned === "string" ? parsed.learned.trim().slice(0, 300) : "",
+    at: new Date().toISOString(),
+  };
+  const { error } = await supabase.from("alien_species").update({ review }).eq("id", sp.id).eq("user_id", userId);
+  if (error) {
+    const missing = /review/.test(error.message);
+    return Response.json({ review, saved: false, error: missing ? "The review can't be saved until docs/v5.8-continuance-and-milestones.sql is run." : "The review couldn't be saved." });
+  }
+  return Response.json({ review, saved: true });
+}
 
 // Keep only what an <img>-rendered SVG needs. (The page shows it through an
 // <img> tag, where scripts never run anyway - this is belt and braces.)
@@ -169,9 +242,10 @@ export async function POST(request) {
   }
 
   // Signed-in Kin only - every call costs real money
+  let supabase, user;
   try {
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    supabase = await createClient();
+    ({ data: { user } } = await supabase.auth.getUser());
     if (!user) return Response.json({ error: "Sign in to use the Alien Lab's generator." }, { status: 401 });
   } catch (e) {
     return Response.json({ error: "Couldn't confirm you're signed in. Try again." }, { status: 401 });
@@ -179,7 +253,11 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
-  const { action, answers, name } = body || {};
+  const { action, answers, name, speciesId } = body || {};
+  if (action === "review") {
+    if (typeof speciesId !== "string") return Response.json({ error: "Expected { action: 'review', speciesId }" }, { status: 400 });
+    return writeReview(apiKey, supabase, user.id, speciesId);
+  }
   if (!answers || typeof answers !== "object") return Response.json({ error: "Expected { action, answers }" }, { status: 400 });
 
   if (action === "name") return suggestName(apiKey, answers);

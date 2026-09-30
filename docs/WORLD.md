@@ -167,6 +167,31 @@ of new 13i canon — species built here are user creations, not new
 Assignments or galaxy lore, unless/until something built this way is
 separately decided to matter to canon.
 
+## Continuance Reviews, species signals, Assignment 0000000 — developing
+Decided by Claude in Update 5.8 with Paul's go-ahead ("make those for now
+based on what you understand"). Provisional: Paul can overrule any of it.
+- **The Continuance Review.** 13i can review any Alien Lab species under the
+  Continuance Rule (established canon above): survival is conditional on
+  internal cooperation, so the review weighs how a species works with
+  itself far above strength or technology. Three verdicts: **continuance
+  granted**, **under observation**, **continuance not yet earned** ("not
+  yet", never "never" - species change). Written in 13i's voice, never
+  omniscient: every review names something 13i can't yet know, and ends
+  with what the collective learned. User species still aren't canon; the
+  review is 13i looking at them, not 13i adopting them.
+- **The Continuance Test** is always the last of the five Survival Trials.
+- **Every species has a signal.** 13i perceives a world first as gravity -
+  mass moving in rhythm - and translates it into sound, the same idea as
+  the music being "a signal, translated". On the site, a species' signal
+  is generated from its stats and answers (`lib/speciesSignal.js`).
+- **Kin species on the Galaxy Map**: every saved species gets a faint point
+  of light somewhere along the spiral arms, chosen from its id. Like the
+  story-world placements, map-only, not canon.
+- **Assignment 0000000 - "Your First"**: 13i's assignment for a new Kin,
+  objective "learn this universe", six steps (Oracle, read, play, create,
+  review, map). It's framing for the site's welcome path, not an Archive
+  story, and isn't numbered among the real Assignments.
+
 ## Intentionally unknown / open questions
 - What 13i's creators actually looked like, and what became of them, is
   not established anywhere in site content reviewed for this document.

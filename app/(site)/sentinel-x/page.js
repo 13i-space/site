@@ -135,6 +135,10 @@ function SentinelView({ d }) {
       <div className="page-subtitle">
         watching 13i.space &middot; as of {new Date(d.generatedAt).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" })} &middot; refresh for the latest
       </div>
+      <p className="mono" style={{ textAlign: "center", fontSize: 11, marginTop: -8, marginBottom: 20 }}>
+        {/* the look-lab previews are gated to Sentinel accounts in middleware.js */}
+        <Link href="/preview" style={{ color: "#6E76B8" }}>look-lab previews &rarr;</Link>
+      </p>
 
       <div style={styles.grid}>
         <Panel title="KIN" span>

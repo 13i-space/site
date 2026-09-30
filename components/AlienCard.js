@@ -1,19 +1,37 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { backTraits, cardTagline, cardNumber } from "../lib/alienTraits";
 import { STAT_GROUPS, statsFor } from "../lib/alienStats";
+import { verdictFor } from "../lib/continuance";
+import { playSignal, stopSignal } from "../lib/speciesSignal";
 import StatRadar from "./StatRadar";
 
 // A collectible card for one Alien Lab species. The front has the name,
 // portrait, a line of flavour and the ten stats; click it and it flips to
-// a stats chart and the rest of the species' traits. Used by the gallery,
+// a stats chart, the rest of its traits, its signal (lib/speciesSignal.js)
+// and a link to its own page. 13i's Continuance verdict, once it has one,
+// is stamped on the portrait. Used by the gallery,
 // the Node, the Alien Lab preview, and the homepage star easter egg.
 //
 // onSelect: when given, a click selects the card (the gallery's compare
 // mode) instead of flipping it; `selected` highlights it.
 export default function AlienCard({ species, creator, width = 280, onSelect, selected }) {
   const [flipped, setFlipped] = useState(false);
+  const [playing, setPlaying] = useState(false);
+  const verdict = verdictFor(species);
+  const playingRef = useRef(false);
+  playingRef.current = playing;
+  // stop this card's signal if the card goes away mid-play (unmount only -
+  // another card starting its own signal already ends this one)
+  useEffect(() => () => { if (playingRef.current) stopSignal(); }, []);
+
+  const toggleSignal = (e) => {
+    e.stopPropagation();
+    if (playing) { stopSignal(); return; }
+    setPlaying(true);
+    playSignal(species, { onEnd: () => setPlaying(false) });
+  };
   const { stats, estimated } = statsFor(species);
   const tagline = cardTagline(species.answers);
   const date = species.created_at
@@ -103,6 +121,11 @@ export default function AlienCard({ species, creator, width = 280, onSelect, sel
                   <span className="mono" style={{ fontSize: 9 * s, color: "#3A3E75", letterSpacing: "1px" }}>NO PORTRAIT YET</span>
                 </div>
               )}
+              {verdict && (
+                <div className="mono" title={`13i's Continuance Review: ${verdict.label}`} style={{ position: "absolute", top: 6 * s, right: 6 * s, transform: "rotate(-6deg)", border: `${1.5 * s}px solid ${verdict.color}`, color: verdict.color, background: "rgba(10,11,28,0.78)", borderRadius: 3 * s, padding: `${2 * s}px ${5 * s}px`, fontSize: 7.5 * s, letterSpacing: "1px", lineHeight: 1.2, textAlign: "center" }}>
+                  CONTINUANCE<br />{verdict.short}
+                </div>
+              )}
             </div>
 
             {/* flavour strip */}
@@ -155,6 +178,16 @@ export default function AlienCard({ species, creator, width = 280, onSelect, sel
                 </div>
               ))}
             </div>
+            <div style={{ display: "flex", justifyContent: "space-between", gap: 6 * s, marginTop: 5 * s }}>
+              <button onClick={toggleSignal} onKeyDown={(e) => e.stopPropagation()} className="mono" aria-label={playing ? "Stop its signal" : "Play its signal"} style={{ ...miniBtn(s), color: playing ? "#E8CFC0" : "#B9C0FF", borderColor: playing ? "#E8CFC0" : "#3A3E75" }}>
+                {playing ? "\u25A0 stop" : "\u25B6 its signal"}
+              </button>
+              {species.id && !onSelect && (
+                <a href={`/galaxy/aliens/${species.id}`} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} className="mono" style={{ ...miniBtn(s), textDecoration: "none" }}>
+                  {verdict ? "13i's review \u2192" : "open \u2192"}
+                </a>
+              )}
+            </div>
             {footer(date)}
           </div>
         </div>
@@ -162,3 +195,14 @@ export default function AlienCard({ species, creator, width = 280, onSelect, sel
     </div>
   );
 }
+
+const miniBtn = (s) => ({
+  background: "none",
+  border: "1px solid #3A3E75",
+  borderRadius: 3 * s,
+  color: "#B9C0FF",
+  fontSize: 8.5 * s,
+  padding: `${3 * s}px ${6 * s}px`,
+  cursor: "pointer",
+  lineHeight: 1.2,
+});

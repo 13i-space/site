@@ -7,6 +7,7 @@ import BigBangField from "../../../components/BigBangField";
 import RadarField from "../../../components/RadarField";
 import RadarLogo from "../../../components/RadarLogo";
 import EasterStars from "../../../components/EasterStars";
+import FirstAssignment from "../../../components/FirstAssignment";
 
 const sections = [
   {
@@ -109,6 +110,8 @@ export default function LaunchHome() {
             </Link>
           ))}
         </div>
+
+        <FirstAssignment variant="launch" />
       </div>
     </div>
   );

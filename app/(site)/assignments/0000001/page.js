@@ -3,6 +3,15 @@ import BookReader from "../../../../components/BookReader";
 import TrackStoryRead from "../../../../components/TrackStoryRead";
 import { pages, assignmentMeta } from "../../../../lib/assignment1";
 
+const ogTitle = `${assignmentMeta.chapter} · The Archive`;
+const ogDescription = "Assignment 0000001, the first 13i short story, by Paul Donaghy.";
+export const metadata = {
+  title: ogTitle,
+  description: ogDescription,
+  openGraph: { title: ogTitle, description: ogDescription, images: [{ url: "/og/story/1", width: 1200, height: 630 }] },
+  twitter: { card: "summary_large_image", images: ["/og/story/1"] },
+};
+
 export default function AssignmentOnePage() {
   return (
     <div>
