@@ -70,8 +70,8 @@ type of content it is. A piece of content can belong to more than one mode.
 
 The footer carries About and Contact only (Guestbook lives in Kinship).
 `/about` is a hub of three pages — About Paul, The Origin of 13i, Mission &
-Values (shared layout: `components/AboutProse.js`) — plus a Contact Paul
-link. The Origin and Mission texts are Paul's, lightly edited in his voice.
+Values (shared layout: `components/AboutProse.js`); Contact Paul sits at the
+bottom of About Paul. The Origin and Mission texts are Paul's, lightly edited in his voice.
 
 Each mode's landing page ends with a one-line pointer to the next mode in
 the loop (Explore→Play→Create→Kinship→Explore), intended as a soft,

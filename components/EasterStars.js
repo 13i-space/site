@@ -18,18 +18,12 @@ const SHOW_MS = 9000;
 
 async function randomSpecies() {
   const supabase = createClient();
-  let { data, error } = await supabase
+  // "*" so the optional portrait_svg and stats columns come along when present
+  const { data } = await supabase
     .from("alien_species")
-    .select("id, name, answers, portrait_svg, created_at, user_id")
+    .select("*")
     .order("created_at", { ascending: false })
     .limit(100);
-  if (error) {
-    ({ data } = await supabase
-      .from("alien_species")
-      .select("id, name, answers, created_at, user_id")
-      .order("created_at", { ascending: false })
-      .limit(100));
-  }
   const list = data || [];
   if (!list.length) return null;
   // prefer ones with a portrait, when there are any

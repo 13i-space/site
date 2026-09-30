@@ -3,6 +3,22 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.7 — Alien stats, flip cards, Survival Trials
+The Alien Lab gained a last step: spend **attribute points** (Physical 100
+across Strength / Endurance / Speed-Agility / Durability, Mental 100 across
+Problem Solving / Memory / Social Intelligence / Adaptability, Ecological &
+Sensory 50 across Sensory Acuity / Specialization; `lib/alienStats.js`,
+saved as `alien_species.stats`, `docs/v5.7-alien-stats.sql`). Species from
+before get stats estimated from their answers. **Cards** now show the ten
+stats on the front and flip on click to a radar chart
+(`components/StatRadar.js`) and their traits; they lift on hover and the
+border colours drift slowly. The sheet shows a live card preview. On Aliens
+of the Galaxy, **Compare two species** runs the **Survival Trials**
+(`lib/alienTrials.js`, `components/AlienGallery.js`): five disasters picked
+per pair, scored from stats plus answer bonuses; more trials survived
+outlasts. The portrait countdown now shows on "Generate again" too. The About
+hub lost its photo and contact panel; Contact Paul now closes About Paul.
+
 ## Update 5.6 — Comic version of Nerath's Secret, About section, home boxes
 First **comic version** of a story: Nerath's Secret as an 8-page comic
 (`public/comics/neraths-secret/`, read at `/assignments/215783/comic` in

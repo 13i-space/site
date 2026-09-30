@@ -178,6 +178,58 @@ main {
   background: rgba(20, 23, 55, 0.85);
 }
 
+/* ---- Alien cards (components/AlienCard.js) ----
+   Lift on hover like the launch boxes, flip on click, and a gold-and-violet
+   border whose colours drift slowly around the card. */
+@property --alien-card-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 145deg;
+}
+@keyframes alien-card-drift {
+  to { --alien-card-angle: 505deg; }
+}
+.alien-card {
+  cursor: pointer;
+  transition: transform 0.2s ease, filter 0.2s ease;
+  outline: none;
+}
+.alien-card:hover,
+.alien-card:focus-visible {
+  transform: translateY(-4px);
+  filter: drop-shadow(0 8px 18px rgba(139, 149, 246, 0.18));
+}
+.alien-card-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.6s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.alien-card-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+.alien-card-frame {
+  background: conic-gradient(from var(--alien-card-angle), #C9B98F 0%, #6B5E3E 30%, #8B95F6 62%, #C9B98F 100%);
+  animation: alien-card-drift 24s linear infinite;
+}
+@keyframes trial-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes trial-bar-grow {
+  from { width: 0; }
+}
+.trial-bar { animation: trial-bar-grow 0.7s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .alien-card-frame { animation: none; }
+  .alien-card-inner { transition: none; }
+  .alien-card:hover { transform: none; }
+}
+
 /* ---- Games in fullscreen (FullscreenButton) ----
    Real fullscreen, or - where a browser doesn't allow it (iPhone) - the
    game's container filling the window. Either way the game grows to fit.

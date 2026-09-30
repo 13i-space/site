@@ -45,22 +45,14 @@ export default async function AccountPage() {
     .eq("user_id", user.id)
     .order("score", { ascending: false });
 
-  // Species from the Alien Lab. Portraits need the portrait_svg column
-  // (docs/v5.2-alien-portraits.sql); without it, list the species anyway.
-  let { data: species, error: speciesError } = await supabase
+  // Species from the Alien Lab. "*" so the optional portrait_svg
+  // (docs/v5.2) and stats (docs/v5.7) columns come along when present.
+  const { data: species } = await supabase
     .from("alien_species")
-    .select("id, name, answers, portrait_svg, created_at")
+    .select("*")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(24);
-  if (speciesError) {
-    ({ data: species } = await supabase
-      .from("alien_species")
-      .select("id, name, answers, created_at")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false })
-      .limit(24));
-  }
 
   // Latest Universe Quiz result (needs docs/v5.4-quiz-results.sql)
   const { data: quiz } = await supabase

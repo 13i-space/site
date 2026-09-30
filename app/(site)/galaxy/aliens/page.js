@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
-import AlienCard from "../../../../components/AlienCard";
+import AlienGallery from "../../../../components/AlienGallery";
 
 // Aliens of the Galaxy: every species built in the Alien Lab, newest first,
 // as collectible cards. Species are public (RLS "viewable by everyone").
@@ -13,19 +13,12 @@ export default async function AliensOfTheGalaxy() {
   let names = {};
   try {
     const supabase = await createClient();
-    let { data, error } = await supabase
+    // "*" so the optional portrait_svg and stats columns come along when present
+    const { data } = await supabase
       .from("alien_species")
-      .select("id, name, answers, portrait_svg, created_at, user_id")
+      .select("*")
       .order("created_at", { ascending: false })
       .limit(LIMIT);
-    if (error) {
-      // portrait_svg column not added yet - show the cards without art
-      ({ data } = await supabase
-        .from("alien_species")
-        .select("id, name, answers, created_at, user_id")
-        .order("created_at", { ascending: false })
-        .limit(LIMIT));
-    }
     species = data || [];
     const ids = [...new Set(species.map((s) => s.user_id))];
     if (ids.length) {
@@ -42,7 +35,7 @@ export default async function AliensOfTheGalaxy() {
         &larr; back to The Galaxy
       </Link>
       <div className="page-title" style={{ marginTop: 20 }}>Aliens of the Galaxy</div>
-      <div className="page-subtitle">every species built in the Alien Lab &middot; newest first</div>
+      <div className="page-subtitle">every species built in the Alien Lab &middot; tap a card to flip it</div>
 
       <Link href="/create/alien-lab" className="panel" style={styles.cta}>
         <span>
@@ -52,7 +45,7 @@ export default async function AliensOfTheGalaxy() {
           </span>
         </span>
         <span style={{ fontSize: 13, color: "#8A8FBF", maxWidth: 380 }}>
-          Seventeen questions, a name, and a portrait drawn from your answers. Save it and it joins the gallery.
+          Answer questions about its world and body, spend points on its strengths, name it, and get a portrait drawn from your answers. Save it and it joins the gallery.
         </span>
       </Link>
 
@@ -61,13 +54,7 @@ export default async function AliensOfTheGalaxy() {
           <p style={{ margin: 0, color: "#8A8FBF" }}>No species yet. The first card is waiting to be made.</p>
         </div>
       ) : (
-        <div style={styles.grid}>
-          {species.map((sp) => (
-            <div key={sp.id} style={{ display: "flex", justifyContent: "center" }}>
-              <AlienCard species={sp} creator={names[sp.user_id]} width={260} />
-            </div>
-          ))}
-        </div>
+        <AlienGallery species={species.map((sp) => ({ ...sp, creator: names[sp.user_id] }))} />
       )}
     </div>
   );
@@ -83,10 +70,5 @@ const styles = {
     marginBottom: 28,
     borderColor: "#6B5E3E",
     textDecoration: "none",
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
-    gap: 28,
   },
 };

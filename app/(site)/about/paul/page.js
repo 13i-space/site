@@ -57,10 +57,19 @@ export default function AboutPaulPage() {
       </div>
 
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: 40, paddingTop: 24, borderTop: "1px solid #21244A" }}>
-        <Link href="/contact" className="mono" style={{ ...linkStyle, borderColor: "#6B5E3E", color: "#E8CFC0" }}>Contact Paul &rarr;</Link>
         <Link href="/about/origin" className="mono" style={linkStyle}>The Origin of 13i &rarr;</Link>
         <Link href="/about/mission" className="mono" style={linkStyle}>Mission &amp; Values &rarr;</Link>
       </div>
+
+      <Link href="/contact" className="panel" style={contactStyle}>
+        <span>
+          <span className="mono" style={{ display: "block", fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>GET IN TOUCH</span>
+          <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 20, color: "#DCDFFF" }}>Contact Paul &rarr;</span>
+        </span>
+        <span style={{ fontSize: 13, color: "#8A8FBF", maxWidth: 360, textAlign: "left" }}>
+          Questions, ideas, or feedback on the book, the music, or anything else here.
+        </span>
+      </Link>
     </div>
   );
 }
@@ -72,4 +81,17 @@ const linkStyle = {
   fontSize: 12,
   color: "#B9C0FF",
   textDecoration: "none",
+};
+
+const contactStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: 16,
+  flexWrap: "wrap",
+  marginTop: 24,
+  borderColor: "#6B5E3E",
+  textDecoration: "none",
+  textAlign: "left",
+  boxSizing: "border-box",
 };
