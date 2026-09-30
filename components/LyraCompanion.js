@@ -32,7 +32,12 @@ const TIPS = [
 ];
 const DEFAULT_TIP = "Look for the ring-and-eye mark \u2014 it's 13i, wherever it shows up.";
 
-function tipFor(pathname) {
+function tipFor(pathname, username) {
+  if (pathname === "/launch") {
+    return username
+      ? `Welcome back ${username} — anything I can help you with today?`
+      : "Welcome back — anything I can help you with today?";
+  }
   const matches = TIPS.filter((t) => pathname.startsWith(t.prefix));
   if (matches.length === 0) return DEFAULT_TIP;
   matches.sort((a, b) => b.prefix.length - a.prefix.length);
@@ -86,13 +91,15 @@ export default function LyraCompanion() {
         setUsername(null);
         return;
       }
-      setLoggedIn(true);
+      // Username is loaded before flipping loggedIn, so the arrival message
+      // (e.g. the /launch greeting) already has the name when it fires.
       try {
         const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).single();
         setUsername(profile?.username || null);
       } catch (e) {
         setUsername(null);
       }
+      setLoggedIn(true);
     };
 
     supabase.auth.getUser().then(({ data: { user } }) => applyUser(user)).catch(() => {});
@@ -169,7 +176,7 @@ export default function LyraCompanion() {
     const seenKey = `lyra_seen_${pathname}`;
     let seen = true;
     try { seen = !!localStorage.getItem(seenKey); } catch (e) {}
-    showAndMaybeClose(tipFor(pathname), !seen);
+    showAndMaybeClose(tipFor(pathname, username), !seen);
     if (!seen) {
       try { localStorage.setItem(seenKey, "1"); } catch (e) {}
     }
@@ -204,7 +211,7 @@ export default function LyraCompanion() {
     ? "I'm Lyra. Sign in and I'll start remembering what you've found here."
     : !hasMet
     ? (username ? `Hello, ${username}. I'm Lyra.` : "Hello. I'm Lyra.")
-    : tipFor(pathname || "");
+    : tipFor(pathname || "", username);
 
   return (
     <div style={styles.wrap}>

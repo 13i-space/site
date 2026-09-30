@@ -42,9 +42,10 @@ export default async function AccountPage() {
     .eq("user_id", user.id)
     .order("score", { ascending: false });
 
-  const GAME_LABELS = {
-    "nemesis-command": "NEMESIS Command",
-    "asteroid-belt": "Asteroid Belt",
+  const GAMES = {
+    "nemesis-command": { label: "NEMESIS Command", href: "/games/nemesis-command" },
+    "asteroid-belt": { label: "Asteroid Belt", href: "/games/asteroid-belt" },
+    "13i-vs-nemesis": { label: "13i vs NEMESIS", href: "/games/13i-vs-nemesis" },
   };
 
   return (
@@ -84,7 +85,13 @@ export default async function AccountPage() {
           </div>
           {scores.map((s) => (
             <div key={s.game} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "#D9DCFF", padding: "6px 0", borderBottom: "1px solid #21244A" }}>
-              <span>{GAME_LABELS[s.game] || s.game}</span>
+              {GAMES[s.game] ? (
+                <Link href={GAMES[s.game].href} style={{ color: "#B9C0FF", textDecoration: "none" }}>
+                  {GAMES[s.game].label}
+                </Link>
+              ) : (
+                <span>{s.game}</span>
+              )}
               <span className="mono" style={{ color: "#E8CFC0" }}>{s.score.toLocaleString()}</span>
             </div>
           ))}
