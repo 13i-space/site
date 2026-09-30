@@ -24,7 +24,7 @@ const sections = [
   {
     href: "/galaxy/facts",
     title: "Galaxy Facts",
-    blurb: "Size, star count, shape, age — the basics, for scale.",
+    blurb: "Zoom from you to the whole universe, ride a light beam, and watch galaxies collide. Hands-on.",
   },
 ];
 

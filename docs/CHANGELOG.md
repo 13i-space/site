@@ -3,6 +3,19 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.13 — Galaxy Facts, hands-on
+`/galaxy/facts` is now an explorer for curious kids (and everyone else):
+eight interactive stations in `components/GalaxyExplorer.js` - Your Cosmic
+Address, The Cosmic Zoom (you to the observable universe, with "how many
+fit" comparisons), Ride a Light Beam (real-time races to the Moon and Sun;
+what humans were doing when starlight left), Count the Stars, You Are
+Moving (a live km counter at 230 km/s, your age in galactic years), The
+Monster at the Middle (Sgr A* to scale; S2's 16-year orbit with Kepler
+motion), The Big Collision (a time slider to "Milkomeda"), and Would You
+Believe? flip cards. Each has a "go deeper" drawer; a sticky Discoveries
+meter leads to a Cosmic Explorer badge (remembered in the browser) that
+points to the Quiz and the Map.
+
 ## Update 5.12 — Life Cycle stats, radar contacts, the Node dashboard, private messages
 **Cards** flip with a soft swish-and-tap (`lib/cardSound.js`) and gained a
 fourth stat group, **Life Cycle** (50 points: Longevity, Reproduction),
