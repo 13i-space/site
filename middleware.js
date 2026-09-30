@@ -49,6 +49,7 @@ export async function middleware(request) {
 
 export const config = {
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|mp3)$).*)",
+    // static files (images, audio, and the standalone games' .html/.js/.css) skip the auth check
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|pdf|mp3|js|css|html)$).*)",
   ],
 };

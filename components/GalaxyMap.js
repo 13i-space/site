@@ -335,9 +335,9 @@ export default function GalaxyMap() {
         ctx.beginPath(); ctx.arc(sx, sy, isSel ? 12 : 9, 0, Math.PI * 2); ctx.stroke();
 
         ctx.font = "11px 'JetBrains Mono', monospace";
-        ctx.textAlign = "left";
+        ctx.textAlign = m.labelLeft ? "right" : "left";
         ctx.fillStyle = isSel ? "#E8CFC0" : "#B9C0FF";
-        ctx.fillText(m.short || m.name, sx + 14, sy + 4);
+        ctx.fillText(m.short || m.name, m.labelLeft ? sx - 14 : sx + 14, sy + 4);
       });
       markersOnScreen.current = onScreen;
 

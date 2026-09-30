@@ -1,4 +1,5 @@
 import Link from "next/link";
+import StoryGameCards from "../../../components/StoryGameCards";
 
 const games = [
   {
@@ -31,6 +32,7 @@ export default function GamesHub() {
             <p style={styles.cardBlurb}>{g.blurb}</p>
           </Link>
         ))}
+        <StoryGameCards cardStyle={styles.card} titleStyle={styles.cardTitle} blurbStyle={styles.cardBlurb} />
       </div>
     </div>
   );

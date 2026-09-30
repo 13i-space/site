@@ -1,0 +1,16 @@
+# Secrets - API keys live in .env.local on your computer and in Vercel's
+# Environment Variables, never in GitHub
+.env
+.env*.local
+
+# Installed packages and build output - Vercel rebuilds these itself
+node_modules/
+.next/
+out/
+
+# Mac Finder files
+.DS_Store
+
+# Local Vercel / Claude Code settings
+.vercel/
+.claude/

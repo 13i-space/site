@@ -118,7 +118,7 @@ export default function AssignmentBuilder() {
     return (
       <div className="panel" style={{ textAlign: "center" }}>
         <p style={{ margin: 0, color: "#8A8FBF" }}>
-          You need to be logged in to write an Assignment \u2014 it's tied to
+          You need to be logged in to write an Assignment &mdash; it's tied to
           your Node so you can save progress and come back to it.
         </p>
         <a
@@ -170,7 +170,7 @@ export default function AssignmentBuilder() {
 
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, marginBottom: 4 }}>
         <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>
-          {wordCount.toLocaleString()} words &middot; 1,500\u20135,000 is a guideline, not a rule
+          {wordCount.toLocaleString()} words &middot; 1,500&ndash;5,000 is a guideline, not a rule
         </span>
         <button
           type="button"
@@ -255,7 +255,7 @@ export default function AssignmentBuilder() {
           />
         </div>
         <p style={{ fontSize: 11, color: "#3A3E75", marginTop: 6 }}>
-          Defaults to your account \u2014 change either if you'd rather use something else for this Assignment.
+          Defaults to your account &mdash; change either if you'd rather use something else for this Assignment.
         </p>
       </div>
 

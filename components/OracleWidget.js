@@ -157,7 +157,7 @@ export default function OracleWidget() {
 
         {pending && (
           <div>
-            <div className="mono" style={outer.speakerLabel}>13i \u2014 RECEIVING</div>
+            <div className="mono" style={outer.speakerLabel}>13i &mdash; RECEIVING</div>
             <div className="mono" style={{ fontSize: 15, color: "#D9DCFF" }}>...</div>
           </div>
         )}

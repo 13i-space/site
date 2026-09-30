@@ -103,15 +103,30 @@ galaxy with specific invented geography, versus real-world astronomy used
 as flavor, is not established — treat as **developing** rather than
 assuming either way.
 
+## The Warden — developing (from the Deep Signal game spec)
+An alien intelligence on the Deep Walkers' world, introduced by the game
+*13i: The Deep Signal*. **"The Warden" is a working name** from the game
+spec. Established by that spec: alien in origin, extremely old, connected
+to the Deep Walkers and their structures. Its nature is **deliberately
+unknown** (protector, jailer, caretaker, defense system, something else)
+and must stay that way until a story decides. **It is not NEMESIS** and
+has nothing to do with it: NEMESIS is human-made and never appears on this
+world. The game keeps three intelligences separate: human (NEMESIS), alien
+(the Warden), and 13i itself.
+
+The game's world is Veyra (the Deep Walkers' planet); a Discovery Log
+entry confirms the match once Signal passes 30%. Its transmission
+fragments and log entries are game text, not canon events.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they
 would appear"). None of this is canon: not the positions, not which spiral
-arm they sit in, and not that they share a galaxy with Earth. The labels
-avoid inventing names:
-- **"13i's home world"** (Assignment 0000001) — drawn with its ringed
-  binary twin beside it; neither planet is named in the story, so neither
-  is named on the map
+arm they sit in, and not that they share a galaxy with Earth. Labels:
+- **Novaux-4** (Assignment 0000001) — 13i's home world. **Working name**,
+  given by Paul "for now"; the story itself never names it. Placed near
+  the galactic core as one of the older civilizations. Drawn with its
+  ringed binary twin beside it; the twin is still unnamed
 - **Veyra** (0000087) and **Nerath** (0215783) — names from their stories
 Placement lives in `lib/galaxyWorlds.js`; move them freely if canon ever
 says otherwise.

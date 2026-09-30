@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.1 — 13i: The Deep Signal, Novaux-4, fixes
+Built **13i: The Deep Signal**, the first game tied to a short story (The
+Deep Walkers): a top-down exploration / puzzle / survival game with four
+stats (Energy, Integrity, Signal, Awareness), procedural worlds laid out
+along the 13i ring-eye mark, four puzzle types, the Warden (an alien
+intelligence, deliberately undefined, never NEMESIS), Deep Walker
+encounters, four endings and a final reveal. Plain canvas JavaScript in
+`public/games/deep-signal/`, embedded like 13i vs NEMESIS, with plays and
+scores recorded to the Node. It appears in Games only after the visitor has
+opened The Deep Walkers (`lib/storyGames.js`). Full notes:
+`docs/DEEP-SIGNAL.md`.
+
+Also: 13i's home world is now named **Novaux-4** (working name) and sits
+near the galactic core on the Galaxy Map. The Alien Lab, Oracle and
+Assignment writer no longer show literal `\u2014` codes (JSX text doesn't
+read escape codes). The Alien Lab's "Other — tell us" option is now just
+"Other". Added a `.gitignore`. The auth middleware now skips static
+.js/.css/.html files.
+
 ## Update 5.0 — audio, Space News, a real Galaxy Map, Black Hole look
 Narrated audio arrived: the three short stories and both book chapters now
 have MP3 recordings (`public/stories/<slug>/audio.mp3`,

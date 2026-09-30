@@ -12,7 +12,7 @@ export default async function AlienLabPage() {
         &larr; back to Create
       </Link>
       <div className="page-title" style={{ marginTop: 14 }}>The Alien Lab</div>
-      <div className="page-subtitle">answer as you go \u2014 there's no wrong version of a species</div>
+      <div className="page-subtitle">answer as you go &mdash; there's no wrong version of a species</div>
       <AlienCreator loggedIn={!!user} />
     </div>
   );

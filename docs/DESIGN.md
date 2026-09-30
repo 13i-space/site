@@ -152,6 +152,13 @@ her to read from), boundaries around never surfacing Forum/Kinship content
 directly, and deep-linking into specific new content. This is intentionally
 sequenced *after* the tracking data existed to read from, not before.
 
+## Story games
+Games tied to a short story (first: *13i: The Deep Signal*) may carry their
+own visual identity inside the game frame. The Deep Signal's is black +
+luminous pale gold, per its spec ("light emerging from darkness"). The
+site page around the game stays in the normal site style. Their sound
+follows the same rule as the site's: synthesized in the browser, no samples.
+
 ## Things to avoid
 - Generic sci-fi HUD/dashboard clutter on the live site (fine on preview pages)
 - Karma/points/upvote mechanics anywhere social

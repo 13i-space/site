@@ -66,7 +66,7 @@ export default function AlienCreator({ loggedIn }) {
     return (
       <div className="panel" style={{ textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
         <p style={{ color: "#8A8FBF", margin: 0 }}>
-          You'll need to be logged in to save a species to your Node \u2014
+          You'll need to be logged in to save a species to your Node &mdash;
           you can still click through the questions to see how it works.
         </p>
       </div>
@@ -122,7 +122,7 @@ export default function AlienCreator({ loggedIn }) {
         )}
 
         <p style={{ fontSize: 11.5, color: "#3A3E75", marginTop: 18, fontStyle: "italic" }}>
-          An illustration of your species isn't built yet \u2014 that needs its
+          An illustration of your species isn't built yet &mdash; that needs its
           own image-generation service, which is a deliberate next step, not
           an oversight.
         </p>
@@ -163,7 +163,7 @@ export default function AlienCreator({ loggedIn }) {
             color: "#8A8FBF", fontSize: 14, padding: "10px 14px", cursor: "pointer", fontStyle: "italic",
           }}
         >
-          Other \u2014 tell us
+          Other
         </button>
         {answers[current.id] === OTHER && (
           <div style={{ display: "flex", gap: 8, marginTop: 4 }}>
@@ -172,7 +172,7 @@ export default function AlienCreator({ loggedIn }) {
               value={otherText[current.id] || ""}
               onChange={(e) => setOtherText((t) => ({ ...t, [current.id]: e.target.value }))}
               onKeyDown={(e) => e.key === "Enter" && submitOther()}
-              placeholder="Describe it..."
+              placeholder="Type your answer..."
               style={{
                 flex: 1, background: "transparent", border: "1px solid #262A55", borderRadius: 3,
                 color: "#E4E4EF", fontSize: 13, padding: "8px 10px", outline: "none",

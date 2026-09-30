@@ -22,10 +22,11 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   AI-written stories (0000087, 0215783), a working writer with save-progress
   drafts, human/AI split columns on the hub ("Human Written 13i Short
   Stories" / "AI Written 13i Short Stories"), sorted newest-first
-- Three games: NEMESIS Command, Asteroid Belt, 13i vs NEMESIS (iframe to
-  static HTML) — all three have sound, and the first two have personal
-  bests + a daily leaderboard (resets 00:00 UTC) + Lyra-delivered
-  instructions instead of on-page text
+- Four games: NEMESIS Command, Asteroid Belt, 13i vs NEMESIS (iframe to
+  static HTML), and 13i: The Deep Signal (iframe, unlocked by opening The
+  Deep Walkers; see docs/DEEP-SIGNAL.md). All have sound; all but 13i vs
+  NEMESIS have personal bests + a daily leaderboard (resets 00:00 UTC) +
+  Lyra-delivered instructions
 - The Alien Lab: full 15-question guided species builder, saves to the
   Node; image generation is explicitly not built (flagged as needing a
   separate service decision)
@@ -51,12 +52,17 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
-Update 5.0 (see CHANGELOG): Book/story audio, Book hub options, Space
-News, the rebuilt Galaxy Map, preview 7 (Black Hole). Edited directly in
+Update 5.1 (see CHANGELOG): 13i: The Deep Signal, Novaux-4, the Alien Lab
+text fixes, .gitignore. Before that, Update 5.0: Book/story audio, Book
+hub options, Space News, the rebuilt Galaxy Map, preview 7 (Black Hole). Edited directly in
 the local checkout by a Claude Code session and committed/pushed via
 GitHub Desktop, rather than handed off as zips.
 
 ## Known issues
+- `.DS_Store` files were committed before the `.gitignore` existed; the
+  new ignore rule stops new ones but doesn't remove the old ones from Git
+- The Deep Signal hasn't had a full human playthrough or a real-phone
+  touch test yet, and its sound was never actually heard during testing
 - Update 5.0 was written without Node.js available locally, so it was
   never run through `next build` before pushing. The Galaxy Map, Black
   Hole preview and Space News parser were exercised in a browser test

@@ -49,6 +49,7 @@ export default async function AccountPage() {
     "nemesis-command": { label: "NEMESIS Command", href: "/games/nemesis-command" },
     "asteroid-belt": { label: "Asteroid Belt", href: "/games/asteroid-belt" },
     "13i-vs-nemesis": { label: "13i vs NEMESIS", href: "/games/13i-vs-nemesis" },
+    "deep-signal": { label: "13i: The Deep Signal", href: "/games/deep-signal" },
   };
 
   return (
