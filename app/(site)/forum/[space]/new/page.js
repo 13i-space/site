@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../../../lib/supabaseServer";
 import NewThreadForm from "../../../../../components/NewThreadForm";
+import { isAlpha } from "../../../../../lib/alpha";
 
 export default async function NewThreadPage({ params }) {
   const supabase = await createClient();
@@ -12,7 +13,7 @@ export default async function NewThreadPage({ params }) {
 
   const { data: space } = await supabase
     .from("forum_spaces")
-    .select("id, name")
+    .select("*")
     .eq("slug", params.space)
     .single();
 
@@ -22,6 +23,11 @@ export default async function NewThreadPage({ params }) {
         <div className="page-title">Not Found</div>
       </div>
     );
+  }
+
+  if (space.alpha_only || params.space === "alpha") {
+    const { data: me } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    if (!isAlpha(me ? { ...me, created_at: me.created_at || user.created_at } : null)) redirect(`/forum/${params.space}`);
   }
 
   return (

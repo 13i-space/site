@@ -13,6 +13,7 @@ import {
   pickFresh, welcomeBackLine, AREAS, loreLines, newsLines, journeyLine, greetingLine,
   EVOLUTION, FIRST_ASSIGNMENT_DONE, reviewLine, pageLines,
 } from "../lib/lyraLines";
+import { isAlpha, alphaNumber, ALPHA_FORUM } from "../lib/alpha";
 import LyraOrb from "./LyraOrb";
 
 // Lyra: the site's companion, bottom-right on every (site) page.
@@ -28,8 +29,9 @@ import LyraOrb from "./LyraOrb";
 // Assignment, and her own changes as your bond grows - lib/lyraBond.js).
 //
 // Signed in, you can talk with her (app/api/lyra): about the site, the 13i
-// universe and its stories, or small everyday things. Her panel's box also
-// searches the site as you type.
+// universe and its stories, or small everyday things. The conversation is
+// only for the moment - it clears when you close her or change pages. Her
+// panel's box also searches the site as you type.
 const LONG_ABSENCE_DAYS = 3;
 const LAUNCH_LINE_MS = 30 * 60 * 1000;
 const AUTO_CLOSE_MS = 8000;
@@ -53,7 +55,7 @@ async function loadCounts(supabase, uid) {
   };
 }
 
-function suggestionsFor(pathname, stage) {
+function suggestionsFor(pathname, stage, alpha) {
   const page = [
     ["/assignments/", "What is this story about? No spoilers."],
     ["/book", "Who are Aiden and Xavier?"],
@@ -66,6 +68,7 @@ function suggestionsFor(pathname, stage) {
   ].filter(([p]) => pathname.startsWith(p)).map(([, q]) => q);
   const general = ["What should I do next?", "Who is Lyra in the book?", "What is the Continuance Rule?"];
   if (stage >= 3) general.unshift("Tell me something strange about 13i.");
+  if (alpha) general.unshift("I have an idea for the site.");
   return [...page, ...general].slice(0, 3);
 }
 
@@ -87,7 +90,7 @@ function Rich({ text, onNavigate }) {
 export default function LyraCompanion() {
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
-  const [user, setUser] = useState(null); // { id, username }
+  const [user, setUser] = useState(null); // { id, username, alpha, alphaNumber }
   const [ready, setReady] = useState(false);
   const [open, setOpen] = useState(false);
   const [line, setLine] = useState(null); // what she's saying / holding
@@ -110,6 +113,8 @@ export default function LyraCompanion() {
   const chatEnd = useRef(null);
   const loggedIn = !!user;
   const uid = user?.id || null;
+  const userRef = useRef(null);
+  userRef.current = user;
 
   const remember = useCallback((fn) => {
     if (!memory.current) return;
@@ -143,12 +148,17 @@ export default function LyraCompanion() {
     const supabase = createClient();
     const applyUser = async (u) => {
       if (!u) { setUser(null); setAuthChecked(true); return; }
-      let username = null;
+      let profile = null;
       try {
-        const { data: profile } = await supabase.from("profiles").select("username").eq("id", u.id).single();
-        username = profile?.username || null;
-      } catch (e) { /* no name yet */ }
-      setUser((prev) => (prev && prev.id === u.id && prev.username === username ? prev : { id: u.id, username }));
+        ({ data: profile } = await supabase.from("profiles").select("*").eq("id", u.id).single());
+      } catch (e) { /* no profile yet */ }
+      const next = {
+        id: u.id,
+        username: profile?.username || null,
+        alpha: isAlpha({ ...(profile || {}), created_at: profile?.created_at || u.created_at }),
+        alphaNumber: alphaNumber(profile),
+      };
+      setUser((prev) => (prev && prev.id === next.id && prev.username === next.username && prev.alpha === next.alpha ? prev : next));
       setAuthChecked(true);
     };
     supabase.auth.getUser().then(({ data: { user: u } }) => applyUser(u)).catch(() => setAuthChecked(true));
@@ -172,6 +182,14 @@ export default function LyraCompanion() {
       if (complete && !m.celebrated.firstAssignment) {
         remember((mm) => { mm.celebrated.firstAssignment = true; });
         queue.current.push({ text: FIRST_ASSIGNMENT_DONE, stay: true });
+      }
+      const u = userRef.current;
+      if (u?.alpha && !m.celebrated.alpha) {
+        remember((mm) => { mm.celebrated.alpha = true; });
+        queue.current.push({
+          text: `You're an Alpha User${u.alphaNumber ? ` - ${u.alphaNumber}` : ""}. You found 13i before Beta, so you get to help shape it. Anything you'd change, tell the others in [the Alpha Users forum](${ALPHA_FORUM}) - or just tell me.`,
+          stay: true,
+        });
       }
       if (m.stage === null) {
         remember((mm) => { mm.stage = b.stage; }); // first meeting: no fanfare for the starting stage
@@ -199,10 +217,7 @@ export default function LyraCompanion() {
       try { session.current = JSON.parse(sessionStorage.getItem(prevKey) || "null") || session.current; } catch (e) { /* ignore */ }
     }
     if (!m.visitDays.includes(today())) remember((mm) => { mm.visitDays.push(today()); });
-    try {
-      const saved = JSON.parse(sessionStorage.getItem(`lyra_chat_${uid || "guest"}`) || "[]");
-      setChat(Array.isArray(saved) ? saved : []);
-    } catch (e) { setChat([]); }
+    setChat([]);
 
     (async () => {
       try { feed.current = await (await fetch("/api/lyra/feed")).json(); } catch (e) { feed.current = null; }
@@ -217,6 +232,10 @@ export default function LyraCompanion() {
   useEffect(() => {
     if (!ready || !pathname || !memory.current) return;
     const m = memory.current;
+    // a new page, a fresh start: the last conversation goes
+    setChat([]);
+    setChatError("");
+    setQuery("");
     const prefix = pathname.split("/").slice(0, 3).join("/") || "/";
     const firstVisitHere = !m.visited.includes(prefix);
     remember((mm) => {
@@ -226,14 +245,16 @@ export default function LyraCompanion() {
     clearTimeout(autoCloseTimer.current);
     let cancelled = false;
 
-    // anything worth celebrating comes first, one after another
-    if (queue.current.length) {
-      const playQueue = () => {
-        const next = queue.current.shift();
-        if (!next || cancelled) return;
-        speak(next.text, { auto: true, stay: next.stay, celebrate: true });
-        if (queue.current.length) setTimeout(playQueue, 9000);
-      };
+    // anything worth celebrating comes first, one after another - unless
+    // this is the very first hello, which goes before everything
+    const playQueue = () => {
+      const next = queue.current.shift();
+      if (!next || cancelled) return;
+      speak(next.text, { auto: true, stay: next.stay, celebrate: true });
+      if (queue.current.length) setTimeout(playQueue, 9000);
+    };
+    const firstHello = pathname === "/launch" && loggedIn && session.current.firstEver && !m.celebrated.met;
+    if (queue.current.length && !firstHello) {
       playQueue();
       return () => { cancelled = true; };
     }
@@ -278,7 +299,8 @@ export default function LyraCompanion() {
       if (s.firstEver && !m.celebrated.met) {
         remember((mm) => { mm.celebrated.met = true; });
         speak(`Hello${username ? `, ${username}` : ""}. I'm Lyra. I'll learn this place alongside you. Ask me anything - about the site, the story, or whatever's on your mind.`, { auto: true, stay: true });
-        return;
+        if (queue.current.length) setTimeout(playQueue, 9000);
+        return () => { cancelled = true; };
       }
       const daysAway = s.prevSeen ? Math.floor((Date.now() - new Date(s.prevSeen)) / 86400000) : 0;
       const memoryForNews = { ...m, lastSeenAt: s.prevSeen };
@@ -301,6 +323,9 @@ export default function LyraCompanion() {
         return;
       }
       const unvisited = AREAS.filter((a) => !m.visited.some((v) => v.startsWith(a.prefix))).map((a) => ({ id: `area-${a.prefix}`, priority: 3, text: a.text }));
+      if (userRef.current?.alpha && !m.visited.includes(ALPHA_FORUM)) {
+        unvisited.push({ id: "area-alpha", priority: 4, text: `As an Alpha User, your ideas change this place. Something bugging you, or something you wish existed? [The Alpha Users forum](${ALPHA_FORUM}).` });
+      }
       const pool = [
         ...extras,
         ...unvisited,
@@ -361,16 +386,12 @@ export default function LyraCompanion() {
     };
   }, [speak, refreshBond]);
 
-  // ---- talking with her ----
-  const saveChat = (c) => {
-    try { sessionStorage.setItem(`lyra_chat_${uid || "guest"}`, JSON.stringify(c.slice(-20))); } catch (e) { /* ignore */ }
-  };
+  // ---- talking with her (just for the moment: cleared on close or a new page) ----
   const ask = async (text) => {
     const q = text.trim();
     if (!q || sending || !loggedIn) return;
     const next = [...chat, { role: "user", content: q }];
     setChat(next);
-    saveChat(next);
     setQuery("");
     setChatError("");
     setSending(true);
@@ -385,13 +406,12 @@ export default function LyraCompanion() {
       if (!data.reply) throw new Error(data.error || "I lost the thread for a moment. Try me again?");
       const withReply = [...next, { role: "assistant", content: data.reply }];
       setChat(withReply);
-      saveChat(withReply);
     } catch (e) {
       setChatError(e.message);
     }
     setSending(false);
   };
-  const clearChat = () => { setChat([]); saveChat([]); setChatError(""); };
+  const clearChat = () => { setChat([]); setChatError(""); };
 
   useEffect(() => { chatEnd.current?.scrollIntoView({ block: "end" }); }, [chat, sending]);
 
@@ -401,6 +421,8 @@ export default function LyraCompanion() {
     clearTimeout(autoCloseTimer.current);
   };
   const close = () => { setOpen(false); setQuery(""); };
+  // however she closes (the ×, the orb, a link, her own timer), the chat goes
+  useEffect(() => { if (!open) clearChat(); }, [open]);
   const onHover = () => {
     if (hasMessage && !open) { setOpen(true); setHasMessage(false); }
   };
@@ -418,7 +440,7 @@ export default function LyraCompanion() {
               LYRA{loggedIn && <span style={{ color: "#565B8F" }}> &middot; {bond.name.toUpperCase()}</span>}
             </span>
             <span style={{ display: "flex", gap: 10, alignItems: "center" }}>
-              {chat.length > 0 && <button onClick={clearChat} className="mono" style={styles.smallBtn}>new chat</button>}
+              {chat.length > 0 && <button onClick={clearChat} className="mono" style={styles.smallBtn} title="Clear the conversation">clear</button>}
               <button onClick={close} style={styles.closeBtn} aria-label="Close">&times;</button>
             </span>
           </div>
@@ -440,7 +462,7 @@ export default function LyraCompanion() {
 
           {loggedIn && chat.length === 0 && !query && (
             <div style={styles.chips}>
-              {suggestionsFor(pathname || "", bond.stage).map((s) => (
+              {suggestionsFor(pathname || "", bond.stage, user?.alpha).map((s) => (
                 <button key={s} onClick={() => ask(s)} style={styles.chip}>{s}</button>
               ))}
             </div>
@@ -451,6 +473,7 @@ export default function LyraCompanion() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => clearTimeout(autoCloseTimer.current)}
               placeholder={loggedIn ? "Ask me anything, or search..." : "Search the site..."}
               maxLength={1500}
               style={styles.searchInput}

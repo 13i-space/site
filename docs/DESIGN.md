@@ -156,7 +156,10 @@ she needs to feel alive"):
   headline, the next song release, your next First Assignment step, a part
   of the site you haven't visited, a stage-appropriate bit of lore
   (`lib/lyraLines.js`), refreshed at most every 30 minutes.
-- **Conversation** (`app/api/lyra`, signed-in): she knows WORLD.md
+- **Conversation** (`app/api/lyra`, signed-in; brief by default — one to
+  three sentences, offering more rather than giving it; summarizes, never
+  quotes the texts; anything past the Wiki's basics is a spoiler; clears
+  when she closes or the page changes): she knows WORLD.md
   (snapshot in `lib/lyraCanon.js` — refresh it when WORLD.md changes), the
   Wiki, the full text of the book's published chapters and every short
   story, the site map, and the visitor's activity; her voice deepens with

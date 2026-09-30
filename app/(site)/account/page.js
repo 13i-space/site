@@ -7,6 +7,8 @@ import { isSentinelUser } from "../../../lib/sentinel";
 import YourSpecies from "../../../components/YourSpecies";
 import FirstAssignment from "../../../components/FirstAssignment";
 import { QUIZ } from "../../../lib/universeQuiz";
+import { isAlpha, alphaNumber, ALPHA_FORUM } from "../../../lib/alpha";
+import AlphaBadge from "../../../components/AlphaBadge";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -20,7 +22,7 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, bio, avatar_url")
+    .select("*") // includes alpha / alpha_number once docs/v5.10-alpha-users.sql is run
     .eq("id", user.id)
     .single();
 
@@ -79,6 +81,18 @@ export default async function AccountPage() {
     <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">Your Node</div>
       <div className="page-subtitle">{user.email}</div>
+      {isAlpha({ ...profile, created_at: profile?.created_at || user.created_at }) && (
+        <div className="panel" style={{ marginTop: -6, marginBottom: 16, borderColor: "#6B5E3E", background: "rgba(201,185,143,0.05)" }}>
+          <AlphaBadge profile={{ ...profile, created_at: profile?.created_at || user.created_at }} variant="full" />
+          <p style={{ fontSize: 13.5, color: "#B7BADF", lineHeight: 1.65, margin: "12px 0 10px" }}>
+            You found 13i before Beta. You're one of the people testing it and
+            shaping what it becomes{alphaNumber(profile) ? `, Alpha ${alphaNumber(profile)}` : ""}. Thank you.
+          </p>
+          <Link href={ALPHA_FORUM} className="mono" style={{ fontSize: 11.5, color: "#E8CFC0" }}>
+            suggest a change in the Alpha Users forum &rarr;
+          </Link>
+        </div>
+      )}
 
       {sentinel && (
         <Link

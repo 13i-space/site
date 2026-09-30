@@ -16,7 +16,8 @@ import StatRadar from "./StatRadar";
 //
 // onSelect: when given, a click selects the card (the gallery's compare
 // mode) instead of flipping it; `selected` highlights it.
-export default function AlienCard({ species, creator, width = 280, onSelect, selected }) {
+// creatorAlpha: the creator is an Alpha User (lib/alpha.js) - an α by their name.
+export default function AlienCard({ species, creator, creatorAlpha, width = 280, onSelect, selected }) {
   const [flipped, setFlipped] = useState(false);
   const [playing, setPlaying] = useState(false);
   const verdict = verdictFor(species);
@@ -73,7 +74,10 @@ export default function AlienCard({ species, creator, width = 280, onSelect, sel
 
   const footer = (right) => (
     <div className="mono" style={{ display: "flex", justifyContent: "space-between", gap: 6 * s, marginTop: 6 * s, paddingTop: 5 * s, borderTop: "1px solid #3A3E75", fontSize: 8.5 * s, color: "#8A8FBF" }}>
-      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>by {creator || "a Kin"}</span>
+      <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        by {creator || "a Kin"}
+        {creatorAlpha && <span title="Made by an Alpha User" style={{ color: "#E8CFC0", marginLeft: 4 * s }}>&alpha;</span>}
+      </span>
       <span style={{ flexShrink: 0 }}>{right}</span>
     </div>
   );

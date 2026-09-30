@@ -3,6 +3,23 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.10 — Alpha Users, a full-width comic, a briefer Lyra
+**Alpha Users**: everyone who joins in 2026 (plus Paul's "Paul" and "13i")
+is an Alpha User with a number in join order (`profiles.alpha`,
+`alpha_number`, set by trigger; users can't grant it to themselves) -
+`docs/v5.10-alpha-users.sql`, `lib/alpha.js`, `components/AlphaBadge.js`.
+They get: a badge and thank-you panel under their email on the Node, the
+badge on their Kin profile, an α beside their name in the forum and on
+cards they made, a one-time welcome from Lyra plus an "I have an idea for
+the site" prompt, and the **Alpha Users** forum space (`/forum/alpha`)
+with the Alpha roll - everyone can read, only Alphas can post (enforced by
+RLS). **Comic reader** now fills the content width and grows in height,
+scrolls back to the top on each page turn, and preloads the next page.
+**Lyra** answers briefly by default (1-3 sentences, offers more instead of
+giving it), summarizes rather than quoting the texts, treats anything past
+the Wiki's basics as a spoiler, and her conversation clears whenever she
+closes or you change pages ("clear" button too).
+
 ## Update 5.9 — Lyra comes alive, alien avatars
 **Lyra** rebuilt as an evolving companion (see DESIGN.md "Lyra"). A living
 body (`components/LyraOrb.js`: floats, breathes, blinks, watches the

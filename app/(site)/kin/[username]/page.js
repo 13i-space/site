@@ -1,10 +1,12 @@
 import { createClient } from "../../../../lib/supabaseServer";
+import { isAlpha } from "../../../../lib/alpha";
+import AlphaBadge from "../../../../components/AlphaBadge";
 
 export default async function KinProfilePage({ params }) {
   const supabase = await createClient();
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username, bio, avatar_url, created_at")
+    .select("*")
     .eq("username", params.username)
     .single();
 
@@ -40,6 +42,11 @@ export default async function KinProfilePage({ params }) {
       </div>
 
       <div className="page-title" style={{ marginBottom: 4 }}>{profile.username}</div>
+      {isAlpha(profile) && (
+        <div style={{ margin: "6px 0 12px" }}>
+          <AlphaBadge profile={profile} variant="full" />
+        </div>
+      )}
       {joined && (
         <div className="mono" style={{ fontSize: 11, color: "#565B8F", marginBottom: 18 }}>
           KIN SINCE {joined.toUpperCase()}

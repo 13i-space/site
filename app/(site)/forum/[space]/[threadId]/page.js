@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { createClient } from "../../../../../lib/supabaseServer";
 import ReplyForm from "../../../../../components/ReplyForm";
+import { isAlpha } from "../../../../../lib/alpha";
+import AlphaBadge from "../../../../../components/AlphaBadge";
 
 export default async function ThreadPage({ params }) {
   const supabase = await createClient();
 
   const { data: thread } = await supabase
     .from("forum_threads")
-    .select("id, title, body, created_at, profiles(username, avatar_url)")
+    .select("id, title, body, created_at, profiles(*)")
     .eq("id", params.threadId)
     .single();
 
@@ -21,13 +23,22 @@ export default async function ThreadPage({ params }) {
 
   const { data: replies } = await supabase
     .from("forum_replies")
-    .select("id, body, created_at, profiles(username, avatar_url)")
+    .select("id, body, created_at, profiles(*)")
     .eq("thread_id", params.threadId)
     .order("created_at", { ascending: true });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // replies in the Alpha Users space are for Alpha Users (see docs/v5.10-alpha-users.sql)
+  const { data: space } = await supabase.from("forum_spaces").select("*").eq("slug", params.space).maybeSingle();
+  const alphaOnly = !!space?.alpha_only || params.space === "alpha";
+  let me = null;
+  if (user && alphaOnly) {
+    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    me = data ? { ...data, created_at: data.created_at || user.created_at } : null;
+  }
 
   return (
     <div>
@@ -46,7 +57,11 @@ export default async function ThreadPage({ params }) {
           </div>
         )}
 
-        <ReplyForm threadId={thread.id} loggedIn={!!user} />
+        {alphaOnly && user && !isAlpha(me) ? (
+          <p style={{ fontSize: 12.5, color: "#565B8F", marginTop: 24 }}>Only Alpha Users can reply in this space.</p>
+        ) : (
+          <ReplyForm threadId={thread.id} loggedIn={!!user} />
+        )}
       </div>
     </div>
   );
@@ -78,7 +93,7 @@ function Post({ profile, body, createdAt, title, reply }) {
         )}
         <div className="mono" style={{ fontSize: 10.5, color: "#565B8F", marginBottom: 6 }}>
           {profile?.username ? (
-            <Link href={`/kin/${profile.username}`} style={{ color: "#6E76B8" }}>{profile.username}</Link>
+            <><Link href={`/kin/${profile.username}`} style={{ color: "#6E76B8" }}>{profile.username}</Link><AlphaBadge profile={profile} /></>
           ) : "unknown"}
           {" \u00b7 "}
           {new Date(createdAt).toLocaleString()}

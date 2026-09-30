@@ -49,6 +49,7 @@ export default function AlienGallery({ species }) {
             <AlienCard
               species={sp}
               creator={sp.creator}
+              creatorAlpha={sp.creatorAlpha}
               width={260}
               onSelect={comparing ? () => toggle(sp.id) : undefined}
               selected={picked.includes(sp.id)}

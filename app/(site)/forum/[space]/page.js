@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
+import { isAlpha } from "../../../../lib/alpha";
+import AlphaBadge from "../../../../components/AlphaBadge";
 
 export default async function SpacePage({ params }) {
   const supabase = await createClient();
   const { data: space } = await supabase
     .from("forum_spaces")
-    .select("id, name, description")
+    .select("*") // alpha_only arrives with docs/v5.10-alpha-users.sql
     .eq("slug", params.space)
     .single();
 
@@ -20,13 +22,27 @@ export default async function SpacePage({ params }) {
 
   const { data: threads } = await supabase
     .from("forum_threads")
-    .select("id, title, created_at, profiles(username, avatar_url)")
+    .select("id, title, created_at, profiles(*)")
     .eq("space_id", space.id)
     .order("created_at", { ascending: false });
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
+
+  // The Alpha Users space: everyone can read, only Alpha Users post
+  const alphaOnly = !!space.alpha_only || params.space === "alpha";
+  let me = null;
+  let roll = [];
+  if (user) {
+    const { data } = await supabase.from("profiles").select("*").eq("id", user.id).maybeSingle();
+    me = data ? { ...data, created_at: data.created_at || user.created_at } : null;
+  }
+  if (alphaOnly) {
+    const { data } = await supabase.from("profiles").select("*").eq("alpha", true).order("alpha_number", { ascending: true }).limit(200);
+    roll = (data || []).filter((p) => p.username);
+  }
+  const canPost = !!user && (!alphaOnly || isAlpha(me));
 
   return (
     <div>
@@ -38,7 +54,22 @@ export default async function SpacePage({ params }) {
       <div className="page-subtitle">{space.description}</div>
 
       <div style={{ maxWidth: 640, margin: "0 auto" }}>
-        {user ? (
+        {alphaOnly && (
+          <div className="panel" style={{ borderColor: "#6B5E3E", background: "rgba(201,185,143,0.05)", marginBottom: 20 }}>
+            <div className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px", marginBottom: 8 }}>&alpha; THE ALPHA ROLL</div>
+            <p style={{ fontSize: 13, color: "#B7BADF", margin: "0 0 12px", lineHeight: 1.6 }}>
+              The first Kin, here before Beta. Anyone can read along; only Alpha Users can post.
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+              {roll.map((p) => (
+                <Link key={p.id} href={`/kin/${p.username}`} className="mono" style={{ fontSize: 11, color: "#E8CFC0", border: "1px solid #3A3E75", borderRadius: 12, padding: "3px 10px", textDecoration: "none" }}>
+                  {p.alpha_number ? `${String(p.alpha_number).padStart(3, "0")} ` : ""}{p.username}
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+        {canPost ? (
           <Link
             href={`/forum/${params.space}/new`}
             className="mono"
@@ -49,6 +80,8 @@ export default async function SpacePage({ params }) {
           >
             + start a thread
           </Link>
+        ) : user ? (
+          <p style={{ fontSize: 12.5, color: "#565B8F", marginBottom: 20 }}>Only Alpha Users can start threads here.</p>
         ) : (
           <p style={{ fontSize: 12.5, color: "#565B8F", marginBottom: 20 }}>
             <Link href="/login" style={{ color: "#8B95F6" }}>Log in</Link> to start a thread.
@@ -76,7 +109,7 @@ export default async function SpacePage({ params }) {
                   {t.title}
                 </div>
                 <div className="mono" style={{ fontSize: 10.5, color: "#565B8F" }}>
-                  {t.profiles?.username || "unknown"} &middot; {new Date(t.created_at).toLocaleDateString()}
+                  {t.profiles?.username || "unknown"}<AlphaBadge profile={t.profiles} /> &middot; {new Date(t.created_at).toLocaleDateString()}
                 </div>
               </div>
             </Link>

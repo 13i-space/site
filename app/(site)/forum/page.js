@@ -39,7 +39,7 @@ export default async function ForumHub() {
             }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span className="wordmark" style={{ fontSize: 19, color: "#DCDFFF" }}>{s.name}</span>
+              <span className="wordmark" style={{ fontSize: 19, color: s.slug === "alpha" ? "#E8CFC0" : "#DCDFFF" }}>{s.slug === "alpha" ? "\u03b1 " : ""}{s.name}</span>
               <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>
                 {countBySlug[s.slug] || 0} {countBySlug[s.slug] === 1 ? "thread" : "threads"}
               </span>

@@ -5,6 +5,7 @@ import { verdictFor } from "../../../../../lib/continuance";
 import AlienCard from "../../../../../components/AlienCard";
 import ContinuanceReview from "../../../../../components/ContinuanceReview";
 import ShareLink from "../../../../../components/ShareLink";
+import { isAlpha } from "../../../../../lib/alpha";
 
 // One species' own page: its card, 13i's Continuance Review (or, for its
 // creator, the button to ask for one), and links to the map and gallery.
@@ -16,10 +17,10 @@ async function load(id) {
   const { data: species } = await supabase.from("alien_species").select("*").eq("id", id).maybeSingle();
   if (!species) return { species: null };
   const [{ data: profile }, { data: { user } }] = await Promise.all([
-    supabase.from("profiles").select("username").eq("id", species.user_id).maybeSingle(),
+    supabase.from("profiles").select("*").eq("id", species.user_id).maybeSingle(),
     supabase.auth.getUser(),
   ]);
-  return { species, creator: profile?.username, isOwner: !!user && user.id === species.user_id };
+  return { species, creator: profile?.username, creatorAlpha: isAlpha(profile), isOwner: !!user && user.id === species.user_id };
 }
 
 export async function generateMetadata({ params }) {
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }) {
 export default async function SpeciesPage({ params }) {
   let data = { species: null };
   try { data = await load(params.id); } catch (e) { /* shown as not found below */ }
-  const { species, creator, isOwner } = data;
+  const { species, creator, creatorAlpha, isOwner } = data;
 
   if (!species) {
     return (
@@ -60,7 +61,7 @@ export default async function SpeciesPage({ params }) {
       <div className="page-subtitle">created by {creator || "a Kin"} &middot; tap the card to flip it</div>
 
       <div style={{ display: "flex", gap: 32, flexWrap: "wrap", justifyContent: "center", alignItems: "flex-start" }}>
-        <AlienCard species={species} creator={creator} width={300} />
+        <AlienCard species={species} creator={creator} creatorAlpha={creatorAlpha} width={300} />
         <div style={{ flex: "1 1 320px", minWidth: 0 }}>
           <ContinuanceReview species={species} isOwner={isOwner} />
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 16 }}>

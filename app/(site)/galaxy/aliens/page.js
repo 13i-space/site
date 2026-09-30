@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
 import AlienGallery from "../../../../components/AlienGallery";
+import { isAlpha } from "../../../../lib/alpha";
 
 // Aliens of the Galaxy: every species built in the Alien Lab, newest first,
 // as collectible cards. Species are public (RLS "viewable by everyone").
@@ -11,6 +12,7 @@ const LIMIT = 60;
 export default async function AliensOfTheGalaxy() {
   let species = [];
   let names = {};
+  let alphas = {};
   try {
     const supabase = await createClient();
     // "*" so the optional portrait_svg and stats columns come along when present
@@ -22,8 +24,9 @@ export default async function AliensOfTheGalaxy() {
     species = data || [];
     const ids = [...new Set(species.map((s) => s.user_id))];
     if (ids.length) {
-      const { data: profiles } = await supabase.from("profiles").select("id, username").in("id", ids);
+      const { data: profiles } = await supabase.from("profiles").select("*").in("id", ids);
       names = Object.fromEntries((profiles || []).map((p) => [p.id, p.username]));
+      alphas = Object.fromEntries((profiles || []).map((p) => [p.id, isAlpha(p)]));
     }
   } catch (e) {
     species = [];
@@ -54,7 +57,7 @@ export default async function AliensOfTheGalaxy() {
           <p style={{ margin: 0, color: "#8A8FBF" }}>No species yet. The first card is waiting to be made.</p>
         </div>
       ) : (
-        <AlienGallery species={species.map((sp) => ({ ...sp, creator: names[sp.user_id] }))} />
+        <AlienGallery species={species.map((sp) => ({ ...sp, creator: names[sp.user_id], creatorAlpha: alphas[sp.user_id] }))} />
       )}
     </div>
   );
