@@ -4,6 +4,11 @@ import { useRef, useEffect, useState, useCallback } from "react";
 import { sfx } from "../lib/sfx";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 import Leaderboard from "./Leaderboard";
+import FullscreenButton from "./FullscreenButton";
+
+// The game was designed on a 600x400 field; speeds scale with the real
+// field height so a bigger screen doesn't make it easier or harder.
+const DESIGN_HEIGHT = 400;
 
 const LEVELS = [
   { target: 50, speedMin: 0.6, speedMax: 1.0, spawnMs: 1800 },
@@ -23,6 +28,7 @@ function levelForScore(score) {
 
 export default function NemesisCommand() {
   const canvasRef = useRef(null);
+  const wrapRef = useRef(null);
   const stateRef = useRef(null);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(5);
@@ -35,6 +41,30 @@ export default function NemesisCommand() {
   }, []);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
+
+  // The canvas's drawing size follows its size on screen (full width, most
+  // of the viewport height), including in fullscreen.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const fit = () => {
+      const r = canvas.getBoundingClientRect();
+      const w = Math.max(300, Math.round(r.width)), h = Math.max(240, Math.round(r.height));
+      if (canvas.width === w && canvas.height === h) return;
+      canvas.width = w;
+      canvas.height = h;
+      const s = stateRef.current;
+      if (s) s.turretX = Math.min(s.turretX, w);
+      if (!started) {
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#0A0B1C";
+        ctx.fillRect(0, 0, w, h);
+      }
+    };
+    fit();
+    const ro = new ResizeObserver(fit);
+    ro.observe(canvas);
+    return () => ro.disconnect();
+  }, [started]);
 
   const initState = useCallback((canvas) => {
     const stars = Array.from({ length: 40 }, () => ({
@@ -86,11 +116,12 @@ export default function NemesisCommand() {
     const fireAtAim = () => {
       const s = stateRef.current;
       const groundY = canvas.height - 20;
+      const k = canvas.height / DESIGN_HEIGHT;
       s.projectiles.push({
         x: s.turretX,
         y: groundY - 20,
-        vx: Math.cos(s.aimAngle) * 7,
-        vy: Math.sin(s.aimAngle) * 7,
+        vx: Math.cos(s.aimAngle) * 7 * k,
+        vy: Math.sin(s.aimAngle) * 7 * k,
       });
       sfx.fire();
     };
@@ -203,7 +234,7 @@ export default function NemesisCommand() {
         s.threats.push({
           x: Math.random() * canvas.width,
           y: -10,
-          speed: cfg.speedMin + Math.random() * (cfg.speedMax - cfg.speedMin),
+          speed: (cfg.speedMin + Math.random() * (cfg.speedMax - cfg.speedMin)) * (canvas.height / DESIGN_HEIGHT),
         });
         s.lastSpawn = t;
       }
@@ -317,18 +348,20 @@ export default function NemesisCommand() {
     currentTarget === Infinity ? "max level" : `${score}/${currentTarget} to next level`;
 
   return (
-    <div className="panel" style={{ textAlign: "center" }}>
+    <div ref={wrapRef} className="panel game-frame" style={{ textAlign: "center" }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10, fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: "#8A8FBF", flexWrap: "wrap", gap: 6 }}>
         <span>score: {score}</span>
         <span>level {level + 1} &middot; {nextLevelText}</span>
         <span>lives: {lives}</span>
         {personalBest !== null && <span style={{ color: "#565B8F" }}>best: {personalBest.toLocaleString()}</span>}
+        <FullscreenButton targetRef={wrapRef} />
       </div>
       <canvas
         ref={canvasRef}
         width={600}
         height={400}
-        style={{ width: "100%", maxWidth: 600, border: "1px solid #262A55", borderRadius: 4, cursor: "crosshair" }}
+        className="game-canvas"
+        style={{ width: "100%", height: "70vh", minHeight: 420, display: "block", border: "1px solid #262A55", borderRadius: 4, cursor: "crosshair", touchAction: "none" }}
       />
       {!started && (
         <div style={{ marginTop: 16 }}>

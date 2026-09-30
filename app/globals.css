@@ -177,3 +177,52 @@ main {
   transform: translateY(-3px);
   background: rgba(20, 23, 55, 0.85);
 }
+
+/* ---- Games in fullscreen (FullscreenButton) ----
+   Real fullscreen, or - where a browser doesn't allow it (iPhone) - the
+   game's container filling the window. Either way the game grows to fit.
+   (Kept as separate rules: a browser drops a whole rule over one selector
+   it doesn't recognise.) */
+.game-frame:fullscreen { display: flex; flex-direction: column; background: #030303; border-radius: 0; margin: 0; }
+.game-frame:-webkit-full-screen { display: flex; flex-direction: column; background: #030303; border-radius: 0; margin: 0; }
+.game-frame.pseudo-fullscreen {
+  display: flex;
+  flex-direction: column;
+  background: #030303;
+  border-radius: 0;
+  margin: 0;
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  overflow: auto;
+}
+.game-frame:fullscreen iframe, .game-frame:fullscreen .game-canvas { flex: 1; height: auto !important; min-height: 0 !important; }
+.game-frame:-webkit-full-screen iframe, .game-frame:-webkit-full-screen .game-canvas { flex: 1; height: auto !important; min-height: 0 !important; }
+.game-frame.pseudo-fullscreen iframe, .game-frame.pseudo-fullscreen .game-canvas { flex: 1; height: auto !important; min-height: 0 !important; }
+
+/* ---- Phones: nav dropdowns open full-width under the nav ----
+   Each menu used to hang off the right edge of its own label, which put
+   Explore's menu off the left side of a narrow screen. */
+@media (max-width: 700px) {
+  .site-nav {
+    position: relative;
+    padding: 16px;
+  }
+  .site-nav .nav-dropdown {
+    position: static;
+  }
+  .site-nav .nav-dropdown-menu {
+    left: 12px;
+    right: 12px;
+    padding-top: 6px;
+  }
+  .site-nav .nav-dropdown:focus-within .nav-dropdown-menu {
+    display: block;
+  }
+  .nav-dropdown-menu-inner {
+    min-width: 0;
+  }
+  .nav-dropdown-menu-inner a {
+    padding: 10px 16px;
+  }
+}

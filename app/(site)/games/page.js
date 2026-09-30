@@ -49,7 +49,8 @@ export default function GamesHub() {
 const styles = {
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    // auto-fill keeps every card the same width, however many a row holds
+    gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
     gap: 20,
   },
   card: {

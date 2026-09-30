@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
 import { ALIEN_QUESTIONS } from "../lib/alienQuestions";
@@ -19,6 +19,16 @@ export default function AlienCreator({ loggedIn }) {
   const [portraitStatus, setPortraitStatus] = useState("idle"); // idle | drawing | error
   const [portraitNote, setPortraitNote] = useState("");
   const [namingStatus, setNamingStatus] = useState("idle");
+  const [drawSeconds, setDrawSeconds] = useState(0);
+
+  // elapsed-time clock while a portrait is being drawn
+  useEffect(() => {
+    if (portraitStatus !== "drawing") return;
+    const started = Date.now();
+    setDrawSeconds(0);
+    const id = setInterval(() => setDrawSeconds(Math.floor((Date.now() - started) / 1000)), 250);
+    return () => clearInterval(id);
+  }, [portraitStatus]);
 
   const total = ALIEN_QUESTIONS.length;
   const onSheet = step === total;
@@ -193,9 +203,11 @@ export default function AlienCreator({ loggedIn }) {
             />
           ) : (
             <div style={{ aspectRatio: "1", maxWidth: 400, margin: "0 auto", border: "1px dashed #262A55", borderRadius: 4, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: 20, boxSizing: "border-box" }}>
-              <span className="mono" style={{ fontSize: 11, color: "#565B8F", lineHeight: 1.7 }}>
-                {portraitStatus === "drawing" ? "DRAWING YOUR SPECIES... THIS TAKES A MINUTE OR TWO" : "NO PORTRAIT YET"}
-              </span>
+              {portraitStatus === "drawing" ? (
+                <DrawingProgress seconds={drawSeconds} />
+              ) : (
+                <span className="mono" style={{ fontSize: 11, color: "#565B8F", lineHeight: 1.7 }}>NO PORTRAIT YET</span>
+              )}
             </div>
           )}
           {saveStatus !== "done" && (
@@ -301,6 +313,28 @@ export default function AlienCreator({ loggedIn }) {
           &larr; back
         </button>
       )}
+    </div>
+  );
+}
+
+// Claude doesn't report how far along a drawing is, so the bar is an
+// estimate: it eases toward full over a typical one-to-two-minute drawing
+// and never claims to be finished until the portrait actually arrives.
+function DrawingProgress({ seconds }) {
+  const estimate = Math.min(0.95, 1 - Math.exp(-seconds / 50));
+  const clock = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, "0")}`;
+  return (
+    <div style={{ width: "80%" }}>
+      <div className="mono" style={{ fontSize: 11, color: "#8B95F6", letterSpacing: "1px", marginBottom: 12 }}>
+        DRAWING YOUR SPECIES
+      </div>
+      <div style={{ height: 3, background: "#21244A", borderRadius: 2, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${estimate * 100}%`, background: "#8B95F6", transition: "width 0.25s linear" }} />
+      </div>
+      <div className="mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#565B8F", marginTop: 10 }}>
+        <span>{clock}</span>
+        <span>{seconds < 150 ? "usually 1\u20132 minutes" : "taking longer than usual\u2026"}</span>
+      </div>
     </div>
   );
 }

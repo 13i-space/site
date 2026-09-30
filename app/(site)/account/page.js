@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
 import ClaimUsername from "../../../components/ClaimUsername";
 import EditProfile from "../../../components/EditProfile";
+import { isSentinelUser } from "../../../lib/sentinel";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -42,6 +43,25 @@ export default async function AccountPage() {
     .eq("user_id", user.id)
     .order("score", { ascending: false });
 
+  // Species from the Alien Lab. Portraits need the portrait_svg column
+  // (docs/v5.2-alien-portraits.sql); without it, list the species anyway.
+  let { data: species, error: speciesError } = await supabase
+    .from("alien_species")
+    .select("id, name, answers, portrait_svg, created_at")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false })
+    .limit(24);
+  if (speciesError) {
+    ({ data: species } = await supabase
+      .from("alien_species")
+      .select("id, name, answers, created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(24));
+  }
+
+  const sentinel = isSentinelUser(profile?.username);
+
   // Both label and the game's own page, so a score in this list can link
   // straight back to where it was earned (same idea as the Stories Read
   // list below).
@@ -56,6 +76,19 @@ export default async function AccountPage() {
     <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">Your Node</div>
       <div className="page-subtitle">{user.email}</div>
+
+      {sentinel && (
+        <Link
+          href="/sentinel-x"
+          className="panel"
+          style={{ display: "block", marginBottom: 16, borderColor: "#6B5E3E", textDecoration: "none" }}
+        >
+          <div className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>SITE DASHBOARD</div>
+          <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginTop: 4 }}>
+            Sentinel-X &rarr;
+          </div>
+        </Link>
+      )}
 
       <div className="panel">
         {profile?.username ? (
@@ -115,6 +148,48 @@ export default async function AccountPage() {
             >
               {titleByNumber[r.assignment_number] || `Assignment ${r.assignment_number}`}
             </Link>
+          ))}
+        </div>
+      )}
+
+      {species && species.length > 0 && (
+        <div className="panel" style={{ marginTop: 16, textAlign: "left" }}>
+          <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
+            YOUR SPECIES
+          </div>
+          {species.map((sp) => (
+            <details key={sp.id} style={{ padding: "8px 0", borderBottom: "1px solid #21244A" }}>
+              <summary style={{ display: "flex", alignItems: "center", gap: 12, cursor: "pointer", listStyle: "none" }}>
+                {sp.portrait_svg ? (
+                  <img
+                    src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(sp.portrait_svg)}`}
+                    alt=""
+                    style={{ width: 56, height: 56, borderRadius: 4, border: "1px solid #262A55", flexShrink: 0 }}
+                  />
+                ) : (
+                  <span style={{ width: 56, height: 56, borderRadius: 4, border: "1px dashed #262A55", flexShrink: 0 }} />
+                )}
+                <span style={{ flex: 1 }}>
+                  <span style={{ display: "block", fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 17, color: "#DCDFFF" }}>{sp.name}</span>
+                  <span className="mono" style={{ fontSize: 10, color: "#565B8F" }}>
+                    {new Date(sp.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  </span>
+                </span>
+              </summary>
+              {sp.portrait_svg && (
+                <img
+                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(sp.portrait_svg)}`}
+                  alt={`Portrait of ${sp.name}`}
+                  style={{ width: "100%", borderRadius: 4, border: "1px solid #262A55", margin: "12px 0 8px", display: "block" }}
+                />
+              )}
+              {Object.entries(sp.answers || {}).map(([q, a]) => (
+                <div key={q} style={{ display: "flex", justifyContent: "space-between", gap: 12, fontSize: 12, padding: "4px 0" }}>
+                  <span style={{ color: "#565B8F" }}>{q.split(" / ")[0]}</span>
+                  <span style={{ color: "#B7BADF", textAlign: "right" }}>{String(a)}</span>
+                </div>
+              ))}
+            </details>
           ))}
         </div>
       )}

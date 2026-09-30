@@ -968,8 +968,27 @@
     requestAnimationFrame(tick);
   }
 
+  // Report to the 13i.space page hosting this game (if any), so plays and
+  // scores reach the Node like the other games. Same-origin only.
+  function report(message){
+    try {
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage(Object.assign({ source: '13i-vs-nemesis' }, message), window.location.origin);
+      }
+    } catch (e) { /* not embedded - nothing to report to */ }
+  }
+  let runAnnounced = false;
+  const announceRun = () => {
+    if (runAnnounced || !state || state.mode === 'over') return;
+    runAnnounced = true;
+    report({ type: 'play' });
+  };
+  window.addEventListener('pointerdown', announceRun);
+  window.addEventListener('keydown', announceRun);
+
   function endGame(kind, title, text){
     state.mode = 'over';
+    report({ type: 'score', score: Math.round(state.score), ending: kind });
     sfx.gameOver(kind);
     overlayTitle.textContent = title;
     overlayText.textContent = text;
@@ -979,6 +998,7 @@
 
   function resetGame(){
     state = freshState();
+    runAnnounced = false;
     overlay.classList.remove('show');
     hintEl.style.display = 'none';
     updateHud();

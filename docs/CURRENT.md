@@ -24,9 +24,10 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   Stories" / "AI Written 13i Short Stories"), sorted newest-first
 - Four games: NEMESIS Command, Asteroid Belt, 13i vs NEMESIS (iframe to
   static HTML), and 13i: The Deep Signal (iframe, unlocked by opening The
-  Deep Walkers; see docs/DEEP-SIGNAL.md). All have sound; all but 13i vs
-  NEMESIS have personal bests + a daily leaderboard (resets 00:00 UTC) +
+  Deep Walkers; see docs/DEEP-SIGNAL.md). All have sound, personal bests,
+  a daily leaderboard (resets 00:00 UTC), Node high scores and
   Lyra-delivered instructions
+- Sentinel-X (`/sentinel-x`): site dashboard for Paul's two accounts only
 - The Alien Lab: 17-question guided species builder, saves to the Node;
   Claude suggests a name and draws an SVG line-art portrait on request
   (`app/api/alien`, signed-in only; needs `docs/v5.2-alien-portraits.sql`
@@ -53,6 +54,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   old flat nine-item nav
 
 ## Currently being worked on / most recently completed
+Update 5.3 (see CHANGELOG): 13i vs NEMESIS scores, bigger NEMESIS
+Command, fullscreen fixes, mobile nav, Alien Lab timer + species on the
+Node, Sentinel-X.
 Update 5.2 (see CHANGELOG): Games page sections, Lyra's Games nudges,
 preview 8 (Orbit), more Space News sources, Alien Lab names + portraits.
 Update 5.1 (see CHANGELOG): 13i: The Deep Signal, Novaux-4, the Alien Lab

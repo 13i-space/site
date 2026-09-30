@@ -550,6 +550,7 @@ export default function AsteroidBelt() {
   return (
     <div
       ref={containerRef}
+      className="game-frame"
       style={{
         background: "#060712",
         padding: 12,

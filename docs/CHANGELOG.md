@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.3 — scores for 13i vs NEMESIS, bigger NEMESIS Command, Sentinel-X
+13i vs NEMESIS now reports plays and scores to its page (a postMessage
+from `public/games/13i-vs-nemesis.html`), so it has personal bests, the
+daily leaderboard and Node high scores like the rest. Both iframe games use
+the shared `components/IframeGame.js`. NEMESIS Command's field now fills the
+page (full width, 70% of the screen height) with speeds scaled to the field
+height, and gained a fullscreen button. Fullscreen now fills the screen
+properly, and where a browser doesn't allow real fullscreen (iPhone) the
+game fills the window instead. Games-page cards keep one width. On phones,
+nav dropdowns open full-width under the nav instead of off-screen. The
+Alien Lab shows an elapsed timer and an estimated progress bar while
+drawing, and saved species (with portraits) now appear on the Node.
+
+**Sentinel-X** (`/sentinel-x`): the site dashboard, visible only to the
+usernames in `lib/sentinel.js` (default Paul and 13i; override with the
+`SENTINEL_USERNAMES` env var) and linked from their Nodes. Everyone else gets
+a 404. It shows accounts, sign-ins, sign-ups, content, stories read, games,
+latest activity, the email list count and service health, all read
+server-side with the service-role key (`lib/sentinelData.js`).
+
 ## Update 5.2 — Games page sections, Lyra nudges, Orbit look, more news, Alien Lab portraits
 The Games page now reads "Time to have some fun." and is split in two:
 the arcade games, then **Games from Short Stories** ("Read Short Stories
