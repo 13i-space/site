@@ -3,6 +3,23 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.25 — Story Champion Academy prototype
+`/story/academy`: an AI-guided Champion certification built from Aaron's
+Champion Training Toolkit: SEE and Build Foundation. Seven modules (Welcome,
+the Framework for Coaching, SEE the Six Lessons, SEE the Story Write, the
+Practice Room, Safety (a proposal for Aaron), Champion Assessment), knowledge
+checks, two Master Champion conversations (What / So What / Now What, and a
+closing commitment), six simulated students with a Master Champion debrief
+scored on Aaron's rubric, and a congratulations page with a Digital Certificate
+(download PNG, print/PDF). Foundations is free; Level 1 shows the upsell and
+unlocks free in the preview. Progress saves in the browser and, when signed in
+to a Story account, to `story_progress` (lesson "academy"); AI calls go through
+`app/api/story/academy` (logs to `story_messages` as "academy-*", daily cap
+`ACADEMY_DAILY_MESSAGES`, default 150; model `ACADEMY_MODEL` or `STORY_MODEL`).
+No new SQL. Content in `lib/story/academy/curriculum.js`; AI instructions in
+`lib/story/academy/academyPrompts.js` (server only). Aaron's briefing gains an
+"Explore the Champion program" panel and three Champion guidance questions.
+
 ## Update 5.24 — Story briefing: Understand your target market
 A new "Understand your target market" panel on `/story/aaron`, beside the
 business plan (now "Read the mini-business plan"): headline stats, where a

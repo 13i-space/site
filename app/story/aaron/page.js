@@ -9,6 +9,7 @@ import {
 } from "../../../lib/story/briefContent";
 import Guidance from "./Guidance";
 import Market from "./Market";
+import ChampionPlan from "./ChampionPlan";
 import "./brief.css";
 
 // Aaron's briefing: the case for Story of Self online, with the prototype
@@ -262,6 +263,13 @@ export default async function AaronBrief() {
             <summary>Understand your target market</summary>
             <div className="brief-plan-body mkt-body">
               <Market />
+            </div>
+          </details>
+
+          <details className="brief-plan">
+            <summary>Explore the Champion program</summary>
+            <div className="brief-plan-body mkt-body">
+              <ChampionPlan />
             </div>
           </details>
 

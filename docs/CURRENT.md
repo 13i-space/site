@@ -4,6 +4,8 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.25: Story Champion Academy prototype at `/story/academy`
+  (needs a Story account for the AI parts; no new SQL)
 - Update 5.23 (needs docs/v5.23-story-brief.sql in the 13i project):
   Aaron's private Story of Self briefing at `/story/aaron`, linked from his
   Node once his username is added to `lib/story/briefAccess.js`
