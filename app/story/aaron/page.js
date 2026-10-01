@@ -100,7 +100,7 @@ export default async function AaronBrief() {
           </div>
           <div className="sos-hero-actions">
             <a className="sos-btn" href="#idea">Start with the idea</a>
-            <a className="sos-btn ghost" href="#begin">Skip to the launch page</a>
+            <a className="sos-btn ghost" href="#begin">Skip to the end</a>
           </div>
         </div>
       </section>
@@ -206,7 +206,7 @@ export default async function AaronBrief() {
           </div>
 
           <div className="brief-adapt">
-            <h3>What I adapted for 18-year-olds, and why</h3>
+            <h3>What's been adapted for 18-year-olds, and why</h3>
             <ul>
               {ADAPTATIONS.map((a) => <li key={a}>{a}</li>)}
             </ul>
