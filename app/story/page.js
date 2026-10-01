@@ -220,12 +220,29 @@ export default function StoryHome() {
       {/* founder */}
       <section className="sos-section">
         <div className="sh-wrap sh-founder">
-          <div className="sh-founder-mark" aria-hidden="true">A</div>
+          <img className="sh-founder-photo" src="/story/aaron.jpg" alt="Aaron Donaghy, founder of Story of Self" width="220" height="220" />
           <div>
             <div className="sos-eyebrow">Created by a teacher</div>
             <blockquote>“Can an invisible person see another invisible person? I could. As a teacher, I could spot that kid… Not only did I see them, I saw what nobody saw in me. I saw potential!”</blockquote>
             <p className="sh-by">Aaron Donaghy, founder of Story of Self, from his own Story of Self</p>
             <a className="sos-btn ghost" href="/story/about">Read our story</a>
+          </div>
+        </div>
+      </section>
+
+      {/* community */}
+      <section className="sos-section alt" id="community">
+        <div className="sh-wrap sh-split">
+          <div>
+            <div className="sos-eyebrow">The Story Community</div>
+            <h2 className="sh-h2">You'll never walk alone.</h2>
+            <p className="sh-p">The biggest lie we believe is that we're alone and nobody understands. Story is done in community: weekly circles with people on the same unit, Story Nights where finished stories are read aloud, and a place to keep growing after the last page.</p>
+            <a className="sos-btn ghost" href="/story/community">How the community works</a>
+          </div>
+          <div className="sh-comm">
+            {[["Story Circles", "Small groups on the same unit, meeting weekly"], ["Story Nights", "Live readings of finished stories"], ["Champions' Lodge", "Where Champions support each other"], ["Alumni", "Your Call to Action, lived out together"]].map(([t, d], i) => (
+              <div key={t}><span>{i + 1}</span><b>{t}</b><small>{d}</small></div>
+            ))}
           </div>
         </div>
       </section>

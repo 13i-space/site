@@ -21,10 +21,16 @@ export default function About() {
   return (
     <div className="sp">
       <section className="sp-hero">
-        <div className="sp-wrap">
-          <div className="sos-eyebrow">Our story</div>
-          <h1>It started with a pair of <em>parachute pants.</em></h1>
-          <p className="sp-lede">Story of Self was created by Aaron Donaghy, a teacher who spent years believing he was invisible, and then discovered he could see the potential in every kid who felt the same way.</p>
+        <div className="sp-wrap sp-hero-grid">
+          <div>
+            <div className="sos-eyebrow">Our story</div>
+            <h1>It started with a pair of <em>parachute pants.</em></h1>
+            <p className="sp-lede">Story of Self was created by Aaron Donaghy, a teacher who spent years believing he was invisible, and then discovered he could see the potential in every kid who felt the same way.</p>
+          </div>
+          <figure className="sp-portrait">
+            <img src="/story/aaron.jpg" alt="Aaron Donaghy" width="420" height="420" />
+            <figcaption><b>Aaron Donaghy</b>Founder, Story of Self</figcaption>
+          </figure>
         </div>
       </section>
 

@@ -199,3 +199,63 @@
   .sos .sp-story-row { grid-template-columns: 1fr; gap: 4px; padding: 14px 16px; }
   .sos .sp-form { padding: 20px; }
 }
+
+/* photos + community band */
+.sos .sh-founder-photo { width: 180px; height: 180px; border-radius: 50%; object-fit: cover; object-position: 50% 18%; box-shadow: 0 30px 50px -30px rgba(42,36,32,.8), 0 0 0 6px var(--card), 0 0 0 7px var(--line); }
+.sos .sp-hero-grid { display: grid; grid-template-columns: 1.3fr 1fr; gap: 40px; align-items: center; }
+.sos .sp-portrait { margin: 0; justify-self: center; text-align: center; }
+.sos .sp-portrait img { width: 100%; max-width: 360px; aspect-ratio: 1; object-fit: cover; border-radius: 28px; display: block; box-shadow: 0 40px 70px -45px rgba(42,36,32,.9); }
+.sos .sp-portrait figcaption { margin-top: 14px; font-size: 14px; color: var(--muted); }
+.sos .sp-portrait figcaption b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 20px; color: var(--ink); }
+.sos .sh-comm { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.sos .sh-comm div { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+.sos .sh-comm span { width: 30px; height: 30px; border-radius: 50%; background: var(--sage); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 13px; margin-bottom: 10px; }
+.sos .sh-comm b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 21px; }
+.sos .sh-comm small { display: block; color: var(--ink-soft); font-size: 14.5px; margin-top: 4px; }
+@media (max-width: 960px) { .sos .sp-hero-grid { grid-template-columns: 1fr; } .sos .sh-founder-photo { width: 120px; height: 120px; } }
+@media (max-width: 560px) { .sos .sh-comm { grid-template-columns: 1fr; } }
+
+/* community page */
+.sos .cm-hero { display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: center; }
+.sos .cm-rings svg { width: 100%; max-width: 380px; display: block; margin: 0 auto; }
+.sos .cm-stat { background: #2A2420; color: #E2D6CA; border-radius: 24px; padding: 30px; }
+.sos .cm-stat b { display: block; font-size: 72px; font-weight: 700; line-height: 1; color: #F0B596; letter-spacing: -0.02em; }
+.sos .cm-stat span { display: block; font-size: 18px; margin-top: 10px; }
+.sos .cm-stat small { display: block; font-size: 12.5px; color: #9C8F84; margin-top: 14px; }
+.sos .cm-pillars { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 22px; }
+.sos .cm-pillars div { background: var(--card); border: 1px solid var(--line); border-top: 4px solid var(--c); border-radius: 0 0 18px 18px; padding: 20px; position: relative; }
+.sos .cm-pillars div.soon { background: linear-gradient(180deg, #EEF3FA, var(--card)); }
+.sos .cm-where { font-size: 11.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sos .cm-pillars b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 30px; color: var(--c); margin: 4px 0 6px; }
+.sos .cm-pillars p { font-size: 15px; margin: 0; }
+.sos .cm-pillars em { display: inline-block; margin-top: 10px; font-style: normal; font-size: 12px; font-weight: 700; color: #1D4E8A; background: #E6EEF8; padding: 3px 10px; border-radius: 999px; }
+.sos .cm-spaces { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 24px; }
+.sos .cm-spaces > div { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; }
+.sos .cm-space-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.sos .cm-space-top b { font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 22px; }
+.sos .cm-space-top span { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ember-deep); background: var(--ember-tint); padding: 3px 10px; border-radius: 999px; }
+.sos .cm-spaces p { font-size: 15.5px; margin: 8px 0; }
+.sos .cm-spaces small { color: var(--muted); font-size: 13.5px; }
+.sos .cm-journey { list-style: none; padding: 0; margin: 24px 0 0; display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; position: relative; }
+.sos .cm-journey::before { content: ""; position: absolute; top: 20px; left: 8%; right: 8%; height: 2px; background: linear-gradient(90deg, var(--ember), #256abf); opacity: .4; }
+.sos .cm-journey li { text-align: center; padding: 0 8px; position: relative; }
+.sos .cm-journey span { width: 42px; height: 42px; margin: 0 auto 10px; border-radius: 50%; background: var(--card); border: 2px solid var(--ember); display: grid; place-items: center; font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 19px; color: var(--ember-deep); position: relative; }
+.sos .cm-journey li:last-child span { background: var(--ember); color: #fff; }
+.sos .cm-journey b { font-size: 15.5px; display: block; }
+.sos .cm-journey p { font-size: 14px; margin: 4px 0 0; }
+.sos .cm-connect { display: grid; gap: 10px; margin-top: 16px; }
+.sos .cm-connect div { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; }
+.sos .cm-connect b { font-size: 16px; }
+.sos .cm-connect p { font-size: 15px; margin: 4px 0 0; }
+.sos .cm-safe { background: var(--sage-tint); border-radius: 22px; padding: 26px 28px; }
+.sos .cm-safe h3 { font-size: 26px; margin-bottom: 12px; }
+.sos .cm-safe ul { margin: 0; padding-left: 20px; display: grid; gap: 10px; color: #33493B; font-size: 15.5px; }
+@media (max-width: 960px) {
+  .sos .cm-hero { grid-template-columns: 1fr; }
+  .sos .cm-pillars { grid-template-columns: 1fr 1fr; }
+  .sos .cm-journey { grid-template-columns: 1fr; text-align: left; }
+  .sos .cm-journey::before { display: none; }
+  .sos .cm-journey li { display: grid; grid-template-columns: 54px 1fr; text-align: left; padding: 0 0 14px; }
+  .sos .cm-journey span { grid-row: span 2; margin: 0; }
+}
+@media (max-width: 560px) { .sos .cm-pillars, .sos .cm-spaces { grid-template-columns: 1fr; } }

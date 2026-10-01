@@ -66,7 +66,7 @@ export default function ChampionPlan() {
           <h4>The Champion Academy prototype</h4>
           <ol>{P.tryIt.map((t) => <li key={t}>{t}</li>)}</ol>
         </div>
-        <a className="sos-btn" href="/story/academy" target="_blank" rel="noopener">Open the Champion Academy</a>
+        <p className="cp-cta-note">Open it from the launch page at the end of this briefing: choose “Champions”.</p>
       </div>
       <p className="brief-small" style={{ marginTop: 14 }}>Prices and earnings are starting estimates to test with founding Champions, not forecasts.</p>
     </div>

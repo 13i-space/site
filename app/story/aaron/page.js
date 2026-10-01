@@ -65,6 +65,7 @@ const NAV = [
   ["guidance", "Your guidance"],
   ["road", "The road ahead"],
   ["needs", "From you"],
+  ["begin", "Begin"],
 ];
 
 function Head({ n, eyebrow, title, children }) {
@@ -98,8 +99,8 @@ export default async function AaronBrief() {
             <p className="brief-sign">{NOTE.signoff}</p>
           </div>
           <div className="sos-hero-actions">
-            <a className="sos-btn" href="#try">Try the prototype</a>
-            <a className="sos-btn ghost" href="#idea">Read the idea first</a>
+            <a className="sos-btn" href="#idea">Start with the idea</a>
+            <a className="sos-btn ghost" href="#begin">Skip to the launch page</a>
           </div>
         </div>
       </section>
@@ -178,8 +179,7 @@ export default async function AaronBrief() {
                 </div>
               </div>
               <div className="brief-try-go">
-                <a className="sos-btn" href="/story" target="_blank" rel="noopener">Open the prototype</a>
-                <span>Opens in a new tab, so this page stays here.</span>
+                <span>You'll open everything from the Story of Self launch page, at the end of this briefing.</span>
               </div>
             </div>
           </div>
@@ -351,11 +351,19 @@ export default async function AaronBrief() {
             <p className="sos-quote" style={{ fontSize: "clamp(24px, 3.4vw, 32px)" }}>
               Your story is not yours until you <em>give it away</em>.
             </p>
-            <div className="sos-hero-actions" style={{ justifyContent: "center" }}>
-              <a className="sos-btn" href="/story" target="_blank" rel="noopener">Open the prototype</a>
-              <a className="sos-btn ghost" href="#guidance">Answer the questions</a>
-            </div>
           </div>
+        </div>
+      </section>
+
+      {/* the last stop: the launch page */}
+      <section className="brief-begin" id="begin">
+        <div className="sos-narrow">
+          <div className="brief-begin-mark" aria-hidden="true"><span /></div>
+          <div className="sos-eyebrow" style={{ color: "#F0B596" }}>The last page of this briefing</div>
+          <h2>Ready to begin this story?</h2>
+          <p>Everything you've read about lives on one page now: the Story of Self launch page. Start the journey as a student, open the Champion Academy, and see how it will look to the world.</p>
+          <a className="sos-btn" href="/story">Go to the launch page</a>
+          <small>Your answers above are saved. Come back to this page any time from your Node.</small>
         </div>
       </section>
 

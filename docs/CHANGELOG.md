@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.28 — Story Community page, Aaron's photo, briefing ends at the launch page
+`/story/community` explains the Story Community on Mighty Networks (Kinship,
+completing Explore · Play · Create): why community, the planned spaces (Welcome
+Circle, Story Circles, Story Nights, Alumni challenges, Champions' Lodge,
+Parents' Corner, Story Library), a member's journey, how it connects to the
+site (single sign-on, API badges, Champion access) and safety. "Community" is in
+the header and footer, with a band on the homepage. Aaron's photo
+(`public/story/aaron.jpg`) is on the homepage and Our Story. `/story/aaron` no
+longer links to the prototypes; it ends with "Ready to begin this story?" and a
+button to the launch page (`/story`).
+
 ## Update 5.27 — Story of Self public homepage and info pages
 `/story` is now the public homepage for Story of Self: hero, "the year nobody
 plans for" stats, what Story is (the turn + the six C's), how it works (three
