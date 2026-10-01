@@ -189,3 +189,45 @@
   .sos-top { padding: 14px 16px; }
   .sos-wrap, .sos-narrow { padding: 0 16px; }
 }
+
+/* next-up / transition card */
+.sos-next { margin-top: 22px; background: var(--card); border: 1.5px solid var(--ember); border-radius: 22px; padding: 26px 28px; }
+.sos-next h3 { font-size: 30px; margin: 6px 0 8px; }
+.sos-next p { color: var(--ink-soft); margin-bottom: 10px; }
+.sos-next .sos-next-aside { font-size: 14px; color: var(--muted); margin: 12px 0 0; }
+
+/* lesson 2: stages */
+.sos-stages-title { font-size: 28px; margin: 6px 0 20px; }
+.sos-stages { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; position: relative; }
+.sos-stages li { background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 16px; padding: 16px; position: relative; }
+.sos-stages li.impact { border: 2px solid var(--ember); background: #fff; }
+.sos-stages li.future { border-style: dashed; }
+.sos-stage-age { font-family: var(--sos-display); font-style: italic; color: var(--ember); font-size: 22px; }
+.sos-stage-name { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 10px; }
+.sos-stage-feel { font-family: var(--sos-display); font-size: 24px; line-height: 1.15; color: var(--ink); margin-bottom: 6px; }
+.sos-stage-mem { font-size: 14px; color: var(--ink-soft); margin: 0; line-height: 1.45; }
+.sos-stage-tag { display: inline-block; margin-top: 10px; font-size: 12px; font-weight: 700; background: var(--ember); color: #fff; padding: 3px 10px; border-radius: 999px; }
+.sos-stage-tag.soft { background: var(--sage-tint); color: #2F5240; }
+.sos-stage-child { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+
+/* my story hub */
+.sos-hub { display: grid; gap: 14px; margin-top: 28px; }
+.sos-hub-item { display: flex; gap: 18px; align-items: center; background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px 22px; }
+.sos-hub-item.locked { opacity: .55; background: transparent; }
+.sos-hub-num { width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; flex-shrink: 0; font-family: var(--sos-display); font-style: italic; font-size: 22px; border: 2px solid var(--line); color: var(--muted); }
+.sos-hub-item.done .sos-hub-num { background: var(--sage); border-color: var(--sage); color: #fff; }
+.sos-hub-item.current .sos-hub-num { background: var(--ember); border-color: var(--ember); color: #fff; }
+.sos-hub-body { flex: 1; min-width: 0; }
+.sos-hub-body b { font-family: var(--sos-display); font-weight: 500; font-size: 22px; display: block; }
+.sos-hub-body small { color: var(--ink-soft); font-size: 15px; }
+.sos-hub-status { font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+
+@media (max-width: 860px) {
+  .sos-stages { grid-template-columns: 1fr 1fr; }
+  .sos-hub-item { flex-wrap: wrap; }
+  .sos-next { padding: 22px; }
+}
+@media (max-width: 480px) {
+  .sos-stages { grid-template-columns: 1fr; }
+}
+.sos-snap-card > * { position: relative; z-index: 1; }

@@ -88,7 +88,7 @@ export default function StoryStart() {
           <h2>Welcome back{name ? `, ${name}` : ""}.</h2>
           <p className="sos-lede" style={{ fontSize: 17 }}>Your story is saved and waiting for you.</p>
           <div className="sos-hero-actions" style={{ marginTop: 18 }}>
-            <a className="sos-btn" href={next}>Continue my story</a>
+            <a className="sos-btn" href={next === "/story/lesson-1" ? "/story/my-story" : next}>Continue my story</a>
             <button className="sos-btn ghost" onClick={signOut}>Sign out</button>
           </div>
         </div>

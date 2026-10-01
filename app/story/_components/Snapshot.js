@@ -89,17 +89,36 @@ export default function Snapshot({ name, captured = {} }) {
         {note && <p className="sos-snap-note">{note}</p>}
       </div>
       <div className="sos-snap-actions">
-        <button className="sos-btn" onClick={download}>Save as image</button>
-        <a className="sos-btn ghost" href="/story">Back to the introduction</a>
+        <button className="sos-btn ghost" onClick={download}>Save as image</button>
       </div>
-      <p style={{ fontSize: 15, color: "var(--muted)", marginTop: 14 }}>
-        Next: Lesson 2 maps your life in stages, and asks what you expect from life versus what would make it exceptional.
-      </p>
+      <NextUp
+        label="Up next · Lesson 2"
+        title="A Life in Stages"
+        text="You were born unique, and then your story began. Next, walk through the chapters of your life that brought you here. It takes about 20 minutes."
+        href="/story/lesson-2"
+        cta="Continue to Lesson 2"
+        aside="Or take a break. Your story is saved, and Lesson 2 will be waiting."
+      />
     </div>
   );
 }
 
-function fit(g, text, max) {
+export function NextUp({ label, title, text, href, cta, aside }) {
+  return (
+    <div className="sos-next">
+      <div className="sos-snap-label">{label}</div>
+      <h3>{title}</h3>
+      <p>{text}</p>
+      <div className="sos-snap-actions" style={{ marginTop: 6 }}>
+        {href && <a className="sos-btn" href={href}>{cta}</a>}
+        <a className="sos-btn ghost" href="/story/my-story">My story</a>
+      </div>
+      {aside && <p className="sos-next-aside">{aside}</p>}
+    </div>
+  );
+}
+
+export function fit(g, text, max) {
   let t = String(text);
   if (g.measureText(t).width <= max) return t;
   while (t.length > 1 && g.measureText(t + "…").width > max) t = t.slice(0, -1);

@@ -1,12 +1,13 @@
 // Story of Self: the AI Champion.
-// GET  -> the student's saved conversation + progress for Lesson 1
-// POST -> { start: true } to begin (or resume), or { message: "..." } to reply
+// GET  ?lesson=unit1-lesson1        -> saved conversation + progress for that lesson
+// POST { lesson, start: true }      -> begin (or resume) a lesson
+// POST { lesson, message: "..." }   -> reply to the Champion
 //
 // Runs on the server only, so the Anthropic key and the Champion's
 // instructions never reach the browser.
-import { CHAMPION_SYSTEM_PROMPT, parseChampionReply } from "../../../../lib/story/championPrompt";
+import { buildChampionPrompt, parseChampionReply } from "../../../../lib/story/championPrompt";
 import { getStoryUserFromRequest, storyConfigured } from "../../../../lib/story/storySupabase";
-import { LESSON_ID, STEP_IDS, stepIndex } from "../../../../lib/story/lessonSteps";
+import { LESSONS, LESSON_ORDER, getLesson, stepIds, stepIndex } from "../../../../lib/story/lessonSteps";
 
 export const dynamic = "force-dynamic";
 
@@ -26,20 +27,26 @@ const CAPPED = "That's a lot of good work for one day. Let it sit with you (Aaro
 
 const json = (body, status = 200) => Response.json(body, { status });
 
-async function loadState(supabase, userId) {
-  const [{ data: messages }, { data: progress }, { data: profile }] = await Promise.all([
+async function loadState(supabase, userId, lessonId) {
+  const [{ data: messages }, { data: allProgress }, { data: profile }] = await Promise.all([
     supabase
       .from("story_messages")
       .select("role, content, created_at")
       .eq("user_id", userId)
-      .eq("lesson", LESSON_ID)
+      .eq("lesson", lessonId)
       .order("created_at", { ascending: true })
       .order("id", { ascending: true })
       .limit(500),
-    supabase.from("story_progress").select("*").eq("user_id", userId).eq("lesson", LESSON_ID).maybeSingle(),
+    supabase.from("story_progress").select("*").eq("user_id", userId),
     supabase.from("story_profiles").select("first_name").eq("id", userId).maybeSingle(),
   ]);
-  return { messages: messages || [], progress: progress || null, firstName: profile?.first_name || "" };
+  const rows = allProgress || [];
+  return {
+    messages: messages || [],
+    progress: rows.find((r) => r.lesson === lessonId) || null,
+    others: rows.filter((r) => r.lesson !== lessonId),
+    firstName: profile?.first_name || "",
+  };
 }
 
 function publicProgress(p) {
@@ -56,6 +63,7 @@ function mergeCaptured(old, add) {
   const out = { ...(old || {}) };
   if (!add || typeof add !== "object") return out;
   for (const [k, v] of Object.entries(add)) {
+    if (!/^[a-z0-9_]{1,40}$/.test(k)) continue;
     if (Array.isArray(v)) {
       const clean = v.filter((x) => typeof x === "string" && x.trim()).map((x) => x.trim().slice(0, 140)).slice(0, 5);
       if (clean.length) out[k] = clean;
@@ -88,12 +96,36 @@ async function countToday(supabase, userId) {
   return error ? 0 : count || 0;
 }
 
+// What the student shared in earlier lessons, for the Champion's memory.
+function earlierLessons(lessonId, others) {
+  const upTo = LESSON_ORDER.indexOf(lessonId);
+  const lines = others
+    .filter((r) => LESSON_ORDER.indexOf(r.lesson) > -1 && LESSON_ORDER.indexOf(r.lesson) < upTo)
+    .map((r) => `${LESSONS[r.lesson].title}: ${JSON.stringify(r.captured || {})}`);
+  return lines.length ? lines.join("\n") : "None yet.";
+}
+
+// A lesson counts as finished once the Champion has reached its closing summary.
+const isDone = (row) => Boolean(row && (row.completed_at || row.step === "close" || row.step === "complete"));
+
+function lessonFrom(value) {
+  return getLesson(typeof value === "string" ? value : "unit1-lesson1");
+}
+
 export async function GET(request) {
   if (!storyConfigured) return json({ error: "not_configured" }, 503);
+  const lesson = lessonFrom(new URL(request.url).searchParams.get("lesson"));
+  if (!lesson) return json({ error: "Unknown lesson." }, 404);
   const auth = await getStoryUserFromRequest(request);
   if (!auth) return json({ error: "signed_out" }, 401);
-  const { messages, progress, firstName } = await loadState(auth.supabase, auth.user.id);
-  return json({ messages, progress: publicProgress(progress), firstName: firstName || auth.user.user_metadata?.first_name || "" });
+  const { messages, progress, others, firstName } = await loadState(auth.supabase, auth.user.id, lesson.id);
+  const locked = lesson.requires ? !isDone(others.find((r) => r.lesson === lesson.requires)) : false;
+  return json({
+    messages,
+    progress: publicProgress(progress),
+    locked,
+    firstName: firstName || auth.user.user_metadata?.first_name || "",
+  });
 }
 
 export async function POST(request) {
@@ -104,13 +136,18 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
+  const lesson = lessonFrom(body.lesson);
+  if (!lesson) return json({ error: "Unknown lesson." }, 404);
   const isStart = body.start === true;
   const text = typeof body.message === "string" ? body.message.trim() : "";
   if (!isStart && !text) return json({ error: "Write something first." }, 400);
   if (text.length > MAX_MESSAGE_CHARS) return json({ error: "That's a lot at once. Try saying it in a shorter message." }, 400);
 
-  const state = await loadState(supabase, user.id);
+  const state = await loadState(supabase, user.id, lesson.id);
   if (!state.firstName) state.firstName = String(user.user_metadata?.first_name || "").slice(0, 40);
+  if (lesson.requires && !isDone(state.others.find((r) => r.lesson === lesson.requires))) {
+    return json({ error: "Finish the previous lesson first.", locked: true }, 403);
+  }
   const progress = state.progress;
 
   if (isStart && state.messages.length && state.messages[state.messages.length - 1].role === "assistant" && !body.resume) {
@@ -129,11 +166,11 @@ export async function POST(request) {
 
   // Save the student's message first, so it's never lost.
   if (text) {
-    await supabase.from("story_messages").insert({ user_id: user.id, lesson: LESSON_ID, role: "user", content: text });
+    await supabase.from("story_messages").insert({ user_id: user.id, lesson: lesson.id, role: "user", content: text });
   }
 
   const returning = state.messages.length > 0 && isStart;
-  const opener = `[Session start. Lesson: Unit 1 Character, Lesson 1. Student's first name: ${state.firstName || "unknown"}.${returning ? " They are RETURNING after a break; welcome them back and continue where you left off." : " This is their first time with you."}]`;
+  const opener = `[Session start. Lesson: ${lesson.unit}, Lesson ${lesson.number}: ${lesson.title}. Student's first name: ${state.firstName || "unknown"}.${returning ? " They are RETURNING after a break; welcome them back and continue where you left off." : " They are starting this lesson now."}]`;
   const history = state.messages.slice(-MAX_HISTORY).map((m) => ({ role: m.role, content: m.content }));
   if (text) history.push({ role: "user", content: text });
   const messages = alternate([{ role: "user", content: opener }, ...history]);
@@ -142,7 +179,9 @@ export async function POST(request) {
   }
 
   const p = publicProgress(progress);
-  const system = `${CHAMPION_SYSTEM_PROMPT}\n\n# PROGRESS SO FAR\nCurrent step: ${p.step}\nAlready shared: ${JSON.stringify(p.captured)}`;
+  const system =
+    `${buildChampionPrompt(lesson.id)}\n\n# PROGRESS FROM EARLIER LESSONS\n${earlierLessons(lesson.id, state.others)}` +
+    `\n\n# PROGRESS SO FAR (this lesson)\nCurrent step: ${p.step}\nAlready shared: ${JSON.stringify(p.captured)}`;
   const model = MODEL();
 
   let raw = "";
@@ -174,16 +213,16 @@ export async function POST(request) {
 
   // Progress only moves forward (or stays put).
   let nextStep = p.step;
-  if (s && STEP_IDS.includes(s.step) && stepIndex(s.step) >= stepIndex(p.step)) nextStep = s.step;
+  if (s && stepIds(lesson.id).includes(s.step) && stepIndex(lesson.id, s.step) >= stepIndex(lesson.id, p.step)) nextStep = s.step;
   const captured = mergeCaptured(p.captured, s?.captured);
   const safety = p.safety || s?.flag === "safety";
   const completedAt = progress?.completed_at || (nextStep === "complete" ? new Date().toISOString() : null);
 
-  await supabase.from("story_messages").insert({ user_id: user.id, lesson: LESSON_ID, role: "assistant", content: finalReply });
+  await supabase.from("story_messages").insert({ user_id: user.id, lesson: lesson.id, role: "assistant", content: finalReply });
   await supabase.from("story_progress").upsert(
     {
       user_id: user.id,
-      lesson: LESSON_ID,
+      lesson: lesson.id,
       step: nextStep,
       captured,
       intro_done: true,

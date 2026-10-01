@@ -29,7 +29,7 @@ export default function StoryLayout({ children }) {
           Story <em>of</em> Self
         </a>
         <nav className="sos-top-links">
-          <a href="/story/lesson-1">Lesson 1</a>
+          <a href="/story/my-story">My Story</a>
           <a href="/story/start">Account</a>
         </nav>
       </header>
