@@ -99,8 +99,13 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   "Signal" look; `/preview` is a working index of all of them
 - Four-mode nav (Explore/Play/Create/Kinship) with dropdowns, replacing the
   old flat nine-item nav
+- Interactive Assignments: Nerath's Secret as a branching visual novel (you
+  are 13i, five endings, one canon), at `/assignments/215783/interactive`
 
 ## Currently being worked on / most recently completed
+Update 5.34: Interactive Assignments, starting with Nerath's Secret
+(docs/INTERACTIVE.md). Needs `docs/v5.34-interactive-assignments.sql` run in
+Supabase for cross-device records + Kin stats (works without it).
 Update 5.5: SIXTEEN, the Nerath's Secret game (docs/SIXTEEN.md).
 Update 5.4 (see CHANGELOG): Aliens of the Galaxy + delete on the Node,
 Universe Quiz, Wiki on the Book page, fullscreen fitting, the first

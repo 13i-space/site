@@ -103,6 +103,17 @@ galaxy with specific invented geography, versus real-world astronomy used
 as flavor, is not established — treat as **developing** rather than
 assuming either way.
 
+## Nerath's Secret, interactive — developing (Update 5.34)
+The Interactive Assignment retells the story with choices. The **canon
+record** ("Seventeen Minds") follows the written story; the other four
+endings are **divergent records**, explicitly not canon. Details it adds to
+make the choices mean something, not canon unless Paul adopts them: why the
+elder's plan fails (holding the breach traps pressure in a trench below; the
+fix is a deep valve), a juvenile's limb touching 13i through a biological
+interface, the dissenting limbs being 03, 07 and 12 (from the comic's
+panels), and the limb/mind "voices" as translated fragments. See
+docs/INTERACTIVE.md.
+
 ## Nerathi — developing (from the SIXTEEN game)
 The game SIXTEEN calls the species of Nerath's Secret the **Nerathi**. It's
 a working name; the story itself never names them. The game also invents

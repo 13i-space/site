@@ -3,6 +3,22 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.34 — Interactive Assignments: Nerath's Secret
+The first Interactive Assignment, a visual-novel retelling of *Nerath's Secret*
+where you are 13i and choose (OBSERVE / COMMUNICATE / ANALYZE / INTERVENE).
+Five endings ("records"); "Seventeen Minds" is the story as written, the
+others are divergent records. Choices 13i hasn't earned show dimmed with the
+reason. The backdrop is drawn live in code (orbit, descent, the grown city, a
+Nerathi whose individual limbs light up and move when they speak, the
+rupture), with a synthesized drone. Resume point and records found are saved
+in the browser; signed-in Kin also save to `interactive_runs` (needs
+`docs/v5.34-interactive-assignments.sql`), which feeds "what the Kin chose,
+first time through" on the ending screen. Placed at
+`/assignments/215783/interactive`, an index at `/assignments/interactive`
+(Play → Interactive Stories), a card on Play, a strip on the Assignments hub,
+and an INTERACTIVE VERSION box on the story. Playing it unlocks SIXTEEN, like
+reading does. Full notes and the branch map: `docs/INTERACTIVE.md`.
+
 ## Update 5.33 — Aaron's Node opens his briefing
 Aaron's 13i username ("Aaron") is in `lib/story/briefAccess.js`, so a "Top
 secret" Story of Self panel at the top of his Node links to `/story/aaron`.

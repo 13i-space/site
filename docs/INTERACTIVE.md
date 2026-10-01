@@ -1,0 +1,120 @@
+# Interactive Assignments: notes
+
+Short stories told so the reader chooses, in the style of a visual novel. You
+are 13i. Each choice is one of the Assignment Protocol's options (OBSERVE,
+COMMUNICATE, ANALYZE, INTERVENE). One ending is the story as written (the
+**canon record**); the rest are **divergent records**. That fits the
+Archive: "the archive is where the universe discovers itself."
+
+The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34).
+
+## Where it lives
+| Piece | File |
+|---|---|
+| The story (every word, choice and ending) | `lib/interactive/nerathsSecret.js` |
+| List of interactive stories | `lib/interactive/index.js` |
+| The player (text, choices, saving, endings screen) | `components/InteractivePlayer.js` |
+| The living backdrop (all drawn in code) | `components/InteractiveScene.js` |
+| The ambient drone + choice chime (synthesized) | `lib/interactive/ambience.js` |
+| Saving + Kin stats | `lib/interactive/progress.js` |
+| Database (one table, one function) | `docs/v5.34-interactive-assignments.sql` |
+| Styles | `app/globals.css` → "Interactive Assignments" block (`.ia-*`) |
+
+## Where it appears on the site
+- **Its own page:** `/assignments/215783/interactive`
+- **The index:** `/assignments/interactive` (Play → *Interactive Stories* in the nav)
+- **Play landing page:** an *Interactive Assignments* card
+- **Assignments hub:** an *Interactive Assignments* strip above the two story columns
+- **The story itself:** an **INTERACTIVE VERSION** box beside *Audio* and *Comic*
+- **Lyra:** a tip on both pages. **Site search:** both pages.
+- Playing it counts as opening the story, so it unlocks **SIXTEEN** like reading does.
+
+## Nerath's Secret: the branch map
+Flags 13i collects on the way down decide what it is *able* to do at the end.
+A choice that needs something 13i hasn't learned is still shown, dimmed, with
+the reason. It isn't hidden, so the reader learns the story has other paths.
+
+```
+ORBIT ─ how do we go down?
+   OBSERVE  descend in silence ................................ (nothing)
+   COMMUNICATE  echo the pattern back ......................... noticed
+   ANALYZE  probe the network ................................. netKnow
+      │
+DESCENT → THE CREATURE ─ where do we look?
+   scan the body ......... (13i misreads it: "a pilot")
+   scan the limbs ........ sawMinds   (limb 7 finds the second crack)
+   follow the conduit .... netKnow    (the deep trench valve)
+      │
+THE LIVING CITY ─ a juvenile's limb reaches for us
+   COMMUNICATE  let it touch us ....... linked + sawMinds + noticed
+   OBSERVE  withdraw .................. (nothing)
+   ANALYZE  scan it as it comes ....... sawMinds
+      │
+THE RUPTURE ─ network failing, 13i could reach the breach
+   INTERVENE  seal it ourselves ──────────► SEAL
+   OBSERVE  wait ─────────────────────────► THE ELDER
+   COMMUNICATE  project our map ──────────► THE ELDER    (needs netKnow)
+
+SEAL ─ (if linked, the elder's three limbs touch our hull: "not there · DOWN")
+   OBSERVE  listen, pull back ────────────► THE ELDER    (needs linked)
+   INTERVENE  keep sealing ─┬─ netKnow ───► ✦ THE BORROWED REPAIR
+                            └─ otherwise ─► ✦ THE DARK TIDE
+
+THE ELDER ─ it moves to hold the breach with its body; limbs 3, 7, 12 touch it
+   OBSERVE  do nothing ───────────────────► ✦ SEVENTEEN MINDS (canon)
+   COMMUNICATE  speak to the three limbs ─► ✦ THE EIGHTEENTH MIND (needs linked)
+   INTERVENE  brace the elder ────────────► ✦ ONE VOICE
+```
+There are 152 distinct paths; every node and all five endings are reachable
+(checked by walking every combination).
+
+### The five records
+| # | Record | How | What 13i learns |
+|---|---|---|---|
+| 1 | **Seventeen Minds** (canon) | let the elder decide | internal disagreement as strength (the original debrief) |
+| 2 | **The Eighteenth Mind** | linked, then amplify the dissenting limbs | you can take part in another mind's disagreement without ending it |
+| 3 | **One Voice** | brace the elder | a mind that silences its dissent acts alone, and was wrong |
+| 4 | **The Borrowed Repair** | seal it yourself, knowing the network | help that arrives unasked can take away what it meant to protect |
+| 5 | **The Dark Tide** | seal it yourself, not knowing | certainty is not understanding (echoes *The First Silence*) |
+
+### What changed from the written story (deliberately)
+- The story is retold, not copied: same events, same voice ("we"), tightened.
+- **New, needed for the choices:** *why* the elder's plan fails. Holding the
+  breach shut traps pressure building in a trench below. The fix is to open a
+  deep valve first. The three limbs' dissent is about that, so "listen" has
+  a concrete meaning.
+- **New:** a juvenile's curious limb touches 13i (the comic already shows a
+  "biological interface" moment; this makes it a choice).
+- The limbs that touch the elder are **03, 07 and 12**, matching the comic's
+  "Appendage 03 / 07 / 12 (disagreement)" panels.
+- Species name: **Nerathi**, as in SIXTEEN (the story never names them).
+- The canon ending still closes on the original line: *"They had not
+  eliminated the conflict. They had learned from it."*
+
+## Changing things
+- **Words:** `lib/interactive/nerathsSecret.js`. Each line is
+  `{ who, text }`; `if: (f) => ...` shows it only on some paths; `focus: [3, 7]`
+  lights those limbs; `pose: "reach" | "touch"` moves them; `scene:` swaps
+  the backdrop for that line.
+- **Don't rename** an ending's id (`seventeen`, `eighteenth`, ...) or a
+  `climax` value: saved records and stats use them.
+- **A new Interactive Assignment:** copy the shape of `nerathsSecret.js`,
+  add it to `lib/interactive/index.js`. It appears everywhere listed above
+  automatically. If it needs new scenery, add a scene to
+  `components/InteractiveScene.js`; the speakers list is at the top of
+  `components/InteractivePlayer.js`.
+
+## Saving and the Kin numbers
+- **Signed out:** resume point and endings found are kept in this browser.
+- **Signed in:** each ending reached is also saved to `interactive_runs`, so
+  records follow you across devices. The ending screen then shows what the
+  Kin chose **on their first time through** (counts only, never who), e.g.
+  "At the elder's moment: 58% did nothing · 30% spoke to the three limbs ·
+  12% braced the elder".
+- If the SQL hasn't been run yet, everything still works; the Kin numbers
+  just don't appear.
+
+## Controls
+Click / Space / Enter / → to continue (first press finishes the line), 1–3 to
+choose, **L** for the record so far, Fullscreen and Sound toggles top-right.
+`prefers-reduced-motion` turns the typewriter off and slows the backdrop.

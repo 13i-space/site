@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { createClient } from "../../../lib/supabaseServer";
 import AssignmentCard from "../../../components/AssignmentCard";
+import InteractiveCard from "../../../components/InteractiveCard";
+import { INTERACTIVE_STORIES } from "../../../lib/interactive";
 
 export default async function AssignmentsPage() {
   const supabase = await createClient();
@@ -27,6 +29,18 @@ export default async function AssignmentsPage() {
       <div className="page-title">Assignments</div>
       <div className="page-subtitle">
         Every Assignment is 13i sent somewhere, uncertain, asked to report back. Some are already told. Some are yours to write.
+      </div>
+
+      <div style={{ marginTop: 30 }}>
+        <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
+          <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF" }}>Interactive Assignments</div>
+          <Link href="/assignments/interactive" className="mono" style={{ fontSize: 11, color: "#6E76B8" }}>what are these? &rarr;</Link>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {INTERACTIVE_STORIES.map((s) => (
+            <InteractiveCard key={s.number} story={s} compact />
+          ))}
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 28, marginTop: 30 }}>
