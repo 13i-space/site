@@ -2,6 +2,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getStoryBrowserClient, storyConfigured } from "../../../lib/story/storySupabase";
 import { getLesson, stepIndex } from "../../../lib/story/lessonSteps";
+import { useDictation, MicButton, useSpeaker, SpeakButton } from "./Voice";
+
+const AUTO_READ = "sos-read-aloud";
 
 const RESUME_AFTER_MS = 3 * 60 * 60 * 1000; // a 3+ hour gap counts as "coming back"
 
@@ -21,6 +24,27 @@ export default function LessonChat({ lessonId, Done, inline = null, Below = null
   const [notice, setNotice] = useState("");
   const logRef = useRef(null);
   const tokenRef = useRef(null);
+  const inputRef = useRef("");
+  inputRef.current = input;
+  const getBase = useCallback(() => inputRef.current, []);
+  const dictation = useDictation({ getBase, onText: setInput });
+  const speaker = useSpeaker();
+  const [autoRead, setAutoRead] = useState(false);
+  const spokenRef = useRef(-1);
+  useEffect(() => { try { setAutoRead(localStorage.getItem(AUTO_READ) === "1"); } catch {} }, []);
+  // Read each new Champion reply aloud, if they've turned that on.
+  useEffect(() => {
+    const i = messages.length - 1;
+    if (spokenRef.current === -1) { spokenRef.current = i; return; }
+    if (i > spokenRef.current && messages[i]?.role === "assistant" && autoRead) speaker.say(i, messages[i].content);
+    if (i > spokenRef.current) spokenRef.current = i;
+  }, [messages, autoRead, speaker]);
+  function toggleAutoRead() {
+    const v = !autoRead;
+    setAutoRead(v);
+    if (!v) speaker.hush();
+    try { localStorage.setItem(AUTO_READ, v ? "1" : "0"); } catch {}
+  }
 
   const call = useCallback(async (method, body) => {
     const url = method === "GET" ? `/api/story/champion?lesson=${lessonId}` : "/api/story/champion";
@@ -84,6 +108,7 @@ export default function LessonChat({ lessonId, Done, inline = null, Below = null
 
   async function send(e) {
     e?.preventDefault();
+    if (dictation.listening) dictation.stop();
     const text = input.trim();
     if (!text || thinking) return;
     setInput("");
@@ -157,12 +182,20 @@ export default function LessonChat({ lessonId, Done, inline = null, Below = null
               <b>Your Story Champion</b>
               <small>AI guide · Story of Self method</small>
             </div>
+            {speaker.supported && (
+              <button type="button" className={`vc-auto${autoRead ? " on" : ""}`} onClick={toggleAutoRead} aria-pressed={autoRead}>
+                {autoRead ? "Reading replies aloud" : "Read replies aloud"}
+              </button>
+            )}
           </div>
 
           <div className="sos-log" ref={logRef} aria-live="polite">
             {messages.map((m, i) => (
               <div key={i} style={{ display: "contents" }}>
-                <div className={`sos-bubble ${m.role === "user" ? "you" : "champion"}`}>{m.content}</div>
+                <div className={`sos-bubble ${m.role === "user" ? "you" : "champion"}`}>
+                  {m.content}
+                  {m.role === "assistant" && <SpeakButton speaker={speaker} id={i} text={m.content} />}
+                </div>
                 {i === inlineAt && Inline && <Inline name={firstName} latest={i === messages.length - 1} />}
               </div>
             ))}
@@ -183,12 +216,14 @@ export default function LessonChat({ lessonId, Done, inline = null, Below = null
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={onKey}
-              placeholder={done ? "Anything else on your mind? Your Champion is still here." : "Write your answer…"}
+              placeholder={dictation.listening ? "Listening… say it however it comes out." : done ? "Anything else on your mind? Your Champion is still here." : dictation.supported ? "Write your answer, or tap the mic and say it…" : "Write your answer…"}
               aria-label="Your message"
               maxLength={2000}
             />
+            <MicButton dictation={dictation} disabled={thinking} />
             <button className="sos-btn" type="submit" disabled={thinking || !input.trim()}>Send</button>
           </form>
+          {dictation.error && <div className="vc-err" role="alert">{dictation.error}</div>}
         </div>
 
         {Below && <Below step={progress.step} done={done} />}

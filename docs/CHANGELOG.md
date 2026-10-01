@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.32 — Voice notes, the Lighthouse dashboard, the launch list
+Voice notes in the Champion chat: a mic button lets students speak their
+answers (the browser's own speech-to-text, live into the message box), every
+Champion reply has a Listen button, and "Read replies aloud" reads each new
+reply automatically (text-to-speech). No audio reaches Story of Self; the
+privacy policy says so. The Lighthouse (`/story/team`) is the founders'
+dashboard, Aaron's Sentinel-X: students, new and active, lessons finished,
+the journey funnel lesson by lesson (started vs finished), a searchable
+student table (progress only, never what they wrote), the launch list (roles,
+class years, top sharers, newest, CSV export), Champion conversation volume,
+Champion Academy, safety counts with a banner for new alerts, contact-form
+messages, an activity feed and connected services. Founder accounts only
+(`app_metadata.story_founder`); data from `lib/story/teamData.js` via
+`/api/story/team/overview`. The launch list: `/story/waitlist` plus a band on
+the homepage and links in the footer and final call to action; each person
+gets a share link (`?ref=`) so the dashboard can show who brings people in.
+Saved through `/api/story/waitlist` into the Story table `story_waitlist`
+(needs `supabase/v5.32-story-waitlist.sql`; server-only, no browser access).
+
 ## Update 5.31 — Life Timeline, "1 in 70 trillion" visual, Story of Self as a book
 Life Timeline (Story Guide pp. 20–23): an interactive timeline at
 `/story/timeline` and under the chat in Lesson 2. Moments go above (good) or

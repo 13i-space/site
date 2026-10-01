@@ -64,6 +64,7 @@ export default function MyStory() {
           </div>
           <div className="sos-founder-links">
             <a href="/story/example">See a finished example story</a>
+            <a href="/story/team">Lighthouse dashboard</a>
             <a href="/story/team/safety">Safety desk</a>
           </div>
         </div>

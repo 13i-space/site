@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.32 (needs supabase/v5.32-story-waitlist.sql in the Story project):
+  voice notes in the Champion chat, the Lighthouse founders' dashboard at
+  `/story/team`, the launch list at `/story/waitlist` + homepage band
 - Update 5.31 (no new SQL): Life Timeline (`/story/timeline` + Lesson 2),
   animated odds in Lesson 1, Story of Self book PDF (Story Write + example)
 - Update 5.30 (needs supabase/v5.30-story-founders-safety.sql in the Story

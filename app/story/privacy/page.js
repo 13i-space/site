@@ -15,6 +15,8 @@ const SECTIONS = [
     "Your Story work: your conversations with your Story Champion, the details your Champion saves as you go (like your five words or your Hidden Value), and the drafts of your Story of Self.",
     "Champion Academy: your module progress, quiz results, practice sessions and certificate details, if you take Champion training.",
     "Messages you send us through our contact form: your name, email and message.",
+    "The launch list: if you join it, your email, the first name and role you choose (and graduation year for students), and whether someone's share link brought you. We use it only to tell you about Story of Self's launch, and you can leave at any time.",
+    "Voice input: if you choose to speak instead of type, your browser's own speech service turns your voice into text on your device or with your browser's provider. Story of Self receives only the text you send, never your audio.",
     "Basic technical information needed to keep the service running and secure, such as when you signed in.",
   ] },
   { h: "How we use it", list: [

@@ -70,7 +70,7 @@ export default function SafetyDesk() {
     <div className="sd">
       <div className="sd-head">
         <div>
-          <div className="sos-eyebrow">Story team · founders only</div>
+          <div className="sos-eyebrow"><a href="/story/team">← Lighthouse</a> · founders only</div>
           <h1>Safety desk</h1>
           <p>When a Story Champion flags that a student may not be safe, it appears here. A real person follows up.</p>
         </div>

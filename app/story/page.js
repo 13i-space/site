@@ -1,5 +1,6 @@
 import SixCs from "./_components/SixCs";
 import HeroArt from "./_site/HeroArt";
+import WaitlistForm from "./_components/WaitlistForm";
 import { TRANSCRIPT } from "../../lib/story/briefContent";
 
 export const metadata = { title: { absolute: "Story of Self · Own your story before the next chapter begins" } };
@@ -44,7 +45,7 @@ const FAQ = [
   ["Who can see what I write?", "Only you. Your conversations and your story are private to your account. You can share your finished story if and when you choose."],
   ["Do I have to be a good writer?", "Not at all. Your Champion helps you find your words, and every section has a short word count. The best stories are the honest ones."],
   ["What if something comes up that's really hard?", "You choose how deep to go at every step. If you ever say you're not okay, the lesson stops and you'll be connected to help: call or text 988 in the U.S."],
-  ["Can I give Story as a gift?", "Gift cards are coming with our full launch in spring 2027. Contact us if you'd like to be first to know."],
+  ["Can I give Story as a gift?", "Gift cards are coming with our full launch in spring 2027. Join the launch list and you'll be first to know."],
 ];
 
 export default function StoryHome() {
@@ -218,6 +219,18 @@ export default function StoryHome() {
         </div>
       </section>
 
+      {/* launch list */}
+      <section className="sos-section wl-strip" id="launch-list">
+        <div className="sh-wrap wl-strip-in">
+          <div>
+            <div className="sos-eyebrow">The launch list</div>
+            <h2 className="sh-h2">Opening spring 2027, in time for graduation.</h2>
+            <p className="sh-p">Be first in line for yourself, your graduate, or your students. We'll email you when Story of Self opens, and a few times before. Nothing else.</p>
+          </div>
+          <WaitlistForm variant="band" source="homepage" />
+        </div>
+      </section>
+
       {/* founder */}
       <section className="sos-section">
         <div className="sh-wrap sh-founder">
@@ -283,7 +296,10 @@ export default function StoryHome() {
       <section className="sh-final">
         <div className="sh-wrap">
           <p className="sh-final-q">Stories are usually told about the past. But your story is <em>still unfolding</em>.</p>
-          <a className="sos-btn" href="/story/begin">Begin your story, free</a>
+          <div className="sh-final-actions">
+            <a className="sos-btn" href="/story/begin">Begin your story, free</a>
+            <a className="sos-btn ghost" href="/story/waitlist">Join the launch list</a>
+          </div>
         </div>
       </section>
     </div>
