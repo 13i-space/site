@@ -46,9 +46,10 @@ export default function StagesCard({ name, captured = {} }) {
       <NextUp
         label="Pause here · Let it eat"
         title="Give your story time to work on you"
-        text="This is the natural place to stop for now. Over the next day or two, notice what memories come back, and how your family and the world around you have shaped who you are. Next up is Lesson 3, Expected to Exceptional: what you expect from life, and what would make it exceptional."
-        href={null}
-        aside="Lesson 3 is coming soon."
+        text="This is the natural place to stop for now. Over the next day or two, notice what memories come back, and how your family and the world around you have shaped who you are. When you're ready, Lesson 3, Expected to Exceptional, explores what you expect from life, and what would make it exceptional."
+        href="/story/lesson-3"
+        cta="Start Lesson 3 when you're ready"
+        aside="Tip: let it eat, ideally for at least a night, before moving on. Your story is saved."
       />
     </div>
   );
