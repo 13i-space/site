@@ -2,7 +2,7 @@
 
 // The Character Snapshot: the artifact at the end of Lesson 1.
 // "Save as image" draws the card onto a canvas and downloads a PNG.
-export default function Snapshot({ name, captured = {} }) {
+export default function Snapshot({ name, captured = {}, hideNext = false }) {
   const words = captured.five_words || [];
   const one = captured.one_word || words[0] || "";
   const moments = captured.five_events || [];
@@ -91,14 +91,14 @@ export default function Snapshot({ name, captured = {} }) {
       <div className="sos-snap-actions">
         <button className="sos-btn ghost" onClick={download}>Save as image</button>
       </div>
-      <NextUp
+      {!hideNext && <NextUp
         label="Up next · Lesson 2"
         title="A Life in Stages"
         text="You were born unique, and then your story began. Next, walk through the chapters of your life that brought you here. It takes about 20 minutes."
         href="/story/lesson-2"
         cta="Continue to Lesson 2"
         aside="Or take a break. Your story is saved, and Lesson 2 will be waiting."
-      />
+      />}
     </div>
   );
 }

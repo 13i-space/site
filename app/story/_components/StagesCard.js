@@ -9,7 +9,7 @@ const STAGES = [
   { key: "18_26", label: "18–26", name: "World, Work & Family" },
 ];
 
-export default function StagesCard({ name, captured = {} }) {
+export default function StagesCard({ name, captured = {}, hideNext = false }) {
   const impact = String(captured.impact_stage || "").replace("-", "–");
   return (
     <div className="sos-snap">
@@ -43,14 +43,14 @@ export default function StagesCard({ name, captured = {} }) {
         )}
         {captured.champion_note && <p className="sos-snap-note" style={{ marginTop: 18 }}>{captured.champion_note}</p>}
       </div>
-      <NextUp
+      {!hideNext && <NextUp
         label="Pause here · Let it eat"
         title="Give your story time to work on you"
         text="This is the natural place to stop for now. Over the next day or two, notice what memories come back, and how your family and the world around you have shaped who you are. When you're ready, Lesson 3, Expected to Exceptional, explores what you expect from life, and what would make it exceptional."
         href="/story/lesson-3"
         cta="Start Lesson 3 when you're ready"
         aside="Tip: let it eat, ideally for at least a night, before moving on. Your story is saved."
-      />
+      />}
     </div>
   );
 }

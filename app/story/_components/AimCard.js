@@ -13,7 +13,7 @@ const EXCEPTIONAL = [
   ["exceptional_purpose", "My life has purpose when"],
 ];
 
-export default function AimCard({ name, captured = {} }) {
+export default function AimCard({ name, captured = {}, hideNext = false }) {
   const col = (rows) =>
     rows.map(([k, label]) => (
       <div key={k} className="sos-aim-row">
@@ -57,13 +57,14 @@ export default function AimCard({ name, captured = {} }) {
         )}
         {captured.champion_note && <p className="sos-snap-note" style={{ marginTop: 18 }}>{captured.champion_note}</p>}
       </div>
-      <NextUp
+      {!hideNext && <NextUp
         label="Pause here · Let it eat"
         title="Notice where you're aiming"
-        text="Over the next few days, notice when you're chasing the expected and when you're living the exceptional, and try your courage step. Next up is Lesson 4, The Call to Adventure: who you feel you are today, and who you want to become."
-        href={null}
-        aside="Lesson 4 is coming soon."
-      />
+        text="Over the next few days, notice when you're chasing the expected and when you're living the exceptional, and try your courage step. When you're ready, Lesson 4, The Call to Adventure, closes Unit 1: who you feel you are today, and who you want to become."
+        href="/story/lesson-4"
+        cta="Start Lesson 4 when you're ready"
+        aside="Tip: let it eat, ideally for at least a night, before moving on. Your story is saved."
+      />}
     </div>
   );
 }

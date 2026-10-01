@@ -53,6 +53,17 @@ export default function MyStory() {
       <h1 style={{ fontSize: "clamp(34px, 6vw, 48px)" }}>{state.name ? `${state.name}, you're the lead character.` : "You're the lead character."}</h1>
       <p className="sos-lede" style={{ marginTop: 12 }}>Unit 1 · Character. Every journey begins with who you are.</p>
 
+      {items.some((x) => x.kind === "done") && (
+        <a href="/story/unit-1" className="sos-hub-item" style={{ color: "inherit", textDecoration: "none", marginTop: 24, borderColor: "var(--ember)" }}>
+          <div className="sos-hub-num" style={{ background: "var(--ember-tint)", borderColor: "var(--ember)", color: "var(--ember-deep)" }}>I</div>
+          <div className="sos-hub-body">
+            <b>My Character</b>
+            <small>{items.every((x) => x.kind === "done") ? "Unit 1 complete. Your lesson cards, all together." : "Your Unit 1 lesson cards, all together."}</small>
+          </div>
+          <div className="sos-hub-status">View →</div>
+        </a>
+      )}
+
       <div className="sos-hub">
         {items.map(({ l, row, kind }) => (
           <a
