@@ -3,6 +3,19 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.27 — Story of Self public homepage and info pages
+`/story` is now the public homepage for Story of Self: hero, "the year nobody
+plans for" stats, what Story is (the turn + the six C's), how it works (three
+steps, seven units), the Story Champion, what you walk away with, for parents,
+pricing ($0 / $179 / $649, free during the preview), the founder, Champion
+Academy, FAQ. The student introduction and invitation moved to `/story/begin`.
+New pages: `/story/about` (Our story), `/story/contact` (form saves to the
+Story Supabase table `story_contact`, needs `supabase/v5.27-story-contact.sql`),
+`/story/privacy` and `/story/terms` (preview drafts for counsel review). New
+site header with mobile menu and a full footer (`lib/story/site.js`). Story
+pages now reset 13i's global `main` padding so section bands run full width.
+Optional env: `NEXT_PUBLIC_STORY_CONTACT_EMAIL` shows an email on the contact page.
+
 ## Update 5.26 — Aaron's briefing: Deep dives
 A new "Deep dives" section (6) on `/story/aaron` holds five numbered panels:
 1 the mini-business plan, 2 the target market, 3 the competition (positioning

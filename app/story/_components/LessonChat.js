@@ -115,7 +115,7 @@ export default function LessonChat({ lessonId, Done }) {
           <h1 style={{ fontSize: 36, marginBottom: 12 }}>Your story starts here</h1>
           <p>Sign in or create a free account so your Champion can save your progress.</p>
           <a className="sos-btn" href={`/story/start?next=${here}`}>Sign in / create account</a>
-          <p style={{ marginTop: 18, fontSize: 15 }}>New here? <a href="/story">Start with the introduction</a>.</p>
+          <p style={{ marginTop: 18, fontSize: 15 }}>New here? <a href="/story/begin">Start with the introduction</a>.</p>
         </div>
       </div>
     );

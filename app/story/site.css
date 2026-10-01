@@ -1,0 +1,201 @@
+/* Story of Self public site: homepage (.sh) and info pages (.sp). */
+.sos .sh-wrap, .sos .sp-wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+.sos .sh-h2 { font-size: clamp(32px, 4.6vw, 48px); max-width: 780px; margin-bottom: 14px; }
+.sos .sh-p { font-size: 18px; color: var(--ink-soft); max-width: 640px; }
+.sos .sh-row { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 26px; }
+.sos .sh-split { display: grid; grid-template-columns: 1fr 1fr; gap: 52px; align-items: center; }
+.sos .sh-split.rev > :first-child { order: 0; }
+
+/* hero */
+.sos .sh-hero { padding: 36px 0 70px; overflow: hidden; }
+.sos .sh-hero-grid { display: grid; grid-template-columns: 1.08fr 1fr; gap: 36px; align-items: center; }
+.sos .sh-hero h1 { font-size: clamp(46px, 7.2vw, 86px); line-height: 1.02; letter-spacing: -0.015em; }
+.sos .sh-hero h1 em { color: var(--ember); }
+.sos .sh-lede { font-size: 20px; color: var(--ink-soft); max-width: 560px; margin-top: 22px; }
+.sos .sh-trust { list-style: none; padding: 0; margin: 26px 0 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 14.5px; color: var(--ink-soft); }
+.sos .sh-trust li::before { content: "✓"; color: var(--sage); font-weight: 700; margin-right: 7px; }
+.sos .sh-art { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; }
+.sos .sh-k { font: 700 10px var(--sos-body), sans-serif; letter-spacing: 2.5px; fill: var(--muted); }
+.sos .sh-c { font: italic 17px var(--sos-display), Georgia, serif; fill: var(--ink); }
+.sos .sh-you { font: italic 34px var(--sos-display), Georgia, serif; fill: var(--ember); }
+.sos .sh-sub { font: 600 11px var(--sos-body), sans-serif; letter-spacing: 1.5px; fill: var(--muted); text-transform: uppercase; }
+.sos .sh-trace { stroke-dasharray: 1070; stroke-dashoffset: 1070; animation: shTrace 2.4s ease .3s forwards; }
+@keyframes shTrace { to { stroke-dashoffset: 0; } }
+
+/* stats band */
+.sos .sh-band { background: #2A2420; color: #F7F1E8; padding: 56px 0 44px; }
+.sos .sh-band h2 { color: #F7F1E8; font-size: clamp(30px, 4vw, 42px); margin-bottom: 26px; }
+.sos .sh-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+.sos .sh-stats div { border-top: 2px solid var(--ember); padding-top: 14px; }
+.sos .sh-stats b { display: block; font-family: var(--sos-body), sans-serif; font-weight: 700; font-size: clamp(38px, 4.4vw, 52px); line-height: 1; letter-spacing: -0.02em; color: #F0B596; }
+.sos .sh-stats span { display: block; margin-top: 8px; font-size: 15.5px; color: #E2D6CA; }
+.sos .sh-src { font-size: 12.5px; color: #9C8F84; margin: 26px 0 0; }
+
+/* turn */
+.sos .sh-turn { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 28px; text-align: center; box-shadow: 0 30px 60px -48px rgba(80,50,20,.6); }
+.sos .sh-turn-k { font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ember); margin-bottom: 16px; }
+.sos .sh-turn-row { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.sos .sh-turn-row div { width: 100%; max-width: 340px; border-radius: 16px; padding: 16px 18px; }
+.sos .sh-turn-row .dark { background: #2A2420; color: #F7F1E8; }
+.sos .sh-turn-row .up { background: var(--ember); color: #fff; }
+.sos .sh-turn-row span { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; opacity: .8; }
+.sos .sh-turn-row b { font-family: var(--sos-display), Georgia, serif; font-style: italic; font-weight: 500; font-size: 26px; }
+.sos .sh-turn p { font-size: 14px; color: var(--muted); margin: 16px 0 0; }
+
+/* how */
+.sos .sh-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 30px; }
+.sos .sh-steps div { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 24px; }
+.sos .sh-steps span { width: 40px; height: 40px; border-radius: 50%; background: var(--ember); color: #fff; display: grid; place-items: center; font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 20px; margin-bottom: 12px; }
+.sos .sh-steps b { font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 24px; }
+.sos .sh-steps p { color: var(--ink-soft); margin: 6px 0 0; font-size: 15.5px; }
+.sos .sh-units { list-style: none; padding: 0; margin: 30px 0 0; display: grid; grid-template-columns: repeat(7, 1fr); gap: 0; border-top: 2px solid var(--line); }
+.sos .sh-units li { position: relative; padding: 22px 12px 0 0; }
+.sos .sh-units li::before { content: ""; position: absolute; top: -7px; left: 0; width: 12px; height: 12px; border-radius: 50%; background: var(--paper-deep); border: 2px solid var(--ember); }
+.sos .sh-units span { font-family: var(--sos-display), Georgia, serif; font-style: italic; color: var(--ember); font-size: 15px; }
+.sos .sh-units b { display: block; font-size: 15.5px; margin: 2px 0 4px; }
+.sos .sh-units small { display: block; font-size: 13.5px; color: var(--ink-soft); line-height: 1.4; }
+.sos .sh-units em { display: inline-block; margin-top: 8px; font-style: normal; font-size: 11.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #2F5240; background: var(--sage-tint); padding: 3px 9px; border-radius: 999px; }
+
+/* champion */
+.sos .sh-ticks { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; }
+.sos .sh-ticks li { position: relative; padding-left: 30px; font-size: 16.5px; }
+.sos .sh-ticks li::before { content: ""; position: absolute; left: 0; top: 4px; width: 18px; height: 18px; border-radius: 50%; background: var(--ember-tint); box-shadow: inset 0 0 0 5px var(--ember); }
+.sos .sh-chat { min-height: 0; }
+.sos .sh-chat .sos-log { max-height: none; }
+.sos .sh-chat .sos-bubble { font-size: 15px; }
+
+/* doc mock */
+.sos .sh-doc { background: #fff; border-radius: 10px; padding: 34px 38px; box-shadow: 0 40px 70px -46px rgba(60,35,15,.6), 0 1px 3px rgba(60,35,15,.08); transform: rotate(-1.5deg); }
+.sos .sh-doc-k { font-family: var(--sos-display), Georgia, serif; font-size: 30px; margin-bottom: 18px; color: var(--ink); }
+.sos .sh-doc-sec { margin-bottom: 16px; }
+.sos .sh-doc-sec b { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ember); margin-bottom: 8px; }
+.sos .sh-doc-sec i { display: block; height: 8px; border-radius: 4px; background: #EFE5D6; margin-bottom: 7px; }
+
+/* parents */
+.sos .sh-parents { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
+.sos .sh-parents div { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; border-top: 3px solid var(--ember); }
+.sos .sh-parents b { font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 22px; }
+.sos .sh-parents p { color: var(--ink-soft); font-size: 15px; margin: 6px 0 0; }
+
+/* pricing */
+.sos .sh-tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 28px; align-items: stretch; }
+.sos .sh-tier { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 28px 24px; display: flex; flex-direction: column; }
+.sos .sh-tier.hot { border: 2px solid var(--ember); box-shadow: 0 30px 60px -44px rgba(194,91,52,.8); }
+.sos .sh-tier-flag { position: absolute; top: -13px; left: 24px; background: var(--ember); color: #fff; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; padding: 4px 12px; border-radius: 999px; }
+.sos .sh-tier > b { font-size: 14px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sos .sh-tier-price { font-family: var(--sos-display), Georgia, serif; font-size: 50px; line-height: 1.05; margin: 8px 0 14px; }
+.sos .sh-tier-price small { font-family: var(--sos-body), sans-serif; font-size: 14px; color: var(--muted); margin-left: 8px; }
+.sos .sh-tier ul { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 9px; flex: 1; }
+.sos .sh-tier li { position: relative; padding-left: 24px; font-size: 15.5px; color: var(--ink-soft); }
+.sos .sh-tier li::before { content: "✓"; position: absolute; left: 0; color: var(--sage); font-weight: 700; }
+.sos .sh-tier .sos-btn { justify-content: center; }
+.sos .sh-note { text-align: center; color: var(--muted); font-size: 14.5px; margin-top: 18px; }
+
+/* founder */
+.sos .sh-founder { display: grid; grid-template-columns: 180px 1fr; gap: 40px; align-items: center; max-width: 960px; }
+.sos .sh-founder-mark { width: 180px; height: 180px; border-radius: 50%; background: linear-gradient(135deg, #D06A40, #9E4320); color: #FFF3EA; display: grid; place-items: center; font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 84px; box-shadow: 0 30px 50px -30px rgba(158,67,32,.7); }
+.sos .sh-founder blockquote { margin: 0; font-family: var(--sos-display), Georgia, serif; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.38; }
+.sos .sh-by { color: var(--muted); font-size: 14.5px; margin: 14px 0 18px; }
+
+/* champions band */
+.sos .sh-champ { background: #2A2420; color: #E2D6CA; padding: 56px 0; }
+.sos .sh-champ-in { display: flex; align-items: center; justify-content: space-between; gap: 30px; flex-wrap: wrap; }
+.sos .sh-champ h2 { color: #F7F1E8; font-size: clamp(32px, 4.4vw, 46px); }
+.sos .sh-champ p { max-width: 620px; margin: 10px 0 0; font-size: 17px; }
+
+/* faq */
+.sos .sh-faqwrap { display: grid; grid-template-columns: 0.8fr 1.2fr; gap: 44px; align-items: start; }
+.sos .sh-faq details { border-bottom: 1px solid var(--line); }
+.sos .sh-faq summary { cursor: pointer; list-style: none; padding: 18px 40px 18px 0; position: relative; font-family: var(--sos-display), Georgia, serif; font-size: 21px; }
+.sos .sh-faq summary::-webkit-details-marker { display: none; }
+.sos .sh-faq summary::after { content: "+"; position: absolute; right: 6px; top: 14px; font-size: 26px; color: var(--ember); font-family: var(--sos-body), sans-serif; }
+.sos .sh-faq details[open] summary::after { content: "\2013"; }
+.sos .sh-faq details p { color: var(--ink-soft); font-size: 16px; margin: 0 0 18px; max-width: 640px; }
+
+/* final */
+.sos .sh-final { padding: 80px 0 30px; text-align: center; }
+.sos .sh-final-q { font-family: var(--sos-display), Georgia, serif; font-size: clamp(28px, 4.2vw, 46px); line-height: 1.2; max-width: 860px; margin: 0 auto 26px; }
+.sos .sh-final-q em { color: var(--ember); }
+
+/* ---------- info pages ---------- */
+.sos .sp-hero { padding: 48px 0 40px; background: linear-gradient(180deg, var(--paper), var(--paper-deep)); }
+.sos .sp-hero.small { padding: 40px 0 34px; }
+.sos .sp-hero h1 { font-size: clamp(40px, 6vw, 68px); line-height: 1.05; max-width: 900px; }
+.sos .sp-hero h1 em { color: var(--ember); }
+.sos .sp-lede { font-size: 19px; color: var(--ink-soft); max-width: 700px; margin-top: 18px; }
+.sos .sp-draft { display: inline-block; margin: 8px 0 0; font-size: 13.5px; font-weight: 600; color: #1D4E8A; background: #E6EEF8; padding: 6px 12px; border-radius: 10px; }
+.sos .sp-sec { padding: 56px 0; }
+.sos .sp-sec.alt { background: var(--paper-deep); }
+.sos .sp-sec h2 { font-size: clamp(28px, 3.6vw, 38px); margin-bottom: 14px; }
+.sos .sp-sec p { color: var(--ink-soft); font-size: 17px; }
+.sos .sp-muted { color: var(--muted) !important; }
+.sos .sp-two { display: grid; grid-template-columns: 1.2fr 1fr; gap: 48px; align-items: start; }
+.sos .sp-quote { margin: 0; background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 28px; }
+.sos .sp-quote blockquote { margin: 0; font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 24px; line-height: 1.4; color: var(--ink); }
+.sos .sp-quote figcaption { margin-top: 12px; font-size: 14px; color: var(--muted); }
+.sos .sp-story { margin-top: 20px; background: var(--card); border: 1px solid var(--line); border-radius: 22px; overflow: hidden; }
+.sos .sp-story-row { display: grid; grid-template-columns: 170px 1fr; gap: 18px; padding: 18px 24px; }
+.sos .sp-story-row + .sp-story-row { border-top: 1px solid var(--line); }
+.sos .sp-story-row span { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ember); padding-top: 4px; }
+.sos .sp-story-row p { margin: 0; font-family: var(--sos-display), Georgia, serif; font-size: 19px; line-height: 1.5; color: var(--ink); }
+.sos .sp-story-row.hv p { font-style: italic; font-size: 23px; color: var(--ember-deep); }
+.sos .sp-mission { font-family: var(--sos-display), Georgia, serif; font-size: clamp(24px, 3vw, 32px) !important; line-height: 1.35; color: var(--ink) !important; max-width: 860px; }
+.sos .sp-values { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px; }
+.sos .sp-values div { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 20px; }
+.sos .sp-values span { font-family: var(--sos-display), Georgia, serif; font-style: italic; color: var(--ember); }
+.sos .sp-values b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 22px; margin: 2px 0 6px; }
+.sos .sp-values p { font-size: 15px; margin: 0; }
+.sos .sp-contact { display: grid; grid-template-columns: 1.4fr 1fr; gap: 36px; align-items: start; }
+.sos .sp-form { background: var(--card); border: 1px solid var(--line); border-radius: 24px; padding: 30px; display: grid; gap: 16px; }
+.sos .sp-form.sent { text-align: center; justify-items: center; padding: 48px 30px; }
+.sos .sp-sent-mark { width: 64px; height: 64px; border-radius: 50%; background: var(--sage); color: #fff; display: grid; place-items: center; font-size: 30px; }
+.sos .sp-field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.sos .sp-field { display: grid; gap: 6px; }
+.sos .sp-field span, .sos .sp-topics legend { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.sos .sp-field input, .sos .sp-field textarea { width: 100%; padding: 13px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font: inherit; color: var(--ink); resize: vertical; }
+.sos .sp-field input:focus, .sos .sp-field textarea:focus { outline: none; border-color: var(--ember); box-shadow: 0 0 0 3px var(--ember-tint); }
+.sos .sp-topics { border: 0; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.sos .sp-topics legend { margin-bottom: 8px; }
+.sos .sp-topics label { cursor: pointer; padding: 8px 14px; border-radius: 999px; border: 1.5px solid var(--line); background: #fff; font-size: 14.5px; font-weight: 600; color: var(--ink-soft); }
+.sos .sp-topics label.on { background: var(--ember); border-color: var(--ember); color: #fff; }
+.sos .sp-topics input { position: absolute; opacity: 0; pointer-events: none; }
+.sos .sp-topics label:focus-within { box-shadow: 0 0 0 3px var(--ember-tint); }
+.sos .sp-hp { position: absolute; left: -9999px; }
+.sos .sp-small { font-size: 13.5px; color: var(--muted) !important; margin: 0; }
+.sos .sp-aside { display: grid; gap: 14px; }
+.sos .sp-aside > div { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 18px 20px; }
+.sos .sp-aside b { font-size: 16px; }
+.sos .sp-aside p { font-size: 15px; margin: 6px 0 0; }
+.sos .sp-aside .sp-aside-safety { background: var(--ember-tint); border-color: #EBC8B6; }
+.sos .sp-legal { display: grid; grid-template-columns: 240px 1fr; gap: 44px; align-items: start; }
+.sos .sp-toc { position: sticky; top: 20px; display: grid; gap: 6px; font-size: 14px; }
+.sos .sp-toc b { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.sos .sp-toc a { color: var(--ink-soft); }
+.sos .sp-legal-body { max-width: 760px; }
+.sos .sp-legal-body section { padding-bottom: 26px; margin-bottom: 26px; border-bottom: 1px solid var(--line); scroll-margin-top: 20px; }
+.sos .sp-legal-body h2 { font-size: 26px; }
+.sos .sp-legal-body p, .sos .sp-legal-body li { font-size: 16.5px; color: var(--ink-soft); }
+.sos .sp-legal-body ul { padding-left: 20px; display: grid; gap: 8px; margin: 0 0 12px; }
+
+@media (max-width: 960px) {
+  .sos .sh-hero-grid, .sos .sh-split, .sos .sh-faqwrap, .sos .sp-two, .sos .sp-contact, .sos .sp-legal { grid-template-columns: 1fr; gap: 30px; }
+  .sos .sh-hero-art { max-width: 440px; margin: 0 auto; }
+  .sos .sh-stats { grid-template-columns: 1fr 1fr; }
+  .sos .sh-units { grid-template-columns: 1fr; border-top: 0; border-left: 2px solid var(--line); margin-left: 6px; }
+  .sos .sh-units li { padding: 0 0 18px 22px; }
+  .sos .sh-units li::before { top: 4px; left: -7px; }
+  .sos .sh-steps, .sos .sh-parents, .sos .sh-tiers { grid-template-columns: 1fr; }
+  .sos .sh-tiers { gap: 26px; }
+  .sos .sp-values { grid-template-columns: 1fr 1fr; }
+  .sos .sp-toc { position: static; }
+  .sos .sh-founder { grid-template-columns: 1fr; text-align: left; }
+  .sos .sh-founder-mark { width: 110px; height: 110px; font-size: 52px; }
+  .sos .sh-split.rev .sh-doc { order: 2; }
+}
+@media (max-width: 560px) {
+  .sos .sh-wrap, .sos .sp-wrap { padding: 0 16px; }
+  .sos .sh-doc { padding: 24px; }
+  .sos .sp-field-row, .sos .sp-values { grid-template-columns: 1fr; }
+  .sos .sp-story-row { grid-template-columns: 1fr; gap: 4px; padding: 14px 16px; }
+  .sos .sp-form { padding: 20px; }
+}

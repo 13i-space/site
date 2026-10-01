@@ -2,10 +2,13 @@
 // no 13i nav, starfield, Lyra, colors or fonts. Everything for Story is in
 // app/story, app/api/story and lib/story, so it can move to its own domain later.
 import "./story.css";
+import "./site.css";
+import SiteHeader from "./_components/SiteHeader";
+import SiteFooter from "./_components/SiteFooter";
 
 export const metadata = {
   title: { default: "Story of Self", template: "%s · Story of Self" },
-  description: "Own your story before your next chapter begins.",
+  description: "Story of Self: a guided journey for the year after high school. Own your story before the next chapter begins.",
   // Prototype: keep it out of search engines until Aaron signs off.
   robots: { index: false, follow: false },
   openGraph: { siteName: "Story of Self", title: "Story of Self", description: "Own your story before your next chapter begins." },
@@ -23,27 +26,9 @@ export default function StoryLayout({ children }) {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap"
       />
-      <header className="sos-top">
-        <a href="/story" className="sos-brand">
-          <span className="sos-brand-mark" aria-hidden="true" />
-          Story <em>of</em> Self
-        </a>
-        <nav className="sos-top-links">
-          <a href="/story/my-story">My Story</a>
-          <a href="/story/start">Account</a>
-        </nav>
-      </header>
+      <SiteHeader />
       <main>{children}</main>
-      <footer className="sos-foot">
-        <p>
-          Story of Self is a guided reflection program, not therapy or counseling. If you're struggling or
-          not safe, call or text <strong>988</strong> (U.S.), or text <strong>HOME</strong> to <strong>741741</strong>. In an
-          emergency, call 911.
-        </p>
-        <p className="sos-foot-small">
-          Story of Self method © Aaron Donaghy · storyofself.com · Prototype preview
-        </p>
-      </footer>
+      <SiteFooter />
     </div>
   );
 }
