@@ -3,6 +3,15 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.26 — Aaron's briefing: Deep dives
+A new "Deep dives" section (6) on `/story/aaron` holds five numbered panels:
+1 the mini-business plan, 2 the target market, 3 the competition (positioning
+map, six categories with strengths and where Story wins, a side-by-side table,
+the chatbot reality, defensibility, what to watch), 4 the launch plan (phases,
+an Oct 2026 to Sep 2027 timeline by workstream with milestones, and phase
+gates), and 5 the Champion program. Later sections renumbered 7 to 9. Data in
+`lib/story/briefDeepDives.js`.
+
 ## Update 5.25 — Story Champion Academy prototype
 `/story/academy`: an AI-guided Champion certification built from Aaron's
 Champion Training Toolkit: SEE and Build Foundation. Seven modules (Welcome,

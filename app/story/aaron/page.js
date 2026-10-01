@@ -10,6 +10,8 @@ import {
 import Guidance from "./Guidance";
 import Market from "./Market";
 import ChampionPlan from "./ChampionPlan";
+import Competition from "./Competition";
+import LaunchPlan from "./LaunchPlan";
 import "./brief.css";
 
 // Aaron's briefing: the case for Story of Self online, with the prototype
@@ -59,6 +61,7 @@ const NAV = [
   ["method", "Your method"],
   ["swot", "Strengths"],
   ["business", "The business"],
+  ["deep", "Deep dives"],
   ["guidance", "Your guidance"],
   ["road", "The road ahead"],
   ["needs", "From you"],
@@ -259,22 +262,17 @@ export default async function AaronBrief() {
             <div><b>Next channel</b><span>Schools, colleges, gap-year programs, churches</span></div>
           </div>
 
-          <details className="brief-plan">
-            <summary>Understand your target market</summary>
-            <div className="brief-plan-body mkt-body">
-              <Market />
-            </div>
-          </details>
+        </div>
+      </section>
 
-          <details className="brief-plan">
-            <summary>Explore the Champion program</summary>
-            <div className="brief-plan-body mkt-body">
-              <ChampionPlan />
-            </div>
-          </details>
-
-          <details className="brief-plan">
-            <summary>Read the mini-business plan</summary>
+      {/* Deep dives */}
+      <section className="sos-section alt" id="deep">
+        <div className="sos-wrap">
+          <Head n="6" eyebrow="Deep dives" title="Go as deep as you want.">
+            Five closer looks at the plan. Open any one; they're independent.
+          </Head>
+          <details className="brief-plan dd">
+            <summary><span className="dd-n">1</span><span className="dd-t"><b>The mini-business plan</b><small>Problem, customer, product, pricing, costs and success</small></span></summary>
             <div className="brief-plan-body">
               {PLAN.map((s, i) => (
                 <div key={s.t} className="brief-plan-sec">
@@ -285,13 +283,37 @@ export default async function AaronBrief() {
               <p className="brief-small">Prices and costs are starting estimates to test in alpha and beta, not forecasts.</p>
             </div>
           </details>
+          <details className="brief-plan dd">
+            <summary><span className="dd-n">2</span><span className="dd-t"><b>Understand your target market</b><small>The numbers behind the graduating class and their mental health</small></span></summary>
+            <div className="brief-plan-body mkt-body">
+              <Market />
+            </div>
+          </details>
+          <details className="brief-plan dd">
+            <summary><span className="dd-n">3</span><span className="dd-t"><b>The competition</b><small>Who else is out there, and where Story of Self wins</small></span></summary>
+            <div className="brief-plan-body mkt-body">
+              <Competition />
+            </div>
+          </details>
+          <details className="brief-plan dd">
+            <summary><span className="dd-n">4</span><span className="dd-t"><b>The launch plan</b><small>Q4 build and alpha, Q1 beta, Q2 launch, Q3 grow</small></span></summary>
+            <div className="brief-plan-body mkt-body">
+              <LaunchPlan />
+            </div>
+          </details>
+          <details className="brief-plan dd">
+            <summary><span className="dd-n">5</span><span className="dd-t"><b>The Champion program</b><small>Certification, earnings and the Champion Academy prototype</small></span></summary>
+            <div className="brief-plan-body mkt-body">
+              <ChampionPlan />
+            </div>
+          </details>
         </div>
       </section>
 
       {/* 7 · Guidance needed */}
-      <section className="sos-section alt" id="guidance">
+      <section className="sos-section" id="guidance">
         <div className="sos-narrow brief-wide">
-          <Head n="6" eyebrow="Guidance needed" title="The questions only you can answer.">
+          <Head n="7" eyebrow="Guidance needed" title="The questions only you can answer.">
             Tap a quick answer, write a few words, or both. Your answers go straight to me, and they decide how the next version behaves.
           </Head>
           <Guidance groups={GUIDANCE} initial={viewer.answers} />
@@ -299,9 +321,9 @@ export default async function AaronBrief() {
       </section>
 
       {/* 8 · The road ahead */}
-      <section className="sos-section" id="road">
+      <section className="sos-section alt" id="road">
         <div className="sos-wrap">
-          <Head n="7" eyebrow="What a yes looks like" title="From here to graduation season." />
+          <Head n="8" eyebrow="What a yes looks like" title="From here to graduation season." />
           <ol className="brief-road">
             {ROADMAP.map((r) => (
               <li key={r.q}>
@@ -317,9 +339,9 @@ export default async function AaronBrief() {
       </section>
 
       {/* 9 · What we'd need from you */}
-      <section className="sos-section alt" id="needs">
+      <section className="sos-section" id="needs">
         <div className="sos-narrow">
-          <Head n="8" eyebrow="What we'd need from you" title="Your time, your eye, your call." />
+          <Head n="9" eyebrow="What we'd need from you" title="Your time, your eye, your call." />
           <ul className="brief-needs">
             {NEEDS.map(([t, d]) => (
               <li key={t}><b>{t}</b><span>{d}</span></li>
