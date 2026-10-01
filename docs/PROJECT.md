@@ -94,7 +94,11 @@ Tables that exist as of this writing:
 | `daily_scores` | Leaderboard, resets 00:00 UTC | `user_id`, `game`, `period_start`, `score` (PK: all three) |
 | `reading_progress` | Which stories a user has read | `user_id`, `assignment_number`, `read_at` |
 | `game_plays` | Play counts per user per game | `user_id`, `game`, `play_count`, `last_played_at` |
-| `alien_species` | Saved Alien Lab creations | `user_id`, `name`, `answers` (jsonb) |
+| `alien_species` | Saved Alien Lab creations | `user_id`, `name`, `answers` (jsonb), `portrait_svg`, `stats` (jsonb), `review` (jsonb) |
+| `kin_milestones` | Assignment steps nothing else records | `user_id`, `milestone` |
+| `direct_messages` | Private messages (v5.12); only sender and recipient can read | `sender_id`, `recipient_id`, `body`, `read_at` |
+| `oracle_usage` | One row per Oracle reply, for caps and cost (v5.14). RLS on, **no policies** - only the service-role admin client touches it. No message content | `user_id` (nullable), `ip_hash` (salted SHA-256, guests only), `model`, `input_tokens`, `output_tokens`, `created_at` |
+| `oracle_usage_daily` (view) | Per-UTC-day totals: messages, unique users, unique guests, tokens. `security_invoker`, so private like the table | `day`, `messages`, `unique_users`, `unique_guests`, `input_tokens`, `output_tokens` |
 
 **RLS pattern used throughout**: public tables (forum, high scores, daily
 scores, assignments) have a `select using (true)` or status-scoped policy
@@ -159,10 +163,21 @@ vs NEMESIS game that is **not wired into any route**. The live game at
 version is an abandoned earlier attempt or intended for a future swap —
 flagged here rather than assumed either way.
 
+## Environment variables (Vercel → Project → Settings → Environment Variables)
+- `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the public Supabase client
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` — the server-only admin client (`lib/supabaseAdmin.js`)
+- `ANTHROPIC_API_KEY` — the Oracle, Lyra, the Alien Lab
+- `NEXT_PUBLIC_SITE_URL` — optional; link previews (default https://13i.space)
+- `SENTINEL_USERNAMES` — optional; who can open Sentinel-X and the previews
+- **Oracle caps (v5.14)**, all optional except the salt:
+  - `ORACLE_IP_SALT` — random secret mixed into the guest IP hash; without it guests aren't capped individually (the site-wide cap still applies)
+  - `ORACLE_GUEST_DAILY` (default 5), `ORACLE_KIN_DAILY` (25), `ORACLE_GLOBAL_DAILY` (1000) — messages per UTC day
+  - `ORACLE_MODEL` (default `claude-opus-5-5`) — e.g. `claude-sonnet-4-6` to trade the Oracle's voice for lower cost
+  The Oracle also keeps only the last 12 messages of history, refuses any message over 1,000 characters, and caps replies at 400 tokens. If Supabase, the salt or a count is unavailable, messages go through; the Anthropic Console spend limit is the backstop.
+
 ## Deployment
-Claude builds/edits in a sandboxed copy of this repo → zips the changed
-top-level folders → Paul downloads, deletes the old folders in his local
-checkout, replaces them wholesale (folder merges have caused partial-update
-bugs before) → commits and pushes via GitHub Desktop → Vercel auto-deploys.
+Claude Code edits this local checkout directly → Paul reviews, commits and
+pushes in GitHub Desktop → Vercel auto-deploys. (The earlier zip-and-replace
+workflow is retired.)
 Any new Supabase schema is handed over as plain SQL to paste into the SQL
 Editor, since it isn't part of the deployed code.

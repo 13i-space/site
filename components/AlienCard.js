@@ -12,7 +12,7 @@ import StatRadar from "./StatRadar";
 // portrait, a line of flavour and the twelve stats; click it (with a soft flip sound) and it turns to
 // a stats chart, the rest of its traits, its signal (lib/speciesSignal.js)
 // and a link to its own page. 13i's Continuance verdict, once it has one,
-// is stamped on the portrait. Used by the gallery,
+// is a small mark down the side of the stats chart. Used by the gallery,
 // the Node, the Alien Lab preview, and the homepage star easter egg.
 //
 // onSelect: when given, a click selects the card (the gallery's compare
@@ -130,11 +130,6 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
                   <span className="mono" style={{ fontSize: 9 * s, color: "#3A3E75", letterSpacing: "1px" }}>NO PORTRAIT YET</span>
                 </div>
               )}
-              {verdict && (
-                <div className="mono" title={`13i's Continuance Review: ${verdict.label}`} style={{ position: "absolute", top: 6 * s, right: 6 * s, transform: "rotate(-6deg)", border: `${1.5 * s}px solid ${verdict.color}`, color: verdict.color, background: "rgba(10,11,28,0.78)", borderRadius: 3 * s, padding: `${2 * s}px ${5 * s}px`, fontSize: 7.5 * s, letterSpacing: "1px", lineHeight: 1.2, textAlign: "center" }}>
-                  CONTINUANCE<br />{verdict.short}
-                </div>
-              )}
             </div>
 
             {/* flavour strip */}
@@ -176,8 +171,18 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
         <div className="alien-card-face alien-card-frame" style={{ ...frame, transform: "rotateY(180deg)" }}>
           <div style={inner}>
             {nameBar}
-            <div style={{ display: "flex", justifyContent: "center", margin: `${6 * s}px 0 ${2 * s}px` }}>
+            <div style={{ position: "relative", display: "flex", justifyContent: "center", margin: `${6 * s}px 0 ${2 * s}px` }}>
               <StatRadar stats={stats} size={180 * s} />
+              {/* 13i's verdict, once given: a quiet mark down the side of the chart */}
+              {verdict && (
+                <span
+                  className="mono"
+                  title={`13i's Continuance Review: ${verdict.label}`}
+                  style={{ position: "absolute", right: 0, top: "50%", transform: "translateY(-50%)", writingMode: "vertical-rl", fontSize: 6.5 * s, letterSpacing: "1.5px", color: verdict.color, opacity: 0.6, whiteSpace: "nowrap" }}
+                >
+                  {"\u25CF"} CONTINUANCE {verdict.short}
+                </span>
+              )}
             </div>
             {estimated && (
               <div className="mono" style={{ textAlign: "center", fontSize: 7.5 * s, color: "#565B8F", marginBottom: 2 * s }}>

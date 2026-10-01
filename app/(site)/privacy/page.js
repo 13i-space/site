@@ -22,10 +22,13 @@ export default function PrivacyPage() {
           <strong>Oracle conversations:</strong> if you use the Oracle
           (the interactive chatbot on this site), the messages you type are
           sent to Anthropic, the company that provides the underlying AI
-          model, in order to generate a response. We don't separately
-          store a transcript of these conversations ourselves beyond what's
-          needed to keep the conversation coherent while you're actively
-          using it.
+          model, in order to generate a response. We don't store what you
+          type. To keep the cost of running the Oracle predictable, we do
+          keep a simple count: one line per Oracle reply, noting your
+          account (or, if you're not signed in, a scrambled, one-way code
+          made from your network address, never the address itself), the
+          time, and how much text the AI processed. That count is what lets
+          us limit how many Oracle messages each person can send per day.
         </p>
         <p>
           <strong>Basic site analytics:</strong> like most websites, this

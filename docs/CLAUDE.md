@@ -14,16 +14,16 @@ repository. Read this, then CURRENT.md, before touching anything.
 ## Who you're working with
 Paul is the sole developer-by-proxy on this project — a musician and author,
 self-described novice with git/Vercel/dev tooling. He does not read or edit
-code directly; he deploys by replacing folders in a local git-tracked
-checkout via GitHub Desktop, then commits and pushes. This means:
-- Every deliverable is a **complete zip** of the changed top-level folders
-  (`app`, `components`, `lib`, `public`, plus any new folders), never a diff
-  or a patch instruction.
+code directly. He works through **Claude Code, which edits this folder (the
+local git checkout) directly**; Paul then commits and pushes in **GitHub
+Desktop**, and Vercel deploys. No more zip files. This means:
+- Make the changes in place, then give Paul a short GitHub Desktop step
+  (commit message + Push origin). Never run git yourself.
 - Instructions involving Supabase, Vercel, or GitHub Desktop need **explicit,
   numbered, click-by-click steps** — name the exact menu, tab, or button.
-- New database schema changes should be handed over as copy-pasteable SQL,
-  not a file path to open (a file-path instruction has caused confusion
-  before — paste the SQL directly in the reply).
+- New database schema changes should be handed over as copy-pasteable SQL
+  in the reply (and saved under docs/ like the earlier schema files) — a
+  file-path-only instruction has caused confusion before.
 
 ## Non-negotiable engineering rules
 - **Global code degrades gracefully.** Anything that runs on every request

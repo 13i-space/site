@@ -28,6 +28,11 @@ import LyraOrb from "./LyraOrb";
 // Celebrations (a new best, a Continuance verdict, finishing an assignment,
 // her own changes as your bond grows - lib/lyraBond.js) stay a little longer.
 //
+// She also keeps you on top of communication: a new private message, or a
+// reply in a forum thread you started or joined, brings her up with an
+// alert and a link straight to it. Alerts stay until you close them or
+// read what they point to.
+//
 // Signed in, you can talk with her (app/api/lyra): about the site, the 13i
 // universe and its stories, or small everyday things. The conversation is
 // only for the moment - it clears when you close her or change pages. Her
@@ -35,6 +40,7 @@ import LyraOrb from "./LyraOrb";
 const LONG_ABSENCE_DAYS = 3;
 const LAUNCH_LINE_MS = 30 * 60 * 1000;
 const PEEK_MS = 2500; // how long an arrival message shows by itself
+const COMMS_POLL_MS = 45000; // how often she checks for new messages and forum replies
 const CELEBRATE_MS = 6500;
 const HOVER_CLOSE_MS = 700;
 
@@ -61,6 +67,90 @@ async function loadCounts(supabase, uid) {
     reviews: (species || []).filter((s) => s.review).length,
     quiz: quiz.data?.grade || null,
   };
+}
+
+// Unread private messages and new replies in your forum threads, as alerts.
+async function loadComms(supabase, uid, memory) {
+  const alerts = [];
+  const dismissed = new Set(memory.dismissed || []);
+
+  // private messages
+  try {
+    const { data: unread } = await supabase
+      .from("direct_messages")
+      .select("id, sender_id, body, created_at")
+      .eq("recipient_id", uid)
+      .is("read_at", null)
+      .order("created_at", { ascending: false })
+      .limit(30);
+    const fresh = (unread || []).filter((m) => !dismissed.has(m.id));
+    if (fresh.length) {
+      const senders = [...new Set(fresh.map((m) => m.sender_id))];
+      const { data: people } = await supabase.from("profiles").select("id, username").in("id", senders);
+      const name = Object.fromEntries((people || []).map((p) => [p.id, p.username]));
+      const quote = (s) => `\u201c${s.length > 70 ? `${s.slice(0, 70).trim()}...` : s}\u201d`;
+      if (senders.length === 1) {
+        const who = name[senders[0]] || "A Kin";
+        alerts.push({
+          kind: "dm",
+          ids: fresh.map((m) => m.id),
+          text: fresh.length === 1 ? `${who} sent you a private message: ${quote(fresh[0].body)}` : `${who} sent you ${fresh.length} private messages. The latest: ${quote(fresh[0].body)}`,
+          href: name[senders[0]] ? `/messages/${name[senders[0]]}` : "/messages",
+          cta: "read it",
+        });
+      } else {
+        alerts.push({
+          kind: "dm",
+          ids: fresh.map((m) => m.id),
+          text: `You have ${fresh.length} unread private messages, from ${senders.map((s) => name[s] || "a Kin").slice(0, 3).join(", ")}${senders.length > 3 ? " and others" : ""}.`,
+          href: "/messages",
+          cta: "open messages",
+        });
+      }
+    }
+  } catch (e) {
+    // messages not switched on yet
+  }
+
+  // replies in threads you started or joined
+  try {
+    if (memory.forumSeenAt) {
+      const [{ data: mine }, { data: joined }] = await Promise.all([
+        supabase.from("forum_threads").select("id").eq("author_id", uid).limit(100),
+        supabase.from("forum_replies").select("thread_id").eq("author_id", uid).limit(200),
+      ]);
+      const threadIds = [...new Set([...(mine || []).map((x) => x.id), ...(joined || []).map((x) => x.thread_id)])].slice(0, 100);
+      if (threadIds.length) {
+        const { data: replies } = await supabase
+          .from("forum_replies")
+          .select("id, thread_id, created_at, profiles(username), forum_threads(title, forum_spaces(slug))")
+          .in("thread_id", threadIds)
+          .neq("author_id", uid)
+          .gt("created_at", memory.forumSeenAt)
+          .order("created_at", { ascending: false })
+          .limit(20);
+        const fresh = (replies || []).filter((x) => !dismissed.has(x.id));
+        if (fresh.length) {
+          const top = fresh[0];
+          const href = `/forum/${top.forum_threads?.forum_spaces?.slug || "13i"}/${top.thread_id}`;
+          const threads = new Set(fresh.map((x) => x.thread_id));
+          alerts.push({
+            kind: "forum",
+            ids: fresh.map((x) => x.id),
+            threadIds: [...threads],
+            text: fresh.length === 1
+              ? `${top.profiles?.username || "A Kin"} replied in \u201c${top.forum_threads?.title || "your thread"}\u201d.`
+              : `${fresh.length} new forum replies in ${threads.size === 1 ? `\u201c${top.forum_threads?.title || "your thread"}\u201d` : `${threads.size} of your threads`}.`,
+            href,
+            cta: "read the reply",
+          });
+        }
+      }
+    }
+  } catch (e) {
+    // forum unavailable
+  }
+  return alerts;
 }
 
 function suggestionsFor(pathname, stage, alpha) {
@@ -109,6 +199,7 @@ export default function LyraCompanion() {
   const [chat, setChat] = useState([]);
   const [sending, setSending] = useState(false);
   const [chatError, setChatError] = useState("");
+  const [alerts, setAlerts] = useState([]); // new messages / forum replies
 
   const memory = useRef(null);
   const session = useRef({ prevSeen: null, firstEver: false });
@@ -146,7 +237,7 @@ export default function LyraCompanion() {
       celebrateTimer.current = setTimeout(() => setCelebrating(false), 2600);
     }
     if (auto) {
-      if (openedBy.current === "click") return; // don't take over a panel in use
+      if (openedBy.current === "click" || openedBy.current === "alert") return; // don't take over a panel in use
       setOpen(true);
       openedBy.current = "peek";
       setHasMessage(false);
@@ -378,6 +469,51 @@ export default function LyraCompanion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pathname]);
 
+  // ---- keeping you on top of communication ----
+  const alertsRef = useRef([]);
+  alertsRef.current = alerts;
+  const dismissAlerts = useCallback((list = alertsRef.current) => {
+    if (!list.length) return;
+    remember((mm) => { mm.dismissed = [...(mm.dismissed || []), ...list.flatMap((a) => a.ids)]; });
+    setAlerts((cur) => cur.filter((a) => !list.includes(a)));
+  }, [remember]);
+
+  const checkComms = useCallback(async () => {
+    if (!uid || !memory.current) return;
+    if (!memory.current.forumSeenAt) remember((mm) => { mm.forumSeenAt = new Date().toISOString(); }); // only new replies from now on
+    const supabase = createClient();
+    let found = await loadComms(supabase, uid, memory.current);
+    // reading it counts: you're already looking at that conversation or thread
+    const here = window.location.pathname;
+    const reading = found.filter((a) => a.href === here || (a.kind === "forum" && a.threadIds.some((id) => here.endsWith(`/${id}`))));
+    if (reading.length) {
+      remember((mm) => { mm.dismissed = [...(mm.dismissed || []), ...reading.flatMap((a) => a.ids)]; });
+      found = found.filter((a) => !reading.includes(a));
+    }
+    const key = (list) => list.map((a) => a.ids.join(",")).join("|");
+    if (key(found) === key(alertsRef.current)) return;
+    const isNew = found.some((a) => !alertsRef.current.some((b) => b.ids.join(",") === a.ids.join(",")));
+    setAlerts(found);
+    if (found.some((a) => a.kind === "dm")) window.dispatchEvent(new CustomEvent("13i:messages-new"));
+    if (found.length && isNew) {
+      clearTimeout(autoCloseTimer.current);
+      setOpen(true);
+      openedBy.current = "alert";
+      setHasMessage(false);
+    }
+  }, [uid, remember]);
+
+  useEffect(() => {
+    if (!ready || !uid) return;
+    checkComms();
+    const id = setInterval(checkComms, COMMS_POLL_MS);
+    const onRead = () => checkComms();
+    window.addEventListener("13i:messages-read", onRead);
+    return () => { clearInterval(id); window.removeEventListener("13i:messages-read", onRead); };
+  }, [ready, uid, checkComms]);
+
+  useEffect(() => { if (ready && uid) checkComms(); }, [pathname]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ---- things happening elsewhere on the site ----
   useEffect(() => {
     const onCelebrate = (e) => {
@@ -441,11 +577,11 @@ export default function LyraCompanion() {
     clearTimeout(hoverCloseTimer.current);
     setHasMessage(false);
     // clicking a peek or hover panel keeps it open; clicking an open one closes it
-    if (open && openedBy.current === "click") { setOpen(false); openedBy.current = null; return; }
+    if (open && (openedBy.current === "click" || openedBy.current === "alert")) { dismissAlerts(); setOpen(false); openedBy.current = null; return; }
     setOpen(true);
     openedBy.current = "click";
   };
-  const close = () => { setOpen(false); setQuery(""); openedBy.current = null; };
+  const close = () => { dismissAlerts(); setOpen(false); setQuery(""); openedBy.current = null; };
   const claim = () => { // clicked or typed in: the panel stays until closed
     openedBy.current = "click";
     clearTimeout(autoCloseTimer.current);
@@ -486,6 +622,17 @@ export default function LyraCompanion() {
           </div>
 
           <div style={styles.scroll}>
+            {alerts.map((a) => (
+              <div key={a.ids.join(",")} style={styles.alert}>
+                <span className="mono" style={{ display: "block", fontSize: 9.5, letterSpacing: "1.5px", color: "#C9B98F", marginBottom: 4 }}>
+                  {a.kind === "dm" ? "\u2709 PRIVATE MESSAGE" : "\u21A9 FORUM REPLY"}
+                </span>
+                <span style={{ display: "block", fontSize: 12.5, lineHeight: 1.5, color: "#F1E6CE" }}>{a.text}</span>
+                <Link href={a.href} onClick={() => { dismissAlerts([a]); if (alerts.length <= 1) { setOpen(false); openedBy.current = null; } }} className="mono" style={{ display: "inline-block", marginTop: 6, fontSize: 11, color: "#E9D29A" }}>
+                  {a.cta} &rarr;
+                </Link>
+              </div>
+            ))}
             <p className={celebrating ? "lyra-celebrate" : ""} style={styles.panelText}>
               <Rich text={text} onNavigate={close} />
             </p>
@@ -537,8 +684,8 @@ export default function LyraCompanion() {
         </div>
       )}
 
-      <button onClick={toggle} style={styles.orbBtn} aria-label={hasMessage ? "Lyra has something to tell you" : "Lyra"}>
-        <LyraOrb stage={loggedIn ? bond.stage : 0} state={state} hasMessage={hasMessage && !open} />
+      <button onClick={toggle} style={styles.orbBtn} aria-label={alerts.length ? "Lyra: you have new messages" : hasMessage ? "Lyra has something to tell you" : "Lyra"}>
+        <LyraOrb stage={loggedIn ? bond.stage : 0} state={state} hasMessage={(hasMessage || alerts.length > 0) && !open} />
       </button>
     </div>
   );
@@ -603,6 +750,13 @@ const styles = {
     maxHeight: "min(340px, 50vh)",
     overflowY: "auto",
     marginBottom: 8,
+  },
+  alert: {
+    border: "1px solid #6B5E3E",
+    background: "rgba(201,185,143,0.07)",
+    borderRadius: 6,
+    padding: "9px 11px",
+    marginBottom: 10,
   },
   panelText: {
     fontSize: 12.5,

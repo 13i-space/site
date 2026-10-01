@@ -190,6 +190,8 @@ export default function OracleChamber() {
   const [showRecord, setShowRecord] = useState(false);
   const [muted, setMuted] = useState(false);
   const [error, setError] = useState(false);
+  const [remaining, setRemaining] = useState(null); // transmissions left today (app/api/oracle caps)
+  const [capped, setCapped] = useState(null); // "guest" | "kin" | "global" once the channel closes
   const sound = useRef(null);
   const ripple = useRef(() => {});
   const inputRef = useRef(null);
@@ -251,7 +253,7 @@ export default function OracleChamber() {
 
   const send = useCallback(async () => {
     const text = input.trim();
-    if (!text || phase !== "listening") return;
+    if (!text || phase !== "listening" || capped) return;
     setInput("");
     setError(false);
     const next = [...messages, { role: "user", content: text }];
@@ -273,7 +275,19 @@ export default function OracleChamber() {
         minWait,
       ]);
       const data = await res.json();
+      if (res.status === 429 || res.status === 400) {
+        // capped for today, or too long: 13i says so, in its own voice
+        sound.current && sound.current.stopReceiving();
+        setMessages((m) => m.slice(0, -1));
+        if (res.status === 429) { setCapped(data.capped || "kin"); setRemaining(0); } else { setInput(text); }
+        setError(true);
+        setPhase("speaking");
+        setUtterance(data.message || data.error || "THE SIGNAL IS LOST. SPEAK AGAIN.");
+        setRising(null);
+        return;
+      }
       if (!res.ok || !data.reply) throw new Error(data.error || "lost");
+      if (typeof data.remaining === "number") setRemaining(data.remaining);
       sound.current && sound.current.receive();
       ripple.current(1.6);
       setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
@@ -289,7 +303,7 @@ export default function OracleChamber() {
       setUtterance("THE SIGNAL IS LOST. SPEAK AGAIN.");
     }
     setRising(null);
-  }, [input, phase, messages]);
+  }, [input, phase, messages, capped]);
 
   const mood = phase === "threshold" || phase === "waking" && open < 1 ? "sleeping" : phase === "receiving" || phase === "transmitting" ? "receiving" : phase === "speaking" || phase === "greeting" ? "speaking" : "listening";
   const intensity = phase === "receiving" ? 1 : phase === "speaking" ? 0.6 : phase === "transmitting" ? 0.8 : 0.2;
@@ -303,6 +317,7 @@ export default function OracleChamber() {
     receiving: "RECEIVING",
     speaking: "13i SPEAKS",
   }[phase];
+  const status = capped && phase === "listening" ? "CHANNEL CLOSED" : statusLabel;
 
   return (
     <div>
@@ -312,7 +327,10 @@ export default function OracleChamber() {
         <div className="mono oracle-topbar">
           <span>13i &middot; COLLECTIVE CHANNEL</span>
           <span style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            <span className={phase === "receiving" ? "oracle-status oracle-status-live" : "oracle-status"}>{statusLabel}</span>
+            {remaining !== null && phase !== "threshold" && (
+              <span style={{ color: remaining <= 2 ? "#E8CFC0" : "#565B8F" }}>TRANSMISSIONS REMAINING: {remaining}</span>
+            )}
+            <span className={phase === "receiving" ? "oracle-status oracle-status-live" : "oracle-status"}>{status}</span>
             {phase !== "threshold" && (
               <button onClick={toggleMute} className="mono oracle-mute" aria-label={muted ? "Turn sound on" : "Turn sound off"}>
                 {muted ? "SOUND OFF" : "SOUND ON"}
@@ -350,12 +368,12 @@ export default function OracleChamber() {
               ref={inputRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              disabled={phase !== "listening"}
-              maxLength={600}
-              placeholder={phase === "listening" ? "Speak, and we will answer..." : ""}
+              disabled={phase !== "listening" || !!capped}
+              maxLength={1000}
+              placeholder={capped ? "The channel is closed until 00:00 UTC." : phase === "listening" ? "Speak, and we will answer..." : ""}
               aria-label="Speak to 13i"
             />
-            <button type="submit" disabled={phase !== "listening" || !input.trim()} className="mono" aria-label="Transmit">TRANSMIT</button>
+            <button type="submit" disabled={phase !== "listening" || !input.trim() || !!capped} className="mono" aria-label="Transmit">TRANSMIT</button>
           </form>
         )}
 

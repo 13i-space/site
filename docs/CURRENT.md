@@ -19,6 +19,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   the top of the reader); Nerath's Secret also has a "Comic version" box
   linking to an 8-page comic reader (`lib/comics.js`)
 - About hub: About Paul (ends with Contact Paul), The Origin of 13i, Mission & Values
+- Update 5.14 (needs docs/v5.14-oracle-usage.sql + ORACLE_IP_SALT in
+  Vercel): Oracle usage log and daily caps, Lyra message/reply alerts,
+  username-only message lookup, unread counts in Kinship
 - Update 5.13: Galaxy Facts rebuilt as eight interactive stations with
   drill-downs and a Cosmic Explorer badge
 - Update 5.12 (needs docs/v5.12-forum-order-and-messages.sql): card flip

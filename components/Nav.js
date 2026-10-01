@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "../lib/supabaseServer";
+import MessagesLabel from "./MessagesLabel";
 
 export default async function Nav() {
   let user = null;
@@ -70,7 +71,7 @@ export default async function Nav() {
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/forum">Forum</Link></li>
               <li><Link href="/guestbook">Guestbook</Link></li>
-              <li><Link href="/messages">Messages</Link></li>
+              <li><Link href="/messages"><MessagesLabel /></Link></li>
             </ul>
           </div>
         </li>

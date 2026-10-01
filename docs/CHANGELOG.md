@@ -3,6 +3,22 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.14 — Oracle caps, Lyra keeps you posted, username-only lookup
+**Oracle costs**: every reply is logged to `oracle_usage` (who, model,
+tokens - never content; guests by salted IP hash) and daily caps apply:
+5 per guest, 25 per Kin, 1,000 site-wide, resetting 00:00 UTC, all set by
+env vars (see PROJECT.md). History trimmed to 12 messages, 1,000-char
+messages max, 400-token replies, model from `ORACLE_MODEL`. The chamber
+shows "TRANSMISSIONS REMAINING" and, when capped, 13i says so in-world and
+the channel closes. Privacy page updated. SQL: `docs/v5.14-oracle-usage.sql`.
+**Lyra alerts** for new private messages and replies in your forum threads
+(polls every 45s; stays up until closed or read; links straight there).
+**Messages**: find Kin by username only (suggestions show usernames and
+avatars; browser autofill of names/emails switched off); unread counts as
+"Messages (2)" in the Kinship menu and page. **Cards**: the Continuance mark
+moved off the portrait to a small vertical line beside the stats chart.
+CLAUDE.md now describes the Claude Code + GitHub Desktop workflow.
+
 ## Update 5.13 — Galaxy Facts, hands-on
 `/galaxy/facts` is now an explorer for curious kids (and everyone else):
 eight interactive stations in `components/GalaxyExplorer.js` - Your Cosmic

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import MessagesLabel from "../../../components/MessagesLabel";
 
 const items = [
   { href: "/forum", title: "Forum", blurb: "A meeting place for Kin \u2014 new guests always welcome." },
   { href: "/guestbook", title: "Guestbook", blurb: "Leave something behind. See who else has passed through." },
+  { href: "/messages", title: "Messages", blurb: "Private conversations between Kin. Only the two of you can read them.", unread: true },
 ];
 
 export default function KinshipPage() {
@@ -14,7 +16,7 @@ export default function KinshipPage() {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 20, maxWidth: 1000, margin: "0 auto" }}>
         {items.map((s) => (
           <Link key={s.href} href={s.href} className="launch-card" style={cardStyle}>
-            <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF", marginBottom: 8 }}>{s.title}</div>
+            <div className="wordmark" style={{ fontSize: 22, color: "#DCDFFF", marginBottom: 8 }}>{s.unread ? <MessagesLabel label={s.title} /> : s.title}</div>
             <p style={{ fontSize: 13, color: "#8A8FBF", margin: 0 }}>{s.blurb}</p>
           </Link>
         ))}
