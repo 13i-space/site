@@ -80,6 +80,7 @@ export default async function AccountPage() {
     "13i-vs-nemesis": { label: "13i vs NEMESIS", href: "/games/13i-vs-nemesis" },
     "deep-signal": { label: "13i: The Deep Signal", href: "/games/deep-signal" },
     sixteen: { label: "SIXTEEN", href: "/games/sixteen" },
+    tacet: { label: "TACET", href: "/games/tacet" },
   };
 
   const alphaProfile = { ...profile, created_at: profile?.created_at || user.created_at };

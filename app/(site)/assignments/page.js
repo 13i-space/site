@@ -3,6 +3,7 @@ import { createClient } from "../../../lib/supabaseServer";
 import AssignmentCard from "../../../components/AssignmentCard";
 import InteractiveCard from "../../../components/InteractiveCard";
 import { INTERACTIVE_STORIES } from "../../../lib/interactive";
+import { SEASONS } from "../../../lib/seasons";
 
 export default async function AssignmentsPage() {
   const supabase = await createClient();
@@ -30,6 +31,19 @@ export default async function AssignmentsPage() {
       <div className="page-subtitle">
         Every Assignment is 13i sent somewhere, uncertain, asked to report back. Some are already told. Some are yours to write.
       </div>
+
+      {(() => {
+        const s = SEASONS[SEASONS.length - 1];
+        const w = s && s.weeks[s.weeks.length - 1];
+        if (!w) return null;
+        return (
+          <Link href={`/seasons/${s.number}/${w.week}`} className="launch-card" style={{ display: "flex", alignItems: "center", gap: 16, marginTop: 26, padding: "14px 18px", border: "1px solid #6B5E3E", borderRadius: 4, background: "rgba(14,16,38,0.72)", textDecoration: "none", color: "inherit" }}>
+            <div className="mono" style={{ fontSize: 10, letterSpacing: "1.5px", color: "#C9B98F", flexShrink: 0 }}>{s.title.toUpperCase()} · WEEK {w.week}</div>
+            <div className="wordmark" style={{ fontSize: 20, color: "#DCDFFF" }}>{w.title}</div>
+            <div className="mono" style={{ fontSize: 11, color: "#6E76B8", marginLeft: "auto" }}>six ways in &rarr;</div>
+          </Link>
+        );
+      })()}
 
       <div style={{ marginTop: 30 }}>
         <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>

@@ -6,15 +6,15 @@ COMMUNICATE, ANALYZE, INTERVENE). One ending is the story as written (the
 **canon record**); the rest are **divergent records**. That fits the
 Archive: "the archive is where the universe discovers itself."
 
-The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34).
+The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34). The second is **Assignment 0028657, *The Quiet Moon*** (Update 5.35, Season 0 Week 1).
 
 ## Where it lives
 | Piece | File |
 |---|---|
-| The story (every word, choice and ending) | `lib/interactive/nerathsSecret.js` |
+| The stories (every word, choice and ending) | `lib/interactive/nerathsSecret.js`, `lib/interactive/quietMoon.js` |
 | List of interactive stories | `lib/interactive/index.js` |
 | The player (text, choices, saving, endings screen) | `components/InteractivePlayer.js` |
-| The living backdrop (all drawn in code) | `components/InteractiveScene.js` |
+| The living backdrop (all drawn in code) | `components/InteractiveScene.js` (host + Nerath scenes); `components/interactiveScenes/tacet.js` (Quiet Moon scenes) |
 | The ambient drone + choice chime (synthesized) | `lib/interactive/ambience.js` |
 | Saving + Kin stats | `lib/interactive/progress.js` |
 | Database (one table, one function) | `docs/v5.34-interactive-assignments.sql` |
@@ -118,3 +118,43 @@ There are 152 distinct paths; every node and all five endings are reachable
 Click / Space / Enter / → to continue (first press finishes the line), 1–3 to
 choose, **L** for the record so far, Fullscreen and Sound toggles top-right.
 `prefers-reduced-motion` turns the typewriter off and slows the backdrop.
+
+## The Quiet Moon: the branch map
+You are 13i on Tacet. The canon record is **Carried**.
+```
+ORBIT ─ how do we study the silence?
+   OBSERVE  watch from orbit .............. patient (sees a quake vanish)
+   INTERVENE  dive straight in ............ (nothing)
+   ANALYZE  drop a seismic probe .......... probe (it absorbs everything)
+      │
+UNDER THE ICE → THE SILENCE → THE LATTICE ─ how far does it reach?
+   ANALYZE  sound pulse ................... pinged (they come fast)
+   OBSERVE  map by gravity ................ (they come slowly)
+   COMMUNICATE  press its pattern back .... touch 2 (fluent)
+      │
+CONTACT ─ forty holders fold down around us
+   INTERVENE  raise our field ───► REPELLED (afraid: a gap in the roof)
+   OBSERVE  hold still ──────────► WRAPPED (touch ≥ 1)
+   COMMUNICATE  press back ──────► WRAPPED (touch 2)
+      │
+UNDERSTANDING (food · the quake · the young) ─
+   ANALYZE  go down among the young ...... youngHarm
+   OBSERVE  study them from above
+      │
+THE COST → THE GREAT TIDE IS COMING ─
+   OBSERVE  leave ─────────┬─ afraid ─► ✦ THE TORN ROOF
+                           └─ else ───► ✦ THE LONG WAY OUT
+   INTERVENE  hold the ice ourselves ──► ✦ TOO LOUD TO HOLD
+   COMMUNICATE  go quiet (needs !afraid) ─► WOVEN
+WOVEN ─ touch 1 ─► ✦ CARRIED (canon)
+        touch 2 ─► OBSERVE  let them choose ─► ✦ CARRIED
+                   COMMUNICATE  ask for the hard edge ─► ✦ THE HARD EDGE
+```
+168 paths; every node and all five endings reachable.
+
+### Engine additions (Update 5.35)
+A script can now carry its own `speakers`, `moods` (scene → drone mood,
+including a near-silent `silent`), `climaxLabel` / `climaxWords` for the
+Kin stats line, and a choice's `set` can be a function of the current
+flags. New scene sets plug into `components/InteractiveScene.js` through
+its drawing kit (see `makeTacetScenes`).

@@ -5,6 +5,7 @@ import BookReader from "../../../../components/BookReader";
 import TrackStoryRead from "../../../../components/TrackStoryRead";
 import { comicHrefFor } from "../../../../lib/comics";
 import { interactiveHrefFor } from "../../../../lib/interactive";
+import { bundleForAssignment } from "../../../../lib/seasons";
 
 // Narrated audio for stories that have one, keyed by assignment number.
 const STORY_AUDIO = {
@@ -49,6 +50,7 @@ export default async function DynamicAssignmentPage({ params }) {
   }
 
   const pages = paginateStory(row.story);
+  const bundle = bundleForAssignment(row.assignment_number);
   const meta = {
     book: "The Archive",
     part: `Assignment ${String(row.assignment_number).padStart(7, "0")}`,
@@ -59,9 +61,16 @@ export default async function DynamicAssignmentPage({ params }) {
   return (
     <div>
       <TrackStoryRead number={row.assignment_number} />
-      <Link href="/assignments" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
-        &larr; back to Assignments
-      </Link>
+      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, flexWrap: "wrap" }}>
+        <Link href="/assignments" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
+          &larr; back to Assignments
+        </Link>
+        {bundle && (
+          <Link href={bundle.href} className="mono" style={{ fontSize: 12, color: "#C9B98F" }}>
+            {bundle.season.title} · Week {bundle.week.week} · all six ways in &rarr;
+          </Link>
+        )}
+      </div>
       <div style={{ marginTop: 20 }}>
         <BookReader meta={meta} pages={pages} coverImage={row.cover_url} audioSrc={STORY_AUDIO[row.assignment_number]} comicHref={comicHrefFor(row.assignment_number)} interactiveHref={interactiveHrefFor(row.assignment_number)} />
       </div>

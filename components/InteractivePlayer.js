@@ -12,7 +12,7 @@ import { startAmbience, stopAmbience, mood, chime, MOOD_FOR_SCENE } from "../lib
 // script decides everything about the story; this decides how it looks,
 // how it's paced, and how it's saved. See docs/INTERACTIVE.md.
 
-const SPEAKERS = {
+const BASE_SPEAKERS = {
   "13i": { label: "13i", kind: "narration" },
   readout: { label: null, kind: "readout" },
   limb3: { label: "APPENDAGE 03", kind: "voice" },
@@ -31,11 +31,6 @@ const TAG_COLORS = {
   ANALYZE: "#B9C0FF",
 };
 
-const CLIMAX_WORDS = {
-  watch: "did nothing",
-  amplify: "spoke to the three limbs",
-  brace: "braced the elder",
-};
 
 const SOUND_KEY = "13i_interactive_sound";
 
@@ -43,6 +38,8 @@ const SOUND_KEY = "13i_interactive_sound";
 // pass the script itself from the server).
 export default function InteractivePlayer({ number }) {
   const story = interactiveFor(number);
+  const SPEAKERS = { ...BASE_SPEAKERS, ...(story.speakers || {}) };
+  const moodFor = (sc) => (story.moods && story.moods[sc]) || MOOD_FOR_SCENE[sc] || "calm";
   const frameRef = useRef(null);
   const [phase, setPhase] = useState("title"); // title | play | ending
   const [nodeId, setNodeId] = useState(story.start);
@@ -126,7 +123,7 @@ export default function InteractivePlayer({ number }) {
   // ---- the drone follows the scene ----
   useEffect(() => {
     if (phase === "title") return;
-    mood(MOOD_FOR_SCENE[scene] || "calm");
+    mood(moodFor(scene));
   }, [scene, phase]);
 
   const goTo = useCallback((id, nextFlags) => {
@@ -160,7 +157,7 @@ export default function InteractivePlayer({ number }) {
       return;
     }
     if (sound) chime(false);
-    const nextFlags = { ...flags, ...(c.set || {}) };
+    const nextFlags = { ...flags, ...(typeof c.set === "function" ? c.set(flags) : c.set || {}) };
     setPath((p) => [...p, { node: nodeId, choice: c.id, tag: c.tag, text: c.text }]);
     setLog((l) => [...l, { who: "choice", text: c.text, tag: c.tag }]);
     const next = typeof c.next === "function" ? c.next(nextFlags) : c.next;
@@ -213,7 +210,7 @@ export default function InteractivePlayer({ number }) {
     }
     if (on && phase !== "title") {
       startAmbience();
-      mood(MOOD_FOR_SCENE[scene] || "calm");
+      mood(moodFor(scene));
     } else {
       stopAmbience();
     }
@@ -256,7 +253,7 @@ export default function InteractivePlayer({ number }) {
     <div style={{ maxWidth: 1100, margin: "0 auto" }}>
       <div ref={frameRef} tabIndex={-1} className="game-frame ia-frame" style={{ outline: "none" }}>
         <div className="ia-stage" onClick={phase === "play" && !choosing && !closing ? advance : undefined} style={{ cursor: phase === "play" && !choosing && !closing ? "pointer" : "default" }}>
-          <InteractiveScene scene={phase === "title" ? "orbit" : scene} focus={phase === "play" ? line?.focus : []} pose={phase === "play" ? line?.pose : undefined} />
+          <InteractiveScene scene={phase === "title" ? story.titleScene || (story.start && story.nodes[story.start].scene) || "orbit" : scene} focus={phase === "play" ? line?.focus : []} pose={phase === "play" ? line?.pose : undefined} flags={flags} />
 
           {/* ---------- title ---------- */}
           {phase === "title" && (
@@ -426,8 +423,8 @@ export default function InteractivePlayer({ number }) {
                       const total = Object.values(stats.climax).reduce((a, b) => a + b, 0);
                       return (
                         <p style={{ fontSize: 13, color: "#8A8FBF", marginTop: 12 }}>
-                          At the elder&apos;s moment:{" "}
-                          {Object.entries(CLIMAX_WORDS).map(([k, words], i) => (
+                          {story.climaxLabel || "At the turning point"}:{" "}
+                          {Object.entries(story.climaxWords || {}).map(([k, words], i) => (
                             <span key={k}>
                               {i > 0 && " · "}
                               <span style={{ color: k === flags.climax ? "#E8CFC0" : "#B9C0FF" }}>{Math.round(((stats.climax[k] || 0) / total) * 100)}%</span> {words}

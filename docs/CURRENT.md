@@ -103,6 +103,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   are 13i, five endings, one canon), at `/assignments/215783/interactive`
 
 ## Currently being worked on / most recently completed
+Update 5.35: Season 0, Week 1 (The Quiet Moon) bundle; docs/SEASONS.md.
+Needs the one-time seed visit (`/api/admin/seed-assignment-28657`) so the
+story itself appears in the Archive. Audio for it: Paul, later.
 Update 5.34: Interactive Assignments, starting with Nerath's Secret
 (docs/INTERACTIVE.md). Needs `docs/v5.34-interactive-assignments.sql` run in
 Supabase for cross-device records + Kin stats (works without it).

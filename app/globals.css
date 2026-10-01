@@ -726,3 +726,8 @@ main {
   .ia-title-body { padding: 0 20px 20px; margin-top: -24px; }
   .ia-log, .ia-ending { padding: 20px 18px; }
 }
+
+/* Season week page: signal + card side by side, stacked on phones */
+@media (max-width: 760px) {
+  .season-split { grid-template-columns: minmax(0, 1fr) !important; }
+}

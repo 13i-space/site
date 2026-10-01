@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { makeTacetScenes } from "./interactiveScenes/tacet";
 
 // The living backdrop for Interactive Assignments: everything is drawn in
 // code on a <canvas> (no image files, no service), so a scene can react to
@@ -64,7 +65,7 @@ function makeWorld() {
   return { stars, snow, towers, conduits, swimmers, limbs, specks };
 }
 
-export default function InteractiveScene({ scene = "orbit", focus = [], pose }) {
+export default function InteractiveScene({ scene = "orbit", focus = [], pose, flags }) {
   const canvasRef = useRef(null);
   const stateRef = useRef({ scene, prev: null, since: 0, focus, pose, sceneStart: 0, focusSince: 0 });
 
@@ -86,7 +87,8 @@ export default function InteractiveScene({ scene = "orbit", focus = [], pose }) 
     }
     s.focus = focus || [];
     s.pose = pose;
-  }, [scene, focus, pose]);
+    s.flags = flags || {};
+  }, [scene, focus, pose, flags]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -177,7 +179,7 @@ export default function InteractiveScene({ scene = "orbit", focus = [], pose }) 
     }
 
     // the 13i manifestation: the ring-eye mark, glowing
-    function mark(x, y, s, t, a = 1) {
+    function mark(x, y, s, t, a = 1, { ping: withPing = true } = {}) {
       glow(x, y, s * 3.2, "rgba(139,149,246,0.45)", a * (0.6 + 0.2 * Math.sin(t * 1.6)));
       A(a);
       ctx.strokeStyle = "#B9C0FF";
@@ -194,6 +196,7 @@ export default function InteractiveScene({ scene = "orbit", focus = [], pose }) 
       ctx.arc(x, y, s * 0.32, 0, Math.PI * 2);
       ctx.fill();
       // a slow ping, like a sensor sweep
+      if (!withPing) return;
       const ping = (t * 0.5) % 1;
       A(a * (1 - ping) * 0.5);
       ctx.strokeStyle = "#8B95F6";
@@ -588,6 +591,20 @@ export default function InteractiveScene({ scene = "orbit", focus = [], pose }) 
         glow(W * 0.5, H * 1.1, W * 0.4, "rgba(201,123,110,0.4)", 0.3 * (1 - down) + 0.08);
       },
     };
+
+    // other stories' scene sets share this drawing kit
+    const kit = {
+      ctx,
+      A,
+      glow,
+      mark,
+      get W() { return W; },
+      get H() { return H; },
+      focus: () => stateRef.current.focus || [],
+      pose: () => stateRef.current.pose,
+      flag: (k) => (stateRef.current.flags || {})[k],
+    };
+    Object.assign(SCENES, makeTacetScenes(kit));
 
     const frame = (now) => {
       const s = stateRef.current;

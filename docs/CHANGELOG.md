@@ -3,6 +3,22 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.35 — Season 0, Week 1: The Quiet Moon
+The first Story Week, built by hand to test the process (docs/SEASONS.md).
+One story, six ways in: **the short story** (Assignment 0028657, by Claude:
+13i on Tacet, a moon so loud it groans, with a 400 km silence made by the
+holders, a species that speaks by touch and eats vibration to protect its
+young), **its Interactive Assignment** (five records, canon "Carried"; new
+Tacet scene set; the player now takes per-story speakers, moods and stats
+wording), **TACET** (a new game: be the lattice, share the shocks, keep the
+young in still water), **the signal** (a composed piece in seven sections on
+the Signal Composer's engine, with WAV download), **the Holders' species
+card** (an Alien Lab card recorded by 13i, Continuance granted), and an
+**artifact fragment** placeholder. New: `/seasons` and the week page
+`/seasons/0/1`; a cover drawn in code; Tacet on the Galaxy Map; a Seasons
+card on Explore and a week banner on the Assignments hub. Story text is
+added to the Archive by visiting `/api/admin/seed-assignment-28657` once.
+
 ## Update 5.34 — Interactive Assignments: Nerath's Secret
 The first Interactive Assignment, a visual-novel retelling of *Nerath's Secret*
 where you are 13i and choose (OBSERVE / COMMUNICATE / ANALYZE / INTERVENE).

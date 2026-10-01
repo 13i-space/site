@@ -114,6 +114,29 @@ interface, the dissenting limbs being 03, 07 and 12 (from the comic's
 panels), and the limb/mind "voices" as translated fragments. See
 docs/INTERACTIVE.md.
 
+## Canon layers — Paul's direction (Oct 2026)
+- **Book canon** stands by itself and drives everything. Nothing on the site
+  contradicts it.
+- **Assignment (Archive) canon** is built from the Assignments: 13i's own
+  records, which can be uncertain ("13i has multiple ways of thinking").
+  If one ever conflicts with the book, the book wins.
+- Weekly Season stories are AI-originated records; in their interactive
+  versions one ending is the canon record and the rest are divergent.
+
+## Tacet and the holders — developing (Season 0, Week 1)
+From *The Quiet Moon* (0028657, AI-written by Claude). **Tacet**: a moon
+tidally kneaded by an unnamed gas giant, loud in every sense; 13i named it
+for the musical mark meaning "stay silent". **The holders**: thin,
+membranous, colonial organisms linked edge to edge in one sheet (the
+lattice) under the southern ice; touch is their only language; they absorb
+vibration as food and share each quake's shock so no one body carries too
+much; absorbing ages them (they whiten) and the spent are let go; their
+young grow in still water beneath the lattice and cannot survive
+vibration; the young rise to fill gaps. The story's DEBRIEF nods to *The
+First Silence* ("there is a silence in our oldest record") without
+restating it. The Holders' Continuance verdict (granted) and the card's
+stats are Claude's, provisional.
+
 ## Nerathi — developing (from the SIXTEEN game)
 The game SIXTEEN calls the species of Nerath's Secret the **Nerathi**. It's
 a working name; the story itself never names them. The game also invents

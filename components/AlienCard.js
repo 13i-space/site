@@ -72,7 +72,7 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
         {species.name || "Unnamed species"}
       </span>
       <span className="mono" style={{ fontSize: 8.5 * s, color: "#C9B98F", letterSpacing: "1px", flexShrink: 0 }}>
-        {cardNumber(species.id)}
+        {species.cardLabel || cardNumber(species.id)}
       </span>
     </div>
   );
@@ -202,8 +202,8 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
                 {playing ? "\u25A0 stop" : "\u25B6 its signal"}
               </button>
               {species.id && !onSelect && (
-                <a href={`/galaxy/aliens/${species.id}`} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} className="mono" style={{ ...miniBtn(s), textDecoration: "none" }}>
-                  {verdict ? "13i's review \u2192" : "open \u2192"}
+                <a href={species.href || `/galaxy/aliens/${species.id}`} onClick={(e) => e.stopPropagation()} onKeyDown={(e) => e.stopPropagation()} className="mono" style={{ ...miniBtn(s), textDecoration: "none" }}>
+                  {species.hrefLabel || (verdict ? "13i's review \u2192" : "open \u2192")}
                 </a>
               )}
             </div>
