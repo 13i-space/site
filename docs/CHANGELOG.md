@@ -3,6 +3,20 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.23 — Story of Self: Aaron's briefing page
+`/story/aaron` is a private briefing for Aaron that makes the case for Story of
+Self online and links to the prototype: a note from Paul, the idea in 60
+seconds, Explore · Play · Create, a test path with a sample Champion
+conversation, his Champion notes mapped to what the Champion does, an honest
+strengths/watch-outs/opportunities/risks read, the business at a glance with a
+full plan, 22 "Guidance needed" questions whose answers save as he types, the
+Q4 2026–Q2 2027 road ahead, and what we'd need from him. Access follows the 13i
+username (`lib/story/briefAccess.js`: Paul's Sentinel accounts + Aaron, or
+`STORY_BRIEF_USERNAMES`); everyone else gets a 404. Those accounts also see a
+hidden "Story of Self" panel on their Node. Paul sees everyone's answers at the
+bottom of the page. Words live in `lib/story/briefContent.js`. Answers are
+stored in the 13i Supabase project: `docs/v5.23-story-brief.sql`.
+
 ## Update 5.14 — Oracle caps, Lyra keeps you posted, username-only lookup
 **Oracle costs**: every reply is logged to `oracle_usage` (who, model,
 tokens - never content; guests by salted IP hash) and daily caps apply:

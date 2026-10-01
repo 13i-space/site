@@ -4,6 +4,7 @@ import { createClient } from "../../../lib/supabaseServer";
 import ClaimUsername from "../../../components/ClaimUsername";
 import EditProfile from "../../../components/EditProfile";
 import { isSentinelUser } from "../../../lib/sentinel";
+import { isBriefUser } from "../../../lib/story/briefAccess";
 import YourSpecies from "../../../components/YourSpecies";
 import FirstAssignment from "../../../components/FirstAssignment";
 import { gatherVisitor } from "../../../lib/visitorContext";
@@ -66,6 +67,9 @@ export default async function AccountPage() {
     .maybeSingle();
 
   const sentinel = isSentinelUser(profile?.username);
+  // Aaron's Story of Self briefing (lib/story/briefAccess.js): a hidden panel
+  // that only shows for the usernames listed there.
+  const storyBrief = isBriefUser(profile?.username);
 
   // Both label and the game's own page, so a score in this list can link
   // straight back to where it was earned (same idea as the Stories Read
@@ -115,6 +119,18 @@ export default async function AccountPage() {
             <div className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>SITE DASHBOARD</div>
             <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginTop: 4 }}>
               Sentinel-X &rarr;
+            </div>
+          </Link>
+        )}
+        {storyBrief && (
+          <Link
+            href="/story/aaron"
+            className="panel"
+            style={{ display: "block", maxWidth: 420, margin: "0 auto 18px", borderColor: "#C25B34", background: "rgba(194,91,52,0.07)", textDecoration: "none" }}
+          >
+            <div className="mono" style={{ fontSize: 10, color: "#E8CFC0", letterSpacing: "1.5px" }}>SOMETHING I BUILT FOR YOU</div>
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#F2DDD0", marginTop: 4 }}>
+              Story of Self &rarr;
             </div>
           </Link>
         )}

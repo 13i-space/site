@@ -1,0 +1,164 @@
+/* Aaron's briefing page (/story/aaron). Scoped under .sos .brief, built on
+   the Story tokens in app/story/story.css. */
+.sos .brief { overflow-x: clip; }
+.sos .brief-hero { padding-bottom: 56px; }
+.sos .brief-hero h1 { font-size: clamp(40px, 6.4vw, 66px); }
+.sos .brief-note { margin-top: 28px; background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 28px 30px; box-shadow: 0 20px 50px -34px rgba(80, 50, 20, .4); font-size: 17.5px; color: var(--ink-soft); }
+.sos .brief-note p:last-child { margin-bottom: 0; }
+.sos .brief-greet { font-family: var(--sos-display), Georgia, serif; font-size: 24px; color: var(--ink); }
+.sos .brief-sign { font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 24px; color: var(--ember-deep); margin-top: 6px; }
+
+/* sticky section nav */
+.sos .brief-nav { position: sticky; top: 0; z-index: 5; background: color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.sos .brief-nav-in { max-width: 1080px; margin: 0 auto; padding: 10px 24px; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.sos .brief-nav-in::-webkit-scrollbar { display: none; }
+.sos .brief-nav a { white-space: nowrap; font-size: 14px; font-weight: 600; color: var(--ink-soft); padding: 7px 14px; border-radius: 999px; }
+.sos .brief-nav a:hover { background: var(--card); text-decoration: none; color: var(--ink); }
+.sos .brief-nav a.paul { color: var(--sage); }
+.sos .brief section[id] { scroll-margin-top: 64px; }
+
+/* section heads */
+.sos .brief-head { max-width: 760px; margin-bottom: 36px; }
+.sos .brief-head h2 { font-size: clamp(32px, 4.8vw, 46px); }
+.sos .brief-head .sos-lede { margin-top: 14px; margin-bottom: 0; }
+.sos .brief-n { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--ember); color: #fff; font-size: 12px; letter-spacing: 0; margin-right: 10px; vertical-align: 1px; }
+.sos .brief-wide { max-width: 820px; }
+.sos .brief-small { font-size: 14px; color: var(--muted); }
+
+/* the idea */
+.sos .brief-idea { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin: 0; }
+.sos .brief-idea div { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px 24px; }
+.sos .brief-idea dt { font-family: var(--sos-display), Georgia, serif; font-size: 24px; color: var(--ember-deep); margin-bottom: 6px; }
+.sos .brief-idea dd { margin: 0; color: var(--ink-soft); }
+
+.sos .brief-epc { margin-top: 56px; }
+.sos .brief-epc h3 { font-size: clamp(26px, 3.4vw, 34px); }
+.sos .brief-epc-lede { color: var(--ink-soft); max-width: 680px; margin-top: 10px; }
+.sos .brief-epc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 22px; }
+.sos .brief-epc-card { border-top: 3px solid var(--ember); background: var(--card); border-radius: 0 0 16px 16px; padding: 20px 22px; }
+.sos .brief-epc-card:nth-child(2) { border-top-color: var(--gold); }
+.sos .brief-epc-card:nth-child(3) { border-top-color: var(--sage); }
+.sos .brief-epc-mode { font-family: var(--sos-display), Georgia, serif; font-size: 28px; }
+.sos .brief-epc-card blockquote { margin: 8px 0 14px; font-family: var(--sos-display), Georgia, serif; font-style: italic; color: var(--ink-soft); font-size: 17px; line-height: 1.4; }
+.sos .brief-epc-card p { font-size: 15px; color: var(--ink-soft); margin-bottom: 10px; }
+.sos .brief-epc-card p.story { color: var(--ink); margin-bottom: 0; }
+
+/* try it */
+.sos .brief-try { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+.sos .brief-path { list-style: none; padding: 0; margin: 0; display: grid; gap: 20px; }
+.sos .brief-path li { display: flex; gap: 16px; }
+.sos .brief-path-n { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--ember); color: var(--ember-deep); display: grid; place-items: center; font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 18px; }
+.sos .brief-path b { font-size: 18px; display: block; margin: 4px 0 4px; }
+.sos .brief-path p { margin: 0; color: var(--ink-soft); font-size: 15.5px; }
+.sos .brief-sample { min-height: 0; }
+.sos .brief-sample .sos-log { max-height: none; }
+.sos .brief-sample .sos-bubble { font-size: 15px; }
+.sos .brief-try-go { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; margin-top: 18px; }
+.sos .brief-try-go span { font-size: 14px; color: var(--muted); }
+
+/* method map */
+.sos .brief-map { border: 1px solid var(--line); border-radius: 18px; overflow: hidden; background: var(--card); }
+.sos .brief-map-row { display: grid; grid-template-columns: 2fr 3fr; }
+.sos .brief-map-row > div { padding: 15px 22px; border-top: 1px solid var(--line); font-size: 15.5px; color: var(--ink-soft); }
+.sos .brief-map-row.head > div { border-top: 0; background: var(--paper-deep); font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.sos .brief-map-row .aaron { font-family: var(--sos-display), Georgia, serif; font-size: 18px; color: var(--ink); border-right: 1px solid var(--line); }
+.sos .brief-adapt { margin-top: 40px; background: var(--sage-tint); border-radius: 18px; padding: 26px 28px; }
+.sos .brief-adapt h3 { font-size: 26px; margin-bottom: 12px; }
+.sos .brief-adapt ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: #33493B; font-size: 15.5px; }
+
+/* SWOT */
+.sos .brief-swot { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.sos .brief-swot-box { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px 26px; border-top: 4px solid var(--sage); }
+.sos .brief-swot-box.w { border-top-color: var(--gold); }
+.sos .brief-swot-box.o { border-top-color: var(--ember); }
+.sos .brief-swot-box.r { border-top-color: var(--ink-soft); }
+.sos .brief-swot-box h3 { font-size: 24px; margin-bottom: 12px; }
+.sos .brief-swot-box ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 12px; }
+.sos .brief-swot-box li { font-size: 15px; color: var(--ink-soft); }
+.sos .brief-swot-box li b { color: var(--ink); }
+
+/* business */
+.sos .brief-tiers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.sos .brief-tier { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+.sos .brief-tier:nth-child(2) { border: 2px solid var(--ember); }
+.sos .brief-tier-name { font-size: 13px; letter-spacing: .12em; text-transform: uppercase; font-weight: 700; color: var(--muted); }
+.sos .brief-tier-price { font-family: var(--sos-display), Georgia, serif; font-size: 28px; margin: 6px 0 10px; color: var(--ink); white-space: nowrap; line-height: 1.15; }
+.sos .brief-tier-price small { display: block; font-family: var(--sos-body), sans-serif; font-size: 13px; color: var(--muted); margin-top: 2px; }
+.sos .brief-tier p { font-size: 14.5px; color: var(--ink-soft); margin: 0; }
+.sos .brief-facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 18px; }
+.sos .brief-facts div { padding: 14px 4px; border-top: 1px solid var(--line); }
+.sos .brief-facts b { display: block; font-size: 12.5px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.sos .brief-facts span { font-family: var(--sos-display), Georgia, serif; font-size: 19px; color: var(--ink); line-height: 1.3; display: block; margin-top: 4px; }
+.sos .brief-plan { margin-top: 32px; border: 1px solid var(--line); border-radius: 18px; background: var(--card); }
+.sos .brief-plan summary { cursor: pointer; padding: 20px 24px; font-weight: 700; font-size: 17px; list-style: none; display: flex; align-items: center; justify-content: space-between; }
+.sos .brief-plan summary::-webkit-details-marker { display: none; }
+.sos .brief-plan summary::after { content: "+"; font-size: 26px; color: var(--ember); font-weight: 400; line-height: 1; }
+.sos .brief-plan[open] summary::after { content: "\2013"; }
+.sos .brief-plan-body { padding: 0 24px 24px; columns: 2; column-gap: 36px; }
+.sos .brief-plan-sec { break-inside: avoid; margin-bottom: 20px; }
+.sos .brief-plan-sec h3 { font-size: 21px; margin-bottom: 8px; display: flex; gap: 10px; align-items: baseline; }
+.sos .brief-plan-sec h3 span { font-style: italic; color: var(--ember); font-size: 18px; }
+.sos .brief-plan-sec p { font-size: 15px; color: var(--ink-soft); }
+
+/* guidance */
+.sos .brief-progress { color: var(--ink-soft); font-size: 15px; margin-bottom: 26px; }
+.sos .brief-group { margin-bottom: 34px; }
+.sos .brief-group > h3 { font-size: 24px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line); }
+.sos .brief-q { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--line); border-radius: 14px; padding: 18px 20px; margin-bottom: 12px; transition: border-color .2s; }
+.sos .brief-q.answered { border-left-color: var(--sage); }
+.sos .brief-q-head { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.sos .brief-q h4 { margin: 0 0 4px; font-size: 17px; font-weight: 700; color: var(--ink); }
+.sos .brief-q > p { font-size: 15px; color: var(--ink-soft); margin-bottom: 12px; }
+.sos .brief-save { font-size: 12.5px; font-weight: 600; color: var(--muted); white-space: nowrap; }
+.sos .brief-save.saved { color: var(--sage); }
+.sos .brief-save.error { color: #8A2E14; }
+.sos .brief-status { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.sos .brief-status button { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 14px; font: 600 14px var(--sos-body), sans-serif; color: var(--ink-soft); cursor: pointer; }
+.sos .brief-status button:hover { border-color: var(--ember); }
+.sos .brief-status button.on { background: var(--ember); border-color: var(--ember); color: #fff; }
+.sos .brief-q textarea { width: 100%; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: #fff; font: inherit; font-size: 15.5px; color: var(--ink); resize: vertical; min-height: 76px; }
+.sos .brief-q textarea:focus, .sos .brief-status button:focus-visible { outline: none; border-color: var(--ember); box-shadow: 0 0 0 3px var(--ember-tint); }
+
+/* road ahead */
+.sos .brief-road { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; position: relative; }
+.sos .brief-road > li { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 24px; position: relative; }
+.sos .brief-road-q { display: inline-block; background: var(--ember-tint); color: var(--ember-deep); font-weight: 700; font-size: 13px; letter-spacing: .08em; padding: 5px 12px; border-radius: 999px; }
+.sos .brief-road h3 { font-size: 24px; margin: 12px 0 10px; }
+.sos .brief-road ul { margin: 0; padding-left: 18px; display: grid; gap: 7px; font-size: 15px; color: var(--ink-soft); }
+
+/* needs */
+.sos .brief-needs { list-style: none; padding: 0; margin: 0; display: grid; gap: 4px; }
+.sos .brief-needs li { display: grid; grid-template-columns: 210px 1fr; gap: 18px; padding: 16px 0; border-bottom: 1px solid var(--line); }
+.sos .brief-needs b { font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 20px; line-height: 1.3; }
+.sos .brief-needs span { color: var(--ink-soft); font-size: 15.5px; }
+.sos .brief-end { margin-top: 56px; }
+
+/* Paul's responses */
+.sos .brief-responses { border-top: 4px solid var(--sage); }
+.sos .brief-responses .sos-eyebrow { color: var(--sage); }
+.sos .brief-responses h2 { font-size: 36px; margin-bottom: 18px; }
+.sos .brief-resp { display: grid; gap: 10px; }
+.sos .brief-resp-row { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.sos .brief-resp-meta { font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+.sos .brief-resp-meta b { color: var(--ink); }
+.sos .brief-resp-row p { margin: 6px 0 0; white-space: pre-wrap; font-size: 15px; }
+.sos .brief-pill { display: inline-block; font-size: 12.5px; font-weight: 700; padding: 3px 10px; border-radius: 999px; background: var(--paper-deep); color: var(--ink-soft); }
+.sos .brief-pill.keep { background: var(--sage-tint); color: #2F5240; }
+.sos .brief-pill.change { background: var(--ember-tint); color: var(--ember-deep); }
+
+@media (max-width: 860px) {
+  .sos .brief-idea, .sos .brief-swot, .sos .brief-try { grid-template-columns: 1fr; }
+  .sos .brief-epc-grid, .sos .brief-road { grid-template-columns: 1fr; }
+  .sos .brief-tiers, .sos .brief-facts { grid-template-columns: 1fr 1fr; }
+  .sos .brief-plan-body { columns: 1; }
+  .sos .brief-map-row { grid-template-columns: 1fr; }
+  .sos .brief-map-row.head { display: none; }
+  .sos .brief-map-row .aaron { border-right: 0; padding-bottom: 4px; }
+  .sos .brief-map-row > div + div { border-top: 0; padding-top: 0; }
+  .sos .brief-needs li { grid-template-columns: 1fr; gap: 4px; }
+}
+@media (max-width: 480px) {
+  .sos .brief-tiers, .sos .brief-facts { grid-template-columns: 1fr; }
+  .sos .brief-note { padding: 22px 20px; }
+  .sos .brief-nav-in { padding: 8px 16px; }
+}
