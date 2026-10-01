@@ -5,10 +5,13 @@
 //
 // Runs on the server only, so the Anthropic key and the Champion's
 // instructions never reach the browser.
+import { TIMELINE_ID, timelineSummary } from "../../../../lib/story/timeline";
 import { buildChampionPrompt, parseChampionReply } from "../../../../lib/story/championPrompt";
 import { getStoryUserFromRequest, storyConfigured } from "../../../../lib/story/storySupabase";
 import { LESSONS, LESSON_ORDER, getLesson, stepIds, stepIndex } from "../../../../lib/story/lessonSteps";
 import { assembleStory, STORY_WRITE_ID } from "../../../../lib/story/storyWrite";
+import { isFounder } from "../../../../lib/story/storyAdmin";
+import { raiseSafetyAlert } from "../../../../lib/story/safety";
 
 export const dynamic = "force-dynamic";
 
@@ -111,6 +114,14 @@ function earlierLessons(lessonId, others) {
   return lines.length ? lines.join("\n") : "None yet.";
 }
 
+// Their Life Timeline (plotted on the page, not in the chat), from Lesson 2 on.
+function timelineNote(lessonId, others) {
+  if (lessonId === "unit1-lesson1") return "";
+  const row = others.find((r) => r.lesson === TIMELINE_ID);
+  const summary = row ? timelineSummary(row.captured) : "";
+  return `\n\n# LIFE TIMELINE (moments they've plotted on their Life Timeline; +5 is the best moments, -5 the hardest)\n${summary || "Nothing plotted yet."}`;
+}
+
 function currentStory(rows) {
   const { sections, title } = assembleStory(rows);
   const keys = Object.keys(sections);
@@ -132,7 +143,7 @@ export async function GET(request) {
   const auth = await getStoryUserFromRequest(request);
   if (!auth) return json({ error: "signed_out" }, 401);
   const { messages, progress, others, firstName } = await loadState(auth.supabase, auth.user.id, lesson.id);
-  const locked = lesson.requires ? !isDone(others.find((r) => r.lesson === lesson.requires)) : false;
+  const locked = lesson.requires && !isFounder(auth.user) ? !isDone(others.find((r) => r.lesson === lesson.requires)) : false;
   return json({
     messages,
     progress: publicProgress(progress),
@@ -158,7 +169,7 @@ export async function POST(request) {
 
   const state = await loadState(supabase, user.id, lesson.id);
   if (!state.firstName) state.firstName = String(user.user_metadata?.first_name || "").slice(0, 40);
-  if (lesson.requires && !isDone(state.others.find((r) => r.lesson === lesson.requires))) {
+  if (lesson.requires && !isFounder(user) && !isDone(state.others.find((r) => r.lesson === lesson.requires))) {
     return json({ error: "Finish the previous lesson first.", locked: true }, 403);
   }
   const progress = state.progress;
@@ -195,6 +206,7 @@ export async function POST(request) {
   const system =
     `${buildChampionPrompt(lesson.id)}\n\n# PROGRESS FROM EARLIER LESSONS\n${earlierLessons(lesson.id, state.others)}` +
     (lesson.storyWrite || lesson.finale ? `\n\n# CURRENT STORY WRITE (latest version of each section)\n${currentStory([...state.others, ...(progress ? [progress] : [])])}` : "") +
+    (timelineNote(lesson.id, state.others)) +
     `\n\n# PROGRESS SO FAR (this lesson)\nCurrent step: ${p.step}\nAlready shared: ${JSON.stringify(p.captured)}`;
   const model = MODEL();
 
@@ -233,6 +245,11 @@ export async function POST(request) {
   const completedAt = progress?.completed_at || (nextStep === "complete" ? new Date().toISOString() : null);
 
   await supabase.from("story_messages").insert({ user_id: user.id, lesson: lesson.id, role: "assistant", content: finalReply });
+
+  // A new safety flag in this lesson: tell the Story team so a person follows up.
+  if (s?.flag === "safety" && !p.safety) {
+    await raiseSafetyAlert({ supabase, user, lesson, firstName: state.firstName, excerpt: text });
+  }
   await supabase.from("story_progress").upsert(
     {
       user_id: user.id,

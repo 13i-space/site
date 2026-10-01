@@ -7,7 +7,10 @@ const RESUME_AFTER_MS = 3 * 60 * 60 * 1000; // a 3+ hour gap counts as "coming b
 
 // The Champion conversation for any lesson. `Done` renders under the chat once
 // the lesson reaches its close (the lesson's card + what's next).
-export default function LessonChat({ lessonId, Done }) {
+// Optional extras: `inline` = { Component, match, fromStep } drops a visual into
+// the conversation right after the Champion's message that matches (or, once the
+// lesson reaches fromStep, after the latest message). `Below` renders under the chat.
+export default function LessonChat({ lessonId, Done, inline = null, Below = null }) {
   const lesson = getLesson(lessonId);
   const [status, setStatus] = useState("loading"); // loading | ready | signed_out | not_configured | locked | error
   const [messages, setMessages] = useState([]);
@@ -123,6 +126,14 @@ export default function LessonChat({ lessonId, Done }) {
 
   const current = stepIndex(lessonId, progress.step);
   const done = progress.step === "complete" || progress.completed;
+  let inlineAt = -1;
+  if (inline) {
+    inlineAt = messages.findIndex((m) => m.role === "assistant" && inline.match?.test(m.content));
+    if (inlineAt === -1 && (done || current >= stepIndex(lessonId, inline.fromStep))) {
+      for (let i = messages.length - 1; i >= 0; i--) if (messages[i].role === "assistant") { inlineAt = i; break; }
+    }
+  }
+  const Inline = inline?.Component;
 
   return (
     <div className="sos-lesson">
@@ -150,7 +161,10 @@ export default function LessonChat({ lessonId, Done }) {
 
           <div className="sos-log" ref={logRef} aria-live="polite">
             {messages.map((m, i) => (
-              <div key={i} className={`sos-bubble ${m.role === "user" ? "you" : "champion"}`}>{m.content}</div>
+              <div key={i} style={{ display: "contents" }}>
+                <div className={`sos-bubble ${m.role === "user" ? "you" : "champion"}`}>{m.content}</div>
+                {i === inlineAt && Inline && <Inline name={firstName} latest={i === messages.length - 1} />}
+              </div>
             ))}
             {thinking && <div className="sos-typing" aria-label="Your Champion is writing"><i /><i /><i /></div>}
           </div>
@@ -177,6 +191,7 @@ export default function LessonChat({ lessonId, Done }) {
           </form>
         </div>
 
+        {Below && <Below step={progress.step} done={done} />}
         {done && Done && <Done name={firstName} captured={progress.captured} />}
       </section>
     </div>

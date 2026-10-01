@@ -33,7 +33,8 @@ const SECTIONS = [
     "A small number of people on the Story team may access account data when it's needed to fix a problem you've asked us about, to keep someone safe, or because the law requires it.",
   ] },
   { h: "Safety", p: [
-    "If something you write suggests you may be in danger, your Champion will pause the lesson and share crisis resources such as 988. During our preview, conversations are not monitored by staff in real time, so if you need help now, please call or text 988, text HOME to 741741, or call 911 in an emergency.",
+    "If something you write suggests you may be in danger, your Champion will pause the lesson and share crisis resources such as 988. It also sends a safety alert to a small number of people on the Story team, with your first name, your email, the lesson and the message that raised the concern, so a real person can check in with you.",
+    "Conversations are not monitored by staff in real time, so if you need help now, please call or text 988, text HOME to 741741, or call 911 in an emergency.",
   ] },
   { h: "Age", p: [
     "During our preview, Story of Self accounts are for people 18 and older. Story of Self is never intended for children under 13. If you believe a child has created an account, contact us and we'll delete it.",

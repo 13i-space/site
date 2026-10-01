@@ -16,7 +16,7 @@ export default function MyStory() {
       const { data: s } = await sb.auth.getSession();
       if (!s.session) { setState({ status: "signed_out", rows: [], name: "" }); return; }
       const { data } = await sb.from("story_progress").select("lesson, step, completed_at");
-      setState({ status: "ready", rows: data || [], name: s.session.user.user_metadata?.first_name || "" });
+      setState({ status: "ready", rows: data || [], name: s.session.user.user_metadata?.first_name || "", founder: Boolean(s.session.user.app_metadata?.story_founder) });
     })();
   }, []);
 
@@ -39,7 +39,7 @@ export default function MyStory() {
   const kindOf = (id) => {
     const l = LESSONS[id];
     const row = byLesson[id];
-    const unlocked = !l.requires || isDone(byLesson[l.requires]);
+    const unlocked = state.founder || !l.requires || isDone(byLesson[l.requires]);
     if (isDone(row)) return "done";
     if (unlocked && !foundCurrent) { foundCurrent = true; return "current"; }
     return unlocked ? "open" : "locked";
@@ -56,6 +56,19 @@ export default function MyStory() {
       <h1 style={{ fontSize: "clamp(34px, 6vw, 48px)" }}>{state.name ? `${state.name}, you're the lead character.` : "You're the lead character."}</h1>
       <div className="sos-progress" aria-hidden="true"><span style={{ width: `${(totalDone / total) * 100}%` }} /></div>
 
+      {state.founder && (
+        <div className="sos-founder">
+          <div>
+            <b>Founder preview</b>
+            <span>Every lesson is unlocked for your account, so you can open any unit in any order.</span>
+          </div>
+          <div className="sos-founder-links">
+            <a href="/story/example">See a finished example story</a>
+            <a href="/story/team/safety">Safety desk</a>
+          </div>
+        </div>
+      )}
+
       <div className="sos-hub" style={{ marginTop: 18 }}>
         {current && (
           <a href={`/story/${current.l.slug}`} className="sos-hub-item current" style={{ color: "inherit", textDecoration: "none" }}>
@@ -67,6 +80,11 @@ export default function MyStory() {
         <a href="/story/story-write" className="sos-hub-item" style={{ color: "inherit", textDecoration: "none" }}>
           <div className="sos-hub-num" style={{ background: "var(--ember-tint)", borderColor: "var(--ember)", color: "var(--ember-deep)" }}>✎</div>
           <div className="sos-hub-body"><b>My Story Write</b><small>Every piece of your story, together. Edit, then read it out loud.</small></div>
+          <div className="sos-hub-status">Open →</div>
+        </a>
+        <a href="/story/timeline" className="sos-hub-item" style={{ color: "inherit", textDecoration: "none" }}>
+          <div className="sos-hub-num" style={{ background: "#E4ECF7", borderColor: "#256abf", color: "#1d528f" }}>↗</div>
+          <div className="sos-hub-body"><b>My Life Timeline</b><small>The moments that made your story, plotted above and below the line.</small></div>
           <div className="sos-hub-status">Open →</div>
         </a>
       </div>

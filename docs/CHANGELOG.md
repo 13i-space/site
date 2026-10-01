@@ -3,6 +3,39 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.31 — Life Timeline, "1 in 70 trillion" visual, Story of Self as a book
+Life Timeline (Story Guide pp. 20–23): an interactive timeline at
+`/story/timeline` and under the chat in Lesson 2. Moments go above (good) or
+below (hard) the line by how much they mattered; drag to place, tap to add,
+arrow keys to nudge. A monotone curve draws their story arc, stages and "You
+are here" are marked, goals follow Aaron's guide (10 moments, one per stage),
+and moments named in Lessons 1–2 are offered as chips. Includes Aaron's own
+example timeline and a PNG download. Saved in `story_progress` as lesson
+`life-timeline` (no new SQL); the Champion sees it from Lesson 2 on.
+Lesson 1's "only you" step now shows an animated visual of the odds
+(2^23 × 2^23 = 70,368,744,177,664) inside the chat, with replay and a
+reduced-motion version. The Story Write and the example story download as a
+typeset 5.5 × 8.5 in PDF (cover with their title, title page, epigraph,
+contents, drop caps, running heads), built in the browser with `pdf-lib` and
+`@pdf-lib/fontkit` (new dependencies) using Newsreader and Manrope (OFL) from
+`public/story/fonts`.
+
+## Update 5.30 — Story founder preview, one login, Paul's note, safety net
+Founder preview: Story accounts flagged `app_metadata.story_founder` (set only
+by the server) get every lesson unlocked, a founder banner on My Story, and a
+fictional finished example story at `/story/example` (also linked from the
+homepage). One login: the "Ready to begin this story?" button on `/story/aaron`
+calls `/api/story/brief/handoff`, which magic-links the 13i brief user into a
+matching Story account (flagged founder); `SessionCatcher` in the Story layout
+picks up the session. Paul's note: a 60-second video/voice recorder (or upload)
+at the top of the briefing, stored in the 13i bucket `story-brief`, visible to
+Aaron as a player. Safety net: when the Champion flags a safety concern, a row
+goes to the Story table `story_safety_alerts` (and optionally to
+`STORY_SAFETY_WEBHOOK_URL`, with no student content); founders review and
+follow up at `/story/team/safety`. Needs `supabase/v5.30-story-founders-safety.sql`
+in the Story project, `STORY_SUPABASE_SERVICE_ROLE_KEY` in Vercel, and
+`https://13i.space/story` in the Story project's redirect URLs.
+
 ## Update 5.28 — Story Community page, Aaron's photo, briefing ends at the launch page
 `/story/community` explains the Story Community on Mighty Networks (Kinship,
 completing Explore · Play · Create): why community, the planned spaces (Welcome

@@ -5,6 +5,7 @@ import "./story.css";
 import "./site.css";
 import SiteHeader from "./_components/SiteHeader";
 import SiteFooter from "./_components/SiteFooter";
+import SessionCatcher from "./_components/SessionCatcher";
 
 export const metadata = {
   title: { default: "Story of Self", template: "%s · Story of Self" },
@@ -26,6 +27,7 @@ export default function StoryLayout({ children }) {
         rel="stylesheet"
         href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap"
       />
+      <SessionCatcher />
       <SiteHeader />
       <main>{children}</main>
       <SiteFooter />

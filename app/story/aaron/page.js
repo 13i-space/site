@@ -8,6 +8,9 @@ import {
   TIERS, PLAN, ROADMAP, NEEDS, GUIDANCE, STATUSES,
 } from "../../../lib/story/briefContent";
 import Guidance from "./Guidance";
+import LaunchButton from "./LaunchButton";
+import NoteMedia from "./NoteMedia";
+import { getNote } from "../../../lib/story/briefNote";
 import Market from "./Market";
 import ChampionPlan from "./ChampionPlan";
 import Competition from "./Competition";
@@ -85,6 +88,7 @@ export default async function AaronBrief() {
   if (!viewer) notFound();
   const isPaul = isSentinelUser(viewer.username);
   const responses = isPaul ? await getAllResponses() : null;
+  const note = await getNote();
 
   return (
     <div className="brief">
@@ -93,6 +97,7 @@ export default async function AaronBrief() {
         <div className="sos-narrow">
           <div className="sos-eyebrow">Story of Self · online</div>
           <h1>Your story method, <em>running</em>.</h1>
+          <NoteMedia note={note} isPaul={isPaul} />
           <div className="brief-note">
             <p className="brief-greet">{NOTE.greeting}</p>
             {NOTE.paragraphs.map((p, i) => <p key={i}>{p}</p>)}
@@ -362,8 +367,8 @@ export default async function AaronBrief() {
           <div className="sos-eyebrow" style={{ color: "#F0B596" }}>The last page of this briefing</div>
           <h2>Ready to begin this story?</h2>
           <p>Everything you've read about lives on one page now: the Story of Self launch page. Start the journey as a student, open the Champion Academy, and see how it will look to the world.</p>
-          <a className="sos-btn" href="/story">Go to the launch page</a>
-          <small>Your answers above are saved. Come back to this page any time from your Node.</small>
+          <LaunchButton />
+          <small>You'll be signed in to your own Story of Self preview account, with every lesson unlocked. Your answers above are saved; come back any time from your Node.</small>
         </div>
       </section>
 

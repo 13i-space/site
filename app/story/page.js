@@ -177,6 +177,7 @@ export default function StoryHome() {
             <h2 className="sh-h2">Your story, written. And the person who wrote it.</h2>
             <p className="sh-p">A finished Story of Self: your Ordinary World, your Defining Moment, the turn, and your Call to Action. Ready to read aloud.</p>
             <p className="sh-p">And the things that come with it: a clearer sense of what you value, words for who you are, and a far better answer to “tell me about yourself,” whether it's a college essay, a scholarship, or a job interview.</p>
+            <a className="sos-btn ghost" href="/story/example">Read an example story</a>
           </div>
         </div>
       </section>

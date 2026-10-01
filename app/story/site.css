@@ -259,3 +259,139 @@
   .sos .cm-journey span { grid-row: span 2; margin: 0; }
 }
 @media (max-width: 560px) { .sos .cm-pillars, .sos .cm-spaces { grid-template-columns: 1fr; } }
+
+/* founder banner */
+.sos .sos-founder { margin: 18px 0 6px; display: flex; flex-wrap: wrap; gap: 14px 24px; justify-content: space-between; align-items: center; background: #2A2420; color: #E2D6CA; border-radius: 16px; padding: 16px 20px; }
+.sos .sos-founder b { display: block; color: #F0B596; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+.sos .sos-founder span { font-size: 15px; }
+.sos .sos-founder-links { display: flex; gap: 16px; flex-wrap: wrap; }
+.sos .sos-founder-links a { color: #fff; font-weight: 600; font-size: 14.5px; }
+
+/* example story */
+.sos .ex-note { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: center; background: var(--ember-tint); border-radius: 16px; padding: 16px 20px; margin: 10px 0 22px; }
+.sos .ex-note b { font-size: 15px; } .sos .ex-note span { grid-column: 1; font-size: 14.5px; color: var(--ink-soft); }
+.sos .ex-note .sos-btn { grid-row: 1 / span 2; grid-column: 2; }
+.sos .ex-sec { margin-bottom: 4px; }
+.sos .ex-label { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin: 18px 0 2px; }
+@media (max-width: 560px) { .sos .ex-note { grid-template-columns: 1fr; } .sos .ex-note .sos-btn { grid-row: auto; grid-column: 1; justify-self: start; } }
+
+/* safety desk */
+.sos .sd { max-width: 900px; margin: 0 auto; padding: 36px 24px 20px; }
+.sos .sd-head { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.sos .sd-head h1 { font-size: clamp(36px, 5vw, 50px); }
+.sos .sd-head p { color: var(--ink-soft); }
+.sos .sd-count { text-align: center; background: var(--ember); color: #fff; border-radius: 18px; padding: 12px 20px; }
+.sos .sd-count b { display: block; font-size: 36px; line-height: 1; }
+.sos .sd-count span { font-size: 13px; }
+.sos .sd-guide { background: var(--sage-tint); border-radius: 16px; padding: 16px 20px; margin: 16px 0 22px; color: #2F5240; }
+.sos .sd-guide ol { margin: 8px 0 0; padding-left: 20px; display: grid; gap: 4px; font-size: 15px; }
+.sos .sd-tabs { display: flex; gap: 6px; margin-bottom: 14px; }
+.sos .sd-tabs button { border: 1.5px solid var(--line); background: var(--card); border-radius: 999px; padding: 8px 16px; font: 600 14px var(--sos-body), sans-serif; cursor: pointer; color: var(--ink-soft); }
+.sos .sd-tabs button.on { background: var(--ink); border-color: var(--ink); color: #fff; }
+.sos .sd-alert { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--ember); border-radius: 16px; padding: 18px 20px; margin-bottom: 12px; display: grid; gap: 10px; }
+.sos .sd-alert.contacted { border-left-color: var(--gold); }
+.sos .sd-alert.resolved { border-left-color: var(--sage); opacity: .85; }
+.sos .sd-alert-top { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; }
+.sos .sd-alert-top b { font-size: 17px; }
+.sos .sd-when { margin-left: auto; }
+.sos .sd-muted { color: var(--muted); font-size: 13.5px; }
+.sos .sd-pill { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 3px 10px; border-radius: 999px; background: var(--ember-tint); color: var(--ember-deep); }
+.sos .sd-pill.contacted { background: #FBF0D9; color: #7A5A12; }
+.sos .sd-pill.resolved { background: var(--sage-tint); color: #2F5240; }
+.sos .sd-lesson { font-size: 14px; font-weight: 600; color: var(--ink-soft); }
+.sos .sd-excerpt { margin: 0; padding: 12px 14px; background: var(--paper); border-radius: 12px; font-family: var(--sos-display), Georgia, serif; font-size: 17px; white-space: pre-wrap; }
+.sos .sd-alert textarea { width: 100%; padding: 10px 12px; border-radius: 12px; border: 1.5px solid var(--line); font: inherit; font-size: 14.5px; background: #fff; resize: vertical; }
+.sos .sd-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.sos .sd-empty { text-align: center; padding: 40px 20px; color: var(--muted); background: var(--card); border: 1px dashed var(--line); border-radius: 16px; }
+
+/* ---------- Update 5.31: Life Timeline ---------- */
+.sos .lt { background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 22px 22px 16px; }
+.sos .lt-wait { text-align: center; color: var(--muted); padding: 30px; }
+.sos .lt-head { display: flex; justify-content: space-between; gap: 18px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 12px; }
+.sos .lt-head h3 { font-size: 24px; margin-bottom: 6px; }
+.sos .lt-head p { margin: 0; color: var(--ink-soft); font-size: 15px; max-width: 620px; }
+.sos .lt-age { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--ink-soft); white-space: nowrap; }
+.sos .lt-age input { width: 64px; padding: 7px 8px; border: 1px solid var(--line); border-radius: 10px; font: inherit; text-align: center; background: #fff; }
+.sos .lt-scroll { overflow-x: auto; margin: 0 -6px; -webkit-overflow-scrolling: touch; }
+.sos .lt-svg { display: block; width: 100%; min-width: 700px; height: auto; user-select: none; -webkit-user-select: none; }
+.sos .lt-moment:focus { outline: none; }
+.sos .lt-moment:focus-visible circle:last-of-type { stroke: var(--gold); stroke-width: 4; }
+.sos .lt-goals { display: grid; grid-template-columns: 160px auto 1fr; gap: 6px 14px; align-items: center; margin: 12px 0 4px; font-size: 14px; }
+.sos .lt-goals small { grid-column: 1 / -1; color: var(--muted); font-size: 13px; }
+.sos .lt-meter { height: 8px; background: var(--ember-tint); border-radius: 99px; overflow: hidden; }
+.sos .lt-meter span { display: block; height: 100%; background: var(--ember); border-radius: 99px; transition: width .4s; }
+.sos .lt-stagepills { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.sos .lt-stagepills span { font-size: 12.5px; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--line); color: var(--muted); }
+.sos .lt-stagepills span.on { background: var(--sage-tint); border-color: var(--sage); color: #3f5a49; font-weight: 600; }
+.sos .lt-editor { display: grid; grid-template-columns: 1fr 90px 220px; gap: 12px 16px; align-items: end; background: #FBF5EC; border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; margin-top: 12px; }
+.sos .lt-field label { display: block; font-size: 12.5px; font-weight: 700; color: var(--ink-soft); margin-bottom: 5px; }
+.sos .lt-field input[type="text"], .sos .lt-field input:not([type]), .sos .lt-field input[type="number"] { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font: inherit; background: #fff; }
+.sos .lt-field input[type="range"] { width: 100%; accent-color: var(--ember); }
+.sos .lt-range-labels { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+.sos .lt-editor-actions { grid-column: 1 / -1; display: flex; gap: 10px; flex-wrap: wrap; }
+.sos .lt-del { color: #a33 !important; }
+.sos .lt-readsel { display: block; font-size: 15px; }
+.sos .lt-readsel b { color: var(--ember-deep); margin-right: 8px; }
+.sos .lt-bar { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; margin-top: 12px; }
+.sos .lt-seeds { flex: 1; min-width: 240px; }
+.sos .lt-seeds small { display: block; color: var(--muted); font-size: 13px; margin-bottom: 6px; }
+.sos .lt-seeds > div { display: flex; flex-wrap: wrap; gap: 6px; }
+.sos .lt-seed { border: 1px dashed var(--ember); background: var(--ember-tint); color: var(--ember-deep); border-radius: 99px; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+.sos .lt-seed:hover { background: #F1D4C4; }
+.sos .lt-foot { display: flex; gap: 18px; justify-content: flex-end; align-items: center; margin-top: 12px; font-size: 13.5px; }
+.sos .lt-save { color: var(--muted); margin-right: auto; }
+.sos .lt-link { background: none; border: 0; padding: 0; font: inherit; color: var(--ember-deep); cursor: pointer; }
+.sos .lt-link:disabled { color: var(--muted); cursor: default; }
+.sos .lt-page { max-width: 1120px; margin: 0 auto; padding: 40px 24px 30px; }
+.sos .lt-page-head h1 { font-size: clamp(36px, 6vw, 54px); margin-bottom: 10px; }
+.sos .lt-page-head .sos-lede { max-width: 680px; }
+.sos .lt-tabs { display: inline-flex; gap: 4px; background: #EFE5D8; padding: 4px; border-radius: 99px; margin: 18px 0 18px; }
+.sos .lt-tabs button { border: 0; background: none; font: inherit; font-size: 14px; font-weight: 600; padding: 8px 16px; border-radius: 99px; cursor: pointer; color: var(--ink-soft); }
+.sos .lt-tabs button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(42,36,32,.12); }
+.sos .lt-note { color: var(--muted); font-size: 14px; margin: 10px 4px 0; }
+.sos .lt-page-foot { display: flex; justify-content: space-between; margin-top: 24px; font-size: 15px; }
+.sos .ex-note .ex-actions { grid-row: 1 / span 2; grid-column: 2; display: flex; flex-direction: column; gap: 8px; align-items: stretch; }
+@media (max-width: 720px) {
+  .sos .lt { padding: 16px 14px 12px; border-radius: 18px; }
+  .sos .lt-goals { grid-template-columns: 1fr auto; }
+  .sos .lt-stagepills { grid-column: 1 / -1; justify-content: flex-start; }
+  .sos .lt-editor { grid-template-columns: 1fr 90px; }
+  .sos .lt-feel { grid-column: 1 / -1; }
+  .sos .ex-note { grid-template-columns: 1fr; }
+  .sos .ex-note .ex-actions { grid-row: auto; grid-column: 1; flex-direction: row; flex-wrap: wrap; }
+}
+
+/* ---------- Update 5.31: "The only you" odds visual ---------- */
+.sos .ov { margin: 4px 0; background: radial-gradient(120% 90% at 50% 0%, #3A2F29 0%, #231E1B 60%); color: #F7F1E8; border-radius: 22px; padding: 22px 22px 18px; overflow: hidden; align-self: stretch; box-shadow: 0 10px 30px rgba(35,30,27,.18); }
+.sos .ov-eyebrow { font-size: 11.5px; letter-spacing: .18em; text-transform: uppercase; color: #E08A5F; font-weight: 700; text-align: center; margin-bottom: 14px; }
+.sos .ov-eq { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; text-align: center; }
+.sos .ov-num, .sos .ov-op, .sos .ov-total, .sos .ov-stage, .sos .ov-facts, .sos .ov-quote { opacity: 0; transform: translateY(8px); transition: opacity .7s ease, transform .7s ease; }
+.sos .ov .in { opacity: 1; transform: none; }
+.sos .ov-num b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: clamp(22px, 3.4vw, 30px); font-variant-numeric: tabular-nums; }
+.sos .ov-num span, .sos .ov-total span { display: block; font-size: 12.5px; color: #C9BBAE; line-height: 1.35; margin-top: 4px; }
+.sos .ov-op { font-size: 26px; color: #C99A3B; }
+.sos .ov-total { text-align: center; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(247,241,232,.12); }
+.sos .ov-eqsign { display: inline !important; color: #C99A3B !important; font-size: 22px !important; margin-right: 10px; }
+.sos .ov-total b { font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: clamp(28px, 5.4vw, 46px); color: #fff; font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.sos .ov-stage { position: relative; height: 230px; margin: 16px -22px 0; }
+.sos .ov-field { position: absolute; inset: 0; width: 100%; height: 100%; }
+.sos .ov-caption { position: absolute; left: 0; right: 0; bottom: 14px; text-align: center; text-shadow: 0 2px 12px rgba(0,0,0,.6); }
+.sos .ov-caption b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: clamp(26px, 4.6vw, 36px); }
+.sos .ov-caption span { font-size: 15px; color: #E9C9B4; font-style: italic; }
+.sos .ov-facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+.sos .ov-facts div { background: rgba(247,241,232,.06); border: 1px solid rgba(247,241,232,.1); border-radius: 14px; padding: 12px; text-align: center; }
+.sos .ov-facts b { display: block; font-family: var(--sos-display), Georgia, serif; font-weight: 500; font-size: 22px; color: #E08A5F; }
+.sos .ov-facts span { display: block; font-size: 12.5px; color: #C9BBAE; line-height: 1.35; margin-top: 2px; }
+.sos .ov-quote { text-align: center; font-family: var(--sos-display), Georgia, serif; font-style: italic; font-size: 18px; margin-top: 16px; color: #F7F1E8; }
+.sos .ov-replay { display: block; margin: 10px auto 0; background: none; border: 1px solid rgba(247,241,232,.25); color: #E9DDD0; border-radius: 99px; padding: 5px 14px; font: inherit; font-family: var(--sos-sans, inherit); font-style: normal; font-size: 13px; cursor: pointer; }
+.sos .ov-replay:hover { border-color: #E08A5F; color: #fff; }
+@media (max-width: 560px) {
+  .sos .ov { padding: 18px 14px 14px; }
+  .sos .ov-eq { grid-template-columns: 1fr; }
+  .sos .ov-facts { grid-template-columns: 1fr; }
+  .sos .ov-stage { margin: 14px -14px 0; height: 200px; }
+}
+@media (prefers-reduced-motion: reduce) { .sos .ov * { transition: none !important; } }
+.sos .lt { min-width: 0; max-width: 100%; }
+.sos .lt-swipe { display: none; margin: 6px 0 0; font-size: 12.5px; color: var(--muted); text-align: center; }
+@media (max-width: 720px) { .sos .lt-swipe { display: block; } }

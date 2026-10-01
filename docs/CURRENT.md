@@ -4,6 +4,12 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.31 (no new SQL): Life Timeline (`/story/timeline` + Lesson 2),
+  animated odds in Lesson 1, Story of Self book PDF (Story Write + example)
+- Update 5.30 (needs supabase/v5.30-story-founders-safety.sql in the Story
+  project + STORY_SUPABASE_SERVICE_ROLE_KEY): founder preview (all lessons
+  unlocked, `/story/example`), one-login handoff from `/story/aaron`, Paul's
+  note recorder, safety alerts + `/story/team/safety`
 - Update 5.25: Story Champion Academy prototype at `/story/academy`
   (needs a Story account for the AI parts; no new SQL)
 - Update 5.23 (needs docs/v5.23-story-brief.sql in the 13i project):

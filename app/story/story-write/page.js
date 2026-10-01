@@ -3,6 +3,8 @@ import { useEffect, useMemo, useState } from "react";
 import { getStoryBrowserClient, storyConfigured } from "../../../lib/story/storySupabase";
 import { STORY_WRITE } from "../../../lib/story/lessonSteps";
 import { assembleStory, wordCount, STORY_WRITE_ID } from "../../../lib/story/storyWrite";
+import { partsFromStoryWrite } from "../../../lib/story/bookPdf";
+import BookButton from "../_components/BookButton";
 
 // My Story Write: the whole Story of Self, assembled from every lesson's drafts,
 // editable here, with Aaron's word-count targets and a clean reading view.
@@ -39,6 +41,7 @@ export default function StoryWrite() {
   const total = useMemo(() => Object.values(text).reduce((n, t) => n + wordCount(t), 0), [text]);
   const written = STORY_WRITE.flatMap((p) => p.sections).filter((s) => (text[s.key] || "").trim()).length;
   const allSections = STORY_WRITE.flatMap((p) => p.sections).length;
+  const book = { title: title || "My Story of Self", author: name, parts: partsFromStoryWrite(STORY_WRITE, text) };
 
   async function save() {
     const sb = getStoryBrowserClient();
@@ -72,6 +75,7 @@ export default function StoryWrite() {
       <div className="sos-read">
         <div className="sos-read-bar">
           <button className="sos-btn ghost" onClick={() => setMode("edit")}>← Back to editing</button>
+          <BookButton {...book} className="sos-btn" />
           <button className="sos-btn ghost" onClick={() => window.print()}>Print</button>
         </div>
         <article>
@@ -92,6 +96,7 @@ export default function StoryWrite() {
           <p className="sos-read-end">Own your story.</p>
         </article>
         <p className="sos-read-tip">Aaron's rule: read your story, don't give a speech. Stick to the script. No freestyles.</p>
+        <p className="sos-read-tip" style={{ marginTop: 6 }}>The book is a small 5.5 × 8.5 inch PDF with your title on the cover: print it and bring it to Story Night.</p>
       </div>
     );
   }
@@ -107,6 +112,7 @@ export default function StoryWrite() {
       <div className="sos-sw-bar">
         <button className="sos-btn" onClick={save} disabled={!dirty}>{dirty ? "Save changes" : "Saved"}</button>
         <button className="sos-btn ghost" onClick={() => setMode("read")}>Reading view</button>
+        <BookButton {...book} />
         {msg && <span className="sos-sw-msg">{msg}</span>}
       </div>
 

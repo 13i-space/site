@@ -417,3 +417,31 @@
 .sos .brief-begin-mark span { position: absolute; width: 16px; height: 16px; border-radius: 50%; background: var(--ember); top: -11px; left: 50%; margin-left: -8px; }
 .sos .cp-cta-note { margin: 0; font-size: 14.5px; color: var(--ember-deep); font-weight: 600; max-width: 260px; }
 .sos .brief-try-go span { font-size: 15px; color: var(--ink-soft); }
+
+/* Paul's note */
+.sos .nm { margin-top: 26px; }
+.sos .nm-player { margin: 0; }
+.sos .nm-video { width: 100%; border-radius: 18px; background: #1d1916; display: block; aspect-ratio: 16 / 9; object-fit: cover; box-shadow: 0 30px 60px -40px rgba(42,36,32,.9); }
+.sos .nm-player figcaption { font-size: 13.5px; color: var(--muted); margin-top: 8px; text-align: center; }
+.sos .nm-audio-card { display: flex; gap: 16px; align-items: center; background: #2A2420; color: #F7F1E8; border-radius: 18px; padding: 18px 20px; }
+.sos .nm-audio-card b { display: block; margin-bottom: 8px; }
+.sos .nm-audio { width: 100%; min-width: 220px; }
+.sos .nm-audio-mark { display: flex; gap: 4px; align-items: center; height: 40px; }
+.sos .nm-audio-mark span { width: 5px; border-radius: 3px; background: var(--ember); animation: nmBar 1.2s ease-in-out infinite; }
+.sos .nm-audio-mark span:nth-child(1) { height: 14px; } .sos .nm-audio-mark span:nth-child(2) { height: 30px; animation-delay: .15s; } .sos .nm-audio-mark span:nth-child(3) { height: 22px; animation-delay: .3s; } .sos .nm-audio-mark span:nth-child(4) { height: 36px; animation-delay: .45s; } .sos .nm-audio-mark span:nth-child(5) { height: 18px; animation-delay: .6s; }
+@keyframes nmBar { 50% { transform: scaleY(.5); } }
+.sos .nm-rec { border: 1.5px dashed #9FB8A8; background: #F3F8F4; border-radius: 18px; padding: 18px 20px; display: grid; gap: 12px; }
+.sos .nm-rec-k { font-size: 12.5px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sage); }
+.sos .nm-rec small { color: var(--muted); font-size: 13px; }
+.sos .nm-kinds { display: flex; gap: 6px; }
+.sos .nm-kinds button { border: 1.5px solid var(--line); background: #fff; border-radius: 999px; padding: 7px 14px; font: 600 14px var(--sos-body), sans-serif; cursor: pointer; color: var(--ink-soft); }
+.sos .nm-kinds button.on { background: var(--sage); border-color: var(--sage); color: #fff; }
+.sos .nm-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.sos .nm-paul { justify-content: center; margin-top: 6px; gap: 18px; font-size: 14px; }
+.sos .nm-file { position: relative; overflow: hidden; }
+.sos .nm-file input { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+.sos .nm-stop { background: #A2311F; }
+.sos .nm-mic { height: 120px; display: grid; place-items: center; background: #2A2420; border-radius: 18px; }
+.sos .nm-mic span { width: 40px; height: 40px; border-radius: 50%; background: var(--ember); opacity: .5; }
+.sos .nm-mic span.on { opacity: 1; animation: nmPulse 1.2s ease-in-out infinite; }
+@keyframes nmPulse { 50% { transform: scale(1.35); box-shadow: 0 0 0 12px rgba(194,91,52,.2); } }

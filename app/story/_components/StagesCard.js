@@ -42,6 +42,7 @@ export default function StagesCard({ name, captured = {}, hideNext = false }) {
           </div>
         )}
         {captured.champion_note && <p className="sos-snap-note" style={{ marginTop: 18 }}>{captured.champion_note}</p>}
+        <p style={{ margin: "16px 0 0", fontSize: 15 }}><a href="/story/timeline">See your Life Timeline →</a></p>
       </div>
       {!hideNext && <NextUp
         label="Pause here · Let it eat"
