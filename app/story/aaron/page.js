@@ -8,6 +8,7 @@ import {
   TIERS, PLAN, ROADMAP, NEEDS, GUIDANCE, STATUSES,
 } from "../../../lib/story/briefContent";
 import Guidance from "./Guidance";
+import Market from "./Market";
 import "./brief.css";
 
 // Aaron's briefing: the case for Story of Self online, with the prototype
@@ -258,7 +259,14 @@ export default async function AaronBrief() {
           </div>
 
           <details className="brief-plan">
-            <summary>Read the full business plan</summary>
+            <summary>Understand your target market</summary>
+            <div className="brief-plan-body mkt-body">
+              <Market />
+            </div>
+          </details>
+
+          <details className="brief-plan">
+            <summary>Read the mini-business plan</summary>
             <div className="brief-plan-body">
               {PLAN.map((s, i) => (
                 <div key={s.t} className="brief-plan-sec">

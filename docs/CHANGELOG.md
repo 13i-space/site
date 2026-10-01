@@ -3,6 +3,14 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.24 — Story briefing: Understand your target market
+A new "Understand your target market" panel on `/story/aaron`, beside the
+business plan (now "Read the mini-business plan"): headline stats, where a
+graduating class goes, summer melt, the college funnel, mental health (CDC
+YRBS, NIMH, Healthy Minds, loneliness), purpose, AI use, parents' worries, the
+graduate decline, what it means for Story of Self and a rough market size. Plain
+HTML/SVG charts with hover tooltips; data in `lib/story/briefMarket.js`.
+
 ## Update 5.23 — Story of Self: Aaron's briefing page
 `/story/aaron` is a private briefing for Aaron that makes the case for Story of
 Self online and links to the prototype: a note from Paul, the idea in 60
