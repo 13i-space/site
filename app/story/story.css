@@ -271,3 +271,51 @@
   .sos { background: #fff; }
   .sos-snap-card { break-inside: avoid; box-shadow: none; }
 }
+
+/* generic lesson cards (Lessons 5–22) */
+.sos-gen { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+.sos-gen-row { padding: 12px 0; border-top: 1px solid var(--line); }
+.sos-gen-row.wide { grid-column: 1 / -1; }
+.sos-gen-row small { display: block; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 3px; }
+.sos-gen-big { font-family: var(--sos-display); font-size: 26px; line-height: 1.25; color: var(--ink); }
+.sos-draft { font-family: var(--sos-display); font-size: 18px; line-height: 1.6; white-space: pre-wrap; background: rgba(255,255,255,.75); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin-top: 4px; }
+
+/* my story by unit */
+.sos-progress { height: 6px; background: var(--paper-deep); border-radius: 999px; overflow: hidden; margin-top: 16px; }
+.sos-progress span { display: block; height: 100%; background: var(--ember); border-radius: 999px; }
+.sos-unit { margin-top: 34px; }
+.sos-unit-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; margin-bottom: 10px; }
+.sos .sos-unit-head h2 { font-size: 30px; }
+.sos-unit-head small { color: var(--ink-soft); font-size: 15px; }
+.sos-unit-link { font-size: 14px; font-weight: 700; white-space: nowrap; }
+.sos-unit-locked { color: var(--muted); font-size: 15px; border: 1.5px dashed var(--line); border-radius: 14px; padding: 14px 18px; margin: 0; }
+.sos-hub .sos-hub-body small + b { margin-top: 2px; }
+
+/* story write */
+.sos-sw-bar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-top: 20px; }
+.sos-sw-msg { font-size: 14px; color: var(--sage); font-weight: 700; }
+.sos-sw-part { margin-top: 34px; }
+.sos .sos-sw-part h2 { font-size: 30px; border-bottom: 2px solid var(--ember); padding-bottom: 6px; margin-bottom: 8px; }
+.sos-sw-part h2 small { font-family: var(--sos-body); font-size: 13px; color: var(--muted); font-weight: 600; margin-left: 8px; }
+.sos-sw-sec { margin-top: 14px; }
+.sos-sw-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; }
+.sos-sw-head b { font-size: 15px; }
+.sos-sw-head span { font-size: 13px; color: var(--muted); }
+.sos-sw-head span.over { color: var(--ember-deep); font-weight: 700; }
+.sos-sw-sec textarea { width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 12px 14px; font-family: var(--sos-display); font-size: 18px; line-height: 1.55; color: var(--ink); background: #fff; resize: vertical; }
+.sos-sw-sec textarea:focus { outline: none; border-color: var(--ember); }
+
+/* reading view */
+.sos-read { max-width: 720px; margin: 0 auto; padding: 24px 24px 40px; }
+.sos-read-bar { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 30px; }
+.sos-read article { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: clamp(28px, 6vw, 64px); }
+.sos .sos-read h1 { font-size: clamp(36px, 6vw, 52px); text-align: center; margin-bottom: 30px; font-style: italic; }
+.sos .sos-read h2 { font-size: 15px; font-family: var(--sos-body); letter-spacing: .16em; text-transform: uppercase; color: var(--ember); margin: 36px 0 14px; font-weight: 700; }
+.sos-read p { font-family: var(--sos-display); font-size: 21px; line-height: 1.7; white-space: pre-wrap; }
+.sos-read .sos-read-line { font-style: italic; font-size: 24px; text-align: center; margin: 22px 0; }
+.sos-read-end { text-align: center; font-style: italic; color: var(--ember); margin-top: 40px; }
+.sos-read-tip { text-align: center; color: var(--muted); font-size: 14px; margin-top: 16px; }
+@media print { .sos-read-bar, .sos-read-tip { display: none !important; } .sos-read article { border: 0; padding: 0; } .sos-read section { break-inside: avoid-page; } }
+@media (max-width: 700px) { .sos-gen { grid-template-columns: 1fr; } .sos-unit-head { flex-direction: column; align-items: flex-start; } }
+.sos-btn.ghost.on-dark { color: #F7F1E8 !important; border-color: rgba(247,241,232,.45); }
+.sos-btn.ghost.on-dark:hover { background: rgba(255,255,255,.08); }

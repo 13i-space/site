@@ -61,10 +61,11 @@ export default function AdventureCard({ name, captured = {}, hideNext = false })
           </div>
           <NextUp
             label="Pause here · Let it eat"
-            title="Up next: Unit 2 · Challenge"
-            text="Every character faces a challenge. Unit 2 explores the moments that shaped how you see yourself. Give Unit 1 a few days to settle first: notice your 'here', and your call."
-            href={null}
-            aside="Unit 2 is coming soon."
+            title="When you're ready: Unit 2 · Challenge"
+            text="Every character faces a challenge. Unit 2 explores how you see your world, your emotions, and the Defining Moment that shaped how you see yourself. Give Unit 1 a few days to settle first: notice your 'here', and your call."
+            href="/story/lesson-5"
+            cta="Start Unit 2 when you're ready"
+            aside="Your story is saved."
           />
         </>
       )}

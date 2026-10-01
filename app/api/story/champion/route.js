@@ -8,6 +8,7 @@
 import { buildChampionPrompt, parseChampionReply } from "../../../../lib/story/championPrompt";
 import { getStoryUserFromRequest, storyConfigured } from "../../../../lib/story/storySupabase";
 import { LESSONS, LESSON_ORDER, getLesson, stepIds, stepIndex } from "../../../../lib/story/lessonSteps";
+import { assembleStory, STORY_WRITE_ID } from "../../../../lib/story/storyWrite";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +19,7 @@ const num = (name, fallback) => {
 // Set STORY_MODEL in Vercel to change the Champion's model (e.g. "claude-sonnet-4-6" to save cost).
 const MODEL = () => process.env.STORY_MODEL || "claude-opus-5-5";
 const DAILY_LIMIT = () => num("STORY_DAILY_MESSAGES", 80);
-const MAX_TOKENS = 700;
+const MAX_TOKENS = 1600; // room for writing-lab drafts
 const MAX_HISTORY = 40;
 const MAX_MESSAGE_CHARS = 2000;
 
@@ -68,7 +69,7 @@ function mergeCaptured(old, add) {
       const clean = v.filter((x) => typeof x === "string" && x.trim()).map((x) => x.trim().slice(0, 140)).slice(0, 5);
       if (clean.length) out[k] = clean;
     } else if (typeof v === "string" && v.trim()) {
-      out[k] = v.trim().slice(0, 400);
+      out[k] = v.trim().slice(0, k.startsWith("draft_") ? 3000 : 400);
     }
   }
   return out;
@@ -97,12 +98,24 @@ async function countToday(supabase, userId) {
 }
 
 // What the student shared in earlier lessons, for the Champion's memory.
+// Long drafts are left out here (Close the Circle gets the whole story separately).
 function earlierLessons(lessonId, others) {
   const upTo = LESSON_ORDER.indexOf(lessonId);
   const lines = others
     .filter((r) => LESSON_ORDER.indexOf(r.lesson) > -1 && LESSON_ORDER.indexOf(r.lesson) < upTo)
-    .map((r) => `${LESSONS[r.lesson].title}: ${JSON.stringify(r.captured || {})}`);
+    .sort((a, b) => LESSON_ORDER.indexOf(a.lesson) - LESSON_ORDER.indexOf(b.lesson))
+    .map((r) => {
+      const short = Object.fromEntries(Object.entries(r.captured || {}).filter(([k]) => !k.startsWith("draft_")));
+      return `${LESSONS[r.lesson].title}: ${JSON.stringify(short)}`;
+    });
   return lines.length ? lines.join("\n") : "None yet.";
+}
+
+function currentStory(rows) {
+  const { sections, title } = assembleStory(rows);
+  const keys = Object.keys(sections);
+  if (!keys.length) return "Nothing written yet.";
+  return (title ? `Title: ${title}\n` : "") + keys.map((k) => `[${k}]\n${sections[k]}`).join("\n\n");
 }
 
 // A lesson counts as finished once the Champion has reached its closing summary.
@@ -181,6 +194,7 @@ export async function POST(request) {
   const p = publicProgress(progress);
   const system =
     `${buildChampionPrompt(lesson.id)}\n\n# PROGRESS FROM EARLIER LESSONS\n${earlierLessons(lesson.id, state.others)}` +
+    (lesson.storyWrite || lesson.finale ? `\n\n# CURRENT STORY WRITE (latest version of each section)\n${currentStory([...state.others, ...(progress ? [progress] : [])])}` : "") +
     `\n\n# PROGRESS SO FAR (this lesson)\nCurrent step: ${p.step}\nAlready shared: ${JSON.stringify(p.captured)}`;
   const model = MODEL();
 
