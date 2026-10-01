@@ -128,10 +128,11 @@ export default async function AccountPage() {
             className="panel"
             style={{ display: "block", maxWidth: 420, margin: "0 auto 18px", borderColor: "#C25B34", background: "rgba(194,91,52,0.07)", textDecoration: "none" }}
           >
-            <div className="mono" style={{ fontSize: 10, color: "#E8CFC0", letterSpacing: "1.5px" }}>SOMETHING I BUILT FOR YOU</div>
+            <div className="mono" style={{ fontSize: 10, color: "#E8CFC0", letterSpacing: "1.5px" }}>TOP SECRET &middot; SOMETHING I BUILT FOR YOU</div>
             <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#F2DDD0", marginTop: 4 }}>
               Story of Self &rarr;
             </div>
+            <div className="mono" style={{ fontSize: 10.5, color: "#B7A398", marginTop: 6 }}>for your eyes only</div>
           </Link>
         )}
       </div>

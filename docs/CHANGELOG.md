@@ -3,6 +3,10 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.33 — Aaron's Node opens his briefing
+Aaron's 13i username ("Aaron") is in `lib/story/briefAccess.js`, so a "Top
+secret" Story of Self panel at the top of his Node links to `/story/aaron`.
+
 ## Update 5.32 — Voice notes, the Lighthouse dashboard, the launch list
 Voice notes in the Champion chat: a mic button lets students speak their
 answers (the browser's own speech-to-text, live into the message box), every

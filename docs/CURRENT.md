@@ -17,7 +17,7 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   (needs a Story account for the AI parts; no new SQL)
 - Update 5.23 (needs docs/v5.23-story-brief.sql in the 13i project):
   Aaron's private Story of Self briefing at `/story/aaron`, linked from his
-  Node once his username is added to `lib/story/briefAccess.js`
+  Node ("Aaron" is in `lib/story/briefAccess.js`, Update 5.33)
 - Full auth: email/password signup+login, magic-link fallback, password
   recovery via its own dedicated callback route
 - Kin profiles: username, bio, avatar upload, public `/kin/[username]` page
