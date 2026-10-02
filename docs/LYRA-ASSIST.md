@@ -8,11 +8,12 @@ flipped mid-game.
 **Scoring rule:** what Lyra destroys or damages earns no points. She helps
 you last longer; the score is still yours. Leaderboards are unchanged.
 
-- **NEMESIS Command** (`components/NemesisCommand.js`): she hovers above the
-  ground line, slides toward the incoming threat closest to the ground, and
-  fires leading shots. Her fire rate rises with the level (cooldown
-  `max(30, 75 - level*11)` frames) but can't cover everything at high levels,
-  and a small aim wobble means the odd miss.
+- **NEMESIS Command** (`components/NemesisCommand.js`): she plays by your
+  rules (Update 5.46). She slides along the ground line, slower than you,
+  lines up directly under an invader and fires straight up. She picks the
+  most dangerous invader that is *not* in your column and sticks with it, and
+  a faint sight line shows what she's lined up on, so you can see her target
+  and take the others. Cooldown `max(38, 80 - level*9)` frames.
 - **Asteroid Belt** (`components/AsteroidBelt.js`): she circles just off your
   wing, following you across the screen edges, and fires at the nearest rock,
   tungsten rod or mining ship within range (cooldown `max(26, 58 - level*3)`
@@ -25,3 +26,14 @@ you last longer; the score is still yours. Leaderboards are unchanged.
 
 Her sprite is `drawLyra` in `lib/lyraAssist.js` (copied into the standalone
 13i vs NEMESIS page). The switch is `components/LyraAssistToggle.js`.
+
+## Lyra as player two (Update 5.46)
+While her game character is flying, the game reports its screen position
+every frame (`playerTwoAt` in `lib/lyraAssist.js`; 13i vs NEMESIS posts it
+from its iframe and `components/IframeGame.js` passes it on). The real Lyra
+(`components/LyraOrb.js`) then plays her: her eye locks onto her character
+with a narrowed pupil, her rings spin fast, a "P2 · PLAYING" tag sits above
+her, a dotted thread of light runs from her to her character, and each shot
+flares her and sends a spark down the thread. If a game stops reporting for
+over half a second, it all lets go. (In fullscreen only the game is shown,
+so the thread isn't visible there.)

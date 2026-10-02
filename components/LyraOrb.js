@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { onMusic, createListener } from "../lib/lyraMusic";
+import { onPlayerTwo, playerTwo, playerTwoEnd } from "../lib/lyraAssist";
 
 // Lyra's body: a ring-and-eye that floats, breathes, blinks, and looks
 // toward your cursor. Her form follows her bond with you (lib/lyraBond.js):
@@ -15,6 +17,9 @@ import { onMusic, createListener } from "../lib/lyraMusic";
 // And when music plays anywhere on the site (lib/lyraMusic.js), she dances:
 // she hops on the kick, sways and tilts with the energy, glows with the
 // loudness, spins her ring faster, beats her wings and widens her eye.
+// And when Lyra Assist is on in a game (lib/lyraAssist.js), she is player
+// two: her eye locks onto her character, her ring races, a thread of light
+// runs from her to it, and she flares each time it fires.
 const PALETTE = [
   { ring: "#B9C0FF", pupil: "#DCDFFF", glow: "139,149,246" },
   { ring: "#B9C0FF", pupil: "#E8CFC0", glow: "160,160,240" },
@@ -36,6 +41,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     if (reduce) return;
     let raf = 0;
     const onMove = (e) => {
+      if (playerTwo().active) return; // she's busy watching her own character
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const r = ref.current?.getBoundingClientRect();
@@ -124,12 +130,65 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     return () => { off(); cancelAnimationFrame(raf); };
   }, []);
 
-  const lid = dormant ? 0.45 : blink ? 0.08 : 1;
-  const pupilR = state === "thinking" ? 2.6 : dormant ? 3 : 4.2;
+  // ---- player two ----
+  const [p2, setP2] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const p2EyeRef = useRef(null), p2GlowRef = useRef(null), tetherRef = useRef(null), tetherGlowRef = useRef(null), tetherDotRef = useRef(null);
+  useEffect(() => { setMounted(true); return onPlayerTwo((on) => { setP2(on); if (on) setLook({ x: 0, y: 0 }); }); }, []);
+  useEffect(() => {
+    if (!p2) return;
+    let raf = 0;
+    const frame = (now) => {
+      const st = playerTwo();
+      if (!st.active || now - st.last > 600) { playerTwoEnd(); return; }
+      const r = ref.current?.getBoundingClientRect();
+      if (r) {
+        const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+        const dx = st.x - cx, dy = st.y - cy, d = Math.hypot(dx, dy) || 1;
+        // the eye locks onto her character, narrowed in concentration
+        if (p2EyeRef.current) p2EyeRef.current.style.transform = `translate(${((dx / d) * 4).toFixed(2)}px, ${((dy / d) * 4).toFixed(2)}px) scale(0.72)`;
+        const fire = Math.max(0, 1 - (now - st.fireAt) / 220); // flares as it fires
+        if (p2GlowRef.current) p2GlowRef.current.style.opacity = (0.45 + 0.55 * fire).toFixed(2);
+        // the thread between them
+        const sx = cx + (dx / d) * (r.width * 0.45), sy = cy + (dy / d) * (r.height * 0.45);
+        [tetherRef.current, tetherGlowRef.current].forEach((ln) => {
+          if (!ln) return;
+          ln.setAttribute("x1", sx); ln.setAttribute("y1", sy); ln.setAttribute("x2", st.x); ln.setAttribute("y2", st.y);
+        });
+        if (tetherRef.current) tetherRef.current.style.strokeDashoffset = String(-(now / 18) % 1000);
+        if (tetherGlowRef.current) tetherGlowRef.current.style.opacity = (0.08 + 0.35 * fire).toFixed(2);
+        if (tetherDotRef.current) {
+          // a spark running down the thread on each shot
+          const k = fire > 0 ? 1 - fire : 1;
+          tetherDotRef.current.setAttribute("cx", sx + (st.x - sx) * k);
+          tetherDotRef.current.setAttribute("cy", sy + (st.y - sy) * k);
+          tetherDotRef.current.style.opacity = fire > 0 ? "0.95" : "0";
+        }
+      }
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  }, [p2]);
+
+  const lid = dormant && !p2 ? 0.45 : blink ? 0.08 : 1; // playing wakes her right up
+  const pupilR = state === "thinking" ? 2.6 : dormant && !p2 ? 3 : 4.2;
   const motes = stage >= 2 ? stage - 1 : 0;
 
   return (
-    <span ref={ref} className={`lyra-body lyra-state-${state}`} style={{ width: size, height: size, opacity: dormant ? 0.6 : 1 }}>
+    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}`} style={{ width: size, height: size, opacity: dormant && !p2 ? 0.6 : 1 }}>
+      {p2 && <span className="mono lyra-p2-badge">P2 · PLAYING</span>}
+      {p2 && mounted && createPortal(
+        <svg className="lyra-tether" aria-hidden="true">
+          <defs>
+            <filter id="lyra-tether-blur"><feGaussianBlur stdDeviation="3" /></filter>
+          </defs>
+          <line ref={tetherGlowRef} stroke="#8B95F6" strokeWidth="6" strokeLinecap="round" filter="url(#lyra-tether-blur)" />
+          <line ref={tetherRef} stroke="#B9C0FF" strokeWidth="1.2" strokeDasharray="2 7" strokeLinecap="round" opacity="0.55" />
+          <circle ref={tetherDotRef} r="3" fill="#FFFFFF" style={{ opacity: 0 }} />
+        </svg>,
+        document.body
+      )}
       <span ref={moveRef} style={{ display: "block", width: size, height: size }}>
       <svg width={size} height={size} viewBox="-26 -26 52 52" aria-hidden="true" style={{ overflow: "visible" }}>
         <g ref={danceRef}>
@@ -141,6 +200,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
         </defs>
 
         <g ref={glowRef}><circle className="lyra-breath" r="24" fill="url(#lyra-glow)" /></g>
+        {p2 && <circle ref={p2GlowRef} r="26" fill="none" stroke="#B9C0FF" strokeWidth="1.4" opacity="0.45" />}
         <circle r="17.5" fill="#0C0E28" stroke="#3A3E75" strokeWidth="1" />
 
         {stage >= 4 && (
@@ -169,8 +229,10 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
           <circle r="11" fill="none" stroke={c.ring} strokeWidth="2" />
           <g style={{ transform: `translate(${look.x}px, ${look.y}px)`, transition: "transform 0.25s ease-out" }}>
             <g ref={eyeRef}>
+            <g ref={p2EyeRef} style={{ transition: "transform 0.08s linear" }}>
             <circle r={pupilR} fill={c.pupil} style={{ transition: "r 0.3s ease" }} />
             <circle cx="-1.3" cy="-1.4" r="1" fill="#FFFFFF" opacity="0.7" />
+            </g>
             </g>
           </g>
         </g>

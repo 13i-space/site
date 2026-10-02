@@ -903,6 +903,9 @@
         }
       }
       drawLyra(ly.x, ly.y, 11, state.t, ly.on ? 0.6 + Math.random() * 0.4 : 0);
+      // tell the site where she is, so the real Lyra can play her
+      const cr = canvas.getBoundingClientRect();
+      report({ type: 'lyra', x: cr.left + ly.x * cr.width / W, y: cr.top + ly.y * cr.height / H, firing: !!ly.on });
     }
 
     if (e.type === 'kinetic' || e.type === 'emp' || e.type === 'nuke'){

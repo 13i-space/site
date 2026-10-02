@@ -6,7 +6,7 @@ import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, cel
 import Leaderboard from "./Leaderboard";
 import FullscreenButton from "./FullscreenButton";
 import LyraAssistToggle from "./LyraAssistToggle";
-import { loadAssist, saveAssist, drawLyra } from "../lib/lyraAssist";
+import { loadAssist, saveAssist, drawLyra, playerTwoAt, playerTwoEnd, canvasToViewport } from "../lib/lyraAssist";
 
 // The game was designed on a 600x400 field; speeds scale with the real
 // field height so a bigger screen doesn't make it easier or harder.
@@ -284,41 +284,47 @@ export default function NemesisCommand() {
 
       s.threats.forEach((th) => (th.y += th.speed));
 
-      // ---- Lyra assists ----
+      // ---- Lyra assists (player two) ----
+      // She plays by your rules: she slides along the ground line under an
+      // invader and fires straight up. She picks invaders away from the one
+      // you're under, so you can see what she's going for and take the others.
       const L = s.lyra;
       if (assistRef.current) {
         const k = canvas.height / DESIGN_HEIGHT;
-        const ly = canvas.height - 20 - 95 * k;
-        // the threat closest to the ground that she isn't already shooting at
-        const aimed = new Set(L.shots.map((sh) => sh.target));
-        const target = s.threats.filter((th) => !th.hit && th.y > 0 && th.y < ly - 20 && !aimed.has(th))
-          .sort((a, b) => b.y - a.y)[0];
-        const goal = target ? target.x : s.turretX + 70;
-        L.x += Math.max(-4.5 * k, Math.min(4.5 * k, (goal - L.x) * 0.08));
+        const ly = canvas.height - 20 - 30 * k;
         L.y = ly;
         L.cd -= 1;
         L.flash = Math.max(0, L.flash - 0.08);
-        if (target && L.cd <= 0 && Math.abs(target.x - L.x) < 120 * k) {
-          // lead the shot: where it will be when the shot gets there
-          const speed = 6 * k;
-          let tx = target.x, ty = target.y;
-          for (let i = 0; i < 3; i++) {
-            const tt = Math.hypot(tx - L.x, ty - L.y) / speed;
-            ty = target.y + target.speed * tt;
-          }
-          // she's good, not perfect: a small wobble means the odd miss
-          const a = Math.atan2(ty - L.y, tx - L.x) + (Math.random() - 0.5) * 0.09;
-          L.shots.push({ x: L.x, y: L.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, target });
-          L.cd = Math.max(30, 75 - lvl * 11); // she speeds up with the game, but can't cover it all
-          L.flash = 1;
+        const live = (th) => th && !th.hit && s.threats.includes(th) && th.y > 0 && th.y < ly - 30;
+        if (!live(L.target)) {
+          // the most dangerous invader that isn't in your column
+          const yours = (th) => Math.abs(th.x - s.turretX) < 50 * k;
+          const pool = s.threats.filter((th) => live(th) && !yours(th));
+          L.target = (pool.length ? pool : s.threats.filter(live))
+            .sort((a, b) => (b.y - Math.abs(b.x - L.x) * 0.25) - (a.y - Math.abs(a.x - L.x) * 0.25))[0] || null;
         }
+        const goal = L.target ? L.target.x : Math.max(30, Math.min(canvas.width - 30, s.turretX + (s.turretX < canvas.width / 2 ? 140 : -140) * k));
+        const step = 3.4 * k; // slower than you
+        L.x += Math.max(-step, Math.min(step, goal - L.x));
+        if (L.target && L.cd <= 0 && Math.abs(L.target.x - L.x) < 6 * k) {
+          L.shots.push({ x: L.x, y: L.y - 12 * k, vx: 0, vy: -7 * k });
+          L.cd = Math.max(38, 80 - lvl * 9); // quicker as the game speeds up, never a machine gun
+          L.flash = 1;
+          L.fired = true;
+          sfx.fire();
+        }
+        const [vx, vy] = canvasToViewport(canvas, L.x, L.y);
+        playerTwoAt(vx, vy, L.fired);
+        L.fired = false;
+      } else {
+        playerTwoEnd();
       }
       L.shots.forEach((sh) => { sh.x += sh.vx; sh.y += sh.vy; });
       L.shots = L.shots.filter((sh) => sh.x > 0 && sh.x < canvas.width && sh.y > 0 && sh.y < canvas.height && !sh.hit);
       for (const th of s.threats) {
         if (th.hit) continue;
         for (const sh of L.shots) {
-          if (!sh.hit && Math.hypot(th.x - sh.x, th.y - sh.y) < 15) {
+          if (!sh.hit && Math.hypot(th.x - sh.x, th.y - sh.y) < 14) {
             th.hit = true;
             sh.hit = true;
             s.explosions.push({ x: th.x, y: th.y, age: 0, lyra: true });
@@ -358,6 +364,7 @@ export default function NemesisCommand() {
       setLevel(lvl);
 
       if (s.lives <= 0) {
+        playerTwoEnd();
         setGameOver(true);
         setStarted(false);
         running = false;
@@ -407,7 +414,16 @@ export default function NemesisCommand() {
           ctx.globalAlpha = 1;
           ctx.beginPath(); ctx.arc(sh.x, sh.y, 2.8, 0, Math.PI * 2); ctx.fill();
         });
-        if (assistRef.current && L.y) drawLyra(ctx, L.x, L.y, 9 * (canvas.height / DESIGN_HEIGHT) ** 0.5, frame / 60, L.flash);
+        if (assistRef.current && L.y) {
+          // a faint sight line up from her to what she's lined up on
+          if (L.target && Math.abs(L.target.x - L.x) < 40) {
+            ctx.strokeStyle = "rgba(185,192,255,0.18)";
+            ctx.setLineDash([3, 6]);
+            ctx.beginPath(); ctx.moveTo(L.x, L.y - 12); ctx.lineTo(L.x, Math.max(0, L.target.y + 12)); ctx.stroke();
+            ctx.setLineDash([]);
+          }
+          drawLyra(ctx, L.x, L.y, 9 * (canvas.height / DESIGN_HEIGHT) ** 0.5, frame / 60, L.flash);
+        }
       }
 
       s.explosions.forEach((ex) => {
@@ -425,6 +441,7 @@ export default function NemesisCommand() {
 
     return () => {
       running = false;
+      playerTwoEnd();
       cancelAnimationFrame(raf);
       canvas.removeEventListener("click", handleClick);
       canvas.removeEventListener("mousemove", handleMove);

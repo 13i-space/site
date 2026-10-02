@@ -6,7 +6,7 @@ import { sfx } from "../lib/sfx";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 import Leaderboard from "./Leaderboard";
 import LyraAssistToggle from "./LyraAssistToggle";
-import { loadAssist, saveAssist, drawLyra } from "../lib/lyraAssist";
+import { loadAssist, saveAssist, drawLyra, playerTwoAt, playerTwoEnd, canvasToViewport } from "../lib/lyraAssist";
 
 const SHIP_RADIUS = 12;
 const ROD_COUNT = 12;
@@ -299,11 +299,21 @@ export default function AsteroidBelt() {
             s.bullets.push({ x: L.x, y: L.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, life: 60, lyra: true });
             L.cd = Math.max(26, 58 - lvl * 3); // a little quicker each level
             L.flash = 1;
+            L.fired = true;
             sfx.fire();
           } else {
             L.cd = 10;
           }
         }
+      }
+
+      // the real Lyra watches her player-two self (lib/lyraAssist.js)
+      if (assistRef.current) {
+        const [vx, vy] = canvasToViewport(canvas, L.x, L.y);
+        playerTwoAt(vx, vy, L.fired);
+        L.fired = false;
+      } else {
+        playerTwoEnd();
       }
 
       s.bullets.forEach((b) => { b.x = wrap(b.x + b.vx, w); b.y = wrap(b.y + b.vy, h); b.life--; });
@@ -456,6 +466,7 @@ export default function AsteroidBelt() {
       setLevel(lvl);
       if (s.lives !== lives) setLives(Math.max(0, s.lives));
       if (s.lives <= 0) {
+        playerTwoEnd();
         sfx.thrust.stop();
         sfx.gameOver();
         setGameOver(true);
@@ -597,6 +608,7 @@ export default function AsteroidBelt() {
     rafRef.current = requestAnimationFrame(tick);
 
     return () => {
+      playerTwoEnd();
       cancelAnimationFrame(rafRef.current);
       window.removeEventListener("resize", handleResize);
       document.removeEventListener("fullscreenchange", handleResize);

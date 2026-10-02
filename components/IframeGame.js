@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import FullscreenButton from "./FullscreenButton";
 import Leaderboard from "./Leaderboard";
+import { playerTwoAt, playerTwoEnd } from "../lib/lyraAssist";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 
 const MAX_SCORE = 1000000; // sanity cap - far above anything a real run reaches
@@ -27,6 +28,13 @@ export default function IframeGame({ game, src, title, note = "click the game to
     if (!frameRef.current || e.source !== frameRef.current.contentWindow) return;
     const msg = e.data || {};
     if (msg.source !== game) return;
+    if (msg.type === "lyra") {
+      // the game's Lyra, in the iframe's coordinates -> this page's
+      const r = frameRef.current.getBoundingClientRect();
+      const x = Number(msg.x), y = Number(msg.y);
+      if (Number.isFinite(x) && Number.isFinite(y)) playerTwoAt(r.left + x, r.top + y, !!msg.firing);
+      return;
+    }
     if (msg.type === "play") recordGamePlay(game);
     if (msg.type === "score") {
       const score = Math.round(Number(msg.score));
@@ -41,7 +49,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
 
   useEffect(() => {
     window.addEventListener("message", onMessage);
-    return () => window.removeEventListener("message", onMessage);
+    return () => { window.removeEventListener("message", onMessage); playerTwoEnd(); };
   }, [onMessage]);
 
   return (

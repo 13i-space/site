@@ -3,6 +3,16 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.46 — Lyra is player two
+- **NEMESIS Command:** Lyra's help is scaled back and plays by your rules. She
+  moves slower than you, has to line up directly under an invader and fires
+  straight up, and she goes for invaders away from yours, with a faint sight
+  line showing her target.
+- **Player two:** in all three core games the real Lyra now visibly plays her
+  character. Her eye locks onto it, her rings race, a "P2 · PLAYING" tag
+  appears, a thread of light links her to her character, and each shot
+  flares her and sends a spark down it. See docs/LYRA-ASSIST.md.
+
 ## Update 5.45 — Lyra Assist in the core games
 A **Lyra Assist** switch on NEMESIS Command, Asteroid Belt and 13i vs
 NEMESIS lets Lyra fly with you. In NEMESIS Command she hovers above you and
