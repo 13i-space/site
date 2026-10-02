@@ -303,10 +303,10 @@ main {
 }
 .lyra-state-dormant .lyra-breath { animation-duration: 9s; }
 .lyra-state-speaking .lyra-breath { animation-duration: 2.2s; }
-.lyra-outer { animation: lyra-spin 48s linear infinite; transform-origin: 0 0; }
-.lyra-motes { animation: lyra-spin 18s linear infinite reverse; transform-origin: 0 0; }
-.lyra-state-thinking .lyra-outer { animation-duration: 2.4s; }
-.lyra-state-thinking .lyra-motes { animation-duration: 3s; }
+.lyra-outer { animation: lyra-spin 160s linear infinite; transform-origin: 0 0; } /* slow on purpose: she should never pull the eye (5.51) */
+.lyra-motes { animation: lyra-spin 110s linear infinite reverse; transform-origin: 0 0; }
+.lyra-state-thinking .lyra-outer { animation-duration: 10s; }
+.lyra-state-thinking .lyra-motes { animation-duration: 12s; }
 @keyframes lyra-spin { to { transform: rotate(360deg); } }
 .lyra-wing-l { animation: lyra-wing-l 5s ease-in-out infinite; transform-origin: -14px 0; }
 .lyra-wing-r { animation: lyra-wing-r 5s ease-in-out infinite; transform-origin: 14px 0; }
@@ -316,7 +316,7 @@ main {
 .lyra-body svg { transition: transform 0.8s ease; }
 .lyra-state-deferring svg { transform: scale(0.82) translate(4px, 5px); }
 .lyra-state-deferring.lyra-glance svg { transform: scale(0.92) translate(1px, 2px); }
-.lyra-state-deferring .lyra-outer { animation-duration: 120s; }
+.lyra-state-deferring .lyra-outer { animation-duration: 240s; }
 .lyra-state-deferring .lyra-breath { animation-duration: 9s; }
 
 /* Lyra reading along (books, stories, Interactive Stories) */
@@ -330,7 +330,7 @@ main {
 @keyframes lyra-r-nod { 0%, 100% { transform: none; } 25% { transform: translateY(4px) rotate(-3deg); } 50% { transform: translateY(0); } 70% { transform: translateY(3px) rotate(-2deg); } }
 .lyra-react-lean svg { animation: lyra-r-lean 1.7s ease-in-out; }
 @keyframes lyra-r-lean { 0%, 100% { transform: none; filter: none; } 40% { transform: translate(-6px, -2px) scale(1.07); filter: brightness(1.35); } }
-.lyra-react-analyze .lyra-outer { animation-duration: 1.4s; }
+.lyra-react-analyze .lyra-outer { animation-duration: 5s; }
 .lyra-react-analyze svg { animation: lyra-r-analyze 1.5s ease; }
 @keyframes lyra-r-analyze { 0%, 100% { transform: none; } 30%, 70% { transform: scale(1.04); } }
 .lyra-react-recognize svg { animation: lyra-r-recognize 3.2s ease; }
@@ -364,8 +364,8 @@ main {
 .lyra-private svg { transform: translate(4px, 2px) rotate(14deg) scale(0.9); }
 
 /* Lyra as player two (Lyra Assist in the games) */
-.lyra-p2 .lyra-outer { animation-duration: 2.4s; opacity: 0.9; }
-.lyra-p2 .lyra-motes { animation-duration: 1.8s; }
+.lyra-p2 .lyra-outer { animation-duration: 24s; opacity: 0.9; }
+.lyra-p2 .lyra-motes { animation-duration: 20s; }
 .lyra-p2 { animation-duration: 3s; }
 .lyra-p2-badge {
   position: absolute; bottom: calc(100% + 6px); right: 0;

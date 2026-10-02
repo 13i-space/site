@@ -3,7 +3,7 @@ import MessagesLabel from "../../../components/MessagesLabel";
 
 const items = [
   { href: "/forum", title: "Forum", blurb: "A meeting place for Kin \u2014 new guests always welcome." },
-  { href: "/guestbook", title: "Guestbook", blurb: "Leave something behind. See who else has passed through." },
+  { href: "/kinbook", title: "Kinbook", blurb: "An ongoing message list from the Kin, outside the forum." },
   { href: "/messages", title: "Messages", blurb: "Private conversations between Kin. Only the two of you can read them.", unread: true },
 ];
 

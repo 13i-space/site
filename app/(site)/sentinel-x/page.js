@@ -172,7 +172,7 @@ function SentinelView({ d }) {
           <div style={styles.tiles}>
             <Tile label="FORUM THREADS" value={c.threads?.total} note={weekNote(c.threads)} />
             <Tile label="FORUM REPLIES" value={c.replies?.total} note={weekNote(c.replies)} />
-            <Tile label="GUESTBOOK" value={c.guestbook?.total} note={weekNote(c.guestbook)} />
+            <Tile label="KINBOOK" value={c.guestbook?.total} note={weekNote(c.guestbook)} />
             <Tile label="ALIEN SPECIES" value={c.species?.total} note={weekNote(c.species)} />
             <Tile
               label="ASSIGNMENTS"

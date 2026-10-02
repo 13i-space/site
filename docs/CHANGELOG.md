@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.51 — Tightening up
+- **Lyra, calmer.** Her rings and motes now turn slowly (outer ring 160s a
+  turn, motes 110s), as do her "thinking", player-two and dancing spins.
+  Reactions still move when she's reacting to something.
+- **The Oracle.** She stays herself on the Oracle page and only withdraws,
+  with a small flinch, once you press APPROACH. Leaving brings her back.
+- **NEMESIS Command assist.** Lyra now waits: an invader is hers to chase
+  only once it's past halfway down, so you get the first chance at every
+  one; with nothing past halfway she holds her place. The thread between
+  the corner Lyra and her character is now faint (no glow), and it's only
+  redrawn when it moves - a full-screen glowing line repainted every frame
+  is the likely cause of the mouse stalling.
+- **Galaxy.** Space News is now the last box.
+- **The Guestbook is now the Kinbook** (`/kinbook`; `/guestbook` redirects):
+  an ongoing message list from Kin outside the forum. Only signed-in Kin can
+  write, always under their username (no name box). Needs
+  `docs/v5.51-kinbook.sql`, which also removes the message meant to be from
+  13i ("Anonymous? Reveal yourself Kin.").
+
 ## Update 5.50 — Lyra in the community, on the leaderboards, and on phones
 - **Messages.** While you write a private message she closes her eye and
   turns a little away, and opens it again when you're done.

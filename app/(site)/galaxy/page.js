@@ -12,11 +12,6 @@ const sections = [
     blurb: "Every species built in the Alien Lab, as collectible cards. Browse them, then make your own.",
   },
   {
-    href: "/galaxy/news",
-    title: "Space News",
-    blurb: "Current headlines from NASA, ESA, Spaceflight Now, Universe Today and more, refreshed through the day.",
-  },
-  {
     href: "/quiz",
     title: "Universe Quiz",
     blurb: "Ten questions from across the cosmos, graded A+ to F.",
@@ -25,6 +20,11 @@ const sections = [
     href: "/galaxy/facts",
     title: "Galaxy Facts",
     blurb: "Zoom from you to the whole universe, ride a light beam, and watch galaxies collide. Hands-on.",
+  },
+  {
+    href: "/galaxy/news",
+    title: "Space News",
+    blurb: "Current headlines from NASA, ESA, Spaceflight Now, Universe Today and more, refreshed through the day.",
   },
 ];
 

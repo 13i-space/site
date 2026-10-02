@@ -1,17 +1,35 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Link from "next/link";
 import { lyraReact } from "../lib/lyraReact";
+import { createClient } from "../lib/supabaseBrowser";
 
-// Lyra remembers (in this browser) which entry you signed. The first time
-// she sees someone else has signed after you, she waves.
+// The Kinbook (Update 5.51; the component keeps its old name): an ongoing
+// message list from Kin, outside the forum. Signed-in Kin only can write,
+// always under their username. Lyra remembers (in this browser) the message
+// you left; the first time she sees someone else has written after you,
+// she waves.
 const MINE_KEY = "13i_guestbook_mine";
 const WAVED_KEY = "13i_guestbook_waved";
 
 export default function Guestbook() {
   const [entries, setEntries] = useState([]);
   const [loadState, setLoadState] = useState("loading"); // loading | ready | not_connected | error
-  const [name, setName] = useState("");
+  const [me, setMe] = useState(undefined); // undefined = checking, null = signed out, { username }
+  useEffect(() => {
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) { setMe(null); return; }
+        const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
+        setMe({ username: profile?.username || null });
+      } catch (e) {
+        setMe(null);
+      }
+    })();
+  }, []);
   const [message, setMessage] = useState("");
   const [posting, setPosting] = useState(false);
   const [postError, setPostError] = useState(null);
@@ -56,11 +74,11 @@ export default function Guestbook() {
       const res = await fetch("/api/guestbook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, message }),
+        body: JSON.stringify({ message }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      try { localStorage.setItem(MINE_KEY, JSON.stringify({ name: (name || "Anonymous").slice(0, 60), message })); localStorage.removeItem(WAVED_KEY); } catch (e2) { /* ignore */ }
+      try { localStorage.setItem(MINE_KEY, JSON.stringify({ name: data.name, message: message.trim() })); localStorage.removeItem(WAVED_KEY); } catch (e2) { /* ignore */ }
       lyraReact("notice");
       setMessage("");
       load();
@@ -75,7 +93,7 @@ export default function Guestbook() {
     return (
       <div className="panel">
         <p style={{ margin: 0, fontSize: 13, color: "#8A8FBF" }}>
-          The guestbook isn't connected yet — it needs a Supabase database.
+          The Kinbook isn't connected yet — it needs a Supabase database.
           Once that's set up, this becomes a real, growing wall.
         </p>
       </div>
@@ -84,19 +102,28 @@ export default function Guestbook() {
 
   return (
     <div>
+      {me === null && (
+        <div className="panel" style={{ marginBottom: 24, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 14, color: "#8A8FBF" }}>
+            <Link href="/login?next=/kinbook" style={{ color: "#B9C0FF" }}>Sign in</Link> to leave a message in the Kinbook.
+          </p>
+        </div>
+      )}
+      {me && !me.username && (
+        <div className="panel" style={{ marginBottom: 24, textAlign: "center" }}>
+          <p style={{ margin: 0, fontSize: 14, color: "#8A8FBF" }}>
+            Claim a username on <Link href="/account" style={{ color: "#B9C0FF" }}>your Node</Link> first - it's the name your messages go under.
+          </p>
+        </div>
+      )}
+      {me && me.username && (
       <form onSubmit={submit} className="panel" style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 12, marginBottom: 10, flexWrap: "wrap" }}>
-          <input
-            type="text"
-            placeholder="Your name (optional)"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-          />
+        <div className="mono" style={{ fontSize: 11, color: "#6E76B8", marginBottom: 8 }}>
+          WRITING AS <span style={{ color: "#B9C0FF" }}>{me.username}</span>
         </div>
         <textarea
           required
-          placeholder="Leave a mark..."
+          placeholder="Say something to the Kin..."
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           rows={3}
@@ -119,13 +146,14 @@ export default function Guestbook() {
               opacity: posting ? 0.5 : 1,
             }}
           >
-            {posting ? "..." : "Sign it"}
+            {posting ? "..." : "Post"}
           </button>
           {postError && (
             <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{postError}</span>
           )}
         </div>
       </form>
+      )}
 
       {loadState === "loading" && (
         <div style={{ fontSize: 13, color: "#565B8F", fontStyle: "italic" }}>Loading...</div>
@@ -135,7 +163,7 @@ export default function Guestbook() {
       )}
       {loadState === "ready" && entries.length === 0 && (
         <div style={{ fontSize: 13, color: "#565B8F", fontStyle: "italic" }}>
-          No one's signed yet. Be the first.
+          Nothing here yet. Be the first.
         </div>
       )}
       {loadState === "ready" && entries.map((e) => (

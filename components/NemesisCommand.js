@@ -295,7 +295,10 @@ export default function NemesisCommand() {
         L.y = ly;
         L.cd -= 1;
         L.flash = Math.max(0, L.flash - 0.08);
-        const live = (th) => th && !th.hit && s.threats.includes(th) && th.y > 0 && th.y < ly - 30;
+        // she waits: an invader is hers to chase only once it's past halfway
+        // down, so you get the first chance at every one (5.51)
+        const half = canvas.height * 0.5;
+        const live = (th) => th && !th.hit && s.threats.includes(th) && th.y > half && th.y < ly - 30;
         if (!live(L.target)) {
           // the most dangerous invader that isn't in your column
           const yours = (th) => Math.abs(th.x - s.turretX) < 50 * k;
@@ -303,7 +306,9 @@ export default function NemesisCommand() {
           L.target = (pool.length ? pool : s.threats.filter(live))
             .sort((a, b) => (b.y - Math.abs(b.x - L.x) * 0.25) - (a.y - Math.abs(a.x - L.x) * 0.25))[0] || null;
         }
-        const goal = L.target ? L.target.x : Math.max(30, Math.min(canvas.width - 30, s.turretX + (s.turretX < canvas.width / 2 ? 140 : -140) * k));
+        // nothing past halfway: she holds her place (drifting a touch), out of your way
+        if (L.home === undefined) L.home = L.x;
+        const goal = L.target ? L.target.x : L.home + Math.sin(frame / 90) * 12 * k;
         const step = 3.4 * k; // slower than you
         L.x += Math.max(-step, Math.min(step, goal - L.x));
         if (L.target && L.cd <= 0 && Math.abs(L.target.x - L.x) < 6 * k) {

@@ -48,6 +48,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     let t;
     const on = (e) => {
       const ph = e.detail && e.detail.phase;
+      if (ph === "approach" || ph === "leave") return; // handled by the companion
       setOracle(ph || null);
       clearTimeout(t);
       if (ph === "answer") t = setTimeout(() => setOracle(null), 2600);
@@ -185,7 +186,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
         set(danceRef.current, `scale(${(1 + 0.06 * m.level * e).toFixed(3)})`);
         set(glowRef.current, `scale(${(1 + 0.7 * m.level * e).toFixed(3)})`);
         if (!reduce) {
-          m.spin += dt * (0.01 + m.level * 0.12) * e;
+          m.spin += dt * (0.003 + m.level * 0.04) * e;
           set(spinRef.current, `rotate(${(m.spin % 360).toFixed(1)}deg)`);
         }
         set(wingLRef.current, ""); set(wingRRef.current, "");
@@ -201,7 +202,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
         const tilt = (Math.sin(t * 1.3) * 7 * m.level + m.side * 6 * m.pulse) * e;
         set(danceRef.current, `rotate(${tilt.toFixed(2)}deg) scale(${s.toFixed(3)})`);
         set(glowRef.current, `scale(${(1 + (0.55 * m.pulse + 0.45 * m.level) * e).toFixed(3)})`);
-        m.spin += dt * (0.02 + m.level * 0.5 + m.high * 0.6) * e;
+        m.spin += dt * (0.005 + m.level * 0.12 + m.high * 0.12) * e; // gentle - she shouldn't whirl
         set(spinRef.current, `rotate(${(m.spin % 360).toFixed(1)}deg)`);
         const flap = (6 + 20 * m.pulse) * e * (0.3 + m.level);
         set(wingLRef.current, `rotate(${flap.toFixed(1)}deg)`); // a lift on each beat
@@ -225,7 +226,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
   // ---- player two ----
   const [p2, setP2] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const p2EyeRef = useRef(null), p2GlowRef = useRef(null), tetherRef = useRef(null), tetherGlowRef = useRef(null), tetherDotRef = useRef(null);
+  const p2EyeRef = useRef(null), p2GlowRef = useRef(null), tetherRef = useRef(null), tetherDotRef = useRef(null);
   useEffect(() => { setMounted(true); return onPlayerTwo((on) => { setP2(on); if (on) setLook({ x: 0, y: 0 }); }); }, []);
   useEffect(() => {
     if (!p2) return;
@@ -241,20 +242,23 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
         if (p2EyeRef.current) p2EyeRef.current.style.transform = `translate(${((dx / d) * 4).toFixed(2)}px, ${((dy / d) * 4).toFixed(2)}px) scale(0.72)`;
         const fire = Math.max(0, 1 - (now - st.fireAt) / 220); // flares as it fires
         if (p2GlowRef.current) p2GlowRef.current.style.opacity = (0.45 + 0.55 * fire).toFixed(2);
-        // the thread between them
+        // the thread between them: faint, and only redrawn when it moves (a
+        // full-screen line repainted every frame was stalling the mouse, 5.51)
         const sx = cx + (dx / d) * (r.width * 0.45), sy = cy + (dy / d) * (r.height * 0.45);
-        [tetherRef.current, tetherGlowRef.current].forEach((ln) => {
-          if (!ln) return;
-          ln.setAttribute("x1", sx); ln.setAttribute("y1", sy); ln.setAttribute("x2", st.x); ln.setAttribute("y2", st.y);
-        });
-        if (tetherRef.current) tetherRef.current.style.strokeDashoffset = String(-(now / 18) % 1000);
-        if (tetherGlowRef.current) tetherGlowRef.current.style.opacity = (0.08 + 0.35 * fire).toFixed(2);
+        const ln = tetherRef.current;
+        if (ln) {
+          const last = ln.__last || [];
+          if (Math.abs((last[0] || 0) - sx) + Math.abs((last[1] || 0) - sy) + Math.abs((last[2] || 0) - st.x) + Math.abs((last[3] || 0) - st.y) > 1) {
+            ln.setAttribute("x1", sx); ln.setAttribute("y1", sy); ln.setAttribute("x2", st.x); ln.setAttribute("y2", st.y);
+            ln.__last = [sx, sy, st.x, st.y];
+          }
+        }
         if (tetherDotRef.current) {
           // a spark running down the thread on each shot
           const k = fire > 0 ? 1 - fire : 1;
           tetherDotRef.current.setAttribute("cx", sx + (st.x - sx) * k);
           tetherDotRef.current.setAttribute("cy", sy + (st.y - sy) * k);
-          tetherDotRef.current.style.opacity = fire > 0 ? "0.95" : "0";
+          tetherDotRef.current.style.opacity = fire > 0 ? "0.45" : "0";
         }
       }
       raf = requestAnimationFrame(frame);
@@ -277,12 +281,8 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
       {p2 && <span className="mono lyra-p2-badge">P2 · PLAYING</span>}
       {p2 && mounted && createPortal(
         <svg className="lyra-tether" aria-hidden="true">
-          <defs>
-            <filter id="lyra-tether-blur"><feGaussianBlur stdDeviation="3" /></filter>
-          </defs>
-          <line ref={tetherGlowRef} stroke="#8B95F6" strokeWidth="6" strokeLinecap="round" filter="url(#lyra-tether-blur)" />
-          <line ref={tetherRef} stroke="#B9C0FF" strokeWidth="1.2" strokeDasharray="2 7" strokeLinecap="round" opacity="0.55" />
-          <circle ref={tetherDotRef} r="3" fill="#FFFFFF" style={{ opacity: 0 }} />
+          <line ref={tetherRef} stroke="#B9C0FF" strokeWidth="1" strokeDasharray="1 8" strokeLinecap="round" opacity="0.14" />
+          <circle ref={tetherDotRef} r="2" fill="#DCDFFF" style={{ opacity: 0 }} />
         </svg>,
         document.body
       )}

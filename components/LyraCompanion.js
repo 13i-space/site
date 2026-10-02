@@ -547,6 +547,19 @@ export default function LyraCompanion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pathname]);
 
+  // ---- the Oracle: she only withdraws once you approach 13i ----
+  const [approached, setApproached] = useState(false);
+  useEffect(() => {
+    const on = (e) => {
+      const ph = e.detail && e.detail.phase;
+      if (ph === "approach") { setApproached(true); lyraReact("flinch"); setOpen(false); openedBy.current = null; }
+      if (ph === "leave") setApproached(false);
+    };
+    window.addEventListener("13i:oracle", on);
+    return () => window.removeEventListener("13i:oracle", on);
+  }, []);
+  useEffect(() => { if (!pathname?.startsWith("/oracle")) setApproached(false); }, [pathname]);
+
   // ---- a quiet hint from a page (lib/lyraReact.js lyraHint) ----
   // held with her dot, never popped open; each hint once per visit
   useEffect(() => {
@@ -714,7 +727,7 @@ export default function LyraCompanion() {
   };
 
   const results = query.trim() ? searchSite(query).slice(0, 4) : [];
-  const inOracle = pathname?.startsWith("/oracle");
+  const inOracle = pathname?.startsWith("/oracle") && approached;
   const state = inOracle && !open ? "deferring" : !loggedIn ? "dormant" : sending ? "thinking" : celebrating ? "celebrating" : open ? "speaking" : "aware";
   const text = line || (loggedIn ? TIPS.find((t) => pathname?.startsWith(t.prefix))?.text || DEFAULT_TIP : "I'm Lyra. Sign in and I'll start remembering what you've found here.");
 

@@ -221,7 +221,12 @@ export default function OracleChamber() {
     if (phase === "listening") inputRef.current && inputRef.current.focus();
   }, [phase]);
 
+  // leaving the chamber: Lyra can come back out
+  useEffect(() => () => { try { window.dispatchEvent(new CustomEvent("13i:oracle", { detail: { phase: "leave" } })); } catch (e) { /* ignore */ } }, []);
+
   const approach = () => {
+    // Lyra holds back from here on: 13i is waking, and she's a little afraid of it
+    try { window.dispatchEvent(new CustomEvent("13i:oracle", { detail: { phase: "approach" } })); } catch (e) { /* ignore */ }
     let quick = false;
     try { quick = !!sessionStorage.getItem("oracle_approached"); sessionStorage.setItem("oracle_approached", "1"); } catch (e) { /* ignore */ }
     try {

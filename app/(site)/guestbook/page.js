@@ -1,11 +1,6 @@
-import Guestbook from "../../../components/Guestbook";
+import { redirect } from "next/navigation";
 
+// The Guestbook became the Kinbook (Update 5.51)
 export default function GuestbookPage() {
-  return (
-    <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <div className="page-title">Guestbook</div>
-      <div className="page-subtitle">a message wall for anyone passing through</div>
-      <Guestbook />
-    </div>
-  );
+  redirect("/kinbook");
 }

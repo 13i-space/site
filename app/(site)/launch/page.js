@@ -28,7 +28,7 @@ const sections = [
   {
     href: "/kinship",
     title: "Kinship",
-    blurb: "The Forum, the Guestbook — you are not the only one who found this.",
+    blurb: "The Forum, the Kinbook — you are not the only one who found this.",
   },
 ];
 
