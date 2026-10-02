@@ -7,6 +7,7 @@ import {
   buildGraph, applyMix, startSustained, stopSustained, scheduleStep, renderWav,
 } from "../lib/musicEngine";
 import { hearAnalyser } from "../lib/lyraMusic";
+import { lyraReact } from "../lib/lyraReact";
 
 const LOOKAHEAD = 0.12; // seconds of audio scheduled ahead of the playhead
 const LAYER_NAMES = { drone: "Drone", pad: "Pad", arp: "Arpeggio", bass: "Bass", drums: "Drums", texture: "Signal" };
@@ -206,7 +207,7 @@ export default function MusicLab({ loggedIn }) {
         <div className="mono" style={styles.label}>MOOD</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {Object.entries(MOODS).map(([key, m]) => (
-            <button key={key} onClick={() => generate(key)} style={{ ...styles.btn, ...(song.mood === key ? styles.btnOn : {}) }}>
+            <button key={key} onClick={() => { if (key !== song.mood) lyraReact("sway"); generate(key); }} style={{ ...styles.btn, ...(song.mood === key ? styles.btnOn : {}) }}>
               {m.label}
             </button>
           ))}
@@ -282,7 +283,7 @@ export default function MusicLab({ loggedIn }) {
             return (
               <div key={l} style={{ border: `1px solid ${v.on ? "#3A3E75" : "#21244A"}`, borderRadius: 4, padding: "10px 12px" }}>
                 <button
-                  onClick={() => update({ layers: { ...song.layers, [l]: { ...v, on: !v.on } } })}
+                  onClick={() => { if (!v.on) lyraReact(l === "drums" ? "wow" : "notice"); update({ layers: { ...song.layers, [l]: { ...v, on: !v.on } } }); }}
                   className="mono"
                   style={{ background: "none", border: "none", padding: 0, cursor: "pointer", color: v.on ? "#B9C0FF" : "#565B8F", fontSize: 12 }}
                 >

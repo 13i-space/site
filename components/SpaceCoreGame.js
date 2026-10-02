@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { lyraReact } from "../lib/lyraReact";
 import Link from "next/link";
 import { createClient } from "../lib/supabaseBrowser";
 import { recordGamePlay } from "../lib/trackActivity";
@@ -202,6 +203,10 @@ export default function SpaceCoreGame() {
         const { data, error } = await supabase.rpc("spacecore_contribute", { p_res: msg.res, p_amount: msg.amount });
         if (error) send({ type: "contributed", res: msg.res, accepted: 0, error: error.message });
         else send({ type: "contributed", res: msg.res, accepted: data?.accepted || 0, completed: !!data?.completed, colony: data?.colony });
+      } else if (msg.type === "lyraReact") {
+        // the site's Lyra feels it too: a flinch at an overheating drill, a
+        // droop at a low battery, a burst when a Great Work is finished
+        if (["flinch", "droop", "celebrate"].includes(msg.react)) lyraReact(msg.react);
       } else if (msg.type === "play") {
         recordGamePlay(GAME);
       } else if (msg.type === "pseudoFullscreen") {

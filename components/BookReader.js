@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import NarrationAudio from "./NarrationAudio";
+import { lyraReading } from "../lib/lyraMusic";
 
 // The heading of the section a content page belongs to - the nearest
 // page at or before it that starts with a heading (e.g. "Chapter 2 — ...").
@@ -31,6 +33,18 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
 
   const sectionAudio = audioByHeading ? audioByHeading[sectionHeadingAt(pages, Math.max(contentIndex, 0))] : null;
   const audio = sectionAudio || (audioSrc ? { label: "Listen to this story", src: audioSrc } : null);
+
+  // Lyra reads along (components/LyraOrb.js): she leans toward the page while
+  // it's open, her eye follows each page turn, and she brightens when a new
+  // chapter or section begins
+  const say = lyraReading;
+  useEffect(() => { say("open"); return () => say("close"); }, []);
+  const firstTurn = useRef(true);
+  useEffect(() => {
+    if (firstTurn.current) { firstTurn.current = false; return; }
+    say(currentHeading ? "chapter" : "turn");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pageIndex]);
 
   const goNext = () => {
     if (pageIndex < totalPages - 1) setPageIndex((p) => p + 1);
@@ -82,9 +96,7 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
                 <div className="mono" style={versionLabel}>AUDIO VERSION</div>
                 {/* keyed by src so the player swaps recordings when the section
                     changes, but keeps playing while turning pages within one */}
-                <audio key={audio.src} controls preload="none" style={{ display: "block", width: "100%", minWidth: 0, height: 30 }} aria-label={audio.label}>
-                  <source src={audio.src} type="audio/mpeg" />
-                </audio>
+                <NarrationAudio key={audio.src} src={audio.src} label={audio.label} style={{ display: "block", width: "100%", minWidth: 0, height: 30 }} />
                 {audio.label !== "Listen to this story" && (
                   <div className="mono" style={{ fontSize: 9.5, color: "#565B8F", marginTop: 4 }}>{audio.label}</div>
                 )}

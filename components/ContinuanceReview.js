@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { VERDICTS } from "../lib/continuance";
 import { recordMilestone } from "../lib/milestones";
+import { lyraReact } from "../lib/lyraReact";
 import AvatarPicker from "./AvatarPicker";
 
 // 13i's Continuance Review of one species. Shows the review when there is
@@ -27,6 +28,8 @@ export default function ContinuanceReview({ species, isOwner, compact }) {
       const data = await res.json();
       if (!data.review) throw new Error(data.error || "No review came back. Try again.");
       setReview(data.review);
+      // Lyra mirrors the verdict: warm, watchful, or subdued
+      lyraReact({ granted: "warm", observation: "watchful", not_yet: "subdued" }[data.review.verdict] || "notice");
       if (data.saved === false) setNote(data.error || "");
       else recordMilestone("review", { verdict: data.review.verdict, name: species.name });
       setStatus("idle");

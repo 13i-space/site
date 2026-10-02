@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { lyraReact, lyraHint } from "../lib/lyraReact";
+import { lyraLookAt } from "../lib/lyraMusic";
 import { createClient } from "../lib/supabaseBrowser";
 
 const CHECKLIST = [
@@ -19,6 +21,14 @@ const CHECKLIST = [
 function randomAssignmentNumber() {
   return Math.floor(50000 + Math.random() * 200000);
 }
+
+// One of these, after a long pause (the Assignment Protocol, docs/WORLD.md)
+const WRITING_PROMPTS = [
+  "If you're stuck: what does 13i not understand yet here? That's usually where an Assignment comes alive.",
+  "A thought, if it helps: what did 13i expect to find - and what did it find instead?",
+  "Every Assignment leaves the collective knowing something it didn't before. What does it learn in yours?",
+  "Remember, 13i is never all-knowing. Let it misread something.",
+];
 
 export default function AssignmentBuilder() {
   const [ready, setReady] = useState(false);
@@ -80,6 +90,38 @@ export default function AssignmentBuilder() {
     setTimeout(() => setSaveStatus("idle"), 2000);
   };
 
+  // Lyra watches you write: her eye follows the end of the line you're on.
+  // After a long pause in a story already under way she holds one quiet
+  // prompt (her dot - never popping open). Submitting gets a small burst.
+  const storyRef = useRef(null);
+  const pauseTimer = useRef(null);
+  const followCaret = () => {
+    const el = storyRef.current;
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    const cs = window.getComputedStyle(el);
+    const fontSize = parseFloat(cs.fontSize) || 15;
+    const lineH = parseFloat(cs.lineHeight) || fontSize * 1.6;
+    const padL = parseFloat(cs.paddingLeft) || 0, padT = parseFloat(cs.paddingTop) || 0;
+    const perRow = Math.max(10, Math.floor((el.clientWidth - padL * 2) / (fontSize * 0.5)));
+    const before = el.value.slice(0, el.selectionStart || 0).split("\n");
+    let rows = 0;
+    before.forEach((ln, k) => { rows += k < before.length - 1 ? Math.max(1, Math.ceil(ln.length / perRow)) : Math.floor(ln.length / perRow); });
+    const col = before[before.length - 1].length % perRow;
+    const x = r.left + padL + Math.min(el.clientWidth - padL, col * fontSize * 0.5);
+    const y = Math.min(r.bottom, Math.max(r.top, r.top + padT + rows * lineH + lineH / 2 - el.scrollTop));
+    lyraLookAt(x, y, 1600);
+  };
+  const onStoryInput = () => {
+    followCaret();
+    clearTimeout(pauseTimer.current);
+    pauseTimer.current = setTimeout(() => {
+      if ((storyRef.current?.value || "").trim().length < 40) return;
+      lyraHint(WRITING_PROMPTS[Math.floor(Math.random() * WRITING_PROMPTS.length)], "writing-pause");
+    }, 90000);
+  };
+  useEffect(() => () => clearTimeout(pauseTimer.current), []);
+
   const submit = async (e) => {
     e.preventDefault();
     setSubmitStatus("loading");
@@ -105,6 +147,8 @@ export default function AssignmentBuilder() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      clearTimeout(pauseTimer.current);
+      lyraReact("celebrate");
       setSubmitStatus("done");
     } catch (err) {
       setSubmitStatus("idle");
@@ -163,7 +207,9 @@ export default function AssignmentBuilder() {
         required
         placeholder="Begin writing here or paste story here..."
         value={story}
-        onChange={(e) => setStory(e.target.value)}
+        onChange={(e) => { setStory(e.target.value); onStoryInput(); }}
+        onSelect={followCaret}
+        ref={storyRef}
         rows={16}
         style={{ ...inputStyle, width: "100%", resize: "vertical", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, boxSizing: "border-box" }}
       />

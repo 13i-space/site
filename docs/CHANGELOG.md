@@ -3,6 +3,40 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.49 — Lyra in the Create section
+Small, wordless reactions (`lib/lyraReact.js`).
+- **Alien Lab.** Her eye goes to each answer you pick; the big ones (a blue
+  giant, a hive mind, technology like 13i's...) widen it. When the
+  Continuance Review lands she mirrors the verdict: a warm golden glow for
+  granted, a narrowed, leaning look for under observation, dimmer and
+  sinking for not yet earned.
+- **Write an Assignment.** Her eye follows the end of the line you're
+  writing. After a 90-second pause in a story already under way she holds
+  one quiet writing prompt (her dot, never popping open, once a visit).
+  Submitting gets a small burst of light.
+- **Signal Composer.** A sway when you switch mood, a brightening when you
+  bring a layer in, eyes wide when the drums come in.
+- **SpaceCore.** The site's Lyra flinches when the drill overheats, droops
+  when the borer battery runs low or empty, and bursts with light when a
+  Great Work is finished (four small `post` lines in the game file plus a
+  handler in `components/SpaceCoreGame.js`).
+
+## Update 5.48 — Lyra reads along
+- **Reading.** While a chapter, short story or Interactive Story is open,
+  Lyra leans toward the page and dims a little, eyes on the text. Her eye
+  flicks back to the top on each page turn, and she brightens when a new
+  chapter or section begins.
+- **Narration.** When a chapter or story recording plays (Book page,
+  chapter reader, story pages), she listens: her ring and glow pulse with
+  the narrator's voice, without the dancing she does for music
+  (`components/NarrationAudio.js`, "voice" mode in `lib/lyraMusic.js`).
+- **Interactive Stories.** She feels each choice: a flinch for INTERVENE, a
+  slow nod for OBSERVE, a lean in for COMMUNICATE, a sharp narrowed look for
+  ANALYZE. At the end, the story as written gets a warm golden glow of
+  recognition; any other record gets a curious tilt.
+- **Story signals.** As each section of a signal begins, her eye goes to it
+  on the timeline.
+
 ## Update 5.47 — Lyra: restraint, the Oracle, new wings, the launch moment
 - **Restraint.** Lyra now speaks up on her own only when it matters: a page
   you've never seen, a game you haven't played, something new (news, mail,

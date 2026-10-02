@@ -4,6 +4,29 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
 import { ALIEN_QUESTIONS } from "../lib/alienQuestions";
+import { lyraReact } from "../lib/lyraReact";
+import { lyraLookAt } from "../lib/lyraMusic";
+
+// answers that make Lyra's eye go wide (they match lib/alienQuestions.js)
+const BIG_ANSWERS = new Set([
+  "No true daylight \u2014 they live by other light",
+  "A brilliant blue giant",
+  "A binary system with two suns",
+  "Crushing \u2014 nothing survives without adapting to it",
+  "No atmosphere at all",
+  "Underground caverns \u2014 the surface is uninhabitable",
+  "Massive \u2014 the size of a building",
+  "None \u2014 no limbs at all",
+  "They don't move \u2014 rooted in place",
+  "A soft, bioluminescent membrane",
+  "Something electromagnetic \u2014 not one of our five senses",
+  "They can sense others' emotional state directly",
+  "A sense of time passing differently than we experience it",
+  "Aggressive \u2014 they treat the unknown as a threat",
+  "A hive mind \u2014 no true individuals",
+  "Gravitational, like 13i itself",
+  "So far beyond ours it's barely comprehensible",
+]);
 import { STAT_GROUPS, evenStats, groupTotal } from "../lib/alienStats";
 import AlienCard from "./AlienCard";
 import StatRadar from "./StatRadar";
@@ -41,7 +64,14 @@ export default function AlienCreator({ loggedIn }) {
   const current = step < total ? ALIEN_QUESTIONS[step] : null;
   const pointsLeft = STAT_GROUPS.reduce((n, g) => n + g.pool - groupTotal(stats, g), 0);
 
-  const choose = (option) => {
+  // Lyra watches the species take shape: her eye goes to each answer, and the
+  // big ones (a blue giant, a hive mind, technology like 13i's...) widen it
+  const choose = (option, e) => {
+    if (e && e.currentTarget) {
+      const r = e.currentTarget.getBoundingClientRect();
+      lyraLookAt(r.left + r.width / 2, r.top + r.height / 2, 1100);
+    }
+    lyraReact(BIG_ANSWERS.has(option) ? "wow" : "notice");
     setAnswers((a) => ({ ...a, [current.id]: option }));
     setTimeout(() => setStep((s) => s + 1), 150);
   };
@@ -394,7 +424,7 @@ export default function AlienCreator({ loggedIn }) {
         {current.options.map((opt) => (
           <button
             key={opt}
-            onClick={() => choose(opt)}
+            onClick={(e) => choose(opt, e)}
             style={{
               textAlign: "left", background: answers[current.id] === opt ? "rgba(139,149,246,0.12)" : "none",
               border: `1px solid ${answers[current.id] === opt ? "#8B95F6" : "#262A55"}`, borderRadius: 4,

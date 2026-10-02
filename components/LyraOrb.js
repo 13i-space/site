@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
-import { onMusic, createListener } from "../lib/lyraMusic";
+import { onMusic, createListener, isReading } from "../lib/lyraMusic";
 import { onPlayerTwo, playerTwo, playerTwoEnd } from "../lib/lyraAssist";
 
 // Lyra's body: a ring-and-eye that floats, breathes, blinks, and looks
@@ -23,6 +23,12 @@ import { onPlayerTwo, playerTwo, playerTwoEnd } from "../lib/lyraAssist";
 // In the Oracle's chamber (state "deferring") she withdraws: smaller, dim,
 // eye lowered toward the chamber. 13i is speaking, not her. She glances up
 // as each answer arrives (the "13i:oracle" event), then settles back.
+// Reading (Update 5.48): while a story or chapter is open she leans toward
+// the page and dims; her eye flicks back on each page turn and she
+// brightens at a new chapter ("13i:reading"). With narration playing she
+// listens - ring and glow pulse with the voice, no dancing. In an
+// Interactive Story she feels each choice and each ending ("13i:story"),
+// and "13i:lyra-look" points her eye at something for a moment.
 const PALETTE = [
   { ring: "#B9C0FF", pupil: "#DCDFFF", glow: "139,149,246" },
   { ring: "#B9C0FF", pupil: "#E8CFC0", glow: "160,160,240" },
@@ -50,6 +56,57 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     return () => { window.removeEventListener("13i:oracle", on); clearTimeout(t); };
   }, []);
   const glancing = deferring && !!oracle;
+
+  // ---- reading and stories ----
+  const [reading, setReading] = useState(false);
+  const [react, setReact] = useState(null); // a passing reaction (class lyra-react-*)
+  const [lookAt, setLookAt] = useState(null); // { x, y } - something she's been pointed at
+  useEffect(() => {
+    let rt, lt;
+    setReading(isReading()); // a page may have opened before she did
+    const flash = (name, ms) => { setReact(name); clearTimeout(rt); rt = setTimeout(() => setReact(null), ms); };
+    const onReading = (e) => {
+      const ph = e.detail && e.detail.phase;
+      if (ph === "open" || ph === "close") setReading(isReading());
+      else if (ph === "turn") flash("turn", 600);
+      else if (ph === "chapter") flash("chapter", 1800);
+    };
+    const STORY = { INTERVENE: ["flinch", 700], OBSERVE: ["nod", 1500], COMMUNICATE: ["lean", 1700], ANALYZE: ["analyze", 1500] };
+    const onStory = (e) => {
+      const d = e.detail || {};
+      if (d.ending) flash(d.ending === "canon" ? "recognize" : "curious", d.ending === "canon" ? 3200 : 2600);
+      else if (STORY[d.tag]) flash(...STORY[d.tag]);
+    };
+    const onLook = (e) => {
+      const d = e.detail || {};
+      setLookAt({ x: d.x, y: d.y });
+      clearTimeout(lt);
+      lt = setTimeout(() => setLookAt(null), d.ms || 1500);
+    };
+    const TIMES = { notice: 1300, wow: 1700, warm: 3200, watchful: 3000, subdued: 3200, sway: 2200, flinch: 700, droop: 3200, celebrate: 2600 };
+    const onReact = (e) => { const n = e.detail && e.detail.react; if (TIMES[n]) flash(n, TIMES[n]); };
+    window.addEventListener("13i:lyra", onReact);
+    window.addEventListener("13i:reading", onReading);
+    window.addEventListener("13i:story", onStory);
+    window.addEventListener("13i:lyra-look", onLook);
+    return () => {
+      window.removeEventListener("13i:lyra", onReact);
+      window.removeEventListener("13i:reading", onReading);
+      window.removeEventListener("13i:story", onStory);
+      window.removeEventListener("13i:lyra-look", onLook);
+      clearTimeout(rt); clearTimeout(lt);
+    };
+  }, []);
+  // reading posture only while she's idle (not when her panel is open)
+  const readingNow = reading && (state === "aware" || state === "dormant");
+  // a point she's been asked to look at, as an eye offset
+  const lookAtVec = (() => {
+    if (!lookAt || !ref.current) return null;
+    const r = ref.current.getBoundingClientRect();
+    const dx = lookAt.x - (r.left + r.width / 2), dy = lookAt.y - (r.top + r.height / 2);
+    const d = Math.hypot(dx, dy) || 1;
+    return { x: (dx / d) * 3.4, y: (dy / d) * 3.4 };
+  })();
   const [blink, setBlink] = useState(false);
   const c = PALETTE[Math.max(0, Math.min(4, stage))];
   const dormant = state === "dormant";
@@ -100,7 +157,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
   const wingLRef = useRef(null), wingRRef = useRef(null), eyeRef = useRef(null);
   useEffect(() => {
     const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    let listener = null, raf = 0, last = 0;
+    let listener = null, raf = 0, last = 0, voice = false;
     const m = { pulse: 0, level: 0, bass: 0, high: 0, spin: 0, energy: 0, side: 1 };
     const set = (el, v) => { if (el) el.style.transform = v; };
     const frame = (now) => {
@@ -118,7 +175,17 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
       m.pulse *= Math.pow(0.86, dt / 16.7);
       const e = m.energy, t = now / 1000;
       const s = 1 + (0.11 * m.pulse + 0.07 * m.level) * e;
-      if (reduce) {
+      if (voice) {
+        // listening to a narrator: she stays put and glows with the voice
+        set(moveRef.current, "");
+        set(danceRef.current, `scale(${(1 + 0.06 * m.level * e).toFixed(3)})`);
+        set(glowRef.current, `scale(${(1 + 0.7 * m.level * e).toFixed(3)})`);
+        if (!reduce) {
+          m.spin += dt * (0.01 + m.level * 0.12) * e;
+          set(spinRef.current, `rotate(${(m.spin % 360).toFixed(1)}deg)`);
+        }
+        set(wingLRef.current, ""); set(wingRRef.current, "");
+      } else if (reduce) {
         set(danceRef.current, `scale(${1 + (s - 1) * 0.4})`);
         set(glowRef.current, `scale(${1 + 0.4 * m.level * e})`);
       } else {
@@ -136,15 +203,16 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
         set(wingLRef.current, `rotate(${flap.toFixed(1)}deg)`); // a lift on each beat
         set(wingRRef.current, `rotate(${(-flap).toFixed(1)}deg)`);
       }
-      set(eyeRef.current, `scale(${(1 + 0.4 * m.bass * e).toFixed(3)})`);
+      set(eyeRef.current, `scale(${(1 + (voice ? 0.25 * m.level : 0.4 * m.bass) * e).toFixed(3)})`);
       if (listener || m.energy > 0.01 || m.pulse > 0.01) raf = requestAnimationFrame(frame);
       else {
         raf = 0; last = 0; m.spin = 0;
         [moveRef, danceRef, glowRef, spinRef, wingLRef, wingRRef, eyeRef].forEach((r) => set(r.current, ""));
       }
     };
-    const off = onMusic((analyser) => {
+    const off = onMusic((analyser, mode) => {
       listener = analyser ? createListener(analyser) : null;
+      voice = mode === "voice";
       if (!raf) raf = requestAnimationFrame(frame);
     });
     return () => { off(); cancelAnimationFrame(raf); };
@@ -191,14 +259,17 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     return () => cancelAnimationFrame(raf);
   }, [p2]);
 
-  const lid = blink ? 0.08 : deferring && !glancing ? 0.5 : dormant && !p2 ? 0.45 : 1; // playing wakes her right up
-  // deferring: eyes lowered toward the chamber; glancing: looking up at it
-  const lookNow = deferring ? (glancing ? { x: -3, y: -2.6 } : { x: -2.2, y: 0.8 }) : look;
-  const pupilR = state === "thinking" ? 2.6 : dormant && !p2 ? 3 : 4.2;
+  const reactingWide = react === "curious" || react === "recognize" || react === "chapter" || react === "wow" || react === "warm" || react === "celebrate";
+  const lid = blink ? 0.08 : deferring && !glancing ? 0.5 : react === "flinch" ? 0.35 : reactingWide ? 1 : readingNow ? 0.8 : dormant && !p2 ? 0.45 : 1; // playing wakes her right up
+  // deferring: eyes lowered toward the chamber; glancing: looking up at it.
+  // reading: eyes on the page (left of her), flicking back to the top of a new page
+  const lookNow = deferring ? (glancing ? { x: -3, y: -2.6 } : { x: -2.2, y: 0.8 })
+    : lookAtVec || (react === "turn" ? { x: -3.2, y: -2.4 } : readingNow ? { x: -2.6, y: -0.4 } : look);
+  const pupilR = state === "thinking" || react === "analyze" || react === "watchful" ? 2.6 : react === "curious" || react === "wow" ? 5 : dormant && !p2 ? 3 : 4.2;
   const motes = stage >= 2 ? stage - 1 : 0;
 
   return (
-    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}${glancing ? " lyra-glance" : ""}`} style={{ width: size, height: size, opacity: deferring && !p2 ? (glancing ? 0.85 : 0.4) : dormant && !p2 ? 0.6 : 1 }}>
+    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}${glancing ? " lyra-glance" : ""}${readingNow ? " lyra-reading" : ""}${react ? ` lyra-react-${react}` : ""}`} style={{ width: size, height: size, opacity: deferring && !p2 ? (glancing ? 0.85 : 0.4) : react === "subdued" || react === "droop" ? 0.5 : react ? 1 : readingNow ? 0.7 : dormant && !p2 ? 0.6 : 1 }}>
       {p2 && <span className="mono lyra-p2-badge">P2 · PLAYING</span>}
       {p2 && mounted && createPortal(
         <svg className="lyra-tether" aria-hidden="true">
@@ -263,7 +334,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
 
         <g style={{ transform: `scaleY(${lid})`, transition: "transform 0.09s ease", transformOrigin: "0 0" }}>
           <circle r="11" fill="none" stroke={c.ring} strokeWidth="2" />
-          <g style={{ transform: `translate(${lookNow.x}px, ${lookNow.y}px)`, transition: deferring ? "transform 0.7s ease" : "transform 0.25s ease-out" }}>
+          <g style={{ transform: `translate(${lookNow.x}px, ${lookNow.y}px)`, transition: deferring || readingNow ? "transform 0.7s ease" : "transform 0.25s ease-out" }}>
             <g ref={eyeRef}>
             <g ref={p2EyeRef} style={{ transition: "transform 0.08s linear" }}>
             <circle r={pupilR} fill={c.pupil} style={{ transition: "r 0.3s ease" }} />
@@ -273,7 +344,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
           </g>
         </g>
 
-        {state === "celebrating" && (
+        {(state === "celebrating" || react === "celebrate") && (
           <g className="lyra-burst">
             {Array.from({ length: 10 }).map((_, i) => {
               const a = (i / 10) * Math.PI * 2;

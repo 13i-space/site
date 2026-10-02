@@ -532,6 +532,21 @@ export default function LyraCompanion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pathname]);
 
+  // ---- a quiet hint from a page (lib/lyraReact.js lyraHint) ----
+  // held with her dot, never popped open; each hint once per visit
+  useEffect(() => {
+    const onHint = (e) => {
+      const d = e.detail || {};
+      if (!d.text || !loggedIn) return;
+      const k = `lyra_hint_${d.key || d.text.slice(0, 30)}`;
+      try { if (sessionStorage.getItem(k)) return; sessionStorage.setItem(k, "1"); } catch (e2) { /* ignore */ }
+      if (open) return; // she's in use - don't change what she's saying
+      speak(d.text, { auto: false });
+    };
+    window.addEventListener("13i:lyra-hint", onHint);
+    return () => window.removeEventListener("13i:lyra-hint", onHint);
+  }, [loggedIn, open, speak]);
+
   // ---- keeping you on top of communication ----
   const alertsRef = useRef([]);
   alertsRef.current = alerts;

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import NarrationAudio from "../../../components/NarrationAudio";
 
 const optionStyle = {
   display: "flex",
@@ -57,9 +58,7 @@ export default function BookPage() {
             {LISTEN.map((l) => (
               <div key={l.src} style={optionStyle}>
                 <span>&#9658; {l.label}</span>
-                <audio controls preload="none" style={{ width: "100%", height: 32 }}>
-                  <source src={l.src} type="audio/mpeg" />
-                </audio>
+                <NarrationAudio src={l.src} label={l.label} style={{ width: "100%", height: 32 }} />
               </div>
             ))}
             <Link href="/wiki" style={optionStyle}>

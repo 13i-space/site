@@ -6,6 +6,7 @@ import InteractiveScene from "./InteractiveScene";
 import FullscreenButton from "./FullscreenButton";
 import { loadBookmark, saveBookmark, clearBookmark, foundEndings, recordEnding, kinStats } from "../lib/interactive/progress";
 import { interactiveFor } from "../lib/interactive";
+import { lyraReading } from "../lib/lyraMusic";
 import { startAmbience, stopAmbience, mood, chime, MOOD_FOR_SCENE } from "../lib/interactive/ambience";
 
 // Plays an Interactive Assignment (a script from lib/interactive/). The
@@ -118,6 +119,12 @@ export default function InteractivePlayer({ number }) {
     return Math.min(1, Math.max(0, 1 - left / total));
   }, [phase, remaining, story, node, lineIdx, revealed]);
 
+  // Lyra reads along while a record is open
+  useEffect(() => {
+    lyraReading("open");
+    return () => lyraReading("close");
+  }, []);
+
   // ---- first load: bookmark, records found, sound preference ----
   useEffect(() => {
     setBookmark(loadBookmark(story.number));
@@ -208,6 +215,9 @@ export default function InteractivePlayer({ number }) {
       return;
     }
     if (sound) chime(false);
+    // Lyra feels the choice (components/LyraOrb.js): a flinch for INTERVENE,
+    // a slow nod for OBSERVE, a lean in for COMMUNICATE, a sharp look for ANALYZE
+    try { window.dispatchEvent(new CustomEvent("13i:story", { detail: { tag: c.tag } })); } catch (e) { /* ignore */ }
     const nextFlags = { ...flags, ...(typeof c.set === "function" ? c.set(flags) : c.set || {}) };
     setPath((p) => [...p, { node: nodeId, choice: c.id, tag: c.tag, text: c.text }]);
     setLog((l) => [...l, { who: "choice", text: c.text, tag: c.tag }]);
@@ -218,6 +228,8 @@ export default function InteractivePlayer({ number }) {
   const closeRecord = useCallback(async () => {
     const endingId = node.ending;
     setPhase("ending");
+    // the story as written: she recognises it. Any other record: she's curious
+    try { window.dispatchEvent(new CustomEvent("13i:story", { detail: { ending: story.endings[endingId]?.canon ? "canon" : "divergent" } })); } catch (e) { /* ignore */ }
     clearBookmark(story.number);
     setBookmark(null);
     const res = await recordEnding(story.number, endingId, flags.climax);

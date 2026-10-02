@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { lyraLookAt } from "../lib/lyraMusic";
 import { SIGNALS, signalSections, signalLength, playStorySignal, stopStorySignal, renderStorySignalWav } from "../lib/signals";
 
 // Plays a story's signal (lib/signals.js) with its sections laid out as a
@@ -13,11 +14,21 @@ export default function SignalPlayer({ number, compact = false }) {
   const playingRef = useRef(false);
   playingRef.current = playing;
   useEffect(() => () => { if (playingRef.current) stopStorySignal(); }, []);
+  const sectionRefs = useRef([]);
+  const sections = signal ? signalSections(signal) : [];
+  const current = sections.filter((s) => s.start <= pos).pop();
+  const currentIndex = current ? sections.indexOf(current) : -1;
+  // as each section begins, Lyra's eye goes to it on the timeline
+  useEffect(() => {
+    if (!playing || currentIndex < 0) return;
+    const el = sectionRefs.current[currentIndex];
+    if (!el) return;
+    const r = el.getBoundingClientRect();
+    lyraLookAt(r.left + r.width / 2, r.top + r.height / 2, 1800);
+  }, [playing, currentIndex]);
   if (!signal) return null;
 
-  const sections = signalSections(signal);
   const total = signalLength(signal);
-  const current = sections.filter((s) => s.start <= pos).pop();
 
   const toggle = () => {
     if (playing) { stopStorySignal(); return; }
@@ -63,7 +74,7 @@ export default function SignalPlayer({ number, compact = false }) {
               const done = Math.max(0, Math.min(1, (pos - s.start) / s.length));
               const isNow = playing && current === s;
               return (
-                <div key={i} title={s.label || "silence"} style={{ flex: s.length, position: "relative", background: s.label ? "#14163A" : "transparent", border: s.label ? "1px solid #262A55" : "1px dashed #262A55", borderRadius: 2, overflow: "hidden" }}>
+                <div key={i} ref={(el) => { sectionRefs.current[i] = el; }} title={s.label || "silence"} style={{ flex: s.length, position: "relative", background: s.label ? "#14163A" : "transparent", border: s.label ? "1px solid #262A55" : "1px dashed #262A55", borderRadius: 2, overflow: "hidden" }}>
                   <div style={{ position: "absolute", inset: 0, width: `${done * 100}%`, background: isNow ? "rgba(232,207,192,0.35)" : "rgba(139,149,246,0.3)" }} />
                 </div>
               );
