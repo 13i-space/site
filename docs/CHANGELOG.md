@@ -3,6 +3,14 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.45 — Lyra Assist in the core games
+A **Lyra Assist** switch on NEMESIS Command, Asteroid Belt and 13i vs
+NEMESIS lets Lyra fly with you. In NEMESIS Command she hovers above you and
+fires at incoming threats, faster as the game speeds up. In Asteroid Belt she
+circles off your wing and shoots nearby rocks, rods and mining ships. In
+13i vs NEMESIS she holds a weaker but constant laser on 13i in every weapon
+window. Her kills and damage earn no points. See docs/LYRA-ASSIST.md.
+
 ## Update 5.44 — Music page fix
 5.43 broke song playback: `/api/track` replies were marked cacheable, so
 Vercel's CDN kept a two-byte slice of a song (a browser's first Range

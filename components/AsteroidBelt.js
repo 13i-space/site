@@ -5,6 +5,8 @@ import FullscreenButton from "./FullscreenButton";
 import { sfx } from "../lib/sfx";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 import Leaderboard from "./Leaderboard";
+import LyraAssistToggle from "./LyraAssistToggle";
+import { loadAssist, saveAssist, drawLyra } from "../lib/lyraAssist";
 
 const SHIP_RADIUS = 12;
 const ROD_COUNT = 12;
@@ -68,9 +70,16 @@ export default function AsteroidBelt() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [personalBest, setPersonalBest] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  // Lyra assists: she flies alongside your ship and shoots at the nearest
+  // rock, rod or mining ship. What she destroys earns no points.
+  const [assist, setAssist] = useState(false);
+  const assistRef = useRef(false);
+  assistRef.current = assist;
+  const toggleAssist = (on) => { setAssist(on); saveAssist(on); };
 
   useEffect(() => {
     getPersonalBest("asteroid-belt").then(setPersonalBest);
+    setAssist(loadAssist());
   }, []);
 
   const sizeCanvas = useCallback((canvas) => {
@@ -152,6 +161,7 @@ export default function AsteroidBelt() {
       fireCooldown: 0,
       miningSpawnCooldown: 200,
       pendingSpawns: null,
+      lyra: { x: canvas.width / 2 - 40, y: canvas.height / 2 + 30, vx: 0, vy: 0, cd: 60, flash: 0, orbit: 0 },
     };
     spawnWave(canvas, 0, state);
     return state;
@@ -259,6 +269,43 @@ export default function AsteroidBelt() {
         sfx.fire();
       }
 
+      // ---- Lyra assists ----
+      const L = s.lyra;
+      L.flash = Math.max(0, L.flash - 0.06);
+      if (assistRef.current) {
+        // she keeps close, circling just off your wing
+        L.orbit += 0.018;
+        const gx = ship.x + Math.cos(L.orbit) * 46, gy = ship.y + Math.sin(L.orbit) * 46;
+        let dx = gx - L.x, dy = gy - L.y;
+        if (Math.abs(dx) > w / 2) dx -= Math.sign(dx) * w; // follow across the screen edge
+        if (Math.abs(dy) > h / 2) dy -= Math.sign(dy) * h;
+        L.vx = (L.vx + dx * 0.012) * 0.9;
+        L.vy = (L.vy + dy * 0.012) * 0.9;
+        L.x = wrap(L.x + L.vx, w);
+        L.y = wrap(L.y + L.vy, h);
+        L.cd--;
+        if (L.cd <= 0) {
+          const targets = [
+            ...s.asteroids.filter((a) => a.alive),
+            ...s.rods.filter((r) => r.alive),
+            ...(s.miningShip && s.miningShip.alive ? [s.miningShip] : []),
+          ];
+          let best = null, bd = 260;
+          targets.forEach((o) => { const d = Math.hypot(o.x - L.x, o.y - L.y); if (d < bd) { bd = d; best = o; } });
+          if (best) {
+            const speed = 5.2;
+            const tt = bd / speed;
+            const a = Math.atan2(best.y + (best.vy || 0) * tt - L.y, best.x + (best.vx || 0) * tt - L.x);
+            s.bullets.push({ x: L.x, y: L.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, life: 60, lyra: true });
+            L.cd = Math.max(26, 58 - lvl * 3); // a little quicker each level
+            L.flash = 1;
+            sfx.fire();
+          } else {
+            L.cd = 10;
+          }
+        }
+      }
+
       s.bullets.forEach((b) => { b.x = wrap(b.x + b.vx, w); b.y = wrap(b.y + b.vy, h); b.life--; });
       s.bullets = s.bullets.filter((b) => b.life > 0);
 
@@ -280,8 +327,8 @@ export default function AsteroidBelt() {
           if (segmentNear(b.x - b.vx, b.y - b.vy, b.x, b.y, a.x, a.y, hitR)) {
             b.life = 0;
             a.alive = false;
-            s.score += ASTEROID_TIERS[a.tier].points;
-            explode(s, a.x, a.y, 12, "#8B95F6");
+            if (!b.lyra) s.score += ASTEROID_TIERS[a.tier].points; // Lyra's hits don't score
+            explode(s, a.x, a.y, 12, b.lyra ? "#B9C0FF" : "#8B95F6");
             sfx.explosion(a.tier === "large" ? "large" : a.tier === "medium" ? "medium" : "small");
             const nextTier = ASTEROID_TIERS[a.tier].next;
             if (nextTier) {
@@ -358,7 +405,7 @@ export default function AsteroidBelt() {
               if (ms.hp <= 0) {
                 explode(s, ms.x, ms.y, 30, "#8B95F6");
                 sfx.explosion("large");
-                s.score += 500;
+                if (!b.lyra) s.score += 500;
                 ms.alive = false;
                 s.miningShip = null;
                 s.miningSpawnCooldown = 500;
@@ -386,7 +433,7 @@ export default function AsteroidBelt() {
           if (dx * dx + dy * dy < 14 * 14) {
             b.life = 0;
             r.alive = false;
-            s.score += 75;
+            if (!b.lyra) s.score += 75;
             explode(s, r.x, r.y, 10, "#8B95F6");
             sfx.explosion("small");
           }
@@ -469,8 +516,11 @@ export default function AsteroidBelt() {
         ctx.restore();
       }
 
-      ctx.fillStyle = "#DCDFFF";
-      s.bullets.forEach((b) => { ctx.beginPath(); ctx.arc(b.x, b.y, 1.8, 0, Math.PI * 2); ctx.fill(); });
+      s.bullets.forEach((b) => {
+        ctx.fillStyle = b.lyra ? "#B9C0FF" : "#DCDFFF";
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.lyra ? 2.4 : 1.8, 0, Math.PI * 2); ctx.fill();
+      });
+      if (assistRef.current) drawLyra(ctx, L.x, L.y, 9, performance.now() / 1000, L.flash);
 
       // asteroids
       s.asteroids.forEach((a) => {
@@ -589,6 +639,7 @@ export default function AsteroidBelt() {
           <span>LEVEL {level + 1}</span>
           <span>SCORE {score}</span>
           {personalBest !== null && <span style={{ color: "#565B8F" }}>BEST {personalBest.toLocaleString()}</span>}
+          <LyraAssistToggle on={assist} onToggle={toggleAssist} />
           <FullscreenButton targetRef={containerRef} />
         </div>
       </div>

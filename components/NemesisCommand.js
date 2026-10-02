@@ -5,6 +5,8 @@ import { sfx } from "../lib/sfx";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 import Leaderboard from "./Leaderboard";
 import FullscreenButton from "./FullscreenButton";
+import LyraAssistToggle from "./LyraAssistToggle";
+import { loadAssist, saveAssist, drawLyra } from "../lib/lyraAssist";
 
 // The game was designed on a 600x400 field; speeds scale with the real
 // field height so a bigger screen doesn't make it easier or harder.
@@ -41,6 +43,13 @@ export default function NemesisCommand() {
   }, []);
   const [gameOver, setGameOver] = useState(false);
   const [started, setStarted] = useState(false);
+  // Lyra assists: she hovers above you and fires at incoming threats, faster
+  // as the levels climb. Her kills don't score.
+  const [assist, setAssist] = useState(false);
+  const assistRef = useRef(false);
+  assistRef.current = assist;
+  useEffect(() => { setAssist(loadAssist()); }, []);
+  const toggleAssist = (on) => { setAssist(on); saveAssist(on); };
 
   // The canvas's drawing size follows its size on screen (full width, most
   // of the viewport height), including in fullscreen.
@@ -79,6 +88,7 @@ export default function NemesisCommand() {
       projectiles: [],
       threats: [],
       explosions: [],
+      lyra: { x: canvas.width * 0.3, cd: 40, flash: 0, shots: [] },
       stars,
       lastSpawn: 0,
       score: 0,
@@ -274,9 +284,54 @@ export default function NemesisCommand() {
 
       s.threats.forEach((th) => (th.y += th.speed));
 
+      // ---- Lyra assists ----
+      const L = s.lyra;
+      if (assistRef.current) {
+        const k = canvas.height / DESIGN_HEIGHT;
+        const ly = canvas.height - 20 - 95 * k;
+        // the threat closest to the ground that she isn't already shooting at
+        const aimed = new Set(L.shots.map((sh) => sh.target));
+        const target = s.threats.filter((th) => !th.hit && th.y > 0 && th.y < ly - 20 && !aimed.has(th))
+          .sort((a, b) => b.y - a.y)[0];
+        const goal = target ? target.x : s.turretX + 70;
+        L.x += Math.max(-4.5 * k, Math.min(4.5 * k, (goal - L.x) * 0.08));
+        L.y = ly;
+        L.cd -= 1;
+        L.flash = Math.max(0, L.flash - 0.08);
+        if (target && L.cd <= 0 && Math.abs(target.x - L.x) < 120 * k) {
+          // lead the shot: where it will be when the shot gets there
+          const speed = 6 * k;
+          let tx = target.x, ty = target.y;
+          for (let i = 0; i < 3; i++) {
+            const tt = Math.hypot(tx - L.x, ty - L.y) / speed;
+            ty = target.y + target.speed * tt;
+          }
+          // she's good, not perfect: a small wobble means the odd miss
+          const a = Math.atan2(ty - L.y, tx - L.x) + (Math.random() - 0.5) * 0.09;
+          L.shots.push({ x: L.x, y: L.y, vx: Math.cos(a) * speed, vy: Math.sin(a) * speed, target });
+          L.cd = Math.max(30, 75 - lvl * 11); // she speeds up with the game, but can't cover it all
+          L.flash = 1;
+        }
+      }
+      L.shots.forEach((sh) => { sh.x += sh.vx; sh.y += sh.vy; });
+      L.shots = L.shots.filter((sh) => sh.x > 0 && sh.x < canvas.width && sh.y > 0 && sh.y < canvas.height && !sh.hit);
       for (const th of s.threats) {
+        if (th.hit) continue;
+        for (const sh of L.shots) {
+          if (!sh.hit && Math.hypot(th.x - sh.x, th.y - sh.y) < 15) {
+            th.hit = true;
+            sh.hit = true;
+            s.explosions.push({ x: th.x, y: th.y, age: 0, lyra: true });
+            sfx.explosion("small");
+          }
+        }
+      }
+      L.shots = L.shots.filter((sh) => !sh.hit);
+
+      for (const th of s.threats) {
+        if (th.hit) continue;
         for (const p of s.projectiles) {
-          if (Math.hypot(th.x - p.x, th.y - p.y) < 14) {
+          if (!th.hit && Math.hypot(th.x - p.x, th.y - p.y) < 14) {
             th.hit = true;
             p.hit = true;
             s.score += 10;
@@ -344,9 +399,20 @@ export default function NemesisCommand() {
 
       s.threats.forEach((th) => drawEnemy(th.x, th.y, 9));
 
+      if (assistRef.current || L.shots.length) {
+        ctx.fillStyle = "#B9C0FF";
+        L.shots.forEach((sh) => {
+          ctx.globalAlpha = 0.35;
+          ctx.beginPath(); ctx.arc(sh.x - sh.vx * 1.5, sh.y - sh.vy * 1.5, 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = 1;
+          ctx.beginPath(); ctx.arc(sh.x, sh.y, 2.8, 0, Math.PI * 2); ctx.fill();
+        });
+        if (assistRef.current && L.y) drawLyra(ctx, L.x, L.y, 9 * (canvas.height / DESIGN_HEIGHT) ** 0.5, frame / 60, L.flash);
+      }
+
       s.explosions.forEach((ex) => {
         const p = ex.age / 16;
-        ctx.strokeStyle = `rgba(232, 207, 192, ${1 - p})`;
+        ctx.strokeStyle = ex.lyra ? `rgba(185, 192, 255, ${1 - p})` : `rgba(232, 207, 192, ${1 - p})`;
         ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.arc(ex.x, ex.y, 6 + p * 18, 0, Math.PI * 2);
@@ -380,6 +446,7 @@ export default function NemesisCommand() {
         <span>level {level + 1} &middot; {nextLevelText}</span>
         <span>lives: {lives}</span>
         {personalBest !== null && <span style={{ color: "#565B8F" }}>best: {personalBest.toLocaleString()}</span>}
+        <LyraAssistToggle on={assist} onToggle={toggleAssist} />
         <FullscreenButton targetRef={wrapRef} />
       </div>
       <canvas

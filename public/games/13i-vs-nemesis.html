@@ -94,6 +94,14 @@
     gap:16px; flex-wrap:wrap;
   }
   .meters{display:flex; gap:20px; flex-wrap:wrap;}
+  button.lyra-assist{
+    background:none; border:1px solid #3A3E75; border-radius:4px; color:#8A8FBF;
+    font-family:'JetBrains Mono', monospace; font-size:11px; padding:4px 10px; cursor:pointer;
+    display:inline-flex; align-items:center; gap:6px; margin-left:16px;
+  }
+  button.lyra-assist .dot{display:inline-block; width:9px; height:9px; border-radius:50%; border:1.5px solid #B9C0FF;}
+  button.lyra-assist.on{background:rgba(139,149,246,0.16); border-color:#8B95F6; color:#DCDFFF;}
+  button.lyra-assist.on .dot{background:#DCDFFF; box-shadow:0 0 6px rgba(139,149,246,0.9);}
   .meter{display:flex; flex-direction:column; gap:4px; min-width:120px;}
   .meter-label{font-size:10px; color:var(--text-dim); letter-spacing:0.5px;}
   .meter-track{width:150px; height:8px; background:#0a1424; border:1px solid var(--panel-edge); position:relative;}
@@ -166,6 +174,7 @@
       <div>ZONE <b id="zoneLabel">1 — OUTER SYSTEM</b></div>
       <div>RANGE <b id="rangeLabel">100%</b></div>
       <div>THREAT SCORE <b id="scoreLabel">0</b></div>
+      <button class="lyra-assist" id="lyraAssist" type="button" title="Let Lyra fly with you: a steady laser on 13i. Her damage doesn't score."><span class="dot"></span><span id="lyraAssistLabel">LYRA ASSIST OFF</span></button>
     </div>
   </header>
 
@@ -304,6 +313,61 @@
 
   let state;
 
+  // ---------- LYRA ASSISTS (shared switch with the other core games) ----------
+  // In every weapon window she hovers beside your battery and keeps a thin,
+  // steady laser on 13i: weaker than your weapons, but constant. Its
+  // gravity-well deflection turns her beam aside too. Her damage doesn't score.
+  const ASSIST_KEY = '13i_lyra_assist';
+  const LYRA_DPS = 0.8; // hull % per second while her beam is on target
+  let lyraAssist = false;
+  try { lyraAssist = localStorage.getItem(ASSIST_KEY) === '1'; } catch (e) {}
+  const lyraBtn = document.getElementById('lyraAssist');
+  const lyraLabel = document.getElementById('lyraAssistLabel');
+  function renderLyraBtn(){
+    lyraBtn.classList.toggle('on', lyraAssist);
+    lyraLabel.textContent = 'LYRA ASSIST ' + (lyraAssist ? 'ON' : 'OFF');
+  }
+  lyraBtn.addEventListener('click', ()=>{
+    lyraAssist = !lyraAssist;
+    try { localStorage.setItem(ASSIST_KEY, lyraAssist ? '1' : '0'); } catch (e) {}
+    renderLyraBtn();
+    lyraBtn.blur();
+  });
+  renderLyraBtn();
+  let lyraHum = null;
+  function lyraBeamSound(on){
+    const c = on ? getAudioCtx() : audioCtx;
+    if (!c) return;
+    if (on && !lyraHum){
+      const osc = c.createOscillator(), gain = c.createGain();
+      osc.type = 'sine'; osc.frequency.value = 1180;
+      gain.gain.value = 0.0001;
+      gain.gain.exponentialRampToValueAtTime(0.025, c.currentTime + 0.15);
+      osc.connect(gain).connect(c.destination); osc.start();
+      lyraHum = { osc, gain };
+    } else if (!on && lyraHum){
+      const h = lyraHum; lyraHum = null;
+      try { h.gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.12); h.osc.stop(c.currentTime + 0.15); } catch (e) {}
+    }
+  }
+  function drawLyra(x, y, r, t, flash){
+    ctx.save();
+    ctx.translate(x, y + Math.sin(t * 3) * r * 0.12);
+    const g = ctx.createRadialGradient(0, 0, 0, 0, 0, r * 2.2);
+    g.addColorStop(0, 'rgba(139,149,246,' + (0.35 + 0.4 * flash) + ')');
+    g.addColorStop(1, 'rgba(139,149,246,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, r * 2.2, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#0C0E28'; ctx.beginPath(); ctx.arc(0, 0, r, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#B9C0FF'; ctx.lineWidth = Math.max(1, r * 0.12);
+    ctx.setLineDash([r * 0.15, r * 0.35]); ctx.lineDashOffset = -t * r * 2;
+    ctx.beginPath(); ctx.arc(0, 0, r * 1.25, 0, Math.PI * 2); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.65, 0, Math.PI * 2); ctx.stroke();
+    ctx.fillStyle = flash > 0.3 ? '#FFFFFF' : '#DCDFFF';
+    ctx.beginPath(); ctx.arc(0, 0, r * 0.26 * (1 + flash * 0.4), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
   function freshState(){
     return {
       mode:'map', // 'map' | 'encounter' | 'over'
@@ -322,6 +386,7 @@
       encounter:null,
       lastTime:null,
       over:null,
+      lyraDamage:0,
     };
   }
 
@@ -587,6 +652,7 @@
       target:{jukeAt:0, jukeOffset:{x:0,y:0}, jukeTarget:{x:0,y:0}},
       reticle:{x:W/2, y:H*0.35},
       lastFire: -99,
+      lyra:{x:W/2 - 130, y:H - 70, aimX:W/2, aimY:H*0.3, on:false, deflected:false},
     };
     if (type === 'kinetic') state.ammo.kinetic = Math.max(0, state.ammo.kinetic);
     hintEl.style.display = 'block';
@@ -625,6 +691,29 @@
     }
     e.target.jukeOffset.x += (e.target.jukeTarget.x - e.target.jukeOffset.x) * Math.min(1, dt*4);
     e.target.jukeOffset.y += (e.target.jukeTarget.y - e.target.jukeOffset.y) * Math.min(1, dt*4);
+
+    // Lyra: her aim chases 13i (a little behind its jukes), and while it's on
+    // target and 13i isn't deflecting, her beam wears the hull down
+    const ly = e.lyra;
+    if (lyraAssist){
+      const tp0 = targetPos(et);
+      ly.x = W/2 - 130 + Math.sin(state.t * 0.9) * 40;
+      ly.y = H - 78 + Math.sin(state.t * 1.7) * 8;
+      ly.aimX += (tp0.x - ly.aimX) * Math.min(1, dt * 3.2);
+      ly.aimY += (tp0.y - ly.aimY) * Math.min(1, dt * 3.2);
+      const onTarget = Math.hypot(ly.aimX - tp0.x, ly.aimY - tp0.y) < 26;
+      ly.deflected = onTarget && deflectionActive(et);
+      ly.on = onTarget && !ly.deflected;
+      if (ly.on){
+        const dmg = LYRA_DPS * dt;
+        state.hull = Math.max(0, state.hull - dmg);
+        state.lyraDamage += dmg;
+      }
+      lyraBeamSound(ly.on);
+    } else {
+      ly.on = false;
+      lyraBeamSound(false);
+    }
 
     if (e.type === 'kinetic' || e.type === 'emp' || e.type === 'nuke'){
       e.projectiles.forEach(p=>{
@@ -758,6 +847,7 @@
   }
 
   function endEncounter(){
+    lyraBeamSound(false);
     hintEl.style.display = 'none';
     const e = state.encounter;
     state.mode = 'map';
@@ -793,6 +883,27 @@
 
     // target (13i)
     draw13iShip(tp.x, tp.y, 0, state.hull < 60, state.hull < 30);
+
+    // Lyra and her beam
+    if (lyraAssist){
+      const ly = e.lyra;
+      if (ly.on || ly.deflected){
+        const flick = 0.75 + Math.random() * 0.25;
+        const ex = ly.deflected ? ly.aimX + (Math.random() - 0.5) * 40 : ly.aimX;
+        const ey = ly.deflected ? ly.aimY + 30 + Math.random() * 20 : ly.aimY;
+        ctx.strokeStyle = 'rgba(185,192,255,' + (0.25 * flick) + ')';
+        ctx.lineWidth = 6;
+        ctx.beginPath(); ctx.moveTo(ly.x, ly.y); ctx.lineTo(ex, ey); ctx.stroke();
+        ctx.strokeStyle = 'rgba(232,236,255,' + flick + ')';
+        ctx.lineWidth = 1.6;
+        ctx.beginPath(); ctx.moveTo(ly.x, ly.y); ctx.lineTo(ex, ey); ctx.stroke();
+        if (ly.on){
+          ctx.fillStyle = 'rgba(232,236,255,' + flick + ')';
+          ctx.beginPath(); ctx.arc(ex + (Math.random() - 0.5) * 4, ey + (Math.random() - 0.5) * 4, 2.5 + Math.random() * 2, 0, Math.PI * 2); ctx.fill();
+        }
+      }
+      drawLyra(ly.x, ly.y, 11, state.t, ly.on ? 0.6 + Math.random() * 0.4 : 0);
+    }
 
     if (e.type === 'kinetic' || e.type === 'emp' || e.type === 'nuke'){
       e.projectiles.forEach(p=>{
@@ -863,7 +974,7 @@
     ctx.fillRect(bx + bw*(1-hullPct), by, bw*hullPct, 6);
     ctx.textAlign = 'right';
     ctx.fillStyle = '#6f8ea3';
-    ctx.fillText('13i HULL ' + Math.round(Math.max(0, state.hull)) + '%  ·  TOTAL DAMAGE ' + Math.round(100 - Math.max(0, state.hull)) + '%', W - 20, 40);
+    ctx.fillText('13i HULL ' + Math.round(Math.max(0, state.hull)) + '%  ·  TOTAL DAMAGE ' + Math.round(100 - Math.max(0, state.hull)) + '%' + (state.lyraDamage >= 0.5 ? '  (LYRA ' + Math.round(state.lyraDamage) + '%)' : ''), W - 20, 40);
     ctx.textAlign = 'left';
 
     // large persistent firing instruction, on-canvas so it can't be missed
@@ -1000,12 +1111,13 @@
   window.addEventListener('keydown', announceRun);
 
   function endGame(kind, title, text){
+    lyraBeamSound(false);
     state.mode = 'over';
     report({ type: 'score', score: Math.round(state.score), ending: kind });
     sfx.gameOver(kind);
     overlayTitle.textContent = title;
     overlayText.textContent = text;
-    overlayStats.innerHTML = 'THREAT SCORE: ' + state.score + '&nbsp;&nbsp;&nbsp;HULL REMAINING: ' + Math.round(Math.max(0,state.hull)) + '%';
+    overlayStats.innerHTML = 'THREAT SCORE: ' + state.score + '&nbsp;&nbsp;&nbsp;HULL REMAINING: ' + Math.round(Math.max(0,state.hull)) + '%' + (state.lyraDamage >= 0.5 ? '&nbsp;&nbsp;&nbsp;LYRA\'S BEAM: ' + Math.round(state.lyraDamage) + '%' : '');
     overlay.classList.add('show');
   }
 
