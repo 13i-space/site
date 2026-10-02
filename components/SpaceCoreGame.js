@@ -53,7 +53,7 @@ async function siteBoosts(supabase, uid) {
 
 async function loadAllTiles(supabase) {
   const rows = [];
-  for (let from = 0; from < 20000; from += 1000) {
+  for (let from = 0; from < 100000; from += 1000) {
     const { data, error } = await supabase.from("spacecore_tiles").select("x, y, t, owner, updated_at").order("y").order("x").range(from, from + 999);
     if (error) throw error;
     rows.push(...(data || []));

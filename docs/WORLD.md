@@ -239,10 +239,12 @@ based on what you understand"). Provisional: Paul can overrule any of it.
   label is retired).
 
 ## SpaceCore — developing (site-side game, Update 5.39)
-Paul's direction: SpaceCore is Xavier's mining company, and it sends the
-first human crews (the players) to Mars in the shared building game at
-`/create/spacecore`. It's a playful extension like the other games, not book
-canon. Its relationship to NovaCore is not established; don't invent one.
+Paul's direction (Oct 2026): Xavier owns several companies, the way Musk
+owns several. SpaceCore is his space company, focused on taking mining into
+space (think SpaceX to Musk). It isn't in the first two published chapters.
+In the shared building game at `/create/spacecore`, SpaceCore sends the
+first human crews (the players) to Mars. Beyond that, nothing about
+SpaceCore's history or people is established; don't invent it.
 
 ## Intentionally unknown / open questions
 - What 13i's creators actually looked like, and what became of them, is

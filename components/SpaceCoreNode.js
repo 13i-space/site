@@ -8,6 +8,22 @@ import { SPACECORE_ATTRS, SPACECORE_STAGES, SPACECORE_TIME_SCALE, stageProgress 
 const label = { fontSize: 10, color: "#565B8F", letterSpacing: "1px" };
 const fmt = (min) => { const h = Math.floor(min / 60), m = Math.floor(min % 60); return h ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`; };
 
+// what the Fabricator is doing now, estimated forward from the last save
+function craftLine(s, awayMarsMin) {
+  const queue = s.craft || [];
+  if (!queue.length) return (s.kit || []).length ? `idle \u00b7 kit: ${s.kit.map((k) => `${k.count} ${k.n}`).join(", ")}` : "idle";
+  let left = awayMarsMin;
+  const ready = [];
+  let current = null;
+  for (const c of queue) {
+    if (left >= c.left) { left -= c.left; ready.push(c.n); } else { current = { n: c.n, left: c.left - left }; left = 0; break; }
+  }
+  const parts = [];
+  if (ready.length) parts.push(`ready: ${ready.join(", ")}`);
+  if (current) parts.push(`${current.n} in ${fmt(current.left)}`);
+  return parts.join(" \u00b7 ");
+}
+
 export default function SpaceCoreNode({ player, colony }) {
   const st = SPACECORE_STAGES[colony?.stage ?? 0];
   const prog = colony ? stageProgress(colony) : 0;
@@ -64,6 +80,10 @@ export default function SpaceCoreNode({ player, colony }) {
         </span>
         <span style={label}>TRAINING</span>
         <span>{trainAttr ? (trainMin >= 480 ? `${trainAttr.n} · a point is waiting` : `${trainAttr.n} · ${fmt(trainMin)} of 8h`) : "—"}</span>
+        <span style={label}>BORER</span>
+        <span>{s.battery == null ? "\u2014" : s.atCharger ? "parked at a charger \u00b7 100%" : `battery ${s.battery}%`}</span>
+        <span style={label}>FABRICATOR</span>
+        <span>{craftLine(s, awayMarsMin)}</span>
         <span style={label}>LYRA</span>
         <span>{s.mission?.name ? `mission ${s.mission.i + 1} of ${s.mission.total}: ${s.mission.name}` : "missions done · answering colony calls"}</span>
         <span style={label}>LEDGER</span>

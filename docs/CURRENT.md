@@ -4,6 +4,8 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.40 (needs docs/v5.40-spacecore-v2.sql after 5.39): SpaceCore v2:
+  bigger world, materials, Fabricator, borer battery/power. See docs/SPACECORE.md
 - Update 5.39 (needs docs/v5.39-spacecore.sql): SpaceCore at
   `/create/spacecore`, the shared Mars building game (Create, not Games),
   with a SPACECORE panel on the Node. See docs/SPACECORE.md

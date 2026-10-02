@@ -3,6 +3,28 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.40 — SpaceCore v2: a bigger Mars, real materials, power
+These changes come from Paul's first playtest.
+- **A bigger Mars:** the world is four times wider and twice as deep, with caves,
+  lava tubes, western ice fields and an eastern metal ridge, plus a minimap.
+- **Finishing the trip:** the voyage now ends with an approach, one orbit and entry/descent before the landing.
+- **Glass:** it's now clear.
+- **Backfill:** you can pack rock back into a tunnel you dug.
+- **Harder deep down:** drilling slows deeper, and the drill sound strains.
+- **Power:** the borer runs on a battery, with a gauge cluster for battery,
+  rpm, drill temperature (it can overheat), outside temperature and depth. It
+  charges at Chargers powered by a Reactor, at the lander or by sun.
+- **Materials:** ten Mars building materials replace the hull wall.
+- **Crafting:** equipment is crafted in a Fabricator over Mars time. New
+  equipment: Heater, CO₂ scrubber, Radiation sensor, Reactor and Charger.
+  Habitable rooms (pump + heat + scrubber) give bonuses.
+- **Missions and canon:** five new Lyra missions (14 in total), and SpaceCore
+  is now recorded as Xavier's space company.
+
+Needs docs/v5.40-spacecore-v2.sql, which clears the old world. Crews keep
+their progress and get a relocation kit. The Node panel now shows the borer
+battery and the Fabricator.
+
 ## Update 5.39 — SpaceCore: Build a Universe (Mars, Alpha)
 The first version of Paul's shared building game, in Create at
 `/create/spacecore` (signed-in only). Every Kin flies to Mars for SpaceCore,

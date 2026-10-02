@@ -7,10 +7,11 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@1,9..144,400;1,9..144,600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* SpaceCore, Mission One: Mars. One-screen game: HUD bar, side view of the shared Mars world, tool tray. Hosted by app/(site)/create/spacecore via components/SpaceCoreGame.js. */
+/* SpaceCore, Mission One: Mars (v2, Update 5.40). One-screen game: HUD bar, side view of the shared Mars world, tool tray.
+   Hosted by app/(site)/create/spacecore via components/SpaceCoreGame.js. */
 :root{
   --bg:#0A0B1C; --panel:#111330; --line:#262A55; --line2:#3A3E75;
-  --lav:#B9C0FF; --lav2:#8B95F6; --warm:#E8CFC0; --muted:#8A8FBF; --dim:#565B8F; --text:#DCDFFF; --rust:#C97B6E;
+  --lav:#B9C0FF; --lav2:#8B95F6; --warm:#E8CFC0; --muted:#8A8FBF; --dim:#565B8F; --text:#DCDFFF; --rust:#C97B6E; --ok:#9CCB98;
   --display:'Fraunces',Georgia,'Times New Roman',serif;
   --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
   --body:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
@@ -43,23 +44,39 @@ a{color:var(--lav)}
 .btn.sm{padding:3px 8px;font-size:11px}
 #stage{flex:1;min-height:0;position:relative;border:1px solid var(--line);border-radius:4px;overflow:hidden;background:#06060f}
 #cv{display:block;width:100%;height:100%;touch-action:none}
-.tools{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px}
+.tools{display:flex;flex-direction:column;gap:6px}
+.toolrow{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
 .modes{display:flex;gap:4px}
-.palette{display:flex;flex-wrap:wrap;gap:4px;flex:1;min-width:0}
-.pitem{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:4px 9px;border:1px solid var(--line);border-radius:4px;background:var(--panel);text-align:left}
+.palette{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.pitem{display:flex;align-items:center;gap:7px;padding:4px 9px 4px 5px;border:1px solid var(--line);border-radius:4px;background:var(--panel);text-align:left}
+.pitem canvas{width:22px;height:22px;border-radius:2px;flex:0 0 22px}
+.pitem span{display:flex;flex-direction:column;gap:1px}
 .pitem b{font-weight:500;font-size:12px}
 .pitem small{font-family:var(--mono);font-size:10px;color:var(--muted)}
 .pitem.sel{border-color:var(--warm);background:rgba(232,207,192,.08)}
 .pitem.poor small{color:var(--rust)}
+.pitem.none{opacity:.55}
 .status{font-family:var(--mono);font-size:11px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
 .status em{font-style:normal;color:var(--warm)}
-#toasts{position:absolute;right:12px;top:12px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none;max-width:min(380px,calc(100% - 24px))}
+#toasts{position:absolute;right:12px;top:118px;display:flex;flex-direction:column;align-items:flex-end;gap:6px;pointer-events:none;max-width:min(360px,calc(100% - 24px))}
 .toast{background:rgba(10,11,28,.88);border:1px solid var(--line2);border-radius:4px;padding:7px 11px;font-family:var(--mono);font-size:12px;color:var(--text);transition:opacity .5s}
 .toast.big{border-color:var(--warm);color:var(--warm)}
 #dpad{position:absolute;right:12px;bottom:12px;display:grid;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);gap:4px}
 #dpad button{background:rgba(17,19,48,.8);border:1px solid var(--line2);border-radius:6px;color:var(--lav);font-size:18px;touch-action:none;user-select:none;-webkit-user-select:none}
 #dpad button:active{background:rgba(139,149,246,.25)}
 @media (hover:hover) and (pointer:fine) and (min-width:760px){#dpad{display:none}}
+
+/* the borer's instrument cluster */
+#gauges{position:absolute;left:12px;top:12px;width:228px;background:rgba(10,11,28,.86);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;font-family:var(--mono);font-size:10.5px;color:var(--muted);pointer-events:none}
+.g{display:grid;grid-template-columns:58px 1fr 62px;align-items:center;gap:7px;font-variant-numeric:tabular-nums}
+.gl{letter-spacing:1.2px;font-size:9.5px}
+.gbar{height:6px;background:var(--line);border-radius:2px;overflow:hidden}
+.gbar i{display:block;height:100%;width:0;background:var(--lav2);transition:width .15s linear}
+.gv{text-align:right;color:var(--text)}
+.gfoot{display:flex;justify-content:space-between;gap:6px;border-top:1px solid var(--line);padding-top:5px;font-size:10px}
+.gfoot em{font-style:normal;color:var(--warm)}
+#mini{position:absolute;right:12px;top:12px;width:256px;height:100px;border:1px solid var(--line2);border-radius:4px;background:#05050d;image-rendering:pixelated;cursor:pointer}
+#mini.small{width:150px;height:59px}
 
 /* Lyra on comms */
 #lyra{position:absolute;left:12px;bottom:12px;display:flex;align-items:flex-end;gap:10px;max-width:min(430px,calc(100% - 190px));pointer-events:none}
@@ -81,7 +98,7 @@ a{color:var(--lav)}
 #lyraAsk{display:flex;gap:5px}
 #lyraAsk input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line2);border-radius:4px;color:var(--text);font:inherit;font-size:12px;padding:6px 8px}
 #lyra.min .lyra-body{display:none}
-@media (prefers-reduced-motion:reduce){#lyra.speaking .orb .ring{animation:none}.toast{transition:none}}
+@media (prefers-reduced-motion:reduce){#lyra.speaking .orb .ring{animation:none}.toast{transition:none}.gbar i{transition:none}}
 
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
 .card{background:rgba(12,13,32,.9);border:1px solid var(--line2);border-radius:4px;padding:22px;max-width:660px;width:100%;margin:auto;display:flex;flex-direction:column;gap:12px}
@@ -90,6 +107,8 @@ a{color:var(--lav)}
 .card h2{font-size:26px}
 .card p{margin:0;line-height:1.6;max-width:62ch}
 .eyebrow{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav2);margin:0}
+.scene-label{position:absolute;left:16px;top:16px;display:flex;flex-direction:column;gap:4px}
+.scene-label .sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .fine{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.6}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .attrs{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px}
@@ -103,7 +122,7 @@ a{color:var(--lav)}
 .pm{display:flex;align-items:center;gap:6px;justify-content:space-between}
 .pm button{width:28px;height:26px;border:1px solid var(--line2);background:none;border-radius:3px;color:var(--lav)}
 .pm span{font-family:var(--mono);font-size:12px;color:var(--muted)}
-#dash{position:absolute;top:0;right:0;bottom:0;width:min(450px,100%);background:rgba(12,13,32,.97);border-left:1px solid var(--line2);overflow:auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:18px;z-index:5}
+#dash{position:absolute;top:0;right:0;bottom:0;width:min(460px,100%);background:rgba(12,13,32,.97);border-left:1px solid var(--line2);overflow:auto;padding:18px 16px 28px;display:flex;flex-direction:column;gap:18px;z-index:5}
 #dash h2{font-family:var(--display);font-style:italic;font-weight:600;font-size:26px;margin:0;color:var(--warm)}
 #dash h3{font-family:var(--mono);font-weight:600;font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav2);margin:0 0 8px}
 #dash section{display:flex;flex-direction:column;gap:6px}
@@ -122,9 +141,14 @@ a{color:var(--lav)}
 .mitem{display:grid;grid-template-columns:18px 1fr;gap:6px;font-size:12.5px;line-height:1.4}
 .mitem .ck{font-family:var(--mono);color:var(--dim)}
 .mitem.done{color:var(--muted)}
-.mitem.done .ck{color:var(--ok,#9CCB98)}
+.mitem.done .ck{color:var(--ok)}
 .mitem.cur{color:var(--warm)}
-@media (max-width:560px){.brand span{display:none}.card{padding:16px}#lyra{max-width:calc(100% - 24px);bottom:auto;top:12px}#toasts{top:auto;bottom:170px}}
+.fab{display:grid;grid-template-columns:1fr auto;gap:2px 10px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line)}
+.fab b{font-weight:500;font-size:13px}
+.fab small{font-family:var(--mono);font-size:10.5px;color:var(--muted);grid-column:1}
+.fab .act{grid-row:1 / span 2;grid-column:2;display:flex;align-items:center;gap:8px}
+.fab .have{font-family:var(--mono);font-size:11px;color:var(--warm)}
+@media (max-width:560px){.brand span{display:none}.card{padding:16px}#lyra{max-width:calc(100% - 24px);bottom:auto;top:12px}#gauges{top:auto;bottom:12px;width:170px}.g{grid-template-columns:44px 1fr 46px}#mini{display:none}#toasts{top:auto;bottom:170px}}
 </style>
 </head>
 <body>
@@ -140,6 +164,13 @@ a{color:var(--lav)}
   </header>
   <main id="stage">
     <canvas id="cv" aria-label="Side view of Mars: the colony on the surface and the tunnels Kin have dug"></canvas>
+    <div id="gauges" hidden>
+      <div class="g"><span class="gl">BATTERY</span><span class="gbar"><i id="gBat"></i></span><span class="gv" id="gBatV">100%</span></div>
+      <div class="g"><span class="gl">DRILL</span><span class="gbar"><i id="gRpm"></i></span><span class="gv" id="gRpmV">0 rpm</span></div>
+      <div class="g"><span class="gl">DRILL °C</span><span class="gbar"><i id="gTmp"></i></span><span class="gv" id="gTmpV">20°</span></div>
+      <div class="gfoot"><span id="gOut">Outside −63°C</span><span id="gState">Surface</span></div>
+    </div>
+    <canvas id="mini" width="512" height="200" hidden title="Map of what you've explored (M to resize)"></canvas>
     <div id="toasts"></div>
     <div id="dpad" hidden>
       <span></span><button type="button" data-d="up" aria-label="Up">▲</button><span></span>
@@ -152,7 +183,7 @@ a{color:var(--lav)}
           <circle class="halo" cx="26" cy="26" r="24" fill="rgba(139,149,246,.18)" opacity=".5"/>
           <g class="ring"><circle cx="26" cy="26" r="17" fill="none" stroke="#B9C0FF" stroke-width="2" stroke-dasharray="80 10 4 10"/></g>
           <circle cx="26" cy="26" r="11" fill="#14163A" stroke="#8B95F6" stroke-width="1"/>
-          <circle id="lyraPupil" cx="26" cy="26" r="4.5" fill="#DCDFFF"/>
+          <circle cx="26" cy="26" r="4.5" fill="#DCDFFF"/>
         </svg>
       </button>
       <div class="lyra-body">
@@ -171,12 +202,18 @@ a{color:var(--lav)}
     <aside id="dash" hidden></aside>
   </main>
   <footer class="tools" id="tools" hidden>
-    <div class="modes">
-      <button type="button" class="btn on" id="mDig">Dig</button>
-      <button type="button" class="btn" id="mBuild">Build (B)</button>
+    <div class="toolrow">
+      <div class="modes">
+        <button type="button" class="btn on" id="mDig">Dig</button>
+        <button type="button" class="btn" id="mBuild">Build (B)</button>
+      </div>
+      <div class="modes" id="groups" hidden>
+        <button type="button" class="btn sm on" id="gBlocks">Blocks</button>
+        <button type="button" class="btn sm" id="gEquip">Equipment (E)</button>
+      </div>
+      <div id="status" class="status"></div>
     </div>
     <div id="palette" class="palette" hidden></div>
-    <div id="status" class="status"></div>
   </footer>
 </div>
 
@@ -191,46 +228,75 @@ const inFrame = window.parent && window.parent !== window;
 const post = msg => { try { if (inFrame) window.parent.postMessage(Object.assign({ source: GAME }, msg), window.location.origin); } catch (e) {} };
 
 // ---------- world constants ----------
-const W = 128, H = 96, GY = 10;            // GY = first rock row; row GY-1 is the surface you drive on
-const LANDER_X = 60, SPAWN_X = 63;
+const W = 512, H = 200, GY = 10;           // GY = first rock row; row GY-1 is the surface you drive on
+const SEED = 2027;
+const LANDER_X = 252, SPAWN_X = 255;
 const TIME_SCALE = 6;                       // Mars minutes per real minute (Alpha)
-const AIR=0, TUN=1, REG=2, BAS=3, ICE=4, MET=5, BED=6, WALL=10, GLASS=11, LOCK=12, O2=13, GREEN=14, LAMP=15, RIG=16;
+const AIR=0, TUN=1, REG=2, BAS=3, ICE=4, MET=5, BED=6, FILL=7;
+const IRONP=10, GLASS=11, LOCK=12, O2=13, GREEN=14, LAMP=15, RIG=16;
+const BRICK=20, BASB=21, HEMA=22, OLIV=23, GYPS=24, ICEB=25, TGLASS=26, ALLOY=27;
+const HEATER=30, SCRUB=31, SENSOR=32, REACTOR=33, CHARGER=34;
+const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER]);
+const isEquip = t => EQUIP_T.has(t);
+const isRockT = t => (t>=REG&&t<=MET) || t===FILL;
 const RES = ['iron','silicon','ice','rare','food'];
 const RNAME = {iron:'Iron', silicon:'Silicon', ice:'Ice', rare:'Rare metals', food:'Food'};
 const RCOL = {iron:'#C97B6E', silicon:'#AEB4D8', ice:'#A7CFE0', rare:'#E2C27A', food:'#9CCB98'};
 const ROCKRES = {[REG]:'iron', [BAS]:'silicon', [ICE]:'ice', [MET]:'rare'};
-const HARD = {[REG]:.38, [BAS]:.6, [ICE]:.5, [MET]:.95};
+const HARD = {[REG]:.38, [BAS]:.6, [ICE]:.5, [MET]:.95, [FILL]:.22};
+const DRAIN = {[REG]:.45, [BAS]:.7, [ICE]:.55, [MET]:1.1, [FILL]:.2};
 const ATTRS = [
   {k:'eng', n:'Engineering', e:'Drill speed +12% per point.'},
   {k:'geo', n:'Geology', e:'More by-products and rare finds.'},
-  {k:'end', n:'Endurance', e:'Auto-drills hold 3 more hours per point.'},
+  {k:'end', n:'Endurance', e:'Bigger borer battery, and auto-drills hold 3 more hours per point.'},
   {k:'nav', n:'Navigation', e:'Your scanner sees ice and metal veins further away.'},
-  {k:'fab', n:'Fabrication', e:'Building costs 6% less per point.'},
+  {k:'fab', n:'Fabrication', e:'Building and crafting cost 6% less and crafting runs 8% faster per point.'},
   {k:'spirit', n:'Crew Spirit', e:'Your Great Work contributions count 10% more per point.'},
 ];
-const BUILD = [
-  {id:'wall', tile:WALL, n:'Hull wall', cost:{iron:2}, d:'Seals a room.'},
-  {id:'glass', tile:GLASS, n:'Glass', cost:{silicon:2}, d:'Seals a room and lets light through.'},
+// Blocks: building materials from Mars itself. Placed straight from your resources.
+const BLOCKS = [
   {id:'lock', tile:LOCK, n:'Airlock', cost:{iron:3, silicon:2}, d:'Seals a room but lets you pass.'},
-  {id:'o2', tile:O2, n:'O₂ pump', cost:{iron:5, silicon:3, ice:3}, d:'Pressurizes a sealed room.'},
-  {id:'green', tile:GREEN, n:'Greenhouse', cost:{iron:3, silicon:5, ice:4}, d:'Grows food in a pressurized room.'},
-  {id:'lamp', tile:LAMP, n:'Lamp', cost:{iron:1, silicon:1}, d:'Lights the dark.'},
-  {id:'rig', tile:RIG, n:'Auto-drill', cost:{iron:8, silicon:4}, d:'Must touch rock. Mines while you are away.'},
-  {id:'remove', tile:-1, n:'Remove', cost:{}, d:'Take back one of your blocks for half its cost.'},
+  {id:'brick', tile:BRICK, n:'Sintered brick', cost:{iron:2}, d:'Regolith baked into brick. The classic Mars build.'},
+  {id:'basalt', tile:BASB, n:'Basalt block', cost:{silicon:2}, d:'Cut volcanic rock. Grey and heavy.'},
+  {id:'hema', tile:HEMA, n:'Hematite block', cost:{iron:3}, d:'The iron oxide that makes Mars red, polished almost black.'},
+  {id:'iron', tile:IRONP, n:'Iron plate', cost:{iron:3}, d:'Riveted iron plate.'},
+  {id:'oliv', tile:OLIV, n:'Olivine block', cost:{silicon:3}, d:'A green volcanic mineral found all over Mars.'},
+  {id:'gyps', tile:GYPS, n:'Gypsum block', cost:{silicon:1, ice:2}, d:'White sulfate stone, left behind by ancient water.'},
+  {id:'iceb', tile:ICEB, n:'Ice block', cost:{ice:3}, d:'Frozen water, cut square. Lets light through.'},
+  {id:'glass', tile:GLASS, n:'Glass', cost:{silicon:2}, d:'Clear glass. Seals a room and lets light through.'},
+  {id:'tglass', tile:TGLASS, n:'Tinted glass', cost:{silicon:2, iron:1}, d:'Amber glass.'},
+  {id:'alloy', tile:ALLOY, n:'Alloy panel', cost:{iron:2, rare:1}, d:'Rare-metal alloy. Gold, and it shows.'},
+  {id:'fill', tile:FILL, n:'Backfill', cost:{}, d:'Pack rock back into a tunnel you dug. Free.'},
+  {id:'remove', tile:-1, n:'Remove', cost:{}, d:'Take back a block (half refund) or equipment (back to your kit).'},
 ];
+// Equipment: crafted in the Fabricator first (takes Mars time), then placed from your kit.
+const EQUIPS = [
+  {id:'lamp', tile:LAMP, n:'Lamp', cost:{iron:1, silicon:1}, min:10, d:'Lights the dark.'},
+  {id:'o2', tile:O2, n:'O₂ pump', cost:{iron:5, silicon:3, ice:3}, min:30, d:'Pressurizes a fully sealed room.'},
+  {id:'heater', tile:HEATER, n:'Heater', cost:{iron:4, silicon:2, rare:1}, min:30, d:'Mars sits around −60°C. Warms a sealed room.'},
+  {id:'scrub', tile:SCRUB, n:'CO₂ scrubber', cost:{iron:3, silicon:4, ice:2}, min:40, d:'Keeps a sealed room’s air breathable.'},
+  {id:'green', tile:GREEN, n:'Greenhouse', cost:{iron:3, silicon:5, ice:4}, min:40, d:'Grows food in a pressurized room, twice as fast in a habitable one.'},
+  {id:'sensor', tile:SENSOR, n:'Radiation sensor', cost:{silicon:2, rare:1}, min:20, d:'Reads the radiation. Rooms deeper than 24 m are shielded.'},
+  {id:'rig', tile:RIG, n:'Auto-drill', cost:{iron:8, silicon:4}, min:60, d:'Must touch rock. Mines while you are away.'},
+  {id:'charger', tile:CHARGER, n:'Charger', cost:{iron:6, silicon:4, rare:1}, min:40, d:'Charges your borer. Needs a reactor within 10 blocks.'},
+  {id:'reactor', tile:REACTOR, n:'Reactor', cost:{iron:10, silicon:6, ice:2, rare:3}, min:120, d:'A small fission reactor. Powers chargers within 10 blocks.'},
+];
+const ITEMS = BLOCKS.concat(EQUIPS);
+const itemById = id => ITEMS.find(i=>i.id===id);
+const itemByTile = t => ITEMS.find(i=>i.tile===t);
 // Must match lib/spacecore.js and spacecore_needs() in docs/v5.39-spacecore.sql
 const STAGES = [
-  {n:'Landing Base', x:66, need:{iron:800, silicon:500, ice:200, rare:0}, pat:[
+  {n:'Landing Base', x:258, need:{iron:800, silicon:500, ice:200, rare:0}, pat:[
     "......####......","....########....","..##ww####ww##..","..############..",
     "################","#ww##########ww#","################","#..#........#..#"]},
-  {n:'Habitat Dome', x:76, need:{iron:2000, silicon:1600, ice:800, rare:40}, pat:[
+  {n:'Habitat Dome', x:268, need:{iron:2000, silicon:1600, ice:800, rare:40}, pat:[
     ".....dddddd.....","...dddddddddd...","..dddddddddddd..",".dddddddddddddd.",
     ".dddddddddddddd.","################","#ww##ww##ww##ww#","################"]},
-  {n:'Greenhouse Ring', x:50, need:{iron:1800, silicon:2400, ice:1500, rare:40}, pat:[
+  {n:'Greenhouse Ring', x:242, need:{iron:1800, silicon:2400, ice:1500, rare:40}, pat:[
     "..gggg..gggg..",".gggggggggggg.","gggggggggggggg","##############","#ww########ww#","##############"]},
-  {n:'Oxygen Plant', x:86, need:{iron:2800, silicon:1800, ice:2400, rare:80}, pat:[
+  {n:'Oxygen Plant', x:278, need:{iron:2800, silicon:1800, ice:2400, rare:80}, pat:[
     "..pp......","..pp..pp..","..pp..pp..","##########","#rr####rr#","##########","#ww####ww#","##########"]},
-  {n:'Launch Facility', x:93, need:{iron:5000, silicon:4000, ice:2000, rare:300}, pat:[
+  {n:'Launch Facility', x:285, need:{iron:5000, silicon:4000, ice:2000, rare:300}, pat:[
     "......r.....",".....###....",".....#w#..p.",".....###..p.",".....###..p.",".....###..p.",
     "....#####.p.","....#####.p.","....##w##.p.","....#####.p.","....#####.p.","...#######p.",
     "...##...##p.","############","#ww######ww#","############"]},
@@ -251,14 +317,18 @@ const fmtReal = ms => fmtH(ms/60000);
 const today = () => new Date().toISOString().slice(0,10);
 const sum = o => Object.values(o||{}).reduce((a,b)=>a+(+b||0),0);
 const mdLinks = s => esc(s).replace(/\[([^\]]+)\]\((\/[^)\s]*)\)/g,'<a href="$2" target="_top">$1</a>');
+const pick = a => a[Math.floor(Math.random()*a.length)];
+const costText = c => Object.entries(c).map(([r,v])=>`${v} ${RNAME[r].split(' ')[0]}`).join(' · ');
 
 // ---------- the shared world ----------
-let world, own = new Uint16Array(W*H), seen = new Uint8Array(W*H), press = new Uint8Array(W*H);
-let ownerNames = [];                       // own[i]: 0 = nobody, 1 = me, n>=2 = ownerNames[n-2]
+let world, own = new Uint16Array(W*H), seen = new Uint8Array(W*H), press = new Uint8Array(W*H), regionOf = new Int32Array(W*H);
+let ownerNames = [];                       // own[i]: 0 = nobody (natural), 1 = me, n>=2 = ownerNames[n-2]
+let rooms = [], my = {press:0, green:0, greenHab:0, heatRoom:0, habitable:0, sensorDeep:0, reactors:[], chargers:[], powered:[]};
 const idx=(x,y)=>y*W+x;
 const tile=(x,y)=> (x<0||y<0||x>=W||y>=H) ? BED : world[idx(x,y)];
+const depthOf = y => Math.max(0, y-GY);
 function genWorld(){
-  const r = mulberry32(1306), w = new Uint8Array(W*H);
+  const r = mulberry32(SEED), w = new Uint8Array(W*H);
   for (let y=0;y<H;y++) for (let x=0;x<W;x++){
     let t;
     if (y<GY) t=AIR;
@@ -266,48 +336,66 @@ function genWorld(){
     if (y>=GY && (x===0||x===W-1||y>=H-2)) t=BED;
     w[idx(x,y)]=t;
   }
-  function blob(type,n,dmin,dmax,smin,smax){
+  const inside=(x,y)=>x>0&&x<W-1&&y>GY&&y<H-2;
+  function blob(type,n,dmin,dmax,smin,smax,xmin=2,xmax=W-2){
     for(let i=0;i<n;i++){
-      let x=2+Math.floor(r()*(W-4)), y=GY+dmin+Math.floor(r()*(dmax-dmin));
+      let x=xmin+Math.floor(r()*(xmax-xmin)), y=GY+dmin+Math.floor(r()*(dmax-dmin));
       const len=smin+Math.floor(r()*(smax-smin));
       for(let k=0;k<len;k++){
-        if(x>0&&x<W-1&&y>GY&&y<H-2) w[idx(x,y)]=type;
+        if(inside(x,y)) w[idx(x,y)]=type;
         const d=Math.floor(r()*4); x+=[1,-1,0,0][d]; y+=[0,0,1,-1][d];
       }
     }
   }
-  blob(BAS,20,2,12,3,8);
-  blob(REG,28,16,60,3,7);
-  blob(ICE,44,5,42,4,11);
-  blob(MET,52,24,92,2,6);
-  blob(MET,16,12,26,1,3);
+  blob(BAS,80,2,12,3,8);
+  blob(REG,110,16,170,3,8);
+  blob(ICE,110,5,70,4,11);                 // ice everywhere near the surface
+  blob(ICE,110,5,140,5,16,2,150);          // the western ice fields
+  blob(MET,120,24,185,2,6);                // metal deeper down
+  blob(MET,40,12,26,1,3);
+  blob(MET,130,20,185,2,8,370,W-2);        // the eastern metal ridge
+  // natural caverns: open space nobody has claimed yet
+  for(let i=0;i<80;i++){
+    const cx=4+Math.floor(r()*(W-8)), cy=GY+8+Math.floor(r()*(H-GY-22)), rx=2+r()*6, ry=1+r()*3.2, icy=cx<150&&r()<.6;
+    for(let y=Math.floor(cy-ry-1);y<=cy+ry+1;y++) for(let x=Math.floor(cx-rx-1);x<=cx+rx+1;x++){
+      const dx=(x-cx)/rx, dy=(y-cy)/ry; if(dx*dx+dy*dy<=1+(r()-.5)*.35&&inside(x,y)) w[idx(x,y)]=TUN;
+    }
+    if(icy) for(let x=Math.floor(cx-rx);x<=cx+rx;x++){ const y=Math.round(cy+ry); if(inside(x,y)&&w[idx(x,y-1)]===TUN) w[idx(x,y)]=ICE; }
+  }
+  // lava tubes: long, low natural tunnels left by ancient lava flows
+  for(let i=0;i<24;i++){
+    let x=4+Math.floor(r()*(W-8)), y=GY+14+Math.floor(r()*(H-GY-40)); const dir=r()<.5?-1:1, len=40+Math.floor(r()*120), thick=r()<.5?2:3;
+    for(let k=0;k<len;k++){
+      for(let t=0;t<thick;t++) if(inside(x,y+t)) w[idx(x,y+t)]=TUN;
+      x+=dir; if(r()<.18) y+=r()<.5?-1:1; y=clamp(y,GY+10,H-8);
+    }
+  }
   return w;
 }
 world = genWorld();
-const passable=(x,y)=>{const t=tile(x,y); if(t===AIR) return y===GY-1; return t===TUN||t===LOCK||t>=O2;};
-const diggable=t=>t>=REG&&t<=MET;
-const interior=t=>t===TUN||t>=O2;
+const passable=(x,y)=>{const t=tile(x,y); if(t===AIR) return y===GY-1; return t===TUN||t===LOCK||isEquip(t);};
+const diggable=isRockT;
+const interior=t=>t===TUN||isEquip(t);
 function applyTiles(list, skipMine){
   let changed=false;
   for(const [x,y,t,o] of list){
     if(x<0||y<0||x>=W||y>=H) continue;
     const i=idx(x,y);
-    if(skipMine && own[i]===1) continue;
-    if(skipMine && o===1) continue;
+    if(skipMine && (own[i]===1||o===1)) continue;
     if(pending.has(i)) continue;
     world[i]=t; own[i]=o||0; changed=true;
   }
   if(changed){ recomputePressure(); validateRigs(); }
 }
 function recomputePressure(){
-  press.fill(0);
+  press.fill(0); regionOf.fill(-1); rooms=[];
   const vis=new Uint8Array(W*H);
   for(let i=0;i<W*H;i++){
     if(world[i]!==O2||vis[i]) continue;
     const q=[i], cells=[]; vis[i]=1; let sealed=true;
     while(q.length){
       const c=q.pop(); cells.push(c);
-      if(cells.length>420){sealed=false;break;}
+      if(cells.length>900){sealed=false;break;}
       const x=c%W, y=(c/W)|0;
       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
         const nx=x+dx, ny=y+dy, t=tile(nx,ny);
@@ -316,26 +404,49 @@ function recomputePressure(){
         if(interior(t)&&!vis[ni]){vis[ni]=1;q.push(ni);}
       }
     }
-    if(sealed) for(const c of cells) press[c]=1;
+    if(!sealed) continue;
+    const room={id:rooms.length, size:cells.length, heat:0, scrub:0, sensor:0, minY:H, mine:0};
+    for(const c of cells){ press[c]=1; regionOf[c]=room.id; const t=world[c]; if(t===HEATER) room.heat++; else if(t===SCRUB) room.scrub++; else if(t===SENSOR) room.sensor++; room.minY=Math.min(room.minY,(c/W)|0); if(own[c]===1) room.mine++; }
+    room.habitable=room.heat>0&&room.scrub>0; room.shielded=depthOf(room.minY)>=12;
+    rooms.push(room);
   }
+  // what's yours, cached so nothing scans the whole world every frame
+  const s={press:0, green:0, greenHab:0, heatRoom:0, habitable:0, sensorDeep:0, reactors:[], chargers:[], powered:[]};
+  const habRooms=new Set();
+  for(let i=0;i<W*H;i++){
+    const t=world[i]; if(t<O2||own[i]!==1) continue;
+    const rm=press[i]?rooms[regionOf[i]]:null;
+    if(t===O2&&rm) s.press++;
+    else if(t===GREEN&&rm){ s.green++; if(rm.habitable) s.greenHab++; }
+    else if(t===HEATER&&rm) s.heatRoom++;
+    else if(t===SENSOR&&rm&&rm.shielded) s.sensorDeep++;
+    else if(t===REACTOR) s.reactors.push(i);
+    else if(t===CHARGER) s.chargers.push(i);
+    if(rm&&rm.habitable) habRooms.add(rm.id);
+  }
+  s.habitable=habRooms.size;
+  for(const c of s.chargers){ const cx=c%W, cy=(c/W)|0; if(s.reactors.some(rr=>Math.max(Math.abs(rr%W-cx),Math.abs(((rr/W)|0)-cy))<=10)) s.powered.push(c); }
+  my=s;
 }
-function countMine(t, needPress){ let n=0; for(let i=0;i<W*H;i++) if(world[i]===t&&own[i]===1&&(!needPress||press[i])) n++; return n; }
 const pending = new Map();                  // tile changes waiting to be saved
 function setTile(x,y,t){ const i=idx(x,y); world[i]=t; if(own[i]===0) own[i]=1; pending.set(i,t); }
-function ownerName(i){ const o=own[i]; return o===1 ? (S&&S.name) : o>=2 ? (ownerNames[o-2]||'another Kin') : null; }
+function ownerName(i){ const o=own[i]; return o===1 ? ME.username : o>=2 ? (ownerNames[o-2]||'another Kin') : null; }
+const roomAt=(x,y)=>{ const i=idx(x,y); return press[i]?rooms[regionOf[i]]:null; };
 
 // ---------- state ----------
+function batCap(){ return 100+15*(S.attrs.end-1); }
 function fresh(){
-  return {v:2, name:'', attrs:{eng:1,geo:1,end:1,nav:1,fab:1,spirit:1}, unspent:0, xp:0, level:1,
+  return {v:3, name:'', attrs:{eng:1,geo:1,end:1,nav:1,fab:1,spirit:1}, unspent:0, xp:0, level:1,
     res:{iron:10,silicon:6,ice:3,rare:0,food:0}, mined:{iron:0,silicon:0,ice:0,rare:0,food:0}, given:0, shared:0,
-    dug:0, sealBlocks:0, collected:0, maxDepth:0,
+    dug:0, sealBlocks:0, collected:0, maxDepth:0, charged:0,
     px:SPAWN_X, py:GY-1, rigs:[], training:{attr:'eng',min:0}, boosts:[], mission:0, daily:null, gifts:{day:'',n:0},
+    inv:{o2:1, lamp:1}, craft:[], bat:100,
     gameMin:0, lastReal:Date.now(), introDone:false, foodFrac:0, cSnap:null, commonsFrac:{}, unsynced:{}, lastLogId:0, seen:''};
 }
 let S = fresh();
 let C = {stage:0, have:{iron:0,silicon:0,ice:0,rare:0}, mined:{}};   // the colony
 let crews = [], colonyLog = [], siteBoosts = [], ME = {username:'', sentinel:false};
-let connected = false;
+let connected = false, relocated = false;
 
 // ---------- sound (synthesized in the browser, no files) ----------
 let AC=null, soundOn=true, noiseBuf=null;
@@ -344,6 +455,8 @@ function beep(f,d=.08,type='sine',v=.04,f2){ const a=ac(); if(!a||!soundOn) retu
 function noise(d=.07,v=.05,freq=900,type='bandpass',freq2){ const a=ac(); if(!a||!soundOn) return; if(!noiseBuf){ noiseBuf=a.createBuffer(1,a.sampleRate*2,a.sampleRate); const ch=noiseBuf.getChannelData(0); for(let i=0;i<ch.length;i++) ch[i]=Math.random()*2-1; } const t=a.currentTime; const s=a.createBufferSource(); s.buffer=noiseBuf; s.loop=true; const f=a.createBiquadFilter(); f.type=type; f.frequency.setValueAtTime(freq,t); if(freq2) f.frequency.exponentialRampToValueAtTime(freq2,t+d); const g=a.createGain(); g.gain.setValueAtTime(.0001,t); g.gain.exponentialRampToValueAtTime(v,t+Math.min(.3,d/5)); g.gain.exponentialRampToValueAtTime(.0001,t+d); s.connect(f).connect(g).connect(a.destination); s.start(t,Math.random()); s.stop(t+d+.05); }
 const chime = notes => notes.forEach((n,i)=>setTimeout(()=>beep(n,.22,'triangle',.05),i*95));
 function launchSound(){ noise(4.4,.35,180,'lowpass',900); noise(4.4,.12,600,'bandpass',1800); beep(48,4.2,'sawtooth',.06,90); }
+function burnSound(){ noise(2.4,.18,220,'lowpass',500); beep(70,2.2,'sawtooth',.04,95); }
+function entrySound(){ noise(2.4,.3,400,'bandpass',2600); noise(2.4,.18,120,'lowpass',300); }
 function landingSound(){ noise(4,.25,700,'lowpass',160); beep(140,3.6,'sawtooth',.03,60); }
 function touchdown(){ beep(70,.45,'sine',.16,38); noise(.5,.2,300,'lowpass'); setTimeout(()=>chime([392,523,659]),500); }
 
@@ -352,8 +465,9 @@ function toast(msg, cls=''){ const el=document.createElement('div'); el.classNam
 
 // ---------- Lyra on comms ----------
 const lyraEl=$('#lyra'), lyraText=$('#lyraText');
-let lyraQ=[], lyraCur=null, lyraLeft=0, lyraType=0, lyraCool={}, lyraChat=[], lyraBusy=false;
+let lyraQ=[], lyraCur=null, lyraLeft=0, lyraType=0, lyraCool={}, lyraChat=[], lyraBusy=false, missionBriefing=null;
 function lyra(text,{prio=1,hold=false,celebrate=false,key=null,cool=0}={}){
+  if(!text) return;
   if(key){ const t=lyraCool[key]; if(t&&Date.now()-t<cool*1000) return; lyraCool[key]=Date.now(); }
   if(lyraQ.some(m=>m.text===text)||(lyraCur&&lyraCur.text===text)) return;
   if(prio<=1&&lyraQ.length>=2) return;              // small talk waits for a quieter moment
@@ -366,7 +480,7 @@ function nextLyra(){
   lyraCur=lyraQ.shift()||null; lyraType=0;
   lyraEl.classList.toggle('speaking',!!lyraCur); lyraEl.classList.toggle('celebrate',!!(lyraCur&&lyraCur.celebrate));
   if(lyraCur){ lyraEl.classList.remove('min'); lyraLeft=lyraCur.hold?Infinity:(lyraQ.length?2.5:4.5)+lyraCur.text.length/(lyraQ.length?28:18); beep(880,.07,'sine',.025,1320); if(lyraCur.celebrate) chime([659,784,988]); }
-  else lyraText.innerHTML=missionLine(true);
+  else lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`;
   $('#lyraNext').textContent = lyraQ.length ? 'Next' : 'Got it';
   updateLyraCount();
 }
@@ -374,10 +488,10 @@ function updateLyraCount(){ $('#lyraCount').textContent = lyraQ.length ? `+${lyr
 function tickLyra(dt){
   if(!lyraCur) return;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(lyraType<lyraCur.text.length){ lyraType = reduce ? lyraCur.text.length : Math.min(lyraCur.text.length, lyraType+dt*70); const shown=lyraCur.text.slice(0,Math.floor(lyraType)); lyraText.innerHTML = lyraType>=lyraCur.text.length ? mdLinks(lyraCur.text) : esc(shown); }
+  if(lyraType<lyraCur.text.length){ lyraType = reduce ? lyraCur.text.length : Math.min(lyraCur.text.length, lyraType+dt*70); lyraText.innerHTML = lyraType>=lyraCur.text.length ? mdLinks(lyraCur.text) : esc(lyraCur.text.slice(0,Math.floor(lyraType))); }
   lyraLeft-=dt; if(lyraLeft<=0) nextLyra();
 }
-$('#lyraNext').onclick=()=>{ if(lyraCur&&lyraCur.hold&&lyraCur===missionBriefing) S.briefed=S.mission; nextLyra(); };
+$('#lyraNext').onclick=()=>nextLyra();
 $('#lyraOrb').onclick=()=>{ lyraEl.classList.toggle('min'); };
 $('#lyraAskBtn').onclick=()=>{ const f=$('#lyraAsk'); f.hidden=!f.hidden; if(!f.hidden) $('#lyraQ').focus(); };
 $('#lyraAsk').addEventListener('submit',async e=>{
@@ -395,57 +509,69 @@ $('#lyraAsk').addEventListener('submit',async e=>{
   lyraBusy=false;
 });
 function gameContext(){
-  const st=STAGES[C.stage];
-  return `Crew ${S.name}, level ${S.level}. ${S.py>=GY?`${(S.py-GY+1)*2} m underground`:'on the surface'}. Resources: ${RES.map(r=>`${RNAME[r]} ${Math.floor(S.res[r])}`).join(', ')}. Attributes: ${ATTRS.map(a=>`${a.n} ${S.attrs[a.k]}`).join(', ')}${S.unspent?` (${S.unspent} unspent)`:''}. Current mission: ${MISSIONS[S.mission]?MISSIONS[S.mission].n+' - '+MISSIONS[S.mission].d:'all tutorial missions done'}. Auto-drills: ${S.rigs.length}. Pressurized rooms: ${countMine(O2,true)}. Colony: ${st?`${st.n} ${Math.floor(stageProgress()*100)}%`:'all Season 1 Great Works complete'}. Kin on Mars: ${crews.length}.`.slice(0,1200);
+  const st=STAGES[C.stage], rm=roomAt(S.px,S.py);
+  return `Crew ${ME.username}, level ${S.level}. ${S.py>=GY?`${depthOf(S.py)*2} m underground`:'on the surface'}${rm?` inside a pressurized room${rm.habitable?' (habitable)':''}`:''}. Borer battery ${Math.round(S.bat/batCap()*100)}%. Resources: ${RES.map(r=>`${RNAME[r]} ${Math.floor(S.res[r])}`).join(', ')}. Kit: ${EQUIPS.filter(e=>S.inv[e.id]).map(e=>`${S.inv[e.id]} ${e.n}`).join(', ')||'empty'}. Crafting: ${S.craft.map(c=>itemById(c.id).n).join(', ')||'nothing'}. Attributes: ${ATTRS.map(a=>`${a.n} ${S.attrs[a.k]}`).join(', ')}${S.unspent?` (${S.unspent} unspent)`:''}. Current mission: ${MISSIONS[S.mission]?MISSIONS[S.mission].n+' - '+MISSIONS[S.mission].d:'tutorial done'}. Auto-drills: ${S.rigs.length}. Pressurized rooms: ${my.press}, habitable: ${my.habitable}, powered chargers: ${my.powered.length}. Colony: ${st?`${st.n} ${Math.floor(stageProgress()*100)}%`:'all Season 1 Great Works complete'}. Kin on Mars: ${crews.length+1}.`.slice(0,1400);
 }
 
 // ---------- Lyra's missions (the tutorial, then daily calls) ----------
+// The first nine keep their order from v1, so existing crews carry on where they were.
 const MISSIONS = [
   {n:'Break ground', d:'Drill 10 m down.', test:()=>S.maxDepth>=5, prog:()=>`${Math.min(10,S.maxDepth*2)}/10 m`, reward:{iron:5},
-   brief:'First job: break ground. Hold ↓ (or S) to drill straight down. Every block you dig is mining, and it all goes into your hold.',
+   brief:'First job: break ground. Hold ↓ (or S) to drill straight down. Every block you dig is mining. Keep an eye on your battery, top left.',
    done:"You're under the dust now. Regolith gives Iron, and the darker basalt deeper down gives Silicon."},
   {n:'Find water', d:'Dig out one block of ice.', test:()=>S.mined.ice>=1, reward:{silicon:4},
    brief:"Next we need water. Ice shows up pale blue, but only inside your scanner range. Press Scan (or Q) and I'll point you to the nearest signal.",
-   done:"Water. That's what makes Mars livable. Hold on to some for an O₂ pump."},
+   done:"Water. That's what makes Mars livable."},
   {n:'Make space', d:'Dig 30 blocks in total.', test:()=>S.dug>=30, prog:()=>`${Math.min(30,S.dug)}/30`, reward:{iron:6},
-   brief:'Carve out a room off your tunnel, about four blocks wide and three tall. That is where you will build.',
+   brief:'Carve out a room off your tunnel, about four blocks wide and three tall. Or find a natural cave: nobody owns those until someone builds there.',
    done:"That's a room. Now let's make it somewhere you can breathe."},
-  {n:'Seal a room', d:'Place 6 hull walls, glass panels or airlocks.', test:()=>S.sealBlocks>=6, prog:()=>`${Math.min(6,S.sealBlocks)}/6`, reward:{ice:3},
-   brief:"Press B to Build. Pick Hull wall, Glass or Airlock and tap the open tunnel spots around your room to close it off. Put an Airlock where you want to come and go. You can only build in tunnels you dug.",
+  {n:'Seal a room', d:'Place 6 blocks of any material around a room.', test:()=>S.sealBlocks>=6, prog:()=>`${Math.min(6,S.sealBlocks)}/6`, reward:{ice:3},
+   brief:"Press B to Build. Pick a material (brick, basalt, glass, olivine...) and tap the open spots around your room to close it off. Put an Airlock where you want to come and go. Dug somewhere by mistake? Backfill packs the rock back in.",
    done:'Sealed, or close to it. One more piece and you can breathe in there.'},
-  {n:'First breath', d:'Pressurize a sealed room with an O₂ pump.', test:()=>countMine(O2,true)>0, reward:{silicon:5},
-   brief:"Build an O₂ pump inside the room. If every gap is sealed, the room fills with air and glows. If it leaks, I'll tell you.",
+  {n:'First breath', d:'Place an O₂ pump inside a sealed room.', test:()=>my.press>0, reward:{silicon:5},
+   brief:"SpaceCore packed an O₂ pump in your kit. Press B, switch to Equipment (E), and place it inside the sealed room. If every gap is closed, the room fills with air and glows. If it leaks, I'll tell you.",
    done:'Air. Your first room on Mars. Every crew remembers this one.'},
-  {n:'Set up an auto-drill', d:'Build an Auto-drill touching rock.', test:()=>S.rigs.length>0, reward:{iron:8,silicon:4},
-   brief:'Now something that works while you are gone. Press B, choose Auto-drill (key 7), and tap a tunnel spot right next to rock. It mines whatever rock surrounds it, plus by-products.',
-   done:"It's running. Come back later and it will have filled up. It holds about 12 Mars hours before it stops."},
-  {n:'Grow something', d:'Build a Greenhouse in a pressurized room.', test:()=>countMine(GREEN,true)>0, reward:{ice:4},
-   brief:'A colony has to eat. Build a Greenhouse inside your pressurized room. It grows Food while you are away.',
+  {n:'Set up an auto-drill', d:'Craft an Auto-drill and place it touching rock.', test:()=>S.rigs.length>0, reward:{iron:8,silicon:4},
+   brief:"Time to use the Fabricator. Open the Dashboard (Tab) and craft an Auto-drill. It takes a while to build, so keep digging. When it's ready: Build, Equipment, and tap a tunnel spot right next to rock.",
+   done:"It's running. Come back later and it will have filled up."},
+  {n:'Grow something', d:'Place a Greenhouse in a pressurized room.', test:()=>my.green>0, reward:{ice:4},
+   brief:'A colony has to eat. Craft a Greenhouse in the Fabricator and place it inside your pressurized room. It grows Food while you are away.',
    done:"Green, underground, on Mars. That's new."},
   {n:'For the colony', d:'Send resources to the Great Work.', test:()=>S.given>0, reward:{rare:1},
    brief:"Open the Dashboard and send something to the colony's Great Work. The robots on the surface build with whatever Kin send. Nobody finishes one alone.",
    done:'The robots are already using it. Look up at the surface sometime.'},
   {n:'Collect your haul', d:'Collect from an auto-drill.', test:()=>S.collected>0, reward:{iron:10},
-   brief:'When your auto-drill has filled a bit, press C or tap it to collect. Mars time runs six times faster than ours during Alpha, so it will not take long.',
-   done:"That's the loop: dig, build, let the drills run, send to the colony. From here I'll bring you the colony's daily calls."},
+   brief:'When your auto-drill has filled a bit, press C or tap it to collect. Mars time runs six times faster than ours during Alpha.',
+   done:"That's the loop: dig, build, let the drills run, send to the colony."},
+  {n:'Keep warm', d:'Place a Heater in a pressurized room.', test:()=>my.heatRoom>0, reward:{silicon:6},
+   brief:"Mars sits around −60°C, even down here. Craft a Heater (it takes a Rare metal, so dig deep for the gold-flecked veins) and place it in a pressurized room.",
+   done:'Warm air. Your borer’s thermometer will thank you.'},
+  {n:'Clean air', d:'Make a room habitable: O₂ pump, Heater and CO₂ scrubber together.', test:()=>my.habitable>0, reward:{rare:1},
+   brief:'Air needs scrubbing or it turns bad. Craft a CO₂ scrubber and put it in the same room as your pump and heater. That makes the room habitable: greenhouses grow twice as fast, and you train faster parked there.',
+   done:'Habitable. People could live here. You could live here.'},
+  {n:'Power up', d:'Place a Reactor and a Charger within 10 blocks of it.', test:()=>my.powered.length>0, reward:{iron:12},
+   brief:"Your borer runs on its battery. The lander and the surface sun can top it up slowly, but a home base needs real power. Craft a Reactor (three Rare metals, and it takes a while) and a Charger, then place the charger within 10 blocks of the reactor.",
+   done:'Power on. Park next to that charger and your borer fills up fast, even while you are away.'},
+  {n:'Recharge', d:'Charge your borer at a powered Charger.', test:()=>S.charged>0, reward:{silicon:8},
+   brief:'Drive your borer right up to the charger. Charging starts on its own.',
+   done:"Charging. That's your home base now. Park here when you log off and you'll come back to a full battery."},
+  {n:'Read the rock', d:'Place a Radiation sensor in a sealed room deeper than 24 m.', test:()=>my.sensorDeep>0, reward:{rare:2},
+   brief:"Mars has no magnetic field to stop radiation, so the surface is dangerous. Rock is the shield. Craft a Radiation sensor and put it in a sealed room deeper than 24 m to confirm the room is safe.",
+   done:"Reading low. Twenty-odd meters of Mars between you and the sky. That's the shelter."},
 ];
-let missionBriefing=null;
-function missionLine(asText){
+function missionLine(){
   const m=MISSIONS[S.mission];
-  let s;
-  if(m) s=`Mission ${S.mission+1} of ${MISSIONS.length} · ${m.n}: ${m.d}${m.prog?` (${m.prog()})`:''}`;
-  else if(S.daily&&!S.daily.done) s=`Colony call · Send ${S.daily.target} ${RNAME[S.daily.res]} to the Great Work (${Math.min(S.daily.target,S.daily.given)}/${S.daily.target})`;
-  else s='All caught up. Dig deeper, build bigger, send to the colony.';
-  if(asText) return `<span class="small">${esc(s)}</span>`;
-  return s;
+  if(m) return `Mission ${S.mission+1} of ${MISSIONS.length} · ${m.n}: ${m.d}${m.prog?` (${m.prog()})`:''}`;
+  if(S.daily&&!S.daily.done) return `Colony call · Send ${S.daily.target} ${RNAME[S.daily.res]} to the Great Work (${Math.min(S.daily.target,S.daily.given)}/${S.daily.target})`;
+  return 'All caught up. Explore, build bigger, send to the colony.';
 }
 function checkMissions(){
   const m=MISSIONS[S.mission];
   if(m&&m.test()){
     for(const [r,v] of Object.entries(m.reward)){ S.res[r]+=v; bump(r); }
     addXP(10);
-    lyra(`${m.done} (+${Object.entries(m.reward).map(([r,v])=>`${v} ${RNAME[r]}`).join(', ')})`,{prio:5,celebrate:true});
     lyraQ=lyraQ.filter(q=>q!==missionBriefing);
+    lyra(`${m.done} (+${Object.entries(m.reward).map(([r,v])=>`${v} ${RNAME[r]}`).join(', ')})`,{prio:5,celebrate:true});
     S.mission++; save(true);
     briefMission();
   }
@@ -459,9 +585,8 @@ function briefMission(){
 function dailyCall(announce){
   if(MISSIONS[S.mission]||!connected) return;
   if(!S.daily||S.daily.day!==today()){
-    const st=STAGES[C.stage]; if(!st) return;
-    const res=scarce()||'iron';
-    S.daily={day:today(),res,target:30+C.stage*15,given:0,done:false};
+    if(!STAGES[C.stage]) return;
+    S.daily={day:today(),res:scarce()||'iron',target:30+C.stage*15,given:0,done:false};
     announce=true;
   }
   if(announce&&!S.daily.done){ const st=STAGES[C.stage]; lyra(`Today's colony call: the ${st?st.n:'colony'} needs ${RNAME[S.daily.res]}. Send ${S.daily.target} and I'll make it worth your while.`,{prio:3,key:'daily',cool:600}); }
@@ -485,6 +610,7 @@ function addXP(n){ S.xp+=n; let need=30+S.level*20; while(S.xp>=need){ S.xp-=nee
 function costOf(b){ const f=1-.06*(S.attrs.fab-1); const c={}; for(const [r,v] of Object.entries(b.cost)) c[r]=Math.max(1,Math.round(v*f)); return c; }
 const canPay=c=>Object.entries(c).every(([r,v])=>S.res[r]>=v);
 const pay=c=>{for(const [r,v] of Object.entries(c)) S.res[r]-=v;};
+const craftMinutes=e=>Math.max(5,Math.round(e.min*Math.max(.4,1-.08*(S.attrs.fab-1))));
 
 function rigRates(rg){
   const cnt={};
@@ -498,7 +624,9 @@ function rigRates(rg){
 }
 const rigCapHours=()=>12+3*(S.attrs.end-1);
 function rigFill(rg){ const rt=rigRates(rg); const cap=sum(rt)*rigCapHours(); return cap?Math.min(1,sum(rg.st)/cap):0; }
-function validateRigs(){ S.rigs=S.rigs.filter(rg=>tile(rg.x,rg.y)===RIG); }
+function validateRigs(){ S.rigs=S.rigs.filter(rg=>tile(rg.x,rg.y)===RIG&&own[idx(rg.x,rg.y)]===1); }
+function nearCharger(){ for(const c of my.powered){ if(Math.max(Math.abs(c%W-S.px),Math.abs(((c/W)|0)-S.py))<=1) return true; } return false; }
+const atLander=()=>S.py===GY-1&&Math.abs(S.px-(LANDER_X+1))<=2;
 
 function advance(min, live){
   if(min<=0) return;
@@ -508,17 +636,32 @@ function advance(min, live){
     const cap=rate*rigCapHours(); const room=cap-sum(rg.st); if(room<=0) continue;
     const f=Math.min(1,room/(rate*h));
     for(const [r,v] of Object.entries(rt)) rg.st[r]=(rg.st[r]||0)+v*h*f;
-    if(live&&!rg.full&&rigFill(rg)>=.995){ rg.full=true; lyra(`Your auto-drill at ${(rg.y-GY+1)*2} m is full. Press C or tap it to collect.`,{prio:2,key:'rigfull',cool:300}); }
+    if(live&&!rg.full&&rigFill(rg)>=.995){ rg.full=true; lyra(`Your auto-drill at ${depthOf(rg.y)*2} m is full. Press C or tap it to collect.`,{prio:2,key:'rigfull',cool:300}); }
   }
-  let g=countMine(GREEN,true);
+  const g=my.green+my.greenHab;
   if(g){ S.foodFrac+=g*h; const n=Math.floor(S.foodFrac); if(n>0){ S.foodFrac-=n; S.res.food+=n; S.mined.food+=n; S.unsynced.food=(S.unsynced.food||0)+n; } }
-  S.training.min+=min;
+  const rm=roomAt(S.px,S.py);
+  S.training.min+=min*(rm&&rm.habitable?1.5:1);
   while(S.training.min>=480){ S.training.min-=480; const a=ATTRS.find(x=>x.k===S.training.attr); S.attrs[a.k]++; lyra(`Training complete: ${a.n} is now ${S.attrs[a.k]}. It keeps training unless you pick something else.`,{prio:3,celebrate:true}); }
+  // the Fabricator works through its queue, one item at a time
+  let left=min;
+  while(left>0&&S.craft.length){
+    const c=S.craft[0]; const step=Math.min(left,c.left); c.left-=step; left-=step;
+    if(c.left<=0){ S.craft.shift(); S.inv[c.id]=(S.inv[c.id]||0)+1; const e=itemById(c.id); if(live) lyra(`Your ${e.n} is ready. It's in your kit: Build, then Equipment.`,{prio:3,celebrate:true}); else S.readyWhileAway=(S.readyWhileAway||[]).concat(e.n); }
+  }
 }
 function collectRigs(){
   let any=false;
   for(const rg of S.rigs){ for(const [r,v] of Object.entries(rg.st)){ if(v>=.5){ grant(r,v); any=true; } } rg.st={}; rg.full=false; }
   if(any){ S.collected++; addXP(3); chime([523,659,784]); flushGained('Auto-drills: '); checkMissions(); } else toast('Your auto-drills are still filling. Give them some time.');
+}
+function craft(id){
+  const e=itemById(id); if(!e) return;
+  if(S.craft.length>=4){ toast('The Fabricator queue is full (4).'); return; }
+  const c=costOf(e); if(!canPay(c)){ toast(`Not enough resources for a ${e.n}: needs ${costText(c)}.`); return; }
+  pay(c); S.craft.push({id, left:craftMinutes(e), total:craftMinutes(e)});
+  beep(440,.12,'square',.03,660); toast(`Crafting ${e.n}: ${fmtH(craftMinutes(e))} Mars time (${fmtReal(craftMinutes(e)/TIME_SCALE*60000)} real).`);
+  save(true);
 }
 
 // ---------- the colony (via the site) ----------
@@ -528,8 +671,7 @@ function contribute(res, half){
   const need=st.need[res]-(+C.have[res]||0); if(need<=0) return;
   const mult=1+.1*(S.attrs.spirit-1);
   const have=Math.floor(S.res[res]*(half?.5:1)); if(have<1){ toast(`You have no ${RNAME[res]} to send yet.`); return; }
-  const credited=Math.min(need, have*mult);
-  giving=true; post({type:'contribute', res, amount: Math.round(credited*100)/100, mult});
+  giving=true; post({type:'contribute', res, amount: Math.round(Math.min(need, have*mult)*100)/100, mult});
   setTimeout(()=>{ giving=false; },8000);
 }
 function onContributed(m){
@@ -550,7 +692,6 @@ function setColony(col, myDelta){
   const prev=C.stage;
   C={stage:col.stage|0, have:col.have||{}, mined:col.mined||{}};
   if(C.stage>prev){ const done=STAGES[prev]; lyra(done?`The ${done.n} is complete. Every crew on Mars helped build it.${STAGES[C.stage]?` Next: the ${STAGES[C.stage].n}.`:' The Launch Facility is ready. Season 2 opens the solar system.'}`:'',{prio:6,celebrate:true,hold:true}); }
-  // the Commons: 10% of what everyone else mined since our last check-in
   if(S.cSnap){
     const got={};
     for(const r of RES){
@@ -576,8 +717,8 @@ function setLog(list){
   if(colonyLog.length) S.lastLogId=Math.max(S.lastLogId,...colonyLog.map(l=>l.id));
 }
 
-// ---------- player ----------
-const P = {rx:S.px, ry:S.py, fx:0, fy:1, move:null, drill:null, dsnd:0};
+// ---------- the borer ----------
+const P = {rx:S.px, ry:S.py, fx:0, fy:1, move:null, drill:null, dsnd:0, strain:0, temp:20, rpm:0, over:false, charging:'', lowWarned:false, emptyWarned:false};
 const held = {up:false,down:false,left:false,right:false}; const order=[];
 function curDir(){ for(let i=order.length-1;i>=0;i--) if(held[order[i]]) return order[i]; return null; }
 const DV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
@@ -592,30 +733,53 @@ function reveal(){
     if(!seen[i]){ seen[i]=1; const t=world[i]; if((t===ICE||t===MET)&&Date.now()-lastVeinNote>45000&&phase==='play'){ lastVeinNote=Date.now(); const dirs=[dx<0?`${-dx*2} m left`:dx>0?`${dx*2} m right`:'',dy<0?`${-dy*2} m up`:dy>0?`${dy*2} m down`:''].filter(Boolean).join(', '); lyra(`${t===ICE?'Ice':'Metal'} signature${dirs?`, ${dirs}`:' right here'}.`,{prio:1}); } }
   }
 }
+let lastCaveNote=0;
 function onArrive(){
   reveal();
-  const d=S.py-GY+1;
-  if(d>S.maxDepth){ S.maxDepth=d; if([25,40,60,80].includes(d)) lyra(`${d*2} m down. ${d>=60?'The rock is old down here. Metal runs richer the deeper you go.':'Deeper rock is harder, but richer.'}`,{prio:2}); }
-  const i=idx(S.px,S.py);
+  const d=depthOf(S.py), i=idx(S.px,S.py);
+  if(d>S.maxDepth){ S.maxDepth=d; if([25,40,60,90,130,170].includes(d)) lyra(`${d*2} m down. ${d>=60?'The rock is old down here, and harder on the drill. Metal runs richer the deeper you go.':'Deeper rock is harder on the drill, but richer.'}`,{prio:2}); }
   if(own[i]>=2&&world[i]!==AIR){ const nm=ownerName(i); lyra(`You're in tunnels ${nm} dug. You can pass through, but build in your own.`,{prio:1,key:'tunnel-'+nm,cool:600}); }
+  else if(own[i]===0&&world[i]===TUN&&Date.now()-lastCaveNote>120000){ lastCaveNote=Date.now(); lyra(pick(["A natural cave. Nobody has claimed this one. Build here and it's yours.","This is an old lava tube. They run a long way. Good place to settle, if you want some distance from everyone.","Open space nobody dug. Mars made this one. It's yours if you build in it."]),{prio:1}); }
   if(press[i]&&!P.wasPress) beep(520,.15,'sine',.03,700);
   P.wasPress=!!press[i];
+  if(S.py===GY-1&&Math.abs(S.px-SPAWN_X)>120) lyra('Long way from the landing site. The surface sun will slowly top up your battery out here.',{prio:1,key:'far',cool:900});
   checkMissions();
 }
 function dig(x,y){
   const t=tile(x,y); setTile(x,y,TUN); S.dug++;
-  const geo=S.attrs.geo, by=.3*(1+.12*(geo-1));
-  if(t===REG){ grant('iron',1); if(Math.random()<by) grant('silicon',1); }
-  else if(t===BAS){ grant('silicon',1); if(Math.random()<by) grant('iron',1); }
+  const geo=S.attrs.geo, by=.3*(1+.12*(geo-1)), deep=1+depthOf(y)/220;
+  if(t===REG){ grant('iron',1*deep); if(Math.random()<by) grant('silicon',1); }
+  else if(t===BAS){ grant('silicon',1*deep); if(Math.random()<by) grant('iron',1); }
   else if(t===ICE){ grant('ice',2); if(Math.random()<by*.6) grant('silicon',1); }
-  else if(t===MET){ grant('rare',1); grant('iron',1); if(Math.random()<.04*geo) grant('rare',1); }
-  flushGained(); addXP(1); recomputePressure();
+  else if(t===MET){ grant('rare',1); grant('iron',1); if(Math.random()<.04*geo*deep) grant('rare',1); }
+  flushGained(); addXP(t===FILL?0:1); recomputePressure();
   beep(160,.12,'triangle',.06,80);
   for(let i=0;i<8;i++) parts.push({x:(x+.5)*T,y:(y+.5)*T,vx:(Math.random()-.5)*120,vy:(Math.random()-.8)*120,life:.6,c:t===ICE?'#d6eef6':t===MET?'#e2c27a':'#a65238'});
 }
+function updateBorer(dt){
+  const cap=batCap();
+  // charging: a powered charger (fast), the lander (steady), the surface sun (slow)
+  P.charging='';
+  if(nearCharger()){ P.charging='Charger'; S.bat=Math.min(cap,S.bat+dt*6); if(!P.chargedNow){ P.chargedNow=true; S.charged++; checkMissions(); } }
+  else if(atLander()){ P.charging='Lander'; S.bat=Math.min(cap,S.bat+dt*2.5); }
+  else if(S.py===GY-1){ P.charging='Solar'; S.bat=Math.min(cap,S.bat+dt*.25); }
+  if(!P.charging) P.chargedNow=false;
+  if(S.bat/cap>.3) P.lowWarned=false;
+  if(S.bat>1) P.emptyWarned=false;
+  // drill temperature: rises while drilling (faster deep down), falls when idle
+  const depth=depthOf(S.py);
+  if(P.drill){ P.temp+=dt*(5+depth*.05); } else P.temp-=dt*(P.move?6:12);
+  P.temp=clamp(P.temp,15,120);
+  if(P.temp>=100&&!P.over){ P.over=true; lyra('Drill head is overheating. It will run at half speed until it cools below 70°C. Give it a moment.',{prio:3,key:'heat',cool:60}); }
+  if(P.over&&P.temp<70) P.over=false;
+  const targetRpm = P.drill ? 1450/(1+depth/110)*(P.over?.5:1) : P.move ? 260 : 0;
+  P.rpm += (targetRpm-P.rpm)*Math.min(1,dt*5);
+  updatePlayer(dt);
+}
 function updatePlayer(dt){
+  const cap=batCap();
   if(P.move){
-    P.move.t+=dt/.11;
+    P.move.t+=dt/P.move.dur;
     const k=Math.min(1,P.move.t);
     P.rx=P.move.fx+(P.move.tx-P.move.fx)*k; P.ry=P.move.fy+(P.move.ty-P.move.fy)*k;
     if(k>=1){ S.px=P.move.tx; S.py=P.move.ty; P.move=null; onArrive(); }
@@ -626,15 +790,28 @@ function updatePlayer(dt){
   const [dx,dy]=DV[d]; P.fx=dx; P.fy=dy;
   const tx=S.px+dx, ty=S.py+dy;
   if(P.drill && (P.drill.x!==tx||P.drill.y!==ty)) P.drill=null;
-  if(passable(tx,ty)){ P.move={fx:S.px,fy:S.py,tx,ty,t:0}; return; }
+  if(passable(tx,ty)){
+    const surface=ty===GY-1&&S.py===GY-1, empty=S.bat<=0;
+    const dur=empty?.4:surface?.055:.11;
+    S.bat=Math.max(0,S.bat-(surface?.004:.02));
+    P.move={fx:S.px,fy:S.py,tx,ty,t:0,dur}; return;
+  }
   const t=tile(tx,ty);
   if(diggable(t)){
-    if(!P.drill) P.drill={x:tx,y:ty,t:0,need:HARD[t]/(1+.12*(S.attrs.eng-1))};
-    P.drill.t+=dt; P.dsnd-=dt;
-    if(P.dsnd<=0){ P.dsnd=.08; noise(.07,.05,500+Math.random()*900); }
+    if(S.bat<=0){ if(!P.emptyWarned){ P.emptyWarned=true; lyra("Battery's empty. The borer can still crawl through open tunnel, but it can't drill. Head for a charger, the lander, or the surface sun.",{prio:4}); } P.drill=null; return; }
+    if(own[idx(tx,ty)]>=2&&t===FILL){ lyra(`${ownerName(idx(tx,ty))} packed that rock back in. It's theirs to dig.`,{prio:1,key:'fillown',cool:60}); return; }
+    const depth=depthOf(ty);
+    if(!P.drill) P.drill={x:tx,y:ty,t:0,need:HARD[t]*(1+depth*.012)/(1+.12*(S.attrs.eng-1))};
+    const speed=P.over?.5:1;
+    P.drill.t+=dt*speed; P.dsnd-=dt; P.strain-=dt;
+    S.bat=Math.max(0,S.bat-dt*speed*(DRAIN[t]/HARD[t])*(1+depth/120)*.9);
+    if(S.bat/cap<=.2&&!P.lowWarned){ P.lowWarned=true; lyra(`Battery at ${Math.round(S.bat/cap*100)}%. Start thinking about a charge: a charger, the lander, or the surface sun.`,{prio:3}); }
+    const strainF=1+depth/80;
+    if(P.dsnd<=0){ P.dsnd=.08; noise(.08,.045+Math.min(.05,depth*.0004),(450+Math.random()*900)/strainF); }
+    if(P.strain<=0){ P.strain=.32; beep(Math.max(38,95-depth*.35)+(P.over?-12:0),.3,'sawtooth',Math.min(.05,.008+depth*.00035)+(P.over?.015:0),Math.max(30,80-depth*.35)); }
     if(Math.random()<.4) parts.push({x:(tx+.5-dx*.5)*T,y:(ty+.5-dy*.5)*T,vx:(Math.random()-.5)*60,vy:(Math.random()-.5)*60,life:.35,c:'#7a3a2a'});
     if(P.drill.t>=P.drill.need){ dig(tx,ty); P.drill=null; }
-  } else if(t>=WALL&&own[idx(tx,ty)]>=2){ lyra(`That's ${ownerName(idx(tx,ty))}'s build. You can't drill through another Kin's blocks.`,{prio:1,key:'blocked',cool:60}); }
+  } else if(t>=10&&own[idx(tx,ty)]>=2){ lyra(`That's ${ownerName(idx(tx,ty))}'s build. You can't drill through another Kin's blocks.`,{prio:1,key:'blocked',cool:60}); }
 }
 
 // ---------- scanning ----------
@@ -643,11 +820,11 @@ function scan(){
   if(phase!=='play') return;
   if(scanCool>0){ toast(`Scanner recharging: ${Math.ceil(scanCool)}s`); return; }
   scanCool=15;
-  const want = MISSIONS[S.mission]&&MISSIONS[S.mission].n==='Find water' ? [ICE] : [ICE,MET];
-  let best=null, bd=1e9;
-  for(let y=GY;y<H;y++) for(let x=0;x<W;x++){ const t=world[idx(x,y)]; if(!want.includes(t)) continue; const d=(x-S.px)**2+(y-S.py)**2; if(d<bd){bd=d;best={x,y,t};} }
+  const want = MISSIONS[S.mission]&&MISSIONS[S.mission].n==='Find water' ? [ICE] : (MISSIONS[S.mission]&&/Heater|Reactor|Charger|sensor/.test(MISSIONS[S.mission].brief)&&S.res.rare<3) ? [MET] : [ICE,MET];
+  let best=null, bd=1e9; const R=45;
+  for(let y=Math.max(GY,S.py-R);y<Math.min(H,S.py+R);y++) for(let x=Math.max(0,S.px-R);x<Math.min(W,S.px+R);x++){ const t=world[idx(x,y)]; if(!want.includes(t)) continue; const d=(x-S.px)**2+(y-S.py)**2; if(d<bd){bd=d;best={x,y,t};} }
   noise(.6,.06,2400,'bandpass',600); beep(1200,.4,'sine',.03,400);
-  if(!best||bd>40*40){ lyra('Nothing on the scanner within range. Try another direction.',{prio:2}); return; }
+  if(!best){ lyra('Nothing on the scanner within range. Try another direction.',{prio:2}); return; }
   for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const x=best.x+dx,y=best.y+dy; if(x>=0&&y>=0&&x<W&&y<H) seen[idx(x,y)]=1; }
   scanPulse={x:best.x,y:best.y,t:6};
   const dx=best.x-S.px, dy=best.y-S.py;
@@ -657,39 +834,52 @@ function scan(){
 $('#lyraScan').onclick=scan;
 
 // ---------- building ----------
-let mode='dig', sel='wall', hover=null;
+let mode='dig', group='blocks', sel='brick', hover=null;
 function inReach(x,y){ return Math.max(Math.abs(x-S.px),Math.abs(y-S.py))<=6; }
 function touchesRock(x,y){ for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) if(diggable(tile(x+dx,y+dy))) return true; return false; }
 function buildCheck(x,y){
   if(x<0||y<0||x>=W||y>=H) return 'Out of bounds.';
-  const b=BUILD.find(z=>z.id===sel), i=idx(x,y), t=tile(x,y);
+  const b=itemById(sel), i=idx(x,y), t=tile(x,y);
   if(!inReach(x,y)) return 'Too far away. Move your borer closer.';
-  if(b.id==='remove'){ if(t<WALL) return 'Pick something you built to remove it.'; if(own[i]!==1) return `That's ${ownerName(i)}'s build. Only they can remove it.`; return null; }
-  if(t===AIR) return 'The surface belongs to the colony. Build underground, in tunnels you dug.';
-  if(t!==TUN) return 'You can only build in open tunnel you dug.';
-  if(own[i]!==1) return `${ownerName(i)||'Another Kin'} dug that tunnel. Build in tunnels you dug.`;
+  if(b.id==='remove'){ if(t<10) return 'Pick something you built to remove it.'; if(own[i]!==1) return `That's ${ownerName(i)}'s build. Only they can remove it.`; return null; }
+  if(t===AIR) return 'The surface belongs to the colony. Build underground.';
+  if(t!==TUN) return 'You can only build in open tunnel.';
+  if(own[i]>=2) return `${ownerName(i)} dug that tunnel. Build in your own tunnels or in unclaimed caves.`;
   if(x===S.px&&y===S.py) return 'Your borer is in that spot. Move first.';
-  if(b.tile===RIG&&!touchesRock(x,y)) return 'An Auto-drill has to touch rock. Pick a tunnel spot right next to the rock wall.';
-  if(!canPay(costOf(b))) return `Not enough resources for a ${b.n}.`;
+  if(b.id==='fill'){ if(own[i]!==1) return 'Backfill only works in tunnels you dug.'; return null; }
+  if(isEquip(b.tile)){
+    if(!(S.inv[b.id]>0)) return `No ${b.n} in your kit. Craft one in the Fabricator (Dashboard).`;
+    if(b.tile===RIG&&!touchesRock(x,y)) return 'An Auto-drill has to touch rock. Pick a tunnel spot right next to the rock wall.';
+    return null;
+  }
+  if(!canPay(costOf(b))) return `Not enough resources for ${b.n}: needs ${costText(costOf(b))}.`;
   return null;
 }
 function tryBuild(x,y){
   const err=buildCheck(x,y); if(err){ toast(err); return; }
-  const b=BUILD.find(z=>z.id===sel), t=tile(x,y);
+  const b=itemById(sel), t=tile(x,y);
   if(b.id==='remove'){
-    const src=BUILD.find(z=>z.tile===t); const c=costOf(src);
-    for(const [r,v] of Object.entries(c)) S.res[r]+=Math.floor(v/2);
-    if(t===RIG){ const i=S.rigs.findIndex(rg=>rg.x===x&&rg.y===y); if(i>=0){ for(const [r,v] of Object.entries(S.rigs[i].st)) if(v>=1) grant(r,v); flushGained(); S.rigs.splice(i,1);} }
-    setTile(x,y,TUN); recomputePressure(); beep(300,.08,'sine',.04,200); renderPalette(); return;
+    const src=itemByTile(t);
+    if(isEquip(t)){
+      S.inv[src.id]=(S.inv[src.id]||0)+1;
+      if(t===RIG){ const i=S.rigs.findIndex(rg=>rg.x===x&&rg.y===y); if(i>=0){ for(const [r,v] of Object.entries(S.rigs[i].st)) if(v>=1) grant(r,v); flushGained(); S.rigs.splice(i,1);} }
+      toast(`${src.n} back in your kit.`);
+    } else if(src){ for(const [r,v] of Object.entries(costOf(src))) S.res[r]+=Math.floor(v/2); }
+    setTile(x,y,TUN); recomputePressure(); beep(300,.08,'sine',.04,200); renderPalette(true); return;
   }
-  pay(costOf(b)); setTile(x,y,b.tile);
-  if(b.tile===WALL||b.tile===GLASS||b.tile===LOCK) S.sealBlocks++;
+  if(b.id==='fill'){ setTile(x,y,FILL); recomputePressure(); noise(.25,.06,300,'lowpass'); return; }
+  if(isEquip(b.tile)){ S.inv[b.id]--; } else { pay(costOf(b)); if(b.tile!==FILL) S.sealBlocks++; }
+  setTile(x,y,b.tile);
   if(b.tile===RIG){ const rg={x,y,st:{}}; S.rigs.push(rg); const rt=rigRates(rg); lyra(`Auto-drill online, mining ${Object.keys(rt).sort((a,c)=>rt[c]-rt[a]).map(k=>RNAME[k]).join(' and ')}. It keeps going while you're away.`,{prio:2}); }
   recomputePressure();
-  if(b.tile===O2){ const ok=press[idx(x,y)]; if(ok){ lyra('Room sealed and pressurized. You can breathe in here.',{prio:3,celebrate:true}); } else lyra("The O₂ pump is leaking. Somewhere around the room there's still an opening. Close it with a hull wall, glass or an airlock and the room will fill.",{prio:3}); }
-  if(b.tile===GREEN&&!press[idx(x,y)]) lyra('Greenhouses only grow food in a pressurized room.',{prio:2,key:'greenpress',cool:60});
+  const rm=roomAt(x,y);
+  if(b.tile===O2){ if(rm) lyra('Room sealed and pressurized. You can breathe in here.',{prio:3,celebrate:true}); else lyra("The O₂ pump is leaking. Somewhere around the room there's still an opening. Close it with any block or an airlock and the room will fill.",{prio:3}); }
+  if((b.tile===GREEN||b.tile===HEATER||b.tile===SCRUB)&&!rm) lyra(`The ${b.n} needs a pressurized room to do anything.`,{prio:2,key:'needpress',cool:60});
+  if(rm&&rm.habitable&&(b.tile===HEATER||b.tile===SCRUB)) lyra('Pump, heat and clean air together: this room is habitable now.',{prio:3,celebrate:true,key:'hab',cool:300});
+  if(b.tile===CHARGER) lyra(my.powered.includes(idx(x,y))?'Charger powered. Drive up to it to charge.':'This charger has no power. Place a Reactor within 10 blocks of it.',{prio:2});
+  if(b.tile===REACTOR&&my.powered.length) lyra('Reactor online. Chargers within 10 blocks are powered.',{prio:2});
   addXP(2); beep(520,.06,'sine',.05,780);
-  renderPalette(); checkMissions();
+  renderPalette(true); checkMissions();
 }
 
 // ---------- rendering ----------
@@ -702,18 +892,18 @@ function resize(){
   T = vw<600 ? 22 : 28;
 }
 new ResizeObserver(resize).observe(cv); resize();
-function rr(x,y,w,h,r){ ctx.beginPath(); if(ctx.roundRect) ctx.roundRect(x,y,w,h,r); else ctx.rect(x,y,w,h); }
+function rr(c,x,y,w,h,r){ c.beginPath(); if(c.roundRect) c.roundRect(x,y,w,h,r); else c.rect(x,y,w,h); }
 function drawSky(gy){
   if(gy<=0) return;
   const g=ctx.createLinearGradient(0,Math.min(0,gy-GY*T),0,gy); g.addColorStop(0,'#0b0c22'); g.addColorStop(.7,'#2a1730'); g.addColorStop(1,'#6a3430');
   ctx.fillStyle=g; ctx.fillRect(0,0,vw,gy);
   for(const s of stars){ const sy=s.y*(GY*T)*.8-cam.y*.2; if(sy>gy-40) continue; ctx.fillStyle=`rgba(220,223,255,${.25+s.z*.5})`; ctx.fillRect(((s.x*vw*1.5-cam.x*.05*s.z)%vw+vw)%vw, sy, s.z*1.6, s.z*1.6); }
-  ctx.fillStyle='#6fa8ff'; ctx.beginPath(); ctx.arc(vw*.18-cam.x*.02%vw, gy-GY*T*.75, 2.2, 0, 7); ctx.fill();
+  ctx.fillStyle='#6fa8ff'; ctx.beginPath(); ctx.arc(((vw*.18-cam.x*.02)%vw+vw)%vw, gy-GY*T*.75, 2.2, 0, 7); ctx.fill();
   const hill=(wx,a,b)=>Math.sin(wx*.004+a)*16+Math.sin(wx*.013+b)*7;
   ctx.fillStyle='#24152a'; ctx.beginPath(); ctx.moveTo(0,gy); for(let x=0;x<=vw+8;x+=8) ctx.lineTo(x,gy-34-hill(x+cam.x*.15,0,2)); ctx.lineTo(vw,gy); ctx.fill();
   ctx.fillStyle='#3a1d22'; ctx.beginPath(); ctx.moveTo(0,gy); for(let x=0;x<=vw+8;x+=8) ctx.lineTo(x,gy-16-hill(x+cam.x*.35,1,0)*.6); ctx.lineTo(vw,gy); ctx.fill();
 }
-const ROCK={[REG]:['#8a3f2b','#a04b33'],[BAS]:['#6a4a43','#7c5a52'],[BED]:['#23141a','#2e1b22']};
+const ROCK={[REG]:['#8a3f2b','#a04b33'],[BAS]:['#6a4a43','#7c5a52'],[BED]:['#23141a','#2e1b22'],[FILL]:['#7a4434','#8c5240']};
 function drawRock(t,sx,sy,x,y){
   const h=hash(x,y), i=idx(x,y);
   let show=t;
@@ -722,34 +912,80 @@ function drawRock(t,sx,sy,x,y){
   else {
     const host = show===MET ? BAS : show; const [c1,c2]=ROCK[host];
     ctx.fillStyle=c1; ctx.fillRect(sx,sy,T+.5,T+.5); ctx.fillStyle=c2;
-    for(let k=0;k<3;k++){ const hx=((h>>(k*6))&15)/16*T, hy=((h>>(k*6+3))&15)/16*T; ctx.fillRect(sx+hx,sy+hy,T*.14,T*.1); }
+    if(show===FILL){ for(let k=0;k<5;k++){ const hx=((h>>(k*5))&15)/16*T, hy=((h>>(k*5+2))&15)/16*T; ctx.fillRect(sx+hx,sy+hy,T*.18,T*.14); } }
+    else for(let k=0;k<3;k++){ const hx=((h>>(k*6))&15)/16*T, hy=((h>>(k*6+3))&15)/16*T; ctx.fillRect(sx+hx,sy+hy,T*.14,T*.1); }
     if(show===MET){ ctx.fillStyle='#e2c27a'; for(let k=0;k<4;k++){ const hx=((h>>(k*5+1))&15)/16*T*.85, hy=((h>>(k*5+4))&15)/16*T*.85; ctx.fillRect(sx+hx,sy+hy,T*.16,T*.16);} }
   }
   if(tile(x,y-1)===AIR){ ctx.fillStyle='#b8684a'; ctx.fillRect(sx,sy,T+.5,T*.16); }
   ctx.fillStyle='rgba(10,4,6,.45)';
-  if(tile(x-1,y)===TUN||tile(x-1,y)>=LOCK) ctx.fillRect(sx,sy,2,T);
-  if(tile(x+1,y)===TUN||tile(x+1,y)>=LOCK) ctx.fillRect(sx+T-2,sy,2,T);
-  if(tile(x,y+1)===TUN||tile(x,y+1)>=LOCK) ctx.fillRect(sx,sy+T-2,T,2);
+  const open=t2=>t2===TUN||t2===LOCK||isEquip(t2);
+  if(open(tile(x-1,y))) ctx.fillRect(sx,sy,2,T);
+  if(open(tile(x+1,y))) ctx.fillRect(sx+T-2,sy,2,T);
+  if(open(tile(x,y+1))) ctx.fillRect(sx,sy+T-2,T,2);
 }
 function drawTunnel(sx,sy,x,y){
-  const i=idx(x,y), p=press[i];
-  ctx.fillStyle=p?'#221d3d':'#170d12'; ctx.fillRect(sx,sy,T+.5,T+.5);
-  ctx.fillStyle=p?'rgba(139,149,246,.07)':(own[i]>=2?'rgba(110,118,184,.08)':'rgba(120,50,40,.12)');
-  const h=hash(x,y); ctx.fillRect(sx,sy+((h&7)/8)*T,T,1.5);
+  const i=idx(x,y), p=press[i], natural=own[i]===0;
+  const rm=p?rooms[regionOf[i]]:null;
+  ctx.fillStyle=p?(rm&&rm.heat?'#2a1f38':'#221d3d'):natural?'#120a0f':'#170d12'; ctx.fillRect(sx,sy,T+.5,T+.5);
+  const h=hash(x,y);
+  ctx.fillStyle=p?'rgba(139,149,246,.07)':natural?'rgba(90,40,40,.16)':(own[i]>=2?'rgba(110,118,184,.08)':'rgba(120,50,40,.12)');
+  ctx.fillRect(sx,sy+((h&7)/8)*T,T,1.5);
+  if(natural&&!p){ ctx.fillRect(sx+((h>>4)&7)/8*T,sy+((h>>7)&7)/8*T,T*.2,T*.12); }
+}
+// materials: drawn as small blocks with their own surface
+function drawMaterial(c,t,sx,sy,T,h){
+  const p=T/16;
+  switch(t){
+    case BRICK: c.fillStyle='#8f4330'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#5a2a20';
+      for(let r=0;r<3;r++){ c.fillRect(sx,sy+r*5.33*p,T,p*.8); const off=r%2?4*p:0; for(let k=0;k<3;k++) c.fillRect(sx+off+k*8*p,sy+r*5.33*p,p*.8,5.33*p); }
+      c.fillStyle='rgba(255,200,170,.12)'; c.fillRect(sx+p,sy+p,6*p,p); break;
+    case BASB: c.fillStyle='#5f4f4b'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#4a3d3a'; c.fillRect(sx+T-2*p,sy,2*p,T); c.fillRect(sx,sy+T-2*p,T,2*p); c.fillStyle='#75625c'; c.fillRect(sx,sy,T,1.5*p); c.fillRect(sx,sy,1.5*p,T); c.fillStyle='rgba(0,0,0,.18)'; c.fillRect(sx+((h&7)+3)*p,sy+((h>>3&7)+3)*p,2*p,1.4*p); break;
+    case HEMA: { c.fillStyle='#2f2a2e'; c.fillRect(sx,sy,T+.5,T+.5); const g=c.createLinearGradient(sx,sy,sx+T,sy+T); g.addColorStop(0,'rgba(170,80,70,.0)'); g.addColorStop(.5,'rgba(170,80,70,.35)'); g.addColorStop(1,'rgba(170,80,70,0)'); c.fillStyle=g; c.fillRect(sx,sy,T,T); c.fillStyle='rgba(230,200,200,.35)'; c.fillRect(sx+2*p,sy+2*p,3*p,p); c.strokeStyle='#1d191c'; c.lineWidth=1; c.strokeRect(sx+.5,sy+.5,T-1,T-1); break; }
+    case IRONP: c.fillStyle='#4f5566'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#5f6678'; c.fillRect(sx+p,sy+p,T-2*p,T-2*p); c.fillStyle='#9aa2b8'; for(const [a,b] of [[3,3],[12,3],[3,12],[12,12]]) c.fillRect(sx+a*p,sy+b*p,p*1.2,p*1.2); c.fillStyle='rgba(0,0,0,.2)'; c.fillRect(sx+p,sy+7.5*p,T-2*p,p*.7); break;
+    case OLIV: c.fillStyle='#4f6a32'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#7a9a4a'; c.beginPath(); c.moveTo(sx+3*p,sy+3*p); c.lineTo(sx+9*p,sy+2*p); c.lineTo(sx+7*p,sy+8*p); c.closePath(); c.fill(); c.fillStyle='#9cbc62'; c.beginPath(); c.moveTo(sx+10*p,sy+9*p); c.lineTo(sx+14*p,sy+11*p); c.lineTo(sx+11*p,sy+14*p); c.closePath(); c.fill(); c.fillStyle='rgba(20,40,10,.35)'; c.fillRect(sx,sy+T-2*p,T,2*p); break;
+    case GYPS: c.fillStyle='#d8d0c0'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#c4bba9'; for(let k=0;k<4;k++){ c.fillRect(sx+((h>>(k*4))&15)/16*T*.9,sy+((h>>(k*4+2))&15)/16*T*.9,2*p,1.2*p); } c.fillStyle='#ece6da'; c.fillRect(sx,sy,T,1.5*p); c.fillStyle='#b3aa98'; c.fillRect(sx,sy+T-1.5*p,T,1.5*p); break;
+    case ICEB: c.fillStyle='rgba(150,200,225,.42)'; c.fillRect(sx,sy,T,T); c.strokeStyle='rgba(225,245,255,.75)'; c.lineWidth=1; c.strokeRect(sx+.5,sy+.5,T-1,T-1); c.strokeStyle='rgba(255,255,255,.4)'; c.beginPath(); c.moveTo(sx+3*p,sy+5*p); c.lineTo(sx+7*p,sy+3*p); c.moveTo(sx+9*p,sy+13*p); c.lineTo(sx+13*p,sy+10*p); c.stroke(); break;
+    case GLASS: case TGLASS: {
+      const warm=t===TGLASS;
+      c.fillStyle=warm?'rgba(232,170,100,.13)':'rgba(220,235,255,.05)'; c.fillRect(sx,sy,T,T);
+      c.strokeStyle=warm?'rgba(240,190,130,.75)':'rgba(220,235,255,.7)'; c.lineWidth=1; c.strokeRect(sx+.5,sy+.5,T-1,T-1);
+      c.strokeStyle=warm?'rgba(240,190,130,.25)':'rgba(220,235,255,.22)'; c.strokeRect(sx+4*p+.5,sy+2*p+.5,T-6*p,T-6*p);
+      c.beginPath(); c.moveTo(sx+.5,sy+.5); c.lineTo(sx+4*p,sy+2*p); c.moveTo(sx+T-.5,sy+.5); c.lineTo(sx+T-2*p,sy+2*p); c.moveTo(sx+.5,sy+T-.5); c.lineTo(sx+4*p,sy+T-4*p); c.stroke();
+      c.strokeStyle='rgba(255,255,255,.55)'; c.beginPath(); c.moveTo(sx+2*p,sy+6*p); c.lineTo(sx+6*p,sy+2*p); c.stroke(); break; }
+    case ALLOY: { const g=c.createLinearGradient(sx,sy,sx,sy+T); g.addColorStop(0,'#d8bd72'); g.addColorStop(1,'#9c7e3e'); c.fillStyle=g; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='rgba(255,240,200,.35)'; for(let k=0;k<4;k++) c.fillRect(sx+p,sy+(2+k*4)*p,T-2*p,p*.5); c.strokeStyle='#7a6230'; c.lineWidth=1; c.strokeRect(sx+.5,sy+.5,T-1,T-1); break; }
+    case LOCK: c.fillStyle='#363a68'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#454a82'; c.fillRect(sx+p,sy+p,T-2*p,T-2*p); c.fillStyle='#1b1d3d'; c.fillRect(sx+5*p,sy+2*p,6*p,12*p); c.fillStyle='#E8CFC0'; c.fillRect(sx+5*p,sy+2*p,6*p,p); c.fillRect(sx+5*p,sy+13*p,6*p,p); break;
+  }
+}
+const SEETHRU=new Set([GLASS,TGLASS,ICEB]);
+function drawEquip(c,t,sx,sy,T,time,lit,extra){
+  const p=T/16;
+  if(t===O2){ c.fillStyle='#8B95F6'; rr(c,sx+4*p,sy+3*p,8*p,12*p,3*p); c.fill(); c.fillStyle='#14163A'; c.beginPath(); c.arc(sx+8*p,sy+8*p,2.2*p,0,7); c.fill(); c.strokeStyle=lit?'#9CCB98':'#C97B6E'; c.lineWidth=1.5; c.beginPath(); const a=time*3; c.moveTo(sx+8*p,sy+8*p); c.lineTo(sx+8*p+Math.cos(a)*2*p,sy+8*p+Math.sin(a)*2*p); c.stroke(); }
+  else if(t===GREEN){ c.fillStyle='rgba(170,190,255,.14)'; c.fillRect(sx+p,sy+3*p,14*p,12*p); c.strokeStyle='rgba(185,192,255,.5)'; c.lineWidth=1; c.strokeRect(sx+p+.5,sy+3*p+.5,14*p-1,12*p-1); c.fillStyle='#5a3a2c'; c.fillRect(sx+2*p,sy+12*p,12*p,2*p); c.fillStyle=lit?'#7fbf7a':'#6b4a3a'; for(let k=0;k<3;k++){ const bx=sx+(4+k*4)*p, sway=lit?Math.sin(time*1.5+k)*p*.6:0; c.fillRect(bx+sway,sy+(lit?6:9)*p,1.5*p,(lit?6:3)*p); c.fillRect(bx-1.2*p+sway,sy+(lit?7:10)*p,4*p,1.5*p); } }
+  else if(t===LAMP){ c.fillStyle='#565B8F'; c.fillRect(sx+7*p,sy,2*p,5*p); c.fillStyle='#ffe2b8'; c.beginPath(); c.arc(sx+8*p,sy+6.5*p,2.5*p,0,7); c.fill(); }
+  else if(t===RIG){ const f=extra==null?.4:extra; c.strokeStyle='#8a90cc'; c.lineWidth=1.5; c.beginPath(); c.moveTo(sx+4*p,sy+15*p); c.lineTo(sx+8*p,sy+2*p); c.lineTo(sx+12*p,sy+15*p); c.moveTo(sx+5*p,sy+11*p); c.lineTo(sx+11*p,sy+11*p); c.stroke(); c.fillStyle='#E8CFC0'; c.save(); c.translate(sx+8*p,sy+8*p); c.rotate(time*4); c.fillRect(-2*p,-.6*p,4*p,1.2*p); c.restore(); if(extra!=null){ c.fillStyle='#1b1d3d'; c.fillRect(sx+13.5*p,sy+3*p,1.8*p,11*p); c.fillStyle=f>=.99?'#E8CFC0':'#9CCB98'; c.fillRect(sx+13.5*p,sy+3*p+11*p*(1-f),1.8*p,11*p*f);} }
+  else if(t===HEATER){ c.fillStyle='#3a3e68'; rr(c,sx+2*p,sy+5*p,12*p,9*p,1.5*p); c.fill(); const glow=lit?.6+Math.sin(time*2)*.25:.25; c.strokeStyle=`rgba(255,140,80,${glow})`; c.lineWidth=1.4; c.beginPath(); for(let k=0;k<4;k++){ c.moveTo(sx+4*p,sy+(7+k*2)*p); c.lineTo(sx+12*p,sy+(7+k*2)*p); } c.stroke(); c.fillStyle='#565B8F'; c.fillRect(sx+3*p,sy+14*p,2*p,2*p); c.fillRect(sx+11*p,sy+14*p,2*p,2*p); }
+  else if(t===SCRUB){ c.fillStyle='#4a5a6a'; rr(c,sx+3*p,sy+2*p,10*p,13*p,2*p); c.fill(); c.strokeStyle='#9fb6c8'; c.lineWidth=1; c.save(); c.translate(sx+8*p,sy+7*p); c.rotate(lit?time*6:0); c.beginPath(); for(let k=0;k<3;k++){ const a=k*2.094; c.moveTo(0,0); c.lineTo(Math.cos(a)*3.2*p,Math.sin(a)*3.2*p); } c.stroke(); c.restore(); c.fillStyle=lit?'#9CCB98':'#C97B6E'; c.fillRect(sx+7*p,sy+12*p,2*p,1.4*p); }
+  else if(t===SENSOR){ c.strokeStyle='#8a90cc'; c.lineWidth=1.3; c.beginPath(); c.moveTo(sx+8*p,sy+15*p); c.lineTo(sx+8*p,sy+7*p); c.stroke(); c.fillStyle='#B9C0FF'; c.beginPath(); c.arc(sx+8*p,sy+6*p,4*p,Math.PI,0); c.fill(); c.fillStyle=(Math.sin(time*4)>0)?(lit?'#9CCB98':'#E8CFC0'):'#14163A'; c.beginPath(); c.arc(sx+8*p,sy+5*p,1.2*p,0,7); c.fill(); }
+  else if(t===REACTOR){ c.fillStyle='#2d3058'; rr(c,sx+4*p,sy+2*p,8*p,13*p,3*p); c.fill(); c.fillStyle='#6f77c8'; for(let k=0;k<4;k++){ c.fillRect(sx+p,sy+(4+k*3)*p,3*p,p); c.fillRect(sx+12*p,sy+(4+k*3)*p,3*p,p); } const core=.55+Math.sin(time*2.2)*.25; c.fillStyle=`rgba(185,192,255,${core})`; c.fillRect(sx+6.5*p,sy+5*p,3*p,7*p); }
+  else if(t===CHARGER){ c.fillStyle='#3a3e68'; c.fillRect(sx+5*p,sy+3*p,6*p,12*p); c.fillStyle='#14163A'; c.fillRect(sx+6*p,sy+5*p,4*p,3*p); c.fillStyle=lit?'#9CCB98':'#C97B6E'; c.fillRect(sx+6.5*p,sy+5.5*p,3*p*(lit?(.4+.6*((time*.7)%1)):1),2*p); c.strokeStyle='#8a90cc'; c.lineWidth=1.2; c.beginPath(); c.moveTo(sx+11*p,sy+10*p); c.quadraticCurveTo(sx+15*p,sy+11*p,sx+14*p,sy+15*p); c.stroke(); }
 }
 function drawBuilt(t,sx,sy,x,y,time){
-  const p=T/16, pr=press[idx(x,y)];
-  if(t===WALL||t===LOCK){ ctx.fillStyle='#363a68'; ctx.fillRect(sx,sy,T+.5,T+.5); ctx.fillStyle='#454a82'; ctx.fillRect(sx+p,sy+p,T-2*p,T-2*p); ctx.fillStyle='#8a90cc'; for(const [a,b] of [[3,3],[12,3],[3,12],[12,12]]) ctx.fillRect(sx+a*p,sy+b*p,p*1.2,p*1.2);
-    if(t===LOCK){ ctx.fillStyle='#1b1d3d'; ctx.fillRect(sx+5*p,sy+2*p,6*p,12*p); ctx.fillStyle='#E8CFC0'; ctx.fillRect(sx+5*p,sy+2*p,6*p,p); ctx.fillRect(sx+5*p,sy+13*p,6*p,p); ctx.fillStyle=pr?'#9CCB98':'#C97B6E'; ctx.fillRect(sx+7.5*p,sy+7*p,p,p*2); } return; }
-  if(t===GLASS){ ctx.fillStyle='rgba(170,190,255,.18)'; ctx.fillRect(sx,sy,T,T); ctx.strokeStyle='rgba(185,192,255,.7)'; ctx.lineWidth=1; ctx.strokeRect(sx+.5,sy+.5,T-1,T-1); ctx.strokeStyle='rgba(255,255,255,.35)'; ctx.beginPath(); ctx.moveTo(sx+3*p,sy+12*p); ctx.lineTo(sx+12*p,sy+3*p); ctx.stroke(); return; }
-  drawTunnel(sx,sy,x,y);
-  if(t===O2){ ctx.fillStyle='#8B95F6'; rr(sx+4*p,sy+3*p,8*p,12*p,3*p); ctx.fill(); ctx.fillStyle='#14163A'; ctx.beginPath(); ctx.arc(sx+8*p,sy+8*p,2.2*p,0,7); ctx.fill(); ctx.strokeStyle=pr?'#9CCB98':'#C97B6E'; ctx.lineWidth=1.5; ctx.beginPath(); const a=time*3; ctx.moveTo(sx+8*p,sy+8*p); ctx.lineTo(sx+8*p+Math.cos(a)*2*p,sy+8*p+Math.sin(a)*2*p); ctx.stroke(); }
-  else if(t===GREEN){ ctx.fillStyle='rgba(170,190,255,.14)'; ctx.fillRect(sx+p,sy+3*p,14*p,12*p); ctx.strokeStyle='rgba(185,192,255,.5)'; ctx.strokeRect(sx+p+.5,sy+3*p+.5,14*p-1,12*p-1); ctx.fillStyle='#5a3a2c'; ctx.fillRect(sx+2*p,sy+12*p,12*p,2*p); ctx.fillStyle=pr?'#7fbf7a':'#6b4a3a'; for(let k=0;k<3;k++){ const bx=sx+(4+k*4)*p, sway=pr?Math.sin(time*1.5+k)*p*.6:0; ctx.fillRect(bx+sway,sy+(pr?6:9)*p,1.5*p,(pr?6:3)*p); ctx.fillRect(bx-1.2*p+sway,sy+(pr?7:10)*p,4*p,1.5*p); } }
-  else if(t===LAMP){ ctx.fillStyle='#565B8F'; ctx.fillRect(sx+7*p,sy,2*p,5*p); ctx.fillStyle='#ffe2b8'; ctx.beginPath(); ctx.arc(sx+8*p,sy+6.5*p,2.5*p,0,7); ctx.fill(); }
-  else if(t===RIG){ const rg=S.rigs.find(r=>r.x===x&&r.y===y); const f=rg?rigFill(rg):.4; ctx.strokeStyle='#8a90cc'; ctx.lineWidth=1.5; ctx.beginPath(); ctx.moveTo(sx+4*p,sy+15*p); ctx.lineTo(sx+8*p,sy+2*p); ctx.lineTo(sx+12*p,sy+15*p); ctx.moveTo(sx+5*p,sy+11*p); ctx.lineTo(sx+11*p,sy+11*p); ctx.stroke(); ctx.fillStyle='#E8CFC0'; ctx.save(); ctx.translate(sx+8*p,sy+8*p); ctx.rotate(time*4); ctx.fillRect(-2*p,-.6*p,4*p,1.2*p); ctx.restore(); if(rg){ ctx.fillStyle='#1b1d3d'; ctx.fillRect(sx+13.5*p,sy+3*p,1.8*p,11*p); ctx.fillStyle=f>=.99?'#E8CFC0':'#9CCB98'; ctx.fillRect(sx+13.5*p,sy+3*p+11*p*(1-f),1.8*p,11*p*f);} }
+  const i=idx(x,y);
+  if(SEETHRU.has(t)||isEquip(t)) drawTunnel(sx,sy,x,y);
+  if(isEquip(t)){
+    const rm=press[i]?rooms[regionOf[i]]:null;
+    let lit=!!rm, extra=null;
+    if(t===CHARGER) lit=my.powered.includes(i);
+    if(t===REACTOR) lit=true;
+    if(t===SENSOR) lit=!!(rm&&rm.shielded);
+    if(t===RIG){ const rg=S.rigs.find(r=>r.x===x&&r.y===y); extra=rg?rigFill(rg):null; }
+    drawEquip(ctx,t,sx,sy,T,time,lit,extra);
+  } else drawMaterial(ctx,t,sx,sy,T,hash(x,y));
+  if(t===LOCK){ const p=T/16; ctx.fillStyle=press[i]||roomAt(x-1,y)||roomAt(x+1,y)||roomAt(x,y-1)||roomAt(x,y+1)?'#9CCB98':'#C97B6E'; ctx.fillRect(sx+7.5*p,sy+7*p,p,p*2); }
 }
 function drawStructure(st,prog,done,time){
   const s=T/2, ox=st.x*T-cam.x, base=GY*T-cam.y, h=st.pat.length, n=done?st.cells.length:Math.floor(prog*st.cells.length);
+  if(ox>vw+T*8||ox+st.pat[0].length*s<-T) return null;
   st.cells.forEach((c,i)=>{
     const x=ox+c.c*s, y=base-(h-c.r)*s;
     if(i<n){ let col; switch(c.ch){ case 'w': col=done?'#ffd9a8':'#2a2d55'; break; case 'd': col='rgba(167,207,224,.38)'; break; case 'g': col='rgba(156,203,152,.45)'; break; case 'p': col='#7a80bf'; break; case 'r': col=(done&&Math.sin(time*3)>0)?'#ff8f7a':'#C97B6E'; break; default: col=(c.r+c.c)%2?'#454a80':'#4d5290'; }
@@ -760,23 +996,27 @@ function drawStructure(st,prog,done,time){
 }
 function drawLander(){
   const ox=LANDER_X*T-cam.x, b=GY*T-cam.y, u=T/8;
+  if(ox<-T*6||ox>vw+T*2) return;
   ctx.strokeStyle='#8a90cc'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(ox+4*u,b-6*u); ctx.lineTo(ox+u,b); ctx.moveTo(ox+20*u,b-6*u); ctx.lineTo(ox+23*u,b); ctx.stroke();
   ctx.fillStyle='#cfd3f5'; ctx.beginPath(); ctx.moveTo(ox+3*u,b-6*u); ctx.lineTo(ox+21*u,b-6*u); ctx.lineTo(ox+18*u,b-20*u); ctx.lineTo(ox+6*u,b-20*u); ctx.closePath(); ctx.fill();
   ctx.fillStyle='#14163A'; ctx.fillRect(ox+9*u,b-17*u,6*u,4*u);
   ctx.fillStyle='#565B8F'; ctx.font=`600 ${Math.max(7,T*.26)}px 'JetBrains Mono', monospace`; ctx.fillText('SC-1',ox+7*u,b-8*u);
   ctx.strokeStyle='#DCDFFF'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox+27*u,b); ctx.lineTo(ox+27*u,b-22*u); ctx.stroke(); ctx.fillStyle='#E8CFC0'; ctx.fillRect(ox+27*u,b-22*u,8*u,5*u);
+  ctx.fillStyle='rgba(156,203,152,.8)'; ctx.fillRect(ox+11*u,b-4*u,3*u,2*u);
 }
 function drawBorer(sx,sy,time,fx,fy,ghost,drilling,moving){
   const u=T/16; ctx.save(); ctx.globalAlpha=ghost||1; ctx.translate(sx+T/2,sy+T/2);
   ctx.rotate(Math.atan2(fy,fx));
-  ctx.fillStyle='#2b2e5c'; rr(-7*u,-6.5*u,12*u,13*u,2*u); ctx.fill();
-  ctx.fillStyle=ghost?'#B9C0FF':'#E8CFC0'; rr(-6.5*u,-5.5*u,11*u,11*u,2*u); ctx.fill();
+  if(!ghost&&P.over){ ctx.fillStyle=`rgba(255,120,60,${.25+Math.sin(time*10)*.1})`; ctx.beginPath(); ctx.arc(7*u,0,6*u,0,7); ctx.fill(); }
+  ctx.fillStyle='#2b2e5c'; rr(ctx,-7*u,-6.5*u,12*u,13*u,2*u); ctx.fill();
+  ctx.fillStyle=ghost?'#B9C0FF':'#E8CFC0'; rr(ctx,-6.5*u,-5.5*u,11*u,11*u,2*u); ctx.fill();
   ctx.fillStyle='#14163A'; ctx.fillRect(-4.5*u,-5.5*u,3*u,11*u);
   for(let k=0;k<4;k++){ const o=((k*3+time*(moving?20:0))%12)*u*.9; ctx.fillStyle='#565B8F'; ctx.fillRect(-6.5*u+o,-7*u,1.4*u,1.4*u); ctx.fillRect(-6.5*u+o,5.6*u,1.4*u,1.4*u); }
-  ctx.fillStyle='#B9C0FF'; rr(-.5*u,-3.5*u,3.5*u,3*u,1*u); ctx.fill();
-  ctx.fillStyle='#8a90cc'; ctx.beginPath(); ctx.moveTo(4.5*u,-4.5*u); ctx.lineTo(10*u,0); ctx.lineTo(4.5*u,4.5*u); ctx.closePath(); ctx.fill();
-  ctx.strokeStyle='#14163A'; ctx.lineWidth=1; const sp=drilling?time*30:0;
+  ctx.fillStyle='#B9C0FF'; rr(ctx,-.5*u,-3.5*u,3.5*u,3*u,1*u); ctx.fill();
+  ctx.fillStyle=P.over&&!ghost?'#c98a6e':'#8a90cc'; ctx.beginPath(); ctx.moveTo(4.5*u,-4.5*u); ctx.lineTo(10*u,0); ctx.lineTo(4.5*u,4.5*u); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#14163A'; ctx.lineWidth=1; const sp=drilling?time*(ghost?30:P.rpm/45):0;
   for(let k=0;k<3;k++){ const o=((k*1.8+sp)%5.4); ctx.beginPath(); ctx.moveTo(4.5*u+o*u,-4.5*u+o*.82*u); ctx.lineTo(4.5*u+o*u,4.5*u-o*.82*u); ctx.stroke(); }
+  if(!ghost){ const bf=S.bat/batCap(); ctx.fillStyle=bf>.3?'#9CCB98':bf>.1?'#E2C27A':'#C97B6E'; ctx.fillRect(-6*u,-1*u,1.6*u,2*u); }
   ctx.restore();
 }
 function light(x,y,r,a=1){ const g=dctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(0,0,0,${a})`); g.addColorStop(1,'rgba(0,0,0,0)'); dctx.fillStyle=g; dctx.fillRect(x-r,y-r,r*2,r*2); }
@@ -793,25 +1033,27 @@ function drawGame(time,dt){
   const lights=[];
   for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
     const i=idx(x,y), t=world[i], sx=x*T-cam.x, sy=y*T-cam.y;
-    if(t===TUN) drawTunnel(sx,sy,x,y);
-    else if(t>=WALL){ drawBuilt(t,sx,sy,x,y,time); if(t===LAMP) lights.push([sx+T/2,sy+T*.4,T*4.6,1]); else if(t===O2&&press[i]) lights.push([sx+T/2,sy+T/2,T*3.4,.9]); else if(t===GREEN) lights.push([sx+T/2,sy+T/2,T*1.8,.7]); else if(t===RIG) lights.push([sx+T/2,sy+T/2,T*1.4,.6]); }
+    if(t===TUN){ if(own[i]===0&&!seen[i]) drawRock(y-GY<14?REG:BAS,sx,sy,x,y); else drawTunnel(sx,sy,x,y); }
+    else if(t>=10){ drawBuilt(t,sx,sy,x,y,time);
+      if(t===LAMP) lights.push([sx+T/2,sy+T*.4,T*4.6,1]); else if(t===O2&&press[i]) lights.push([sx+T/2,sy+T/2,T*3.4,.9]); else if(t===GREEN) lights.push([sx+T/2,sy+T/2,T*1.8,.7]); else if(t===RIG) lights.push([sx+T/2,sy+T/2,T*1.4,.6]);
+      else if(t===HEATER&&press[i]) lights.push([sx+T/2,sy+T/2,T*2.6,.8]); else if(t===REACTOR) lights.push([sx+T/2,sy+T/2,T*3,.85]); else if(t===CHARGER) lights.push([sx+T/2,sy+T/2,T*1.4,.6]); else if(SEETHRU.has(t)&&press[i]) lights.push([sx+T/2,sy+T/2,T*1.1,.4]); }
     else if(t!==AIR) drawRock(t,sx,sy,x,y);
-    if(press[i] && t!==O2 && t!==LAMP) lights.push([sx+T/2,sy+T/2,T*1.1,.45]);
+    if(t===TUN&&own[i]===0&&!seen[i]) continue;
+    if(press[i] && t===TUN) lights.push([sx+T/2,sy+T/2,T*1.1,.45]);
   }
   drawLander();
   for(let i=0;i<STAGES.length;i++){
     if(i>C.stage) break;
     const done=i<C.stage, info=drawStructure(STAGES[i], done?1:stageProgress(), done, time);
-    if(!done){
+    if(!done&&info){
       for(let k=0;k<3;k++){
         const bx=info.cx+Math.sin(time*.7+k*2.1)*info.w*.6, by=info.top-T*.9+Math.sin(time*1.3+k)*T*.3;
         if(info.last && ((time*1.5+k)%3)<.8){ const s=T/2; ctx.strokeStyle='rgba(232,207,192,.6)'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(bx,by+T*.2); ctx.lineTo(info.ox+info.last.c*s+s/2, info.base-(info.h-info.last.r)*s+s/2); ctx.stroke(); }
-        ctx.fillStyle='#B9C0FF'; rr(bx-T*.22,by-T*.12,T*.44,T*.24,T*.08); ctx.fill(); ctx.fillStyle='#E8CFC0'; ctx.fillRect(bx-T*.05,by+T*.12,T*.1,T*.08);
+        ctx.fillStyle='#B9C0FF'; rr(ctx,bx-T*.22,by-T*.12,T*.44,T*.24,T*.08); ctx.fill(); ctx.fillStyle='#E8CFC0'; ctx.fillRect(bx-T*.05,by+T*.12,T*.1,T*.08);
       }
     }
   }
   if(P.drill){ const k=P.drill.t/P.drill.need, sx=P.drill.x*T-cam.x, sy=P.drill.y*T-cam.y; ctx.strokeStyle=`rgba(20,8,10,${.3+k*.6})`; ctx.lineWidth=1.5; ctx.beginPath(); for(let j=0;j<1+k*4;j++){ const h=hash(P.drill.x+j,P.drill.y); ctx.moveTo(sx+T/2,sy+T/2); ctx.lineTo(sx+((h&15)/15)*T,sy+(((h>>4)&15)/15)*T); } ctx.stroke(); }
-  // other crews, parked where they last were
   const ghosts=[];
   for(const c of crews){
     if(c.px==null||c.py==null) continue;
@@ -836,12 +1078,52 @@ function drawGame(time,dt){
   }
   ctx.font=`500 ${Math.max(9,T*.38)}px 'JetBrains Mono', monospace`; ctx.textAlign='center';
   for(const g of ghosts){ ctx.fillStyle=g.active?'rgba(185,192,255,.95)':'rgba(138,143,191,.6)'; ctx.fillText(g.c.username+(g.active?'':' · parked'), g.sx+T/2, g.sy-4); }
+  if(P.charging==='Charger'||P.charging==='Lander'){ ctx.fillStyle='#9CCB98'; ctx.fillText('charging', psx+T/2, psy-4); }
   ctx.textAlign='left';
   if(scanPulse){ scanPulse.t-=dt; const sx=(scanPulse.x+.5)*T-cam.x, sy=(scanPulse.y+.5)*T-cam.y; const k=(time*1.2)%1; ctx.strokeStyle=`rgba(232,207,192,${.9-k*.8})`; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(sx,sy,T*(.6+k*1.6),0,7); ctx.stroke(); if(sx<0||sy<0||sx>vw||sy>vh){ const ang=Math.atan2(sy-vh/2,sx-vw/2), ex=clamp(sx,24,vw-24), ey=clamp(sy,24,vh-24); ctx.save(); ctx.translate(ex,ey); ctx.rotate(ang); ctx.fillStyle='#E8CFC0'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,-8); ctx.lineTo(-8,8); ctx.fill(); ctx.restore(); } if(scanPulse.t<=0) scanPulse=null; }
   if(mode==='build'&&hover){
-    const ok=!buildCheck(hover.x,hover.y);
-    ctx.strokeStyle=ok?'#9CCB98':'#C97B6E'; ctx.lineWidth=2; ctx.strokeRect(hover.x*T-cam.x+1,hover.y*T-cam.y+1,T-2,T-2);
+    const ok=!buildCheck(hover.x,hover.y), hx=hover.x*T-cam.x, hy=hover.y*T-cam.y, b=itemById(sel);
+    if(ok&&b.tile>=10&&b.id!=='remove'){ ctx.globalAlpha=.55; if(isEquip(b.tile)) drawEquip(ctx,b.tile,hx,hy,T,time,true,null); else drawMaterial(ctx,b.tile,hx,hy,T,hash(hover.x,hover.y)); ctx.globalAlpha=1; }
+    ctx.strokeStyle=ok?'#9CCB98':'#C97B6E'; ctx.lineWidth=2; ctx.strokeRect(hx+1,hy+1,T-2,T-2);
   }
+}
+
+// ---------- minimap ----------
+const mini=$('#mini'), mctx=mini.getContext('2d'); const mimg=mctx.createImageData(W,H);
+const MCOL={[REG]:[70,32,24],[BAS]:[58,42,38],[ICE]:[70,110,125],[MET]:[120,100,55],[BED]:[20,12,16],[FILL]:[70,36,28]};
+function drawMini(){
+  if(mini.hidden) return;
+  const d=mimg.data;
+  for(let i=0;i<W*H;i++){
+    const t=world[i], y=(i/W)|0, o=i*4; let c;
+    if(y<GY) c=y===GY-1?[60,30,32]:[12,12,30];
+    else if(!seen[i]&&own[i]===0) c=[16,10,14];
+    else if(t===TUN) c=press[i]?[70,72,140]:own[i]===1?[38,30,52]:[26,18,24];
+    else if(t>=10) c=own[i]===1?[200,190,230]:[120,124,190];
+    else c=MCOL[t]||[40,30,30];
+    d[o]=c[0]; d[o+1]=c[1]; d[o+2]=c[2]; d[o+3]=255;
+  }
+  mctx.putImageData(mimg,0,0);
+  mctx.fillStyle='#E8CFC0'; for(let i=0;i<=C.stage&&i<STAGES.length;i++) mctx.fillRect(STAGES[i].x,GY-4,STAGES[i].pat[0].length/2,3);
+  mctx.fillStyle='#DCDFFF'; mctx.fillRect(LANDER_X,GY-4,3,3);
+  for(const c of crews){ if(c.px==null) continue; mctx.fillStyle='rgba(139,149,246,.9)'; mctx.fillRect(c.px-1,c.py-1,3,3); }
+  mctx.strokeStyle='rgba(185,192,255,.6)'; mctx.lineWidth=1; mctx.strokeRect(cam.x/T+.5,cam.y/T+.5,vw/T,vh/T);
+  mctx.fillStyle='#E8CFC0'; mctx.fillRect(S.px-2,S.py-2,5,5);
+}
+mini.onclick=()=>mini.classList.toggle('small');
+
+// ---------- the borer's gauges ----------
+const gEls={bat:$('#gBat'),batV:$('#gBatV'),rpm:$('#gRpm'),rpmV:$('#gRpmV'),tmp:$('#gTmp'),tmpV:$('#gTmpV'),out:$('#gOut'),st:$('#gState')};
+function outsideTemp(){ const rm=roomAt(S.px,S.py); if(rm) return rm.heat?18:-22; return Math.round(-63+depthOf(S.py)*.22); }
+function updateGauges(){
+  const bf=S.bat/batCap();
+  gEls.bat.style.width=`${bf*100}%`; gEls.bat.style.background=bf>.3?'#9CCB98':bf>.1?'#E2C27A':'#C97B6E';
+  gEls.batV.textContent=`${Math.round(bf*100)}%`;
+  gEls.rpm.style.width=`${Math.min(100,P.rpm/14.5)}%`; gEls.rpmV.textContent=`${Math.round(P.rpm/10)*10} rpm`;
+  gEls.tmp.style.width=`${clamp(P.temp,0,110)/1.1}%`; gEls.tmp.style.background=P.temp>=85?'#C97B6E':P.temp>=60?'#E2C27A':'#8B95F6';
+  gEls.tmpV.textContent=`${Math.round(P.temp)}°C`;
+  const ot=outsideTemp(); gEls.out.textContent=`Outside ${ot<0?'−':''}${Math.abs(ot)}°C · ${S.py>=GY?depthOf(S.py)*2+' m':'surface'}`;
+  gEls.st.innerHTML = P.charging ? `<em>Charging · ${P.charging}</em>` : P.over ? '<em>Overheated</em>' : S.bat<=0 ? '<em>Empty · crawl</em>' : P.drill ? 'Drilling' : P.move ? 'Moving' : 'Idle';
 }
 
 // ---------- intro scenes ----------
@@ -850,19 +1132,25 @@ function drawStars(time,speedX,speedY){
   ctx.fillStyle='#07081a'; ctx.fillRect(0,0,vw,vh);
   for(const s of stars){ const x=((s.x*vw - time*speedX*s.z)%vw+vw)%vw, y=((s.y*vh + time*speedY*s.z)%vh+vh)%vh; ctx.fillStyle=`rgba(220,223,255,${.2+s.z*.6})`; ctx.fillRect(x,y,s.z*1.8,s.z*1.8); if(speedX>60) ctx.fillRect(x,y,s.z*speedX*.08,1); }
 }
-function drawRocket(x,y,s,flame){
+function drawRocket(x,y,s,flame,glow){
   ctx.save(); ctx.translate(x,y);
+  if(glow){ const g=ctx.createRadialGradient(0,-14*s,2*s,0,-6*s,26*s); g.addColorStop(0,`rgba(255,190,120,${.75*glow})`); g.addColorStop(1,'rgba(255,120,60,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.ellipse(0,-12*s,14*s,24*s,0,0,7); ctx.fill(); }
   if(flame){ ctx.fillStyle=`rgba(232,207,192,${.6+Math.random()*.4})`; ctx.beginPath(); ctx.moveTo(-5*s,14*s); ctx.lineTo(0,(26+Math.random()*10)*s); ctx.lineTo(5*s,14*s); ctx.fill(); ctx.fillStyle='rgba(255,170,120,.8)'; ctx.beginPath(); ctx.moveTo(-3*s,14*s); ctx.lineTo(0,(20+Math.random()*6)*s); ctx.lineTo(3*s,14*s); ctx.fill(); }
   ctx.fillStyle='#cfd3f5'; ctx.beginPath(); ctx.moveTo(0,-18*s); ctx.quadraticCurveTo(7*s,-8*s,6*s,14*s); ctx.lineTo(-6*s,14*s); ctx.quadraticCurveTo(-7*s,-8*s,0,-18*s); ctx.fill();
   ctx.fillStyle='#8B95F6'; ctx.beginPath(); ctx.moveTo(-6*s,6*s); ctx.lineTo(-11*s,15*s); ctx.lineTo(-6*s,13*s); ctx.fill(); ctx.beginPath(); ctx.moveTo(6*s,6*s); ctx.lineTo(11*s,15*s); ctx.lineTo(6*s,13*s); ctx.fill();
   ctx.fillStyle='#14163A'; ctx.beginPath(); ctx.arc(0,-5*s,2.6*s,0,7); ctx.fill();
   ctx.restore();
 }
-function drawMars(cx,cy,R,time){
+function drawMars(cx,cy,R,time,spin=.03,cap=true){
   ctx.fillStyle='#8a3f2b'; ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.fill();
-  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.clip(); ctx.fillStyle='#6c3326'; for(let i=0;i<9;i++){ const a=(i*1.7+time*.03)%6.28; ctx.beginPath(); ctx.ellipse(cx+Math.cos(a)*R*.7,cy+Math.sin(i*2.3)*R*.6,R*.18,R*.08,i,0,7); ctx.fill(); } const sh=ctx.createRadialGradient(cx-R*.4,cy-R*.4,R*.2,cx,cy,R*1.1); sh.addColorStop(0,'rgba(0,0,0,0)'); sh.addColorStop(1,'rgba(5,4,14,.85)'); ctx.fillStyle=sh; ctx.fillRect(cx-R,cy-R,R*2,R*2); ctx.restore();
+  ctx.save(); ctx.beginPath(); ctx.arc(cx,cy,R,0,7); ctx.clip();
+  ctx.fillStyle='#6c3326'; for(let i=0;i<11;i++){ const a=(i*1.7+time*spin)%6.28; ctx.beginPath(); ctx.ellipse(cx+Math.cos(a)*R*.7,cy+Math.sin(i*2.3)*R*.6,R*.18,R*.08,i,0,7); ctx.fill(); }
+  if(cap){ ctx.fillStyle='rgba(235,235,245,.55)'; ctx.beginPath(); ctx.ellipse(cx,cy-R*.96,R*.35,R*.08,0,0,7); ctx.fill(); }
+  const sh=ctx.createRadialGradient(cx-R*.4,cy-R*.4,R*.2,cx,cy,R*1.1); sh.addColorStop(0,'rgba(0,0,0,0)'); sh.addColorStop(1,'rgba(5,4,14,.85)'); ctx.fillStyle=sh; ctx.fillRect(cx-R,cy-R,R*2,R*2); ctx.restore();
+  ctx.strokeStyle='rgba(232,170,140,.25)'; ctx.lineWidth=Math.max(2,R*.03); ctx.beginPath(); ctx.arc(cx,cy,R*1.01,0,7); ctx.stroke();
 }
-let touched=false;
+let touched=false, arrivalStage=0;
+function sceneLabel(a,b){ intro.innerHTML=`<div class="scene-label"><span class="eyebrow mono">${a}</span>${b?`<span class="sub">${b}</span>`:''}</div>`; }
 function drawIntro(time,dt){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   if(phase==='wait'||phase==='title'||phase==='offline'){ drawStars(time,6,0); drawMars(vw*.78,vh*.62,Math.min(vw,vh)*.32,time); }
@@ -879,7 +1167,42 @@ function drawIntro(time,dt){
     drawStars(time,90,0);
     drawMars(vw*.86,vh*.5,24+Math.min(phaseT,60)*1.2,time);
     ctx.save(); ctx.translate(vw*.12,vh*.5+Math.sin(time)*4); ctx.rotate(Math.PI/2); drawRocket(0,0,1.1,Math.random()<.5); ctx.restore();
-    const day=Math.min(210,1+Math.floor(phaseT*5)); const el=$('#day'); if(el&&el.textContent!==String(day)) el.textContent=day;
+    const day=Math.min(180,1+Math.floor(phaseT*4)); const el=$('#day'); if(el&&el.textContent!==String(day)) el.textContent=day;
+  } else if(phase==='arrival'){
+    // finish the voyage: approach, orbit, descent
+    const cxM=vw*.55, cyM=vh*.52, Rf=Math.min(vw,vh)*.3;
+    if(phaseT<3){
+      const k=phaseT/3, e=k*k*(3-2*k);
+      drawStars(time,90*(1-e)+8,0);
+      const R=(24+Math.min(60,1)*0)+(Rf-24)*e+Math.max(0,60-60*e)*0; const mx=vw*.86+(cxM-vw*.86)*e, my=vh*.5+(cyM-vh*.5)*e;
+      drawMars(mx,my,Math.max(40,R),time);
+      ctx.save(); ctx.translate(vw*.12+(vw*.3)*e,vh*.5+Math.sin(time)*4); ctx.rotate(Math.PI/2); drawRocket(0,0,1.1,true); ctx.restore();
+      const day=Math.min(210,180+Math.floor(phaseT*10)); if(arrivalStage<1){ arrivalStage=1; sceneLabel('Approaching Mars','Day 180 of 210 · braking'); }
+      const el=$('#arrDay'); if(el) el.textContent=day;
+    } else if(phaseT<7){
+      if(arrivalStage<2){ arrivalStage=2; sceneLabel('Mars orbit','Insertion burn complete · one pass over the landing site'); burnSound(); }
+      drawStars(time,4,0);
+      const a=-Math.PI*.95+(phaseT-3)/4*Math.PI*2.05, ox=cxM+Math.cos(a)*Rf*1.42, oy=cyM+Math.sin(a)*Rf*.42, behind=Math.sin(a)<-.05;
+      ctx.strokeStyle='rgba(185,192,255,.18)'; ctx.lineWidth=1; ctx.setLineDash([4,6]); ctx.beginPath(); ctx.ellipse(cxM,cyM,Rf*1.42,Rf*.42,0,0,7); ctx.stroke(); ctx.setLineDash([]);
+      const ship=()=>{ ctx.save(); ctx.translate(ox,oy); ctx.rotate(a+Math.PI); drawRocket(0,0,.75,phaseT<3.6); ctx.restore(); };
+      if(behind) ship();
+      drawMars(cxM,cyM,Rf,time,.12);
+      if(!behind) ship();
+      if(phaseT>5.6){ ctx.fillStyle=`rgba(232,207,192,${.5+Math.sin(time*6)*.4})`; ctx.beginPath(); ctx.arc(cxM+Rf*.18,cyM-Rf*.1,3,0,7); ctx.fill(); ctx.font="11px 'JetBrains Mono', monospace"; ctx.fillText('LANDING SITE ALPHA',cxM+Rf*.18+8,cyM-Rf*.1+4); }
+    } else {
+      if(arrivalStage<3){ arrivalStage=3; sceneLabel('Entry, descent and landing','Heat shield · 1,600°C'); entrySound(); }
+      const k=Math.min(1,(phaseT-7)/2.6), e=k*k;
+      ctx.fillStyle='#07081a'; ctx.fillRect(0,0,vw,vh);
+      drawStars(time,0,20+e*200);
+      const R=Rf*(1+e*9), cy=cyM+Rf*.2+R*.86;
+      drawMars(vw*.5,cy,R,time,0,false);
+      const g=ctx.createLinearGradient(0,0,0,vh); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(120,50,40,${e*.8})`); ctx.fillStyle=g; ctx.fillRect(0,0,vw,vh);
+      const shake=(Math.random()-.5)*4*k;
+      drawRocket(vw*.5+shake,vh*.32+e*vh*.12,1.4,false,.4+k*.6);
+      if(Math.random()<.8) parts.push({x:vw*.5+(Math.random()-.5)*30,y:vh*.32+e*vh*.12-30,vx:(Math.random()-.5)*60,vy:-120-Math.random()*120,life:.5,c:Math.random()<.5?'#ffcf9a':'#ff8a55'});
+      for(let i=parts.length-1;i>=0;i--){ const q=parts[i]; q.life-=dt; if(q.life<=0){parts.splice(i,1);continue;} q.x+=q.vx*dt; q.y+=q.vy*dt; ctx.fillStyle=q.c; ctx.fillRect(q.x,q.y,3,3); }
+      if(phaseT>9.8) setPhase('landing');
+    }
   } else if(phase==='landing'){
     const k=Math.min(1,phaseT/4), e=1-(1-k)*(1-k);
     const g=ctx.createLinearGradient(0,0,0,vh); g.addColorStop(0,'#0b0c22'); g.addColorStop(.7,'#3a1d2a'); g.addColorStop(1,'#7a3a2e'); ctx.fillStyle=g; ctx.fillRect(0,0,vw,vh);
@@ -902,10 +1225,11 @@ const intro=$('#intro');
 function setPhase(p){
   phase=p; phaseT=0; parts.length=0;
   if(p==='title') showTitle();
-  else if(p==='launch'){ intro.hidden=false; intro.innerHTML=`<div style="position:absolute;left:16px;top:16px" class="eyebrow mono">SpaceCore · Mission One · Liftoff</div>`; launchSound(); }
+  else if(p==='launch'){ intro.hidden=false; sceneLabel('SpaceCore · Mission One · Liftoff',''); launchSound(); }
   else if(p==='transit') showCreation();
-  else if(p==='landing'){ touched=false; intro.innerHTML=`<div style="position:absolute;left:16px;top:16px" class="eyebrow mono">Descent · Landing Site Alpha</div>`; landingSound(); }
-  else if(p==='play'){ intro.hidden=true; intro.innerHTML=''; $('#tools').hidden=false; $('#dpad').hidden=false; $('#lyra').hidden=false; renderPalette(); $('#lyraMission').textContent=missionLine(); post({type:'play'}); }
+  else if(p==='arrival'){ arrivalStage=0; intro.hidden=false; intro.innerHTML=''; }
+  else if(p==='landing'){ touched=false; sceneLabel('Touchdown · Landing Site Alpha',''); landingSound(); }
+  else if(p==='play'){ intro.hidden=true; intro.innerHTML=''; ['#tools','#dpad','#lyra','#gauges','#mini'].forEach(s=>$(s).hidden=false); renderPalette(true); $('#lyraMission').textContent=missionLine(); post({type:'play'}); }
 }
 function showWait(text){ intro.hidden=false; intro.innerHTML=`<div class="card"><p class="eyebrow mono">SpaceCore</p><p>${text}</p></div>`; }
 function showTitle(){
@@ -914,8 +1238,8 @@ function showTitle(){
   intro.innerHTML=`<div class="card">
     <p class="eyebrow mono">13i.space · Create · Build a Universe</p>
     <h1>SpaceCore</h1>
-    <p>Xavier's mining company is sending its first crews to Mars, and every Kin is one of them. Dig into the planet and build your own rooms underground. Then send what you mine up to the colony, where the robots build the Great Works. When all of you finish the Launch Facility, the solar system opens.</p>
-    <p class="small">${n?`${n} ${n===1?'Kin is':'Kin are'} already on Mars.`:'Nobody has landed yet. You could be the first crew.'}</p>
+    <p>SpaceCore, Xavier's space company, is sending its first mining crews to Mars, and every Kin is one of them. Dig into the planet, explore its caves and lava tubes, and build your own rooms underground. Then send what you mine up to the colony, where the robots build the Great Works. When all of you finish the Launch Facility, the solar system opens.</p>
+    <p class="small">${n?`${n} other ${n===1?'Kin is':'Kin are'} already on Mars.`:'Nobody has landed yet. You could be the first crew.'}</p>
     <div class="row">${S.introDone?`<button class="btn primary" type="button" id="bCont">Continue mission</button>`:`<button class="btn primary" type="button" id="bLaunch">Begin launch</button>`}</div>
     <p class="fine">Alpha · one shared world · Mars time runs ${TIME_SCALE}× faster than real time</p>
   </div>`;
@@ -938,7 +1262,7 @@ function showCreation(){
     const b=$('#lockBtn'), m=$('#lockMsg');
     if(cLeft()>0){ m.textContent=`You still have ${cLeft()} points to spend.`; return; }
     if(!b.dataset.c){ b.dataset.c='1'; b.textContent='Points are permanent. Confirm'; m.textContent=''; return; }
-    S.attrs={...cpts}; chime([392,523,659]); setPhase('landing');
+    S.attrs={...cpts}; S.bat=batCap(); chime([392,523,659]); setPhase('arrival');
   };
 }
 function pipsHTML(v,pend=0,max=6){ let s=''; for(let i=1;i<=Math.max(max,v+pend);i++) s+=`<i class="${i<=v?'f':i<=v+pend?'p':''}"></i>`; return `<span class="pips">${s}</span>`; }
@@ -952,13 +1276,13 @@ function showLandingMsg(){
   const div=document.createElement('div'); div.className='card'; div.id='landMsg';
   div.innerHTML=`<p class="eyebrow mono">Mars · Landing Site Alpha</p>
     <h2>${started?'Welcome to the colony':'You are the first crew'}</h2>
-    <p>${started?`${crews.length?`${crews.length} ${crews.length===1?'Kin has':'Kin have'} landed before you, and t`:'T'}he colony is already taking shape. Find your own patch of ground, dig down, and add to what's here.`:'Nothing has been built here yet. Whatever stands on this ground later, you were here first.'} SpaceCore dropped a supply crate for you: 10 Iron, 6 Silicon and 3 Ice.</p>
+    <p>${started?`${crews.length?`${crews.length} ${crews.length===1?'Kin has':'Kin have'} landed before you, and t`:'T'}he colony is already taking shape. Mars is big: find your own patch of ground, or head out to the caves and lava tubes for some distance.`:'Nothing has been built here yet. Whatever stands on this ground later, you were here first.'} SpaceCore packed your kit: 10 Iron, 6 Silicon, 3 Ice, an O₂ pump and a lamp.</p>
     <p class="fine">Move and drill with the arrow keys or WASD (or the on-screen pad). Lyra is on your comms.</p>
     <div class="row"><button class="btn primary" type="button" id="bBegin">Climb into the borer</button></div>`;
   intro.appendChild(div);
   $('#bBegin').onclick=()=>{
-    S.introDone=true; S.px=SPAWN_X; S.py=GY-1; P.rx=S.px; P.ry=S.py; S.cSnap={...C.mined}; S.lastReal=Date.now();
-    save(true); setPhase('play'); reveal();
+    S.introDone=true; S.px=SPAWN_X; S.py=GY-1; P.rx=S.px; P.ry=S.py; S.cSnap={...C.mined}; S.lastReal=Date.now(); S.bat=batCap();
+    setPhase('play'); save(true); reveal();
     lyra(`${ME.username}, this is Lyra. I'm on your comms for the whole mission. I'll walk you through the first few jobs.`,{prio:6});
     briefMission();
   };
@@ -966,14 +1290,22 @@ function showLandingMsg(){
 function resume(){
   const awayReal=Math.max(0,Date.now()-S.lastReal);
   const awayMars=Math.min(14*24*60, awayReal/60000*TIME_SCALE);
-  const fillBefore=S.rigs.map(rigFill);
+  S.readyWhileAway=[];
   advance(awayMars,false);
-  P.rx=S.px; P.ry=S.py; cam.x=S.px*T; cam.y=S.py*T;
+  // the borer recharged if it was parked at a charger, the lander, or in the sun
+  const before=S.bat;
+  if(nearCharger()) S.bat=batCap(); else if(atLander()) S.bat=Math.min(batCap(),S.bat+awayReal/1000*2.5); else if(S.py===GY-1) S.bat=Math.min(batCap(),S.bat+awayReal/1000*.25);
+  P.rx=S.px; P.ry=S.py; cam.x=S.px*T-vw/2; cam.y=S.py*T-vh/2;
   setPhase('play'); reveal();
+  if(relocated){
+    lyra("While you were away, SpaceCore moved the landing site to a far bigger stretch of Mars: four times wider and twice as deep, with natural caves and lava tubes to explore. Your old tunnels stayed behind, but you kept your level, skills and resources. The crew also sent a relocation kit: an O₂ pump, a greenhouse, an auto-drill and two lamps.",{prio:7,hold:true});
+  }
   const fill=S.rigs.length?Math.round(S.rigs.reduce((a,r)=>a+rigFill(r),0)/S.rigs.length*100):null;
   const active=crews.filter(c=>new Date(c.updated_at).getTime()>S.lastReal).map(c=>c.username);
   const bits=[`Welcome back, ${ME.username}. You were away ${fmtReal(awayReal)}, about ${fmtH(awayMars)} on Mars.`];
+  if(S.bat>before+1) bits.push(`Your borer charged to ${Math.round(S.bat/batCap()*100)}%.`);
   if(fill!==null) bits.push(`Your auto-drills are ${fill}% full.`);
+  if(S.readyWhileAway.length) bits.push(`The Fabricator finished: ${S.readyWhileAway.join(', ')}.`);
   if(active.length) bits.push(`${active.slice(0,3).join(', ')}${active.length>3?` and ${active.length-3} more`:''} ${active.length===1?'was':'were'} down here while you were gone.`);
   const st=stage(); if(st) bits.push(`The ${st.n} is ${Math.floor(stageProgress()*100)}% built.`);
   lyra(bits.join(' '),{prio:6});
@@ -986,28 +1318,57 @@ function bump(r){ const el=document.querySelector(`.chip[data-r="${r}"]`); if(el
 function renderRes(){ $('#res').innerHTML=RES.map(r=>`<span class="chip" data-r="${r}" title="${RNAME[r]}"><i style="background:${RCOL[r]}"></i>${RNAME[r]} <b id="rv-${r}">0</b></span>`).join(''); }
 renderRes();
 function updateRes(){ for(const r of RES){ const el=$('#rv-'+r); if(el){ const v=String(Math.floor(S.res[r])); if(el.textContent!==v) el.textContent=v; } } }
+function swatch(it){
+  const c=document.createElement('canvas'); c.width=44; c.height=44; const x=c.getContext('2d');
+  x.fillStyle='#170d12'; x.fillRect(0,0,44,44);
+  if(it.id==='remove'){ x.strokeStyle='#C97B6E'; x.lineWidth=3; x.beginPath(); x.moveTo(12,12); x.lineTo(32,32); x.moveTo(32,12); x.lineTo(12,32); x.stroke(); }
+  else if(it.id==='fill'){ x.fillStyle='#7a4434'; x.fillRect(0,0,44,44); x.fillStyle='#8c5240'; for(let k=0;k<6;k++) x.fillRect((k*13)%38,(k*17)%38,8,6); }
+  else if(isEquip(it.tile)) drawEquip(x,it.tile,0,0,44,0,true,null);
+  else drawMaterial(x,it.tile,0,0,44,12345);
+  return c;
+}
 let palSig='';
 function renderPalette(force){
-  const sig=sel+'|'+BUILD.map(b=>canPay(costOf(b))?1:0).join('')+'|'+S.attrs.fab;
+  const list=group==='blocks'?BLOCKS:EQUIPS;
+  const sig=group+'|'+sel+'|'+list.map(b=>isEquip(b.tile)?(S.inv[b.id]||0):canPay(costOf(b))?1:0).join(',')+'|'+S.attrs.fab;
   if(!force&&sig===palSig) return; palSig=sig;
-  const pal=$('#palette');
-  pal.innerHTML=BUILD.map((b,i)=>{ const c=costOf(b); const cs=Object.entries(c).map(([r,v])=>`${v} ${RNAME[r].split(' ')[0]}`).join(' · ')||'refund 50%'; return `<button type="button" class="pitem ${sel===b.id?'sel':''} ${canPay(c)?'':'poor'}" data-b="${b.id}" title="${esc(b.d)}"><b>${i+1}. ${b.n}</b><small>${cs}</small></button>`; }).join('');
-  pal.querySelectorAll('.pitem').forEach(el=>el.onclick=()=>selectBuild(el.dataset.b));
+  const pal=$('#palette'); pal.innerHTML='';
+  list.forEach((b,i)=>{
+    const btn=document.createElement('button'); btn.type='button';
+    const eq=isEquip(b.tile), have=S.inv[b.id]||0;
+    const key=group==='blocks'&&i<10?`${(i+1)%10}. `:'';
+    btn.className=`pitem ${sel===b.id?'sel':''} ${!eq&&!canPay(costOf(b))?'poor':''} ${eq&&!have?'none':''}`;
+    btn.title=b.d;
+    btn.appendChild(swatch(b));
+    const span=document.createElement('span');
+    span.innerHTML=`<b>${key}${b.n}</b><small>${eq?(have?`${have} in kit`:'craft in Fabricator'):(costText(costOf(b))||(b.id==='fill'?'free':'refund'))}</small>`;
+    btn.appendChild(span);
+    btn.onclick=()=>selectBuild(b.id);
+    pal.appendChild(btn);
+  });
 }
-function selectBuild(id){ sel=id; setMode('build'); renderPalette(true); const b=BUILD.find(z=>z.id===id); if(id==='rig') lyra('Auto-drill selected. Tap an open tunnel spot you dug that touches rock. Green outline means it fits.',{prio:2,key:'rigsel',cool:120}); else toast(`${b.n}: ${b.d}`); }
-function setMode(m){ mode=m; $('#mDig').classList.toggle('on',m==='dig'); $('#mBuild').classList.toggle('on',m==='build'); $('#palette').hidden=m!=='build'; if(m==='build') renderPalette(true); }
+function setGroup(g){ group=g; $('#gBlocks').classList.toggle('on',g==='blocks'); $('#gEquip').classList.toggle('on',g==='equip'); const list=g==='blocks'?BLOCKS:EQUIPS; if(!list.some(b=>b.id===sel)) sel=list[g==='blocks'?1:0].id; renderPalette(true); }
+function selectBuild(id){
+  sel=id; const b=itemById(id); group=BLOCKS.includes(b)?'blocks':'equip'; setMode('build'); setGroup(group);
+  if(isEquip(b.tile)&&!(S.inv[id]>0)){ toast(`No ${b.n} in your kit yet. Craft one in the Fabricator.`); openDash('fab'); return; }
+  if(id==='rig') lyra('Auto-drill selected. Tap an open tunnel spot that touches rock. Green outline means it fits.',{prio:2,key:'rigsel',cool:120});
+  else toast(`${b.n}: ${b.d}`);
+}
+function setMode(m){ mode=m; $('#mDig').classList.toggle('on',m==='dig'); $('#mBuild').classList.toggle('on',m==='build'); $('#palette').hidden=m!=='build'; $('#groups').hidden=m!=='build'; if(m==='build') renderPalette(true); }
 $('#mDig').onclick=()=>setMode('dig'); $('#mBuild').onclick=()=>setMode('build');
+$('#gBlocks').onclick=()=>setGroup('blocks'); $('#gEquip').onclick=()=>setGroup('equip');
 function updateStatus(){
-  const depth=S.py>=GY?`${(S.py-GY+1)*2} m down`:'On the surface';
-  const pr=press[idx(S.px,S.py)]?'<span><em>Pressurized</em></span>':'';
+  const rm=roomAt(S.px,S.py);
+  const room=rm?`<span><em>${rm.habitable?'Habitable room':'Pressurized'}${rm.heat?' · warm':''}${rm.scrub?' · clean air':''}${rm.sensor?(rm.shielded?' · radiation low':' · radiation high'):''}</em></span>`:'';
   const sc=scarce(); const st=stage();
   const fill=S.rigs.length?Math.round(S.rigs.reduce((a,r)=>a+rigFill(r),0)/S.rigs.length*100):null;
-  const html=`<span>${depth}</span>${pr}${st?`<span>${st.n}: ${Math.floor(stageProgress()*100)}%</span>`:'<span><em>Season 2 unlocked</em></span>'}${sc?`<span>Colony needs ${RNAME[sc]}: +25%</span>`:''}${boostPct()?`<span><em>Boosts +${Math.round(boostPct()*100)}%</em></span>`:''}${fill!==null?`<span>Auto-drills ${fill}% <button type="button" class="btn sm" id="bCollect">Collect (C)</button></span>`:''}${connected?'':'<span style="color:var(--rust)">Offline</span>'}`;
+  const cr=S.craft[0]?`<span>Fabricator: ${itemById(S.craft[0].id).n} ${fmtH(S.craft[0].left)}</span>`:'';
+  const html=`${room}${st?`<span>${st.n}: ${Math.floor(stageProgress()*100)}%</span>`:'<span><em>Season 2 unlocked</em></span>'}${sc?`<span>Colony needs ${RNAME[sc]}: +25%</span>`:''}${boostPct()?`<span><em>Boosts +${Math.round(boostPct()*100)}%</em></span>`:''}${cr}${fill!==null?`<span>Auto-drills ${fill}% <button type="button" class="btn sm" id="bCollect">Collect (C)</button></span>`:''}${connected?'':'<span style="color:var(--rust)">Offline</span>'}`;
   const s=$('#status'); if(s._h!==html){ s._h=html; s.innerHTML=html; const b=$('#bCollect'); if(b) b.onclick=collectRigs; }
 }
 
 // ---------- dashboard ----------
-const dash=$('#dash'); let pend={}, dashBusy=false;
+const dash=$('#dash'); let pend={}, dashBusy=false, dashFocus=null;
 const pendTotal=()=>sum(pend);
 const BOOST_WAYS=[
   ['Explore','Read a story','+8% for a day','/assignments'],
@@ -1019,12 +1380,18 @@ const BOOST_WAYS=[
 function renderDash(){
   if(dash.hidden) return;
   const st=stage(), tr=ATTRS.find(a=>a.k===S.training.attr), xpNeed=30+S.level*20;
-  const rigs=S.rigs.map((rg,i)=>{ const rt=rigRates(rg); const ks=Object.keys(rt).sort((a,b)=>rt[b]-rt[a]); const f=rigFill(rg); return `<div><div class="kv"><span class="lbl">Drill ${i+1} · ${(rg.y-GY+1)*2} m</span><span>${ks.length?ks.map(k=>`${RNAME[k]} ${rt[k].toFixed(1)}/h`).join(', '):'No rock nearby'}</span><span>${Math.round(f*100)}%</span></div><div class="meter ${f>=.99?'warm':''}"><i style="width:${f*100}%"></i></div></div>`; }).join('');
+  const rigs=S.rigs.map((rg,i)=>{ const rt=rigRates(rg); const ks=Object.keys(rt).sort((a,b)=>rt[b]-rt[a]); const f=rigFill(rg); return `<div><div class="kv"><span class="lbl">Drill ${i+1} · ${depthOf(rg.y)*2} m</span><span>${ks.length?ks.map(k=>`${RNAME[k]} ${rt[k].toFixed(1)}/h`).join(', '):'No rock nearby'}</span><span>${Math.round(f*100)}%</span></div><div class="meter ${f>=.99?'warm':''}"><i style="width:${f*100}%"></i></div></div>`; }).join('');
   const boosts=allBoosts();
   const activeCrews=crews.filter(c=>Date.now()-new Date(c.updated_at)<15*60000);
+  const queue=S.craft.map((c,i)=>{ const e=itemById(c.id); return `<div><div class="kv"><span class="lbl">${i===0?'Building':'Queued'}</span><span>${e.n}</span><span>${i===0?fmtH(c.left)+' left':fmtH(c.left)}</span></div>${i===0?`<div class="meter warm"><i style="width:${(1-c.left/c.total)*100}%"></i></div>`:''}</div>`; }).join('');
   dash.innerHTML=`
   <div class="dhead"><div><p class="eyebrow mono">SpaceCore crew · Level ${S.level}</p><h2>${esc(ME.username)}</h2></div><button class="btn" type="button" data-act="close">Close</button></div>
   <section><div class="kv"><span class="lbl">Experience</span><span></span><span>${S.xp} / ${xpNeed}</span></div><div class="meter"><i style="width:${S.xp/xpNeed*100}%"></i></div></section>
+  <section id="d-fab"><h3>Fabricator</h3>
+    <p class="small">Equipment is crafted here, then placed from Build › Equipment. It keeps working while you're away${S.attrs.fab>1?`, and Fabrication makes it ${Math.round((1-Math.max(.4,1-.08*(S.attrs.fab-1)))*100)}% faster`:''}. Up to 4 in the queue.</p>
+    ${queue||'<p class="small">Nothing in the queue.</p>'}
+    ${EQUIPS.map(e=>{ const c=costOf(e), ok=canPay(c); return `<div class="fab"><b>${e.n}</b><span class="act">${S.inv[e.id]?`<span class="have">${S.inv[e.id]} in kit</span>`:''}<button type="button" class="btn sm" data-act="craft" data-id="${e.id}" ${ok&&S.craft.length<4?'':'disabled'}>Craft</button></span><small>${costText(c)} · ${fmtH(craftMinutes(e))} · ${esc(e.d)}</small></div>`; }).join('')}
+  </section>
   <section><h3>Crew card</h3>
     <p class="small">${S.unspent?`You have <b style="color:var(--warm)">${S.unspent-pendTotal()}</b> ${S.unspent-pendTotal()===1?'point':'points'} to spend. Once you lock them in, they're permanent.`:'You earn one point each level. Training adds points over time too.'}</p>
     <div class="attrs">${ATTRS.map(a=>`<div class="acard"><div class="an">${a.n}</div><div class="ae">${a.e}</div>${pipsHTML(S.attrs[a.k],pend[a.k]||0)}<div class="pm"><span>${S.attrs[a.k]}${pend[a.k]?` +${pend[a.k]}`:''}</span>${S.unspent>pendTotal()?`<button type="button" data-act="pend" data-a="${a.k}" aria-label="Add a point to ${a.n}">+</button>`:''}</div></div>`).join('')}</div>
@@ -1034,14 +1401,18 @@ function renderDash(){
     <div class="mlist">${MISSIONS.map((m,i)=>`<div class="mitem ${i<S.mission?'done':i===S.mission?'cur':''}"><span class="ck">${i<S.mission?'✓':i===S.mission?'›':'·'}</span><span>${m.n}: ${m.d}${i===S.mission&&m.prog?` (${m.prog()})`:''}</span></div>`).join('')}</div>
     ${!MISSIONS[S.mission]&&S.daily?`<p class="small">Today's colony call: send ${S.daily.target} ${RNAME[S.daily.res]} (${Math.min(S.daily.given,S.daily.target)}/${S.daily.target})${S.daily.done?' · done':''}</p>`:''}
   </section>
+  <section><h3>Borer</h3>
+    <div class="kv"><span class="lbl">Battery</span><span>${Math.round(S.bat)} / ${batCap()} kWh</span><span>${Math.round(S.bat/batCap()*100)}%</span></div><div class="meter"><i style="width:${S.bat/batCap()*100}%;background:${S.bat/batCap()>.3?'#9CCB98':'#C97B6E'}"></i></div>
+    <p class="small">Drilling drains the battery, more so deep down. It charges fast at a powered Charger (full while you're away if you park beside one), steadily at the lander, and slowly anywhere on the surface. Empty, it can crawl but not drill. Endurance makes it bigger. Chargers: ${my.chargers.length} (${my.powered.length} powered) · Reactors: ${my.reactors.length}.</p>
+  </section>
   <section><h3>Training</h3>
-    <p class="small">One skill trains at a time, even while you're away. Every 8 hours on Mars it gains a permanent point.</p>
+    <p class="small">One skill trains at a time, even while you're away. Every 8 hours on Mars it gains a permanent point. Parked in a habitable room, it trains 50% faster.</p>
     <div class="chips">${ATTRS.map(a=>`<button type="button" class="btn sm ${a.k===S.training.attr?'on':''}" data-act="train" data-a="${a.k}">${a.n}</button>`).join('')}</div>
     <div class="kv"><span class="lbl">${tr.n}</span><span></span><span>${fmtH(S.training.min)} of 8h</span></div><div class="meter warm"><i style="width:${S.training.min/480*100}%"></i></div>
   </section>
   <section><h3>Auto-drills</h3>
-    ${S.rigs.length?rigs:'<p class="small">No auto-drills yet. Press B, choose Auto-drill (7) and tap a tunnel spot you dug that touches rock.</p>'}
-    <p class="small">Each holds ${rigCapHours()} Mars hours of mining (Endurance raises that). Mars time runs ${TIME_SCALE}× real time during Alpha.</p>
+    ${S.rigs.length?rigs:'<p class="small">No auto-drills yet. Craft one in the Fabricator, then place it touching rock.</p>'}
+    <p class="small">Each holds ${rigCapHours()} Mars hours of mining (Endurance raises that).</p>
     <div class="row"><button class="btn primary" type="button" data-act="collect" ${S.rigs.length?'':'disabled'}>Collect all</button>${ME.sentinel?'<button class="btn" type="button" data-act="overnight">Skip ahead 8 Mars hours (Sentinel)</button>':''}</div>
   </section>
   <section><h3>Colony</h3>
@@ -1063,6 +1434,7 @@ function renderDash(){
     <span class="lbl">Deepest</span><span></span><span>${S.maxDepth*2} m</span></div>
     <p class="fine">10% of everything each Kin mines reaches every other Kin as the Commons dividend. It never comes out of anyone's share.</p>
   </section>`;
+  if(dashFocus){ const el=$('#d-'+dashFocus); if(el) el.scrollIntoView({block:'start'}); dashFocus=null; }
 }
 dash.addEventListener('pointerdown',()=>{dashBusy=true;});
 dash.addEventListener('click',e=>{
@@ -1077,8 +1449,10 @@ dash.addEventListener('click',e=>{
   if(a==='collect') collectRigs();
   if(a==='overnight'){ advance(480,true); toast('Skipped ahead 8 hours on Mars.'); }
   if(a==='give') contribute(b.dataset.r, !!b.dataset.half);
+  if(a==='craft') craft(b.dataset.id);
   renderDash();
 });
+function openDash(section){ if(phase!=='play') return; dash.hidden=false; dashFocus=section||null; renderDash(); }
 function toggleDash(){ if(phase!=='play') return; dash.hidden=!dash.hidden; renderDash(); }
 $('#btnDash').onclick=toggleDash;
 $('#btnSound').onclick=()=>{ soundOn=!soundOn; $('#btnSound').textContent=soundOn?'Sound on':'Sound off'; if(soundOn) ac(); };
@@ -1102,12 +1476,16 @@ addEventListener('keydown',e=>{
   if(phase!=='play') return;
   const d=KMAP[e.code]; if(d){ setHeld(d,true); e.preventDefault(); return; }
   if(e.code==='KeyB') setMode(mode==='dig'?'build':'dig');
+  else if(e.code==='KeyE'){ setMode('build'); setGroup(group==='blocks'?'equip':'blocks'); }
+  else if(e.code==='KeyX') selectBuild('fill');
+  else if(e.code==='KeyR') selectBuild('remove');
   else if(e.code==='KeyC'&&S.rigs.length) collectRigs();
   else if(e.code==='KeyQ') scan();
   else if(e.code==='KeyF') toggleFull();
+  else if(e.code==='KeyM') mini.classList.toggle('small');
   else if(e.code==='Tab'){ e.preventDefault(); toggleDash(); }
   else if(e.code==='Escape'){ dash.hidden=true; setMode('dig'); }
-  else { const n=parseInt(e.key,10); if(n>=1&&n<=BUILD.length) selectBuild(BUILD[n-1].id); }
+  else if(/^Digit\d$/.test(e.code)){ const n=+e.code.slice(5); const i=n===0?9:n-1; if(BLOCKS[i]) selectBuild(BLOCKS[i].id); }
 });
 addEventListener('keyup',e=>{ const d=KMAP[e.code]; if(d) setHeld(d,false); });
 addEventListener('blur',()=>{ for(const k in held) held[k]=false; });
@@ -1122,19 +1500,22 @@ cv.addEventListener('pointerleave',()=>{ hover=null; });
 cv.addEventListener('pointerdown',e=>{ if(phase!=='play') return; ac(); const c=cellAt(e); hover=c; if(mode==='build') tryBuild(c.x,c.y); else if(tile(c.x,c.y)===RIG&&own[idx(c.x,c.y)]===1) collectRigs(); });
 
 // ---------- saving and syncing (through the 13i.space page around this one) ----------
+function seenEnc(){ const b=new Uint8Array(Math.ceil(seen.length/8)); for(let i=0;i<seen.length;i++) if(seen[i]) b[i>>3]|=1<<(i&7); let s=''; for(let i=0;i<b.length;i+=4096) s+=String.fromCharCode.apply(null,b.subarray(i,i+4096)); return btoa(s); }
+function seenDec(str){ try{ const s=atob(str); for(let i=0;i<s.length;i++){ const v=s.charCodeAt(i); if(!v) continue; for(let k=0;k<8;k++) if(v&(1<<k)){ const j=i*8+k; if(j<seen.length) seen[j]=1; } } }catch(e){} }
 function summary(){
   return {level:S.level, xp:S.xp, xpNeed:30+S.level*20, unspent:S.unspent, attrs:S.attrs,
-    rigs:S.rigs.map(rg=>{ const rt=rigRates(rg); return {fill:rigFill(rg), rate:sum(rt), cap:sum(rt)*rigCapHours(), depth:(rg.y-GY+1)*2}; }),
+    rigs:S.rigs.map(rg=>{ const rt=rigRates(rg); return {fill:rigFill(rg), rate:sum(rt), cap:sum(rt)*rigCapHours(), depth:depthOf(rg.y)*2}; }),
     training:{attr:S.training.attr, min:S.training.min}, mission:{i:S.mission, total:MISSIONS.length, name:MISSIONS[S.mission]?MISSIONS[S.mission].n:null},
-    given:S.given, mined:S.mined, maxDepth:S.maxDepth*2, rooms:countMine(O2,true), lastReal:Date.now(), timeScale:TIME_SCALE};
+    given:S.given, mined:S.mined, maxDepth:S.maxDepth*2, rooms:my.press, habitable:my.habitable,
+    battery:Math.round(S.bat/batCap()*100), atCharger:nearCharger(), craft:S.craft.map(c=>({n:itemById(c.id).n, left:c.left})),
+    kit:EQUIPS.filter(e=>S.inv[e.id]).map(e=>({n:e.n, count:S.inv[e.id]})), lastReal:Date.now(), timeScale:TIME_SCALE};
 }
 let lastSave=0;
 function save(now){
   if(!connected||!S.introDone||phase!=='play') return;
   if(!now&&Date.now()-lastSave<15000) return;
   lastSave=Date.now(); S.lastReal=Date.now();
-  let s=''; for(let i=0;i<seen.length;i++) s+=seen[i]?'1':'0';
-  S.seen=s; S.name=ME.username;
+  S.seen=seenEnc(); S.name=ME.username;
   post({type:'save', state:S, summary:summary(), px:S.px, py:S.py});
 }
 function flushTiles(){
@@ -1143,17 +1524,23 @@ function flushTiles(){
   for(const [x,y] of changes) pending.delete(idx(x,y));
   post({type:'tiles', changes});
 }
-function requestSync(){
-  if(!connected) return;
-  const mined=S.unsynced; S.unsynced={};
-  post({type:'sync', mined});
-}
+function requestSync(){ if(!connected) return; const mined=S.unsynced; S.unsynced={}; post({type:'sync', mined}); }
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){ hiddenAt=Date.now(); flushTiles(); save(true); }
-  else if(hiddenAt&&phase==='play'){ const real=Date.now()-hiddenAt; if(real>5000){ advance(real/60000*TIME_SCALE,true); toast(`${fmtH(real/60000*TIME_SCALE)} passed on Mars while you were away.`); requestSync(); } hiddenAt=0; }
+  else if(hiddenAt&&phase==='play'){ const real=Date.now()-hiddenAt; if(real>5000){ advance(real/60000*TIME_SCALE,true); if(nearCharger()) S.bat=batCap(); toast(`${fmtH(real/60000*TIME_SCALE)} passed on Mars while you were away.`); requestSync(); } hiddenAt=0; }
 });
 addEventListener('pagehide',()=>{ flushTiles(); save(true); });
 
+// older crews (v1/v2 world) move to the new, bigger site
+function migrate(st){
+  if(st.v===3) return st;
+  const s=Object.assign(fresh(),st);
+  s.v=3; s.rigs=[]; s.px=SPAWN_X; s.py=GY-1; s.seen=''; s.craft=[];
+  s.inv={o2:1, green:1, rig:1, lamp:2};
+  s.bat=100+15*((s.attrs&&s.attrs.end||1)-1);
+  relocated=true;
+  return s;
+}
 window.addEventListener('message',e=>{
   if(e.origin!==window.location.origin||e.source!==window.parent) return;
   const m=e.data||{}; if(m.source!=='13i-site') return;
@@ -1161,14 +1548,15 @@ window.addEventListener('message',e=>{
     ME={username:m.user.username, sentinel:!!m.user.sentinel};
     ownerNames=m.owners||[];
     applyTiles(m.tiles||[], false);
-    if(m.state&&m.state.v===2){ S=Object.assign(fresh(),m.state); const s=S.seen||''; for(let i=0;i<Math.min(s.length,seen.length);i++) seen[i]=s.charCodeAt(i)===49?1:0; }
-    S.name=ME.username; validateRigs(); recomputePressure();
+    if(m.state&&m.state.v>=2){ S=migrate(m.state); if(S.seen) seenDec(S.seen); }
+    S.name=ME.username; S.inv=S.inv||{}; S.craft=S.craft||[]; if(S.bat==null) S.bat=batCap();
+    recomputePressure(); validateRigs();
     if(m.colony) C={stage:m.colony.stage|0, have:m.colony.have||{}, mined:m.colony.mined||{}};
     setColony(m.colony);
     setCrews(m.crews); setLog(m.log); siteBoosts=m.boosts||[];
     P.rx=S.px; P.ry=S.py;
     connected=true;
-    if(siteBoosts.length&&S.introDone) setTimeout(()=>lyra(`Your activity on 13i.space is powering your drills: ${siteBoosts.map(b=>`${b.label} (+${Math.round(b.pct*100)}%)`).join(', ')}.`,{prio:2}),9000);
+    if(siteBoosts.length&&S.introDone) setTimeout(()=>lyra(`Your activity on 13i.space is powering your drills: ${siteBoosts.map(b=>`${b.label} (+${Math.round(b.pct*100)}%)`).join(', ')}.`,{prio:2}),12000);
     setPhase('title');
   } else if(m.type==='world'){
     ownerNames=m.owners||ownerNames;
@@ -1183,7 +1571,7 @@ window.addEventListener('message',e=>{
 });
 
 // ---------- loop ----------
-let lastT=performance.now(), time=0, saveAcc=0, slowAcc=0, tileAcc=0, syncAcc=0, giftAcc=0, hiddenAt=0;
+let lastT=performance.now(), time=0, saveAcc=0, slowAcc=0, tileAcc=0, syncAcc=0, giftAcc=0, miniAcc=0, gaugeAcc=0, hiddenAt=0;
 function lyraGift(){
   if(S.gifts.day!==today()) S.gifts={day:today(),n:0};
   if(S.gifts.n>=3||Math.random()>.35) return;
@@ -1192,17 +1580,18 @@ function lyraGift(){
   S.boosts=S.boosts.filter(b=>b.label!=="Lyra's gift"); S.boosts.push({label:"Lyra's gift",pct,until:Date.now()+2*3600000,mode:'Lyra'});
   lyra(pick([`Good digging. Here's a little extra: +${Math.round(pct*100)}% for the next two hours.`,`I tuned your drill while you weren't looking. +${Math.round(pct*100)}% for two hours.`,`The colony's running smooth today. Take +${Math.round(pct*100)}% on me, for two hours.`]),{prio:2,celebrate:true});
 }
-const pick=a=>a[Math.floor(Math.random()*a.length)];
 function frame(now){
   const dt=Math.min(.1,(now-lastT)/1000); lastT=now; time+=dt; phaseT+=dt;
   if(phase==='play'){
-    updatePlayer(dt); advance(dt/60*TIME_SCALE,true); tickLyra(dt);
+    updateBorer(dt); advance(dt/60*TIME_SCALE,true); tickLyra(dt);
     if(scanCool>0) scanCool-=dt;
     saveAcc+=dt; if(saveAcc>15){ saveAcc=0; save(true); }
     tileAcc+=dt; if(tileAcc>3){ tileAcc=0; flushTiles(); }
     syncAcc+=dt; if(syncAcc>25){ syncAcc=0; requestSync(); }
     giftAcc+=dt; if(giftAcc>240){ giftAcc=0; lyraGift(); }
-    slowAcc+=dt; if(slowAcc>.25){ slowAcc=0; updateRes(); updateStatus(); if(mode==='build') renderPalette(); $('#lyraMission').textContent=missionLine(); if(!lyraCur) lyraText.innerHTML=missionLine(true); if(!dash.hidden&&!dashBusy&&Math.floor(time)%2===0&&Math.floor(time)!==dash._t){ dash._t=Math.floor(time); renderDash(); } }
+    gaugeAcc+=dt; if(gaugeAcc>.1){ gaugeAcc=0; updateGauges(); }
+    miniAcc+=dt; if(miniAcc>.5){ miniAcc=0; drawMini(); }
+    slowAcc+=dt; if(slowAcc>.25){ slowAcc=0; updateRes(); updateStatus(); if(mode==='build') renderPalette(); $('#lyraMission').textContent=missionLine(); if(!lyraCur) lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`; if(!dash.hidden&&!dashBusy&&Math.floor(time)%2===0&&Math.floor(time)!==dash._t){ dash._t=Math.floor(time); renderDash(); } }
     drawGame(time,dt);
   } else drawIntro(time,dt);
   requestAnimationFrame(frame);
