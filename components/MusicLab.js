@@ -6,6 +6,7 @@ import {
   generateSong, defaultSong, sanitizeSong,
   buildGraph, applyMix, startSustained, stopSustained, scheduleStep, renderWav,
 } from "../lib/musicEngine";
+import { hearAnalyser } from "../lib/lyraMusic";
 
 const LOOKAHEAD = 0.12; // seconds of audio scheduled ahead of the playhead
 const LAYER_NAMES = { drone: "Drone", pad: "Pad", arp: "Arpeggio", bass: "Bass", drums: "Drums", texture: "Signal" };
@@ -75,6 +76,9 @@ export default function MusicLab({ loggedIn }) {
         a.stepIndex = (a.stepIndex + 1) % (STEPS * BARS);
       }
     }, 25);
+    // Lyra hears it and dances (lib/lyraMusic.js)
+    if (a.release) a.release();
+    a.release = hearAnalyser(a.graph.analyser);
     setPlaying(true);
   }, []);
 
@@ -83,6 +87,7 @@ export default function MusicLab({ loggedIn }) {
     if (!a) return;
     clearInterval(a.timer);
     stopSustained(a.graph, a.ctx.currentTime + 0.05);
+    if (a.release) { a.release(); a.release = null; }
     a.queue = [];
     setPlaying(false);
     setStep(-1);
@@ -90,7 +95,7 @@ export default function MusicLab({ loggedIn }) {
 
   useEffect(() => () => {
     const a = audio.current;
-    if (a) { clearInterval(a.timer); a.ctx.close(); }
+    if (a) { clearInterval(a.timer); if (a.release) a.release(); a.ctx.close(); }
   }, []);
 
   // playhead + visualizer

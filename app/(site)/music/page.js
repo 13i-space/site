@@ -1,12 +1,37 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { listenToElement, primeAudio } from "../../../lib/lyraMusic";
 import { BASE, albums, parseTrack, releaseDateFor } from "../../../lib/musicReleases";
 
 export default function MusicPage() {
   const audioRefs = useRef({});
   const [playingAlbum, setPlayingAlbum] = useState(null);
   const [playingTrack, setPlayingTrack] = useState(null);
+
+  // Lyra dances to whatever is playing (lib/lyraMusic.js). Songs are served
+  // from 13i.space's own address (/api/track) so the browser can measure
+  // them; if that ever fails, a track falls back to its original address and
+  // simply plays without Lyra hearing it.
+  const releases = useRef({});
+  const fellBack = useRef({});
+  const hear = (key, el) => {
+    if (fellBack.current[key]) return;
+    if (releases.current[key]) releases.current[key]();
+    releases.current[key] = listenToElement(el, (r) => { releases.current[key] = r; });
+  };
+  const unhear = (key) => {
+    if (releases.current[key]) releases.current[key]();
+    releases.current[key] = null;
+  };
+  const fallBack = (key, el, directSrc) => {
+    if (fellBack.current[key]) return;
+    fellBack.current[key] = true;
+    const wasPlaying = !el.paused;
+    el.src = directSrc;
+    el.load();
+    if (wasPlaying) el.play().catch(() => {});
+  };
 
   const stopAll = () => {
     Object.values(audioRefs.current).forEach((el) => {
@@ -25,6 +50,7 @@ export default function MusicPage() {
     setPlayingAlbum(albumIdx);
     setPlayingTrack(trackIdx);
     el.currentTime = 0;
+    primeAudio();
     el.play().catch(() => {});
   };
 
@@ -122,13 +148,16 @@ export default function MusicPage() {
                   </div>
                   <audio
                     ref={(el) => { audioRefs.current[`${albumIdx}_${i}`] = el; }}
-                    onEnded={() => handleEnded(albumIdx, i)}
+                    onEnded={() => { unhear(`${albumIdx}_${i}`); handleEnded(albumIdx, i); }}
+                    onPointerDown={primeAudio}
+                    onPlaying={(e) => hear(`${albumIdx}_${i}`, e.currentTarget)}
+                    onPause={() => unhear(`${albumIdx}_${i}`)}
+                    onError={(e) => fallBack(`${albumIdx}_${i}`, e.currentTarget, BASE + file + ".mp3")}
                     controls
                     preload="none"
+                    src={`/api/track/${encodeURIComponent(file)}.mp3`}
                     style={{ flex: 1, minWidth: 180, height: 32 }}
-                  >
-                    <source src={BASE + file + ".mp3"} type="audio/mpeg" />
-                  </audio>
+                  />
                 </div>
               );
             })}

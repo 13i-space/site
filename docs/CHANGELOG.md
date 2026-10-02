@@ -3,6 +3,16 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.43 — Lyra dances to the music
+Lyra now reacts to whatever music is playing: Paul's songs on the Music
+page, the Signal Composer, and story signals. Only the sound drives her, no
+mood tags. She hops on each beat (higher on harder hits), sways, tilts and
+leans with the energy, glows and swells with the loudness, spins faster
+and, at stage 4, beats her wings; her eye widens with the bass. Songs now
+load through 13i.space's own `/api/track/<name>.mp3` so the browser can
+measure them, with an automatic fall back to the original address. See
+docs/LYRA-DANCE.md.
+
 ## Update 5.42 — SpaceCore: saving safeguards, replay the landing
 Paul lost his v2 progress: the 5.40 game was running against the 5.39
 database rules, which only accepted the old, smaller map. Every block he dug
