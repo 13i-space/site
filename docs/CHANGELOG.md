@@ -3,6 +3,27 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.42 — SpaceCore: saving safeguards, replay the landing
+Paul lost his v2 progress: the 5.40 game was running against the 5.39
+database rules, which only accepted the old, smaller map. Every block he dug
+in the new world was silently refused. Fixes:
+- **Version check:** the site checks `spacecore_version()` before loading the
+  game. If the database is older than the game, players see "The colony
+  database needs an update" instead of playing into the void.
+  `SCHEMA_VERSION` in components/SpaceCoreGame.js must match.
+- **Save confirmations:** every save and every batch of dug/built tiles is
+  confirmed back to the game. The status bar shows "Saved Ns ago", or "Not
+  saving: <reason>" in rust. Lyra warns once, and refused tiles are queued to
+  retry.
+- **More frequent saves:** the game saves every 10s and flushes dug and built
+  tiles every 2s.
+- **Replay launch and landing:** in the Dashboard (Voyage), anyone can watch
+  the full launch, voyage, orbit and landing again without touching their
+  progress. Sentinel accounts also get "Start this crew over", which resets
+  that crew to brand new.
+
+Needs docs/v5.42-spacecore-saving.sql. It's safe to run on any state and clears nothing.
+
 ## Update 5.41 — Alpha feedback: games, stories, Lyra, sign-up gate
 From Paul's own testing and the first Alpha tester's notes.
 - **Sign-up gate for games:** NEMESIS Command, Asteroid Belt and 13i vs NEMESIS

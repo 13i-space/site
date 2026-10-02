@@ -446,7 +446,8 @@ function fresh(){
 let S = fresh();
 let C = {stage:0, have:{iron:0,silicon:0,ice:0,rare:0}, mined:{}};   // the colony
 let crews = [], colonyLog = [], siteBoosts = [], ME = {username:'', sentinel:false};
-let connected = false, relocated = false;
+let connected = false, relocated = false, replay = false;
+let saveInfo = {ok:null, at:0, err:null, refused:0, warned:false};
 
 // ---------- sound (synthesized in the browser, no files) ----------
 let AC=null, soundOn=true, noiseBuf=null;
@@ -1250,6 +1251,17 @@ let cpts={eng:1,geo:1,end:1,nav:1,fab:1,spirit:1}; const CP=8;
 function cLeft(){ return CP-(sum(cpts)-6); }
 function showCreation(){
   intro.hidden=false;
+  if(replay){
+    intro.innerHTML=`<div class="card">
+      <p class="eyebrow mono">In transit · Day <span id="day">1</span> of 210 · replay</p>
+      <h2>Your crew card, ${esc(ME.username)}</h2>
+      <p>This is a replay, so your training stays as it is. On a first trip, this is where a new crew member spends their 8 starting points.</p>
+      <div class="attrs">${ATTRS.map(a=>`<div class="acard"><div class="an">${a.n}</div><div class="ae">${a.e}</div>${pipsHTML(S.attrs[a.k])}<div class="pm"><span>${S.attrs[a.k]}</span></div></div>`).join('')}</div>
+      <div class="row"><button class="btn primary" type="button" id="replayGo">Continue to Mars</button></div>
+    </div>`;
+    $('#replayGo').onclick=()=>setPhase('arrival');
+    return;
+  }
   intro.innerHTML=`<div class="card">
     <p class="eyebrow mono">In transit · Day <span id="day">1</span> of 210</p>
     <h2>Train for the surface, ${esc(ME.username)}</h2>
@@ -1272,6 +1284,13 @@ function renderCAttrs(){
   $('#cattrs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.a, v=+b.dataset.v; if(v>0&&(cLeft()<=0||cpts[k]>=5)) return; if(v<0&&cpts[k]<=1) return; cpts[k]+=v; beep(v>0?600:400,.05); const lb=$('#lockBtn'); delete lb.dataset.c; lb.textContent='Lock in training'; renderCAttrs(); });
 }
 function showLandingMsg(){
+  if(replay){
+    const div=document.createElement('div'); div.className='card'; div.id='landMsg';
+    div.innerHTML=`<p class="eyebrow mono">Mars · Landing Site Alpha · replay</p><h2>Welcome back to Mars</h2><p>That's the trip every new crew member takes. Your borer is right where you left it.</p><div class="row"><button class="btn primary" type="button" id="bBack">Back to your borer</button></div>`;
+    intro.appendChild(div);
+    $('#bBack').onclick=()=>{ replay=false; setPhase('play'); lyra('Welcome back down. Everything is as you left it.',{prio:3}); };
+    return;
+  }
   const started=colonyStarted();
   const div=document.createElement('div'); div.className='card'; div.id='landMsg';
   div.innerHTML=`<p class="eyebrow mono">Mars · Landing Site Alpha</p>
@@ -1363,7 +1382,7 @@ function updateStatus(){
   const sc=scarce(); const st=stage();
   const fill=S.rigs.length?Math.round(S.rigs.reduce((a,r)=>a+rigFill(r),0)/S.rigs.length*100):null;
   const cr=S.craft[0]?`<span>Fabricator: ${itemById(S.craft[0].id).n} ${fmtH(S.craft[0].left)}</span>`:'';
-  const html=`${room}${st?`<span>${st.n}: ${Math.floor(stageProgress()*100)}%</span>`:'<span><em>Season 2 unlocked</em></span>'}${sc?`<span>Colony needs ${RNAME[sc]}: +25%</span>`:''}${boostPct()?`<span><em>Boosts +${Math.round(boostPct()*100)}%</em></span>`:''}${cr}${fill!==null?`<span>Auto-drills ${fill}% <button type="button" class="btn sm" id="bCollect">Collect (C)</button></span>`:''}${connected?'':'<span style="color:var(--rust)">Offline</span>'}`;
+  const html=`${room}${st?`<span>${st.n}: ${Math.floor(stageProgress()*100)}%</span>`:'<span><em>Season 2 unlocked</em></span>'}${sc?`<span>Colony needs ${RNAME[sc]}: +25%</span>`:''}${boostPct()?`<span><em>Boosts +${Math.round(boostPct()*100)}%</em></span>`:''}${cr}${fill!==null?`<span>Auto-drills ${fill}% <button type="button" class="btn sm" id="bCollect">Collect (C)</button></span>`:''}${!connected?'<span style="color:var(--rust)">Offline</span>':saveInfo.ok===false?`<span style="color:var(--rust)">Not saving: ${esc(saveInfo.err)}</span>`:saveInfo.at?`<span>Saved ${Math.max(0,Math.round((Date.now()-saveInfo.at)/1000))}s ago</span>`:''}`;
   const s=$('#status'); if(s._h!==html){ s._h=html; s.innerHTML=html; const b=$('#bCollect'); if(b) b.onclick=collectRigs; }
 }
 
@@ -1427,6 +1446,10 @@ function renderDash(){
     <p class="small">What you do elsewhere on 13i.space powers your drills here (capped at +50% in total):</p>
     <div class="list">${BOOST_WAYS.map(([m,what,amt,href])=>`<span>${m} · <a href="${href}" target="_top">${what}</a> · ${amt}</span>`).join('')}</div>
   </section>
+  <section><h3>Voyage</h3>
+    <p class="small">Watch the launch, the trip, the orbit and the landing again. Your progress isn't touched.</p>
+    <div class="row"><button class="btn" type="button" data-act="replay">Replay launch and landing</button>${ME.sentinel?`<button class="btn" type="button" data-act="reset">${dash.dataset.reset?'This erases this crew\'s progress. Confirm':'Start this crew over (Sentinel)'}</button>`:''}</div>
+  </section>
   <section><h3>Ledger</h3>
     <div class="kv">${RES.map(r=>`<span class="lbl">${RNAME[r]} mined</span><span></span><span>${S.mined[r]}</span>`).join('')}
     <span class="lbl">Sent to Great Works</span><span></span><span>${S.given}</span>
@@ -1450,6 +1473,8 @@ dash.addEventListener('click',e=>{
   if(a==='overnight'){ advance(480,true); toast('Skipped ahead 8 hours on Mars.'); }
   if(a==='give') contribute(b.dataset.r, !!b.dataset.half);
   if(a==='craft') craft(b.dataset.id);
+  if(a==='replay'){ startReplay(); return; }
+  if(a==='reset'){ if(!dash.dataset.reset){ dash.dataset.reset='1'; } else { delete dash.dataset.reset; resetCrew(); return; } }
   renderDash();
 });
 function openDash(section){ if(phase!=='play') return; dash.hidden=false; dashFocus=section||null; renderDash(); }
@@ -1566,9 +1591,29 @@ window.addEventListener('message',e=>{
     if(m.boosts) siteBoosts=m.boosts;
     dailyCall(false); renderDash();
   } else if(m.type==='contributed'){ onContributed(m); }
+  else if(m.type==='saved'){ saveInfo.ok=!!m.ok; saveInfo.err=m.error; if(m.ok) saveInfo.at=Date.now(); else saveTrouble(m.error); }
+  else if(m.type==='tilesSaved'){
+    if(m.error){ (m.changes||[]).forEach(([x,y,t])=>{ const i=idx(x,y); if(!pending.has(i)) pending.set(i,world[i]); }); saveTrouble(m.error); }
+    else if(m.saved<m.sent){ saveInfo.refused+=m.sent-m.saved; if(m.saved===0&&m.sent>=3) saveTrouble('the colony database refused your digging'); }
+    else { saveInfo.ok=true; saveInfo.at=Date.now(); }
+  }
   else if(m.type==='error'){ toast(m.text||'Something went wrong talking to the colony.'); }
   else if(m.type==='signedOut'){ connected=false; showWait('Your session ended. Sign in again on 13i.space to keep playing.'); phase='offline'; }
 });
+
+function saveTrouble(err){
+  saveInfo.ok=false; saveInfo.err=err||'unknown error';
+  if(!saveInfo.warned){ saveInfo.warned=true; lyra(`Careful: the colony isn't saving your progress right now (${saveInfo.err}). Anything you dig or build may not be there next time. Tell Paul, or check the Alpha forum.`,{prio:7,hold:true}); }
+}
+function hidePlayUI(){ ['#tools','#dpad','#lyra','#gauges','#mini'].forEach(s=>$(s).hidden=true); dash.hidden=true; }
+function startReplay(){ flushTiles(); save(true); hidePlayUI(); replay=true; lyraQ=[]; lyraCur=null; ac(); setPhase('launch'); }
+function resetCrew(){
+  flushTiles(); hidePlayUI();
+  const keepName=ME.username; S=fresh(); S.name=keepName; relocated=false; replay=false;
+  post({type:'save', state:S, summary:summary(), px:null, py:null});
+  P.rx=S.px; P.ry=S.py; lyraQ=[]; lyraCur=null;
+  setPhase('title');
+}
 
 // ---------- loop ----------
 let lastT=performance.now(), time=0, saveAcc=0, slowAcc=0, tileAcc=0, syncAcc=0, giftAcc=0, miniAcc=0, gaugeAcc=0, hiddenAt=0;
@@ -1585,8 +1630,8 @@ function frame(now){
   if(phase==='play'){
     updateBorer(dt); advance(dt/60*TIME_SCALE,true); tickLyra(dt);
     if(scanCool>0) scanCool-=dt;
-    saveAcc+=dt; if(saveAcc>15){ saveAcc=0; save(true); }
-    tileAcc+=dt; if(tileAcc>3){ tileAcc=0; flushTiles(); }
+    saveAcc+=dt; if(saveAcc>10){ saveAcc=0; save(true); }
+    tileAcc+=dt; if(tileAcc>2){ tileAcc=0; flushTiles(); }
     syncAcc+=dt; if(syncAcc>25){ syncAcc=0; requestSync(); }
     giftAcc+=dt; if(giftAcc>240){ giftAcc=0; lyraGift(); }
     gaugeAcc+=dt; if(gaugeAcc>.1){ gaugeAcc=0; updateGauges(); }

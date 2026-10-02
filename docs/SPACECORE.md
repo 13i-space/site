@@ -105,6 +105,17 @@ Signed-in Kin only: it is one world every Kin builds together.
   14 greenhouse, 15 lamp, 16 auto-drill, 20–27 materials, 30–34 heater,
   scrubber, sensor, reactor, charger.
 
+## Saving (Update 5.42)
+- The site refuses to start the game unless `spacecore_version()` is at least
+  `SCHEMA_VERSION` in components/SpaceCoreGame.js. Bump both whenever the
+  database rules change.
+- The host confirms every save (`saved`) and tile batch (`tilesSaved`). The
+  game shows "Saved Ns ago" or "Not saving: ..." in the status bar, and
+  re-queues tiles that failed.
+- The game saves state every 10s and tiles every 2s, and again when the tab is hidden.
+- Dashboard › Voyage: "Replay launch and landing" for everyone (progress
+  untouched). "Start this crew over" is Sentinel-only.
+
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player
 could edit them. That's fine for Alpha. Before Beta, move mining and

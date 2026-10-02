@@ -19,6 +19,7 @@ import { SPACECORE_TIME_SCALE } from "../lib/spacecore";
 // Needs docs/v5.39-spacecore.sql.
 
 const GAME = "spacecore";
+const SCHEMA_VERSION = 542; // spacecore_version() in docs/v5.42-spacecore-saving.sql
 const DAY = 86400000;
 const BOOST_REFRESH = 5 * 60000;
 
@@ -63,7 +64,7 @@ async function loadAllTiles(supabase) {
 }
 
 export default function SpaceCoreGame() {
-  const [status, setStatus] = useState("loading"); // loading | signedout | nousername | nosetup | ready
+  const [status, setStatus] = useState("loading"); // loading | signedout | nousername | nosetup | outdated | ready
   const [pseudo, setPseudo] = useState(false);
   const frameRef = useRef(null);
   const wrapRef = useRef(null);
@@ -81,6 +82,10 @@ export default function SpaceCoreGame() {
         if (!profile?.username) { if (!cancelled) setStatus("nousername"); return; }
         const { error } = await supabase.from("spacecore_colony").select("id").eq("id", 1).maybeSingle();
         if (error) { if (!cancelled) setStatus("nosetup"); return; }
+        // the database has to be on the same version as the game, or what
+        // players dig gets refused (that's how 5.40 progress was lost)
+        const { data: dbVersion, error: vErr } = await supabase.rpc("spacecore_version");
+        if (vErr || !(dbVersion >= SCHEMA_VERSION)) { if (!cancelled) setStatus("outdated"); return; }
         ctx.current = { supabase, user, username: profile.username, owners: new Map(), names: [], lastTileAt: null, boostsAt: 0, boosts: [] };
         if (!cancelled) setStatus("ready");
       } catch (e) {
@@ -157,7 +162,7 @@ export default function SpaceCoreGame() {
           boosts,
         });
       } else if (msg.type === "save") {
-        await supabase.from("spacecore_players").upsert({
+        const { error } = await supabase.from("spacecore_players").upsert({
           user_id: user.id,
           username: c.username,
           state: msg.state || {},
@@ -166,8 +171,13 @@ export default function SpaceCoreGame() {
           py: Number.isFinite(msg.py) ? msg.py : null,
           updated_at: new Date().toISOString(),
         });
+        send({ type: "saved", ok: !error, error: error?.message || null });
       } else if (msg.type === "tiles") {
-        if (Array.isArray(msg.changes) && msg.changes.length) await supabase.rpc("spacecore_set_tiles", { p_tiles: msg.changes.slice(0, 500) });
+        if (Array.isArray(msg.changes) && msg.changes.length) {
+          const changes = msg.changes.slice(0, 500);
+          const { data, error } = await supabase.rpc("spacecore_set_tiles", { p_tiles: changes });
+          send({ type: "tilesSaved", sent: changes.length, saved: error ? 0 : data || 0, error: error?.message || null, changes: error ? changes : undefined });
+        }
       } else if (msg.type === "sync") {
         const mined = msg.mined && typeof msg.mined === "object" ? msg.mined : {};
         const [{ data: colony }, { data: fresh }, cl, boosts] = await Promise.all([
@@ -239,6 +249,7 @@ export default function SpaceCoreGame() {
     const copy = {
       signedout: { title: "Sign in to join the crew", body: "SpaceCore is one world that every Kin builds together, so your crew member is tied to your account.", href: "/login", cta: "Sign in or create an account" },
       nousername: { title: "Claim your username first", body: "Your crew member flies under your Kin username, so other crews know whose tunnels they're in.", href: "/account", cta: "Go to your Node" },
+      outdated: { title: "The colony database needs an update", body: "This version of SpaceCore needs the latest database step, or what you dig won't be saved. Run docs/v5.42-spacecore-saving.sql in Supabase (and docs/v5.40-spacecore-v2.sql first, if that hasn't been run), then reload this page.", href: "/create", cta: "Back to Create" },
       nosetup: { title: "The colony isn't set up yet", body: "SpaceCore's database tables haven't been created. Run docs/v5.39-spacecore.sql in Supabase, then reload this page.", href: "/create", cta: "Back to Create" },
     }[status];
     return (
