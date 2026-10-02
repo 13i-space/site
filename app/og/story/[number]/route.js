@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { OG_SIZE, publicRows, absolute } from "../../../../lib/og";
 import { assignmentMeta } from "../../../../lib/assignment1";
 import { COMICS } from "../../../../lib/comics";
+import { archiveStory } from "../../../../lib/archiveStories";
 
 // Link preview for a short story (/assignments/<number>): its cover beside
 // the title, the Archive number, and what versions it comes in.
@@ -15,7 +16,8 @@ export async function GET(request, { params }) {
   if (number === 1) {
     story = { title: assignmentMeta.chapter, subtitle: assignmentMeta.subtitle, cover: "/covers/assignment-0000001.jpg" };
   } else if (Number.isFinite(number)) {
-    const [row] = await publicRows(`assignment_submissions?assignment_number=eq.${number}&select=designation,name,type,cover_url,status`);
+    let [row] = await publicRows(`assignment_submissions?assignment_number=eq.${number}&select=designation,name,type,cover_url,status`).catch(() => []);
+    if (!row) row = archiveStory(number);
     if (row && ["canon", "archived"].includes(row.status)) {
       story = {
         title: row.designation,

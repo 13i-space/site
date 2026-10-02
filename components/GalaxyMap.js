@@ -4,6 +4,7 @@ import { useRef, useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { createClient } from "../lib/supabaseBrowser";
 import { LANDMARKS, STORY_WORLDS } from "../lib/galaxyWorlds";
+import { openedStories } from "../lib/storyGames";
 import { recordMilestone } from "../lib/milestones";
 import AlienCard from "./AlienCard";
 
@@ -190,12 +191,15 @@ export default function GalaxyMap() {
     (async () => {
       try {
         const supabase = createClient();
+        // stories opened in this browser count too (lib/storyGames.js remembers them)
+        const local = await openedStories().catch(() => new Set());
+        if (!cancelled && local.size) setReadNumbers((prev) => [...new Set([...(prev || []), ...local])]);
         const { data: { user } } = await supabase.auth.getUser();
         if (!user || cancelled) return;
         setSignedIn(true);
         setUserId(user.id);
         const { data } = await supabase.from("reading_progress").select("assignment_number").eq("user_id", user.id);
-        if (!cancelled) setReadNumbers((data || []).map((r) => r.assignment_number));
+        if (!cancelled) setReadNumbers((prev) => [...new Set([...(prev || []), ...(data || []).map((r) => r.assignment_number)])]);
       } catch (e) {
         // map still works without it - just no Assignment worlds
       }

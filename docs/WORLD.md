@@ -123,7 +123,7 @@ docs/INTERACTIVE.md.
 - Weekly Season stories are AI-originated records; in their interactive
   versions one ending is the canon record and the rest are divergent.
 
-## Tacet and the holders — developing (Season 0, Week 1)
+## Tacet and the holders — developing (Season 1, Week 1)
 From *The Quiet Moon* (0028657, AI-written by Claude). **Tacet**: a moon
 tidally kneaded by an unnamed gas giant, loud in every sense; 13i named it
 for the musical mark meaning "stay silent". **The holders**: thin,

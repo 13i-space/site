@@ -1,3 +1,4 @@
+import { withArchiveStories } from "../../../lib/archiveStories";
 import { createClient } from "../../../lib/supabaseServer";
 import { gatherVisitor, describeVisitor } from "../../../lib/visitorContext";
 import { WORLD_CANON } from "../../../lib/lyraCanon";
@@ -71,6 +72,7 @@ async function knowledge(supabase) {
   } catch (e) {
     stories = [];
   }
+  stories = withArchiveStories(stories).sort((a, b) => a.assignment_number - b.assignment_number);
   const siteMap = SITE_INDEX.map((p) => `- ${p.title}: ${p.href}`).join("\n");
   const storyGames = STORY_GAMES.map((g) => `- ${g.title} (${g.href}) unlocks by reading ${g.story} (${g.storyHref}). ${g.blurb}`).join("\n");
   const music = albums.map((a) => `- ${a.title} (${a.year}): ${a.tracks.map((t) => parseTrack(t).label).join(", ")}`).join("\n");

@@ -3,6 +3,19 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.36 — The Quiet Moon becomes Season 1, Week 1; tidy-ups
+Season stories now ship with the site (`lib/archiveStories.js`): the story
+page, the Short Stories list, the Node, link previews, Lyra and the Oracle
+all read them even without a database row, so no seed step is needed. The
+Quiet Moon is **Season 1, Week 1** (launch week, April 2027), at
+`/seasons/1/1`; the Short Stories hub shows the season as a 13-week strip
+(and no longer lists Interactive Assignments, which live under Play). The
+Node lists stories as "Title (Assignment 0000000)" with seven digits. The
+Holders card is in Aliens of the Galaxy, first, as recorded by 13i. The
+Galaxy Map also shows worlds for stories opened in this browser. Play:
+Oracle, Games, Interactive Stories, Artifacts (new blurbs); the Universe
+Quiz now lives only under the Galaxy.
+
 ## Update 5.35 — Season 0, Week 1: The Quiet Moon
 The first Story Week, built by hand to test the process (docs/SEASONS.md).
 One story, six ways in: **the short story** (Assignment 0028657, by Claude:

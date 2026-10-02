@@ -3,10 +3,12 @@
 Paul's direction (Oct 2026): one story a week, released in several forms;
 13 weeks = one season = one quarter; week 13 is a finale where the
 season's artifact fragments come together; each season can become a KDP
-anthology. **Season 0** is the pre-launch test season. Building it by hand
-first, to learn the process before any automation.
+anthology. **Season 1** begins at launch (April 2027); its weeks are being
+built by hand ahead of time (goal: a full quarter ready by April), to learn
+the process before any automation. (The Quiet Moon was first built as
+"Season 0"; Paul made it Season 1, Week 1 in Update 5.36.)
 
-## A Story Week bundle (as tested in Season 0, Week 1)
+## A Story Week bundle (as built for Season 1, Week 1)
 | Day | Piece | Where it lives |
 |---|---|---|
 | Mon | **Short story**: the canon record | `lib/stories/<slug>.js` → seeded once via `app/api/admin/seed-assignment-<n>` |

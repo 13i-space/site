@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SEASONS, PIECES } from "../../../lib/seasons";
+import SeasonStrip from "../../../components/SeasonStrip";
 
 export const metadata = {
   title: "Seasons",
@@ -23,13 +24,8 @@ export default function SeasonsPage() {
             <div className="mono" style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "1px" }}>{s.subtitle.toUpperCase()}</div>
           </div>
           <p style={{ color: "#8A8FBF", fontSize: 14, maxWidth: 680 }}>{s.blurb}</p>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(13, 1fr)", gap: 4, margin: "14px 0 18px" }} aria-label={`${s.title}: ${s.weeks.length} of 13 weeks`}>
-            {Array.from({ length: 13 }, (_, i) => {
-              const w = s.weeks.find((x) => x.week === i + 1);
-              return (
-                <div key={i} title={w ? `Week ${i + 1}: ${w.title}` : i === 12 ? "Week 13: the finale" : `Week ${i + 1}`} style={{ height: 8, borderRadius: 2, background: w ? "#E8CFC0" : i === 12 ? "#3A3E75" : "#1C1F48" }} />
-              );
-            })}
+          <div style={{ margin: "16px 0 20px" }}>
+            <SeasonStrip season={s} banner={false} />
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
             {s.weeks.map((w) => (

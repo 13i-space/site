@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
 import AlienGallery from "../../../../components/AlienGallery";
 import { isAlpha } from "../../../../lib/alpha";
+import { ARCHIVE_SPECIES } from "../../../../lib/archiveSpecies";
 
 // Aliens of the Galaxy: every species built in the Alien Lab, newest first,
 // as collectible cards. Species are public (RLS "viewable by everyone").
@@ -52,13 +53,13 @@ export default async function AliensOfTheGalaxy() {
         </span>
       </Link>
 
-      {species.length === 0 ? (
-        <div className="panel" style={{ textAlign: "center" }}>
-          <p style={{ margin: 0, color: "#8A8FBF" }}>No species yet. The first card is waiting to be made.</p>
-        </div>
-      ) : (
-        <AlienGallery species={species.map((sp) => ({ ...sp, creator: names[sp.user_id], creatorAlpha: alphas[sp.user_id] }))} />
-      )}
+      {/* species 13i recorded in the Archive's stories come first, then every Kin species */}
+      <AlienGallery
+        species={[
+          ...Object.values(ARCHIVE_SPECIES).map((sp) => ({ ...sp, creator: "13i" })),
+          ...species.map((sp) => ({ ...sp, creator: names[sp.user_id], creatorAlpha: alphas[sp.user_id] })),
+        ]}
+      />
     </div>
   );
 }

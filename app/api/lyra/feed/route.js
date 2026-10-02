@@ -1,3 +1,4 @@
+import { withArchiveStories } from "../../../../lib/archiveStories";
 import { createClient } from "@supabase/supabase-js";
 import { getSpaceNews } from "../../../../lib/spaceNews";
 import { nextRelease } from "../../../../lib/musicReleases";
@@ -20,7 +21,7 @@ export async function GET() {
         supabase.from("alien_species").select("id, name, user_id, created_at").order("created_at", { ascending: false }).limit(20),
         supabase.from("alien_species").select("id", { count: "exact", head: true }),
       ]);
-      feed.stories = (stories.data || []).map((s) => ({ number: s.assignment_number, title: s.designation, at: s.created_at, href: `/assignments/${s.assignment_number}` }));
+      feed.stories = withArchiveStories(stories.data || []).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, 5).map((s) => ({ number: s.assignment_number, title: s.designation, at: s.created_at, href: `/assignments/${s.assignment_number}` }));
       feed.species = species.data || [];
       feed.speciesCount = count.count || feed.species.length;
     } catch (e) {

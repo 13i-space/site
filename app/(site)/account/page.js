@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { archiveStory, storyLabel } from "../../../lib/archiveStories";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
 import ClaimUsername from "../../../components/ClaimUsername";
@@ -43,6 +44,7 @@ export default async function AccountPage() {
       .in("assignment_number", otherNumbers);
     (titledRows || []).forEach((r) => { titleByNumber[r.assignment_number] = r.designation; });
   }
+  otherNumbers.forEach((n) => { if (!titleByNumber[n] && archiveStory(n)) titleByNumber[n] = archiveStory(n).designation; });
 
   const { data: scores } = await supabase
     .from("high_scores")
@@ -245,7 +247,7 @@ export default async function AccountPage() {
                   href={r.assignment_number === 1 ? "/assignments/0000001" : `/assignments/${r.assignment_number}`}
                   style={{ display: "block", fontSize: 13.5, color: "#B9C0FF", padding: "6px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
                 >
-                  {titleByNumber[r.assignment_number] || `Assignment ${r.assignment_number}`}
+                  {storyLabel(titleByNumber[r.assignment_number], r.assignment_number)}
                 </Link>
               ))}
             </div>

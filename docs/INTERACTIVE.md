@@ -6,7 +6,7 @@ COMMUNICATE, ANALYZE, INTERVENE). One ending is the story as written (the
 **canon record**); the rest are **divergent records**. That fits the
 Archive: "the archive is where the universe discovers itself."
 
-The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34). The second is **Assignment 0028657, *The Quiet Moon*** (Update 5.35, Season 0 Week 1).
+The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34). The second is **Assignment 0028657, *The Quiet Moon*** (Update 5.35, Season 1 Week 1).
 
 ## Where it lives
 | Piece | File |

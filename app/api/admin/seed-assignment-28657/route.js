@@ -1,4 +1,4 @@
-// One-time loader for Assignment 0028657, "The Quiet Moon" (Season 0,
+// One-time loader for Assignment 0028657, "The Quiet Moon" (Season 1,
 // Week 1). Visit /api/admin/seed-assignment-28657 once after deploying;
 // it adds the story to the Archive. Running it again does nothing. Same
 // pattern as the earlier seed routes: safe to delete this folder afterwards.

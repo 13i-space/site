@@ -6,6 +6,7 @@ import TrackStoryRead from "../../../../components/TrackStoryRead";
 import { comicHrefFor } from "../../../../lib/comics";
 import { interactiveHrefFor } from "../../../../lib/interactive";
 import { bundleForAssignment } from "../../../../lib/seasons";
+import { archiveStory } from "../../../../lib/archiveStories";
 
 // Narrated audio for stories that have one, keyed by assignment number.
 const STORY_AUDIO = {
@@ -22,23 +23,37 @@ export async function generateMetadata({ params }) {
       .select("assignment_number, designation, name, type, status")
       .eq("assignment_number", Number(params.number))
       .single();
-    if (!row || !["canon", "archived"].includes(row.status)) return {};
-    const title = `${row.designation} · The Archive`;
-    const description = `Assignment ${String(row.assignment_number).padStart(7, "0")}, a 13i short story. ${row.type === "ai" ? "An AI-originated Assignment." : `Written by ${row.name || "a Kin"}.`}`;
-    const image = { url: `/og/story/${row.assignment_number}`, width: 1200, height: 630 };
-    return { title, description, openGraph: { title, description, images: [image] }, twitter: { card: "summary_large_image", images: [image.url] } };
+    const story = row || archiveStory(params.number);
+    if (!story || !["canon", "archived"].includes(story.status)) return {};
+    return metaFor(story);
   } catch (e) {
-    return {};
+    const story = archiveStory(params.number);
+    return story ? metaFor(story) : {};
   }
+}
+
+function metaFor(row) {
+  const title = `${row.designation} · The Archive`;
+  const description = `Assignment ${String(row.assignment_number).padStart(7, "0")}, a 13i short story. ${row.type === "ai" ? "An AI-originated Assignment." : `Written by ${row.name || "a Kin"}.`}`;
+  const image = { url: `/og/story/${row.assignment_number}`, width: 1200, height: 630 };
+  return { title, description, openGraph: { title, description, images: [image] }, twitter: { card: "summary_large_image", images: [image.url] } };
 }
 
 export default async function DynamicAssignmentPage({ params }) {
   const supabase = await createClient();
-  const { data: row } = await supabase
-    .from("assignment_submissions")
-    .select("assignment_number, designation, story, name, type, cover_url, status")
-    .eq("assignment_number", Number(params.number))
-    .single();
+  let row = null;
+  try {
+    const { data } = await supabase
+      .from("assignment_submissions")
+      .select("assignment_number, designation, story, name, type, cover_url, status")
+      .eq("assignment_number", Number(params.number))
+      .single();
+    row = data;
+  } catch (e) {
+    row = null;
+  }
+  // stories that ship with the site (lib/archiveStories.js) read even without a database row
+  if (!row) row = archiveStory(params.number);
 
   if (!row || !["canon", "archived"].includes(row.status)) {
     return (

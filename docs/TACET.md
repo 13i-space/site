@@ -1,6 +1,6 @@
 # TACET: game notes
 
-The game that belongs to Assignment 0028657, *The Quiet Moon* (Season 0,
+The game that belongs to Assignment 0028657, *The Quiet Moon* (Season 1,
 Week 1, Update 5.35). You are the lattice: the holders under Tacet's ice.
 13i doesn't appear.
 
