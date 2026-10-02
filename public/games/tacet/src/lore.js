@@ -39,3 +39,12 @@ export const LEAK_LINES = ["The still water trembles.", "Some of the young stop 
 export const SPENT_LINE = "A holder is spent. You let it go.";
 export const RISE_LINE = "One of the young rises to take its place.";
 export const OVER_LINES = ["The still water is still no longer.", "The young are gone. The lattice will drift, and break."];
+
+// how the score is counted, in the lattice's own terms
+export const COUNTING_TITLE = "WHAT THE LATTICE REMEMBERS";
+export const COUNTING = [
+  ["Every shock a holder takes is food.", "+10 for every measure of shock a holder absorbs"],
+  ["Every touch that shares a load is kindness.", "+5 each time a touch spreads a shock"],
+  ["Every tide the young sleep through is a tide survived.", "+250 a tide · +1,000 a great tide"],
+];
+export const COUNTING_SHORT = "food taken · loads shared · tides survived";

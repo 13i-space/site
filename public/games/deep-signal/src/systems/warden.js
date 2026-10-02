@@ -97,7 +97,7 @@ function lights(w, run, api) {
 function sealDoor(w, run, api) {
   const room = run.world.roomAt(run.player.x, run.player.y);
   if (!room) return false;
-  const open = Object.values(room.doors).filter((d) => d.state === "open");
+  const open = Object.values(room.doors).filter((d) => d.state === "open" && !(run.playerOverlaps && run.playerOverlaps(d.tiles)));
   if (open.length < 2) return false; // never trap the player
   const door = api.rng.pick(open);
   door.state = "sealed";
@@ -131,6 +131,7 @@ function distortMap(w) {
 
 function falseReading(w, run, api) {
   w.effects.falseReading = 4;
+  api.msg("INTERFERENCE. YOUR INSTRUMENTS ARE BEING READ.", { dim: true });
   api.discover("an-double");
 }
 

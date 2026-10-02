@@ -3,6 +3,47 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.41 — Alpha feedback: games, stories, Lyra, sign-up gate
+From Paul's own testing and the first Alpha tester's notes.
+- **Sign-up gate for games:** NEMESIS Command, Asteroid Belt and 13i vs NEMESIS
+  stay open to everyone. The story games (TACET, The Deep Signal, SIXTEEN) show
+  grayed out to signed-out visitors with a "Sign up free to play" link, and their
+  pages show a sign-up panel (`components/SignUpToPlay.js`). SpaceCore was
+  already signed-in only. `/login?tab=signup&next=/games/...` opens on Sign up
+  and returns to the game afterwards. The static game files themselves are
+  still reachable by direct URL; this is a front-door gate, not a lock.
+- **Interactive Stories:** a progress bar under the story, the same width as
+  it. Progress is the longest remaining run of lines to any ending, so it never
+  slides backwards.
+- **Lyra / messages:** she stops mentioning unread mail once it's read (her
+  held launch line was being repeated for up to 30 minutes, from a count taken
+  when the page loaded).
+- **Galaxy Map:** the Kin species chip now says "N total · M yours", since only
+  your own species are labeled on the map; other Kin's points are a bit brighter.
+- **NEMESIS Command:** arrow keys move, Space or Up fires (X and mouse still work).
+- **Asteroid Belt:** forgiving hit boxes (the full drawn rock plus a margin, and
+  the whole bullet step is checked); the ship's trail is see-through.
+- **13i vs NEMESIS:** the Kinetic Intercept is bigger and easier to land but
+  does less damage; during every weapon window 13i's hull and the run's total
+  damage show top right.
+- **TACET:** "What the lattice remembers" explains scoring in the story's
+  terms (food taken, loads shared, tides survived), shown on first play and
+  under H; the game-over screen breaks the score down.
+- **The Deep Signal:** a "Your Assignment" card before the run, and an
+  always-on OBJECTIVE in the HUD. Energy fields now flash, light up and show a
+  "!" (with a warning sound) for up to a second before they discharge. For
+  the reported "ship vanishes, everything bugs out" glitch: the craft is put
+  back if it ever ends up inside a wall or a sealed door, the Warden can no
+  longer seal a door on the craft, the camera can't lose the craft, a bad
+  frame resets the canvas state, and the Warden's false-reading effect is now
+  labeled INTERFERENCE so it doesn't look like a bug.
+- **SIXTEEN:** stronger powers. New: Flare (rare — every tide opens with a
+  burst of work speed), Second heart (rare — survive the city going dark
+  once), Mending light, Harmony (bigger combos), Hardened shell. Quick limbs
+  and Bioluminescence are stronger, every offer includes at least one power,
+  and rare cards are gold.
+- Removed the unused `components/ThirteenIVsNemesis.js`.
+
 ## Update 5.40 — SpaceCore v2: a bigger Mars, real materials, power
 These changes come from Paul's first playtest.
 - **A bigger Mars:** the world is four times wider and twice as deep, with caves,

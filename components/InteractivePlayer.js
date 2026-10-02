@@ -32,6 +32,46 @@ const TAG_COLORS = {
 };
 
 
+
+// How far through the record the reader is. The script is a branching
+// graph, so "how much is left" is measured as the longest run of lines from
+// here to any ending; it only ever shrinks as the reader moves on, so the
+// bar never slides backwards. Targets chosen by a function of flags are
+// read from the function's source (every node id it can return).
+function successorsOf(node, ids) {
+  const out = new Set();
+  const add = (t) => {
+    if (!t) return;
+    if (typeof t === "string") { if (ids.has(t)) out.add(t); return; }
+    if (typeof t === "function") {
+      const src = String(t);
+      for (const m of src.matchAll(/["'`]([\w-]+)["'`]/g)) if (ids.has(m[1])) out.add(m[1]);
+    }
+  };
+  (node.choices || []).forEach((c) => add(c.next));
+  add(node.next);
+  return [...out];
+}
+
+function remainingLines(story) {
+  const ids = new Set(Object.keys(story.nodes));
+  const memo = {};
+  const visiting = new Set();
+  const walk = (id) => {
+    if (memo[id] !== undefined) return memo[id];
+    if (visiting.has(id)) return 0; // a loop - don't count it twice
+    visiting.add(id);
+    const node = story.nodes[id];
+    const own = (node?.lines || []).length;
+    const after = node && !node.ending ? Math.max(0, ...successorsOf(node, ids).map(walk)) : 0;
+    visiting.delete(id);
+    memo[id] = own + after;
+    return memo[id];
+  };
+  ids.forEach(walk);
+  return memo;
+}
+
 const SOUND_KEY = "13i_interactive_sound";
 
 // Takes the assignment number (scripts hold functions, so the page can't
@@ -66,6 +106,17 @@ export default function InteractivePlayer({ number }) {
   const choosing = phase === "play" && atLastLine && revealed && !!node?.choices;
   const closing = phase === "play" && atLastLine && revealed && !!node?.ending;
   const scene = phase === "ending" ? node?.scene : (line?.scene || node?.scene || "orbit");
+
+  // ---- progress through the record (0-1) ----
+  const remaining = useMemo(() => remainingLines(story), [story]);
+  const progress = useMemo(() => {
+    if (phase === "ending") return 1;
+    const total = remaining[story.start] || 1;
+    const ids = new Set(Object.keys(story.nodes));
+    const after = node && !node.ending ? Math.max(0, ...successorsOf(node, ids).map((id) => remaining[id] || 0)) : 0;
+    const left = Math.max(0, (node?.lines || []).length - lineIdx - (revealed ? 1 : 0)) + after;
+    return Math.min(1, Math.max(0, 1 - left / total));
+  }, [phase, remaining, story, node, lineIdx, revealed]);
 
   // ---- first load: bookmark, records found, sound preference ----
   useEffect(() => {
@@ -463,6 +514,11 @@ export default function InteractivePlayer({ number }) {
             </div>
           )}
         </div>
+        {phase === "play" && (
+          <div className="ia-progress" role="progressbar" aria-label="Progress through the record" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress * 100)}>
+            <div className="ia-progress-fill" style={{ width: `${progress * 100}%` }} />
+          </div>
+        )}
       </div>
     </div>
   );

@@ -428,7 +428,10 @@ export default function LyraCompanion() {
       }
 
       // hold one thing worth saying, at most every half hour
-      if (m.launchLine && Date.now() - m.launchLine.at < LAUNCH_LINE_MS) {
+      // ...unless it was about unread mail that has since been read
+      const staleMail = m.launchLine && String(m.launchLine.id || "").startsWith("dm-") && !unread;
+      if (staleMail) remember((mm) => { mm.launchLine = null; });
+      if (m.launchLine && !staleMail && Date.now() - m.launchLine.at < LAUNCH_LINE_MS) {
         speak(m.launchLine.text, { auto: true });
         return;
       }
@@ -490,6 +493,21 @@ export default function LyraCompanion() {
       remember((mm) => { mm.dismissed = [...(mm.dismissed || []), ...reading.flatMap((a) => a.ids)]; });
       found = found.filter((a) => !reading.includes(a));
     }
+    // keep her count of unread mail current, so she stops mentioning
+    // messages once they've been read
+    try {
+      const { count } = await supabase.from("direct_messages").select("id", { count: "exact", head: true }).eq("recipient_id", uid).is("read_at", null);
+      const unreadNow = count || 0;
+      if (counts.current) counts.current.unread = unreadNow;
+      if (!unreadNow) {
+        const held = memory.current?.launchLine;
+        if (held && String(held.id || "").startsWith("dm-")) {
+          remember((mm) => { mm.launchLine = null; });
+          setLine((cur) => (cur === held.text ? null : cur));
+          setHasMessage(false);
+        }
+      }
+    } catch (e) { /* messages not switched on yet */ }
     const key = (list) => list.map((a) => a.ids.join(",")).join("|");
     if (key(found) === key(alertsRef.current)) return;
     const isNew = found.some((a) => !alertsRef.current.some((b) => b.ids.join(",") === a.ids.join(",")));

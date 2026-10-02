@@ -108,6 +108,11 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   are 13i, five endings, one canon), at `/assignments/215783/interactive`
 
 ## Currently being worked on / most recently completed
+Update 5.41: Alpha feedback batch (see CHANGELOG) — story games need sign-in,
+Interactive Stories progress bar, Lyra unread-mail fix, game tweaks across
+all six games. The Deep Signal "ship vanishes" glitch was never reproduced in
+testing; 5.41 hardens every likely cause, so ask testers to report if it
+happens again (and what was on screen).
 Update 5.35/5.36: Season 1, Week 1 (The Quiet Moon) bundle; docs/SEASONS.md.
 The story ships with the site (`lib/archiveStories.js`), so it reads without
 the seed visit. Audio for it: Paul, later.
@@ -145,10 +150,6 @@ GitHub Desktop, rather than handed off as zips.
   each new page on first deploy
 - The "Download Chapters 1 & 2" option serves the existing PDF; there is no
   separate ebook (.epub) file yet
-- `components/ThirteenIVsNemesis.js` exists but is not wired into any
-  route — orphaned code, not a bug in the live site, but worth a deliberate
-  decision (delete it, or finish wiring it in) rather than leaving it
-  ambiguous
 - The Big Bang's easter egg (radar toggle) and its crossfade ending have
   not yet been tested on a live deploy — worth a quick check on first use,
   particularly that the real starfield underneath is actually visible

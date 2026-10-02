@@ -116,7 +116,7 @@ function newGame(seed) {
   for (let r = 0; r < GRID.rows; r++) for (let c = 0; c < GRID.cols; c++) grid.push(newHolder(c, r, rand() * 0.15 + (c === 0 || c === GRID.cols - 1 ? 0.25 : 0)));
   return {
     rand, grid, time: 0, tide: 1, tideT: 0, nextShock: 2.2, warnings: [], shocks: [], ripples: [], young: YOUNG.start, regrowT: 0,
-    score: 0, absorbed: 0, leakRecent: 0, messages: [], great: false, greatDone: false, over: false, overAt: 0, spentCount: 0,
+    score: 0, fed: 0, shared: 0, survived: 0, absorbed: 0, leakRecent: 0, messages: [], great: false, greatDone: false, over: false, overAt: 0, spentCount: 0,
   };
 }
 const at = (g, c, r) => g.grid[r * GRID.cols + c];
@@ -151,6 +151,7 @@ function enterCell(g, s) {
     e -= take;
     g.absorbed += take;
     g.score += take * SCORE.perAbsorbed;
+    g.fed += take * SCORE.perAbsorbed;
     if (take > 0.05) audio.absorb(take);
     if (h.wear >= 1 && !h.spent) {
       h.spent = true;
@@ -197,11 +198,12 @@ function splitShocks(g, h) {
     h.pulse = 1;
     g.absorbed += keep;
     g.score += keep * SCORE.perAbsorbed;
+    g.fed += keep * SCORE.perAbsorbed;
     const each = (s.energy - keep) / Math.max(1, ns.length);
     ns.forEach(([c, r]) => out.push({ c: h.c, r: h.r, energy: each, prog: 0, fromX: p.x, fromY: p.y, toC: c, toR: r, split: (s.split || 0) + 1 }));
   });
   g.shocks = out;
-  if (did) g.score += 5;
+  if (did) { g.score += 5; g.shared += 5; }
   return did;
 }
 
@@ -254,6 +256,7 @@ function step(g, dt) {
   }
   if (g.tideT >= TIDE.length) {
     g.score += greatTide ? SCORE.perGreatTide : SCORE.perTide;
+    g.survived += greatTide ? SCORE.perGreatTide : SCORE.perTide;
     if (greatTide) say(g, L.GREAT_DONE, true);
     g.tide += 1;
     g.tideT = 0;
@@ -469,7 +472,8 @@ function drawHud(g) {
   text(`TIDE ${g.tide}${g.tide % TIDE.greatEvery === 0 ? " · GREAT" : ""}`, 18, 24, { size: 12, align: "left", color: COLORS.lavMid });
   text(`YOUNG ${g.young}`, 18, 42, { size: 12, align: "left", color: COLORS.warm });
   text(`${Math.floor(g.score).toLocaleString()}`, VIEW.w - 18, 24, { size: 14, align: "right", color: COLORS.text });
-  text(save.muted ? "SOUND OFF (M)" : "M: SOUND", VIEW.w - 18, 42, { size: 10, align: "right", color: COLORS.muted });
+  text(L.COUNTING_SHORT, VIEW.w - 18, 40, { size: 9, align: "right", color: COLORS.muted });
+  text(save.muted ? "SOUND OFF (M)" : "M: SOUND", VIEW.w - 18, 56, { size: 10, align: "right", color: COLORS.muted });
   // tide progress
   ctx.fillStyle = "rgba(139,149,246,0.25)";
   ctx.fillRect(18, 52, 120, 2);
@@ -506,7 +510,7 @@ function finish() {
   save.best = Math.max(save.best, score);
   save.bestTide = Math.max(save.bestTide, game.tide);
   persist();
-  lastRun = { score, tide: game.tide, best: isBest, spent: game.spentCount };
+  lastRun = { score, tide: game.tide, best: isBest, spent: game.spentCount, fed: Math.floor(game.fed), shared: game.shared, survived: game.survived };
   post({ type: "score", score });
   screen = "over";
 }
@@ -519,7 +523,7 @@ function drawTitle(t) {
   text(L.SUBTITLE.toUpperCase(), VIEW.w / 2, 242, { size: 12, color: COLORS.lavMid });
   L.INTRO.forEach((line, i) => text(line, VIEW.w / 2, 300 + i * 26, { size: 17, font: "Fraunces", italic: true, color: i === 4 ? COLORS.warm : COLORS.lav, alpha: Math.min(1, Math.max(0, t * 0.8 - i * 0.6)) }));
   const k = 0.5 + 0.5 * Math.sin(t * 2.5);
-  text("touch to begin · H for how to play", VIEW.w / 2, 470, { size: 12, color: COLORS.muted, alpha: 0.5 + k * 0.5 });
+  text("touch to begin · H for how to play and how it is counted", VIEW.w / 2, 470, { size: 12, color: COLORS.muted, alpha: 0.5 + k * 0.5 });
   if (save.best) text(`BEST ${save.best.toLocaleString()} · TIDE ${save.bestTide}`, VIEW.w / 2, 500, { size: 11, color: COLORS.muted });
 }
 
@@ -527,9 +531,14 @@ function drawHowto(t) {
   drawWorld(null, t, false);
   ctx.fillStyle = "rgba(3,4,12,0.75)";
   ctx.fillRect(0, 0, VIEW.w, VIEW.h);
-  text("HOW THE LATTICE HOLDS", VIEW.w / 2, 170, { size: 13, color: COLORS.lavMid });
-  L.HOWTO.forEach((line, i) => text(line, VIEW.w / 2, 220 + i * 34, { size: 18, font: "Fraunces", italic: true, color: COLORS.lav }));
-  text("touch to begin", VIEW.w / 2, 430, { size: 12, color: COLORS.muted });
+  text("HOW THE LATTICE HOLDS", VIEW.w / 2, 76, { size: 13, color: COLORS.lavMid });
+  L.HOWTO.forEach((line, i) => text(line, VIEW.w / 2, 120 + i * 30, { size: 17, font: "Fraunces", italic: true, color: COLORS.lav }));
+  text(L.COUNTING_TITLE, VIEW.w / 2, 300, { size: 13, color: COLORS.lavMid });
+  L.COUNTING.forEach(([line, rule], i) => {
+    text(line, VIEW.w / 2, 340 + i * 50, { size: 17, font: "Fraunces", italic: true, color: COLORS.warm });
+    text(rule.toUpperCase(), VIEW.w / 2, 360 + i * 50, { size: 10, color: COLORS.muted });
+  });
+  text("touch to begin", VIEW.w / 2, 520, { size: 12, color: COLORS.muted });
 }
 
 function drawOver(t) {
@@ -540,6 +549,7 @@ function drawOver(t) {
   text(L.OVER_LINES[1], VIEW.w / 2, 234, { size: 16, font: "Fraunces", italic: true, color: COLORS.lav });
   text(`${lastRun.score.toLocaleString()}`, VIEW.w / 2, 300, { size: 40, color: COLORS.text });
   text(`TIDE ${lastRun.tide} · ${lastRun.spent} HOLDERS LET GO${lastRun.best ? " · NEW BEST" : ""}`, VIEW.w / 2, 330, { size: 12, color: lastRun.best ? COLORS.warm : COLORS.lavMid });
+  text(`FOOD TAKEN ${lastRun.fed.toLocaleString()} · LOADS SHARED ${lastRun.shared.toLocaleString()} · TIDES SURVIVED ${lastRun.survived.toLocaleString()}`, VIEW.w / 2, 356, { size: 11, color: COLORS.muted });
   if (t - game.overAt > 1.2 || true) text("touch to hold again", VIEW.w / 2, 400, { size: 12, color: COLORS.muted, alpha: 0.6 + 0.4 * Math.sin(t * 2.5) });
 }
 
@@ -562,6 +572,7 @@ canvas.addEventListener("pointermove", (e) => {
 canvas.addEventListener("pointerdown", (e) => {
   canvas.focus();
   audio.unlock();
+  if (screen === "title" && !save.runs) { screen = "howto"; return; }
   if (screen === "title" || screen === "howto") { start(); return; }
   if (screen === "over") { if (performance.now() > overReadyAt) start(); return; }
   if (screen === "play") {
@@ -572,6 +583,7 @@ canvas.addEventListener("pointerdown", (e) => {
 window.addEventListener("keydown", (e) => {
   if (e.key === "m" || e.key === "M") { save.muted = !save.muted; persist(); audio.noise(0); return; }
   if (screen === "title" && (e.key === "h" || e.key === "H")) { screen = "howto"; return; }
+  if (screen === "title" && !save.runs && (e.key === " " || e.key === "Enter")) { screen = "howto"; return; }
   if ((screen === "title" || screen === "howto") && (e.key === " " || e.key === "Enter")) { start(); return; }
   if (screen === "over" && (e.key === " " || e.key === "Enter") && performance.now() > overReadyAt) { start(); return; }
   // keyboard play: arrows move a cursor, space shares

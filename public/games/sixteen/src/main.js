@@ -259,6 +259,12 @@ function hud() {
   ctx.fillRect(24, 34, 260 * lf, 10);
   text(`${Math.round(g.light)}`, 292, 44, { size: 12, color: COLORS.text });
   if (lf < 0.2) text("THE CITY IS DIMMING", 24, 60, { size: 9, color: "#ff8a5c", alpha: 0.6 + 0.4 * Math.sin(time * 6) });
+  // powers in play
+  const powers = [];
+  if (g.surgeTime > 0) powers.push(`FLARE ${Math.ceil(g.surgeTime)}s`);
+  const hearts = g.mods.heart - g.heartsUsed;
+  if (hearts > 0) powers.push(`SECOND HEART ×${hearts}`);
+  if (powers.length) text(powers.join("  ·  "), 24, lf < 0.2 ? 76 : 60, { size: 9, color: COLORS.energyWarm, alpha: g.surgeTime > 0 ? 0.75 + 0.25 * Math.sin(time * 8) : 0.85 });
 
   // tide
   const left = Math.max(0, TIDE.length - g.tideTime);
@@ -408,8 +414,8 @@ function betweenScreen() {
   offers.forEach((o, i) => {
     const x = x0 + i * (w + gap), y = 220, h = 240;
     const hot = inRect(hover, { x, y, w, h });
-    ctx.fillStyle = hot ? "rgba(111,242,224,0.12)" : "rgba(4,21,31,0.92)";
-    ctx.strokeStyle = hot ? COLORS.energy : "rgba(111,242,224,0.3)";
+    ctx.fillStyle = hot ? "rgba(111,242,224,0.12)" : o.rare ? "rgba(40,28,8,0.92)" : "rgba(4,21,31,0.92)";
+    ctx.strokeStyle = o.rare ? (hot ? "#ffe2a8" : COLORS.energyWarm) : hot ? COLORS.energy : "rgba(111,242,224,0.3)";
     ctx.lineWidth = 1.2;
     ctx.fillRect(x, y, w, h);
     ctx.strokeRect(x + 0.5, y + 0.5, w - 1, h - 1);

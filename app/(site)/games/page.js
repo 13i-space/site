@@ -37,7 +37,7 @@ export default function GamesHub() {
       <div style={styles.divider} />
       <div className="page-title" style={{ fontSize: 30 }}>Games from Short Stories</div>
       <div className="page-subtitle">
-        <Link href="/assignments" style={{ color: "inherit" }}>Read Short Stories</Link> to Unlock Games
+        <Link href="/assignments" style={{ color: "inherit" }}>Read Short Stories</Link> to Unlock Games &middot; for signed-in Kin
       </div>
       <div style={styles.grid}>
         <StoryGameCards cardStyle={styles.card} titleStyle={styles.cardTitle} blurbStyle={styles.cardBlurb} />

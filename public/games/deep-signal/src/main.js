@@ -112,6 +112,16 @@ function frame(now) {
   } catch (e) {
     // One bad frame should never kill the game - log it and keep going.
     console.warn("[deep-signal] frame error", e);
+    // reset everything a half-finished draw could have left behind, so one
+    // error can't make the craft vanish or the screen smear on later frames
+    try {
+      if (ctx.reset) ctx.reset();
+      else { for (let i = 0; i < 32; i++) ctx.restore(); }
+      ctx.globalAlpha = 1;
+      ctx.globalCompositeOperation = "source-over";
+      ctx.setLineDash([]);
+      ctx.shadowBlur = 0;
+    } catch (e2) { /* nothing more to do */ }
   }
   game.input.endFrame();
   requestAnimationFrame(frame);

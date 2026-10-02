@@ -180,9 +180,11 @@ export function createOverlays(game) {
         });
         y += 20;
         [
+          "THE GOAL: raise the SIGNAL to 50%, find the Resonance Gate, follow it to the 13i Node.",
           "Follow the signal. Scanning reveals what the dark hides.",
           "ENERGY powers the scan. INTEGRITY is your craft.",
           "SIGNAL is what you have understood. AWARENESS is what has noticed you.",
+          "Fields that flash and show a ! are about to discharge. Move clear.",
           "Some choices are safer than others. You will learn which.",
         ].forEach((line) => {
           wrap(ctx, line, Math.min(560, w - 120), 13, { family: "'Fraunces', Georgia, serif", italic: true }).forEach((l) => {

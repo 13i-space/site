@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../lib/supabaseBrowser";
 
@@ -33,6 +33,18 @@ const btnStyle = (disabled) => ({
 export default function LoginPage() {
   const router = useRouter();
   const [tab, setTab] = useState("login"); // login | signup | magic | forgot
+  // /login?tab=signup opens on Sign up; ?next=/games/tacet returns there after
+  const [next, setNext] = useState("/account");
+  useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      if (q.get("tab") === "signup") setTab("signup");
+      const n = q.get("next");
+      if (n && n.startsWith("/") && !n.startsWith("//")) setNext(n);
+    } catch (e) {
+      // ignore
+    }
+  }, []);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -81,7 +93,7 @@ export default function LoginPage() {
       setError(authError.message);
       return;
     }
-    router.push("/account");
+    router.push(next);
     router.refresh();
   };
 
@@ -109,7 +121,7 @@ export default function LoginPage() {
       setError(authError.message);
       return;
     }
-    router.push("/account");
+    router.push(next);
     router.refresh();
   };
 

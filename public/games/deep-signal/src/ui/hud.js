@@ -42,6 +42,11 @@ export function drawHud(ctx, game, run, t) {
   ctx.fillStyle = "#f3e3b5";
   ctx.fillRect(m + 30, m + 40, bw * Math.min(1, s.signal / 100), 2);
   text(ctx, `FRAGMENTS ${run.fragments.length}`, m + 30, m + 56, { size: 8, spacing: 2, color: "#a8987a" });
+  // what to do next - always on screen, so the point of the run is never a mystery
+  const obj = objectiveFor(run);
+  text(ctx, "OBJECTIVE", m, m + 82, { size: 8, spacing: 3, color: "#7c7c84" });
+  obj.forEach((line, i) => text(ctx, line, m, m + 98 + i * 14, { size: w < 600 ? 8 : 9, spacing: 1.5, color: i ? "#a8987a" : "#f3e3b5" }));
+  if (glitch && run.warden.effects.falseReading > 0) text(ctx, "INTERFERENCE", m + 30 + bw + 8, m + 44, { size: 8, spacing: 2, color: "#a8987a", alpha: 0.6 + 0.4 * Math.sin(t * 9) });
   const sd = run.deltas.signal;
   if (sd && sd.age < 1.6) text(ctx, `+${Math.round(sd.amount)}`, m + 30 + bw + 8, m + 32 - sd.age * 8, { size: 11, color: "#fff4d6", alpha: 1 - sd.age / 1.6 });
 
@@ -185,4 +190,14 @@ export function drawFullMap(ctx, game, run, t) {
   drawMinimap(ctx, game, run, (w - size) / 2, 70, size, t, true);
   const legend = [["△", "RELAY"], ["+", "ENERGY"], ["◇", "DEVICE"], ["○", "GATE"]];
   legend.forEach(([g, l], i) => text(ctx, `${g} ${l}`, 32, h - 110 + i * 18, { size: 9, spacing: 2, color: "#7c7c84" }));
+}
+
+// The current goal, in two short lines.
+export function objectiveFor(run) {
+  const s = run.stats;
+  const room = run.world.roomAt(run.player.x, run.player.y);
+  if (room && room.type === "node") return ["REACH THE 13i NODE AT THE CENTER", "INTERACT WITH IT TO ANSWER THE SIGNAL"];
+  if (s.signal >= 50) return ["FIND THE RESONANCE GATE AND FOLLOW IT", "A RING ON THE MAP (M) ONCE YOU HAVE SEEN IT"];
+  const warn = s.awareness >= 70 ? "KEEP AWARENESS BELOW 100 - IT IS CLOSE" : "SCAN \u00B7 READ MARKERS \u00B7 CONNECT RELAYS";
+  return [`RAISE THE SIGNAL TO 50%   ( NOW ${Math.round(s.signal)}% )`, warn];
 }

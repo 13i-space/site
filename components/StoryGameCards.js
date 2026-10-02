@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { STORY_GAMES, openedStories } from "../lib/storyGames";
+import { useSignedIn, signUpHref } from "./SignUpToPlay";
 
 // The Games hub's "Games from Short Stories" cards. An unlocked game links
 // to itself; a locked one names its story and links there instead, so the
@@ -16,7 +17,30 @@ export default function StoryGameCards({ cardStyle, titleStyle, blurbStyle }) {
     return () => { cancelled = true; };
   }, []);
 
-  if (!opened) return null;
+  const signedIn = useSignedIn();
+
+  if (!opened || signedIn === null) return null;
+
+  // signed out: every story game shows, grayed, with an invitation to sign up
+  if (!signedIn) {
+    return STORY_GAMES.map((g) => (
+      <Link
+        key={g.href}
+        href={signUpHref(g.href)}
+        style={{ ...cardStyle, opacity: 0.55, filter: "grayscale(1)" }}
+        aria-label={`${g.title}: sign up to play`}
+      >
+        <div className="mono" style={{ fontSize: 9, letterSpacing: "1.5px", color: "#565B8F", marginBottom: 8 }}>
+          FROM {g.story.toUpperCase()}
+        </div>
+        <div className="wordmark" style={{ ...titleStyle, color: "#8A8FBF" }}>{g.title}</div>
+        <p style={blurbStyle}>{g.blurb}</p>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "1.5px", color: "#B9C0FF", marginTop: 12 }}>
+          SIGN UP FREE TO PLAY &rarr;
+        </div>
+      </Link>
+    ));
+  }
 
   return STORY_GAMES.map((g) => {
     const unlocked = opened.has(g.assignment);

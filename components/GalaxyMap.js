@@ -401,9 +401,9 @@ export default function GalaxyMap() {
         onScreen.push({ id: m.id, x: sx, y: sy, small: true });
         const isSel = sel === m.id;
         const twinkle = reduceMotion ? 1 : 0.75 + 0.25 * Math.sin(time / 900 + m.x * 40);
-        ctx.globalAlpha = (m.own || isSel ? 0.95 : 0.7) * twinkle;
+        ctx.globalAlpha = (m.own || isSel ? 0.95 : 0.85) * twinkle;
         ctx.fillStyle = SPECIES_COLOR;
-        ctx.beginPath(); ctx.arc(sx, sy, m.own || isSel ? 2.6 : 2, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(sx, sy, m.own || isSel ? 2.6 : 2.3, 0, Math.PI * 2); ctx.fill();
         ctx.globalAlpha = 1;
         if (m.own || isSel) {
           ctx.strokeStyle = isSel ? "#E8CFC0" : "rgba(111,195,168,0.55)";
@@ -555,6 +555,7 @@ export default function GalaxyMap() {
 
   const selectedMarker = markers.find((m) => m.id === selected);
   const selectedSpecies = speciesMarkers.find((m) => m.id === selected);
+  const ownCount = speciesMarkers.filter((m) => m.own).length;
   const ownSpecies = speciesMarkers.filter((m) => m.own).slice(0, 6);
   const lockedCount = STORY_WORLDS.length - unlockedWorlds.length;
 
@@ -593,7 +594,7 @@ export default function GalaxyMap() {
             style={{ ...styles.chip, borderColor: showSpecies ? "rgba(111,195,168,0.6)" : "#262A55", color: showSpecies ? SPECIES_COLOR : "#565B8F" }}
           >
             <span style={{ display: "inline-block", width: 7, height: 7, borderRadius: "50%", background: showSpecies ? SPECIES_COLOR : "#3A3E75", marginRight: 7 }} />
-            Kin species ({speciesMarkers.length}) {showSpecies ? "shown" : "hidden"}
+            Kin species: {speciesMarkers.length} total{ownCount > 0 ? ` \u00b7 ${ownCount} yours` : ""} {showSpecies ? "shown" : "hidden"}
           </button>
         )}
         {showSpecies && ownSpecies.map((m) => (

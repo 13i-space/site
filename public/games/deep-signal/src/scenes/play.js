@@ -1,7 +1,7 @@
 // The run: exploring the world, reconstructing the signal, being noticed.
 
 import { generateWorld, TW } from "../world/generator.js";
-import { drawWorld, moveCircle, updateDoors } from "../world/world.js";
+import { drawWorld, moveCircle, updateDoors, isSolid } from "../world/world.js";
 import { PLAYER, COSTS, AWARENESS, SIGNAL, TILE, ROOM_W, ROOM_H } from "../config.js";
 import { formatSeed } from "../core/rng.js";
 import { LORE_BY_ID, FRAGMENTS } from "../lore/lore.js";
@@ -146,6 +146,25 @@ export function playScene(game, { seed }) {
     const r = world.roomAt(run.player.x, run.player.y);
     return r && r.dark ? base * 0.75 : base;
   };
+
+  // Never lose the craft: if it ever ends up somewhere impossible (inside a
+  // wall or a door that sealed on it, or with a broken position), put it back
+  // at the last place it was standing freely.
+  let lastSafe = { x: run.player.x, y: run.player.y };
+  function keepPlayerSafe(p) {
+    const bad = !Number.isFinite(p.x) || !Number.isFinite(p.y) || !Number.isFinite(p.vx) || !Number.isFinite(p.vy)
+      || isSolid(world, Math.floor(p.x / TILE), Math.floor(p.y / TILE));
+    if (bad) {
+      p.x = lastSafe.x; p.y = lastSafe.y; p.vx = 0; p.vy = 0;
+      if (!Number.isFinite(cam.x) || !Number.isFinite(cam.y)) { cam.x = p.x; cam.y = p.y; }
+    } else {
+      lastSafe = { x: p.x, y: p.y };
+    }
+  }
+  run.playerOverlaps = (tiles) => tiles.some((idx) => {
+    const x = ((idx % TW) + 0.5) * TILE, y = (Math.floor(idx / TW) + 0.5) * TILE;
+    return Math.abs(x - run.player.x) < TILE / 2 + run.player.radius + 4 && Math.abs(y - run.player.y) < TILE / 2 + run.player.radius + 4;
+  });
 
   function finish(ending) {
     if (run.ending) return;
@@ -373,7 +392,15 @@ export function playScene(game, { seed }) {
     run.slowed = false;
     room.hazards.forEach((hz) => {
       if (hz.type === "field") {
+        const wasActive = hz.active;
         hz.active = Math.sin(((run.time + hz.phase) / hz.period) * Math.PI * 2) > 0.3;
+        // a clear warning before it discharges: is it about to switch on?
+        hz.warnLead = Math.min(1, hz.period * 0.25);
+        hz.charging = !hz.active && Math.sin(((run.time + hz.warnLead + hz.phase) / hz.period) * Math.PI * 2) > 0.3;
+        const near = p.x > hz.x - 60 && p.x < hz.x + hz.w + 60 && p.y > hz.y - 60 && p.y < hz.y + hz.h + 60;
+        if (hz.charging && !hz.warned && near) { hz.warned = true; game.audio.warning(); }
+        if (!hz.charging && !hz.active) hz.warned = false;
+        if (hz.active && !wasActive) hz.warned = false;
         if (hz.active && p.x > hz.x && p.x < hz.x + hz.w && p.y > hz.y && p.y < hz.y + hz.h && run.hurtCd <= 0) {
           api.damage(5);
           api.addAwareness(1);
@@ -448,6 +475,7 @@ export function playScene(game, { seed }) {
         run.player.y = (node.cy * ROOM_H + 11.5) * TILE;
         run.player.vx = 0; run.player.vy = -30;
         cam.x = run.player.x; cam.y = run.player.y;
+        lastSafe = { x: run.player.x, y: run.player.y };
         api.msg("ORIGIN IS NOT A LOCATION.", { life: 5 });
       }
       if (run.teleport.t > 2.8) run.teleport = null;
@@ -507,6 +535,7 @@ export function playScene(game, { seed }) {
     if (sp > max && (mv.x || mv.y)) { p.vx *= max / sp; p.vy *= max / sp; }
     if (sp > 20) p.heading = Math.atan2(p.vy, p.vx);
     moveCircle(world, p, p.vx * dt, p.vy * dt);
+    keepPlayerSafe(p);
     if (sp > 60 && !game.settings().reducedEffects && rng.chance(0.3)) {
       game.particles.spawn({ x: p.x - Math.cos(p.heading) * 10, y: p.y - Math.sin(p.heading) * 10, vx: -p.vx * 0.2, vy: -p.vy * 0.2, life: 0.5, size: 1.2, alpha: 0.5 });
     }
@@ -605,6 +634,11 @@ export function playScene(game, { seed }) {
     const tx = p.x + p.vx * 0.25, ty = p.y + p.vy * 0.25;
     cam.x += (tx - cam.x) * 0.08;
     cam.y += (ty - cam.y) * 0.08;
+    if (!Number.isFinite(cam.x) || !Number.isFinite(cam.y)) { cam.x = p.x; cam.y = p.y; }
+    // the craft always stays on screen, whatever pushed it
+    const maxOff = Math.min(w, h) * 0.35 / cam.zoom;
+    cam.x = Math.max(p.x - maxOff, Math.min(p.x + maxOff, cam.x));
+    cam.y = Math.max(p.y - maxOff, Math.min(p.y + maxOff, cam.y));
     const t = run.time;
 
     ctx.fillStyle = "#030303";
@@ -639,6 +673,29 @@ export function playScene(game, { seed }) {
             else i ? ctx.lineTo(hz.x + i, hz.y + hz.h / 2 + j) : ctx.moveTo(hz.x + i, hz.y + hz.h / 2 + j);
           }
           ctx.stroke();
+        } else if (hz.charging) {
+          // CHARGING: it's about to discharge - flashing border, sparks, and a mark
+          const flash = 0.45 + 0.45 * Math.abs(Math.sin(t * 14));
+          ctx.fillStyle = `rgba(255,244,214,${0.06 + 0.08 * flash})`;
+          ctx.fillRect(hz.x, hz.y, hz.w, hz.h);
+          ctx.strokeStyle = `rgba(255,244,214,${flash})`;
+          ctx.lineWidth = 2;
+          ctx.setLineDash([6, 4]);
+          ctx.lineDashOffset = -t * 40;
+          ctx.strokeRect(hz.x + 1, hz.y + 1, hz.w - 2, hz.h - 2);
+          ctx.setLineDash([]);
+          ctx.lineDashOffset = 0;
+          ctx.lineWidth = 1;
+          for (let k = 0; k < 3; k++) {
+            const sx = hz.x + Math.random() * hz.w, sy = hz.y + Math.random() * hz.h;
+            ctx.fillStyle = `rgba(255,244,214,${0.5 + Math.random() * 0.5})`;
+            ctx.fillRect(sx, sy, 2, 2);
+          }
+          const mx = hz.x + hz.w / 2, my = hz.y + hz.h / 2;
+          ctx.fillStyle = `rgba(255,244,214,${flash})`;
+          ctx.font = "bold 16px 'JetBrains Mono', monospace";
+          ctx.textAlign = "center";
+          ctx.fillText("!", mx, my + 6);
         } else if (on > 0.05) {
           ctx.strokeStyle = "rgba(243,227,181,0.35)";
           ctx.setLineDash([4, 6]);
@@ -708,6 +765,10 @@ export function playScene(game, { seed }) {
         if (l) addWorldLight(o.x, o.y, l[0], l[1]);
       });
       r.hazards.forEach((hz) => {
+        if (hz.type === "field" && hz.charging) {
+          const vertical = hz.h > hz.w, len = vertical ? hz.h : hz.w;
+          for (let i = 40; i < len; i += 90) addWorldLight(vertical ? hz.x + hz.w / 2 : hz.x + i, vertical ? hz.y + i : hz.y + hz.h / 2, 55, 0.3);
+        }
         if (hz.type === "field" && hz.active) {
           const vertical = hz.h > hz.w, len = vertical ? hz.h : hz.w;
           for (let i = 40; i < len; i += 90) addWorldLight(vertical ? hz.x + hz.w / 2 : hz.x + i, vertical ? hz.y + i : hz.y + hz.h / 2, 70, 0.45);

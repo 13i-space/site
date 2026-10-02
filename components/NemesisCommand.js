@@ -157,10 +157,29 @@ export default function NemesisCommand() {
       const { x, y } = toCanvasCoords(touch.clientX, touch.clientY);
       updateAim(x, y);
     };
+    // keyboard: left/right arrows move, space or up arrow fire (X still works)
+    const held = { left: false, right: false };
+    let lastKeyShot = 0;
+    const keyFire = () => {
+      const now = performance.now();
+      if (now - lastKeyShot < 140) return; // holding the key auto-fires, not floods
+      lastKeyShot = now;
+      stateRef.current.aimAngle = -Math.PI / 2;
+      fireAtAim();
+    };
+    const typing = (e) => {
+      const tag = e.target?.tagName;
+      return tag === "INPUT" || tag === "TEXTAREA" || e.target?.isContentEditable;
+    };
     const handleKeyDown = (e) => {
-      if (e.key === "x" || e.key === "X") {
-        fireAtAim();
-      }
+      if (typing(e)) return;
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") { held.left = true; e.preventDefault(); }
+      else if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") { held.right = true; e.preventDefault(); }
+      else if (e.key === " " || e.key === "ArrowUp" || e.key === "x" || e.key === "X") { e.preventDefault(); keyFire(); }
+    };
+    const handleKeyUp = (e) => {
+      if (e.key === "ArrowLeft" || e.key === "a" || e.key === "A") held.left = false;
+      if (e.key === "ArrowRight" || e.key === "d" || e.key === "D") held.right = false;
     };
 
     canvas.addEventListener("click", handleClick);
@@ -168,6 +187,7 @@ export default function NemesisCommand() {
     canvas.addEventListener("touchstart", handleTouchStart, { passive: false });
     canvas.addEventListener("touchmove", handleTouchMove, { passive: false });
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
 
     const drawEnemy = (x, y, r) => {
       ctx.strokeStyle = "#C97B6E";
@@ -228,6 +248,11 @@ export default function NemesisCommand() {
       frame += 1;
       const s = stateRef.current;
       const lvl = levelForScore(s.score);
+
+      // arrow-key movement, scaled to the field like everything else
+      const move = 6 * (canvas.height / DESIGN_HEIGHT);
+      if (held.left) s.turretX = Math.max(20, s.turretX - move);
+      if (held.right) s.turretX = Math.min(canvas.width - 20, s.turretX + move);
       const cfg = LEVELS[lvl];
 
       if (t - s.lastSpawn > cfg.spawnMs) {
@@ -340,6 +365,7 @@ export default function NemesisCommand() {
       canvas.removeEventListener("touchstart", handleTouchStart);
       canvas.removeEventListener("touchmove", handleTouchMove);
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
     };
   }, [started]);
 

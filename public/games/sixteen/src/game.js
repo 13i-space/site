@@ -89,7 +89,9 @@ export function createGame(seed, hooks = {}) {
     messages: [],
     selectedArm: null,
     stats: { repairs: 0, listened: 0, listenedRight: 0, ignoredRight: 0, autonomous: 0, currentsHeld: 0, ruptures: 0, peakMult: 1, time: 0 },
-    mods: { chorus: 0, scars: 0, listener: 0, chamber: 0, glow: 0, swift: 0, wander: 0, steady: 0, song: 0 },
+    mods: { chorus: 0, scars: 0, listener: 0, chamber: 0, glow: 0, swift: 0, wander: 0, steady: 0, song: 0, mend: 0, harmony: 0, surge: 0, shell: 0, heart: 0 },
+    surgeTime: 0, // seconds of Flare left this tide
+    heartsUsed: 0,
     shake: 0,
     flash: 0,
     rng,
@@ -103,9 +105,9 @@ export function createGame(seed, hooks = {}) {
 
   // --- helpers ---
   g.maturedCount = () => arms.filter((a) => a.mature).length;
-  const tipSpeed = (a) => ARMS.tipSpeed * (1 + g.mods.swift * 0.22) * (a.state === "fetch" || a.state === "carry" ? 1 + g.mods.chamber * 0.6 : 1);
+  const tipSpeed = (a) => ARMS.tipSpeed * (1 + g.mods.swift * 0.3) * (g.surgeTime > 0 ? 1.8 : 1) * (a.state === "fetch" || a.state === "carry" ? 1 + g.mods.chamber * 0.6 : 1);
   const workRate = (a) => {
-    let r = ARMS.baseWork;
+    let r = ARMS.baseWork * (g.surgeTime > 0 ? 2.2 : 1);
     if (a.specialty === "grip") r *= 1 + 0.3 * a.level;
     if (a.reluctant > 0) r *= 0.75;
     if (a.personality === "patient") r *= 0.9;
@@ -196,8 +198,9 @@ export function createGame(seed, hooks = {}) {
       emit("call", {});
     } else {
       g.stats.repairs += 1;
-      g.comboTimer = SCORE.comboWindow;
-      g.mult = Math.min(SCORE.maxMult, g.mult + 0.25);
+      g.comboTimer = SCORE.comboWindow + g.mods.harmony * 1.6;
+      g.mult = Math.min(SCORE.maxMult + g.mods.harmony, g.mult + 0.25 + g.mods.harmony * 0.1);
+      if (g.mods.mend) g.light = Math.min(LIGHT.max, g.light + 4 * g.mods.mend);
       g.stats.peakMult = Math.max(g.stats.peakMult, g.mult);
       g.score += Math.round(SCORE.repair * g.mult * (f.escalated ? 0.7 : 1) * (f.type === "overload" ? 1.4 : 1));
       emit("repair", { fault: f });
@@ -373,7 +376,7 @@ export function createGame(seed, hooks = {}) {
       say("You held.", "good");
       emit("held", {});
     } else {
-      g.light = Math.max(0, g.light - CURRENT.failPenalty);
+      g.light = Math.max(0, g.light - CURRENT.failPenalty * Math.max(0, 1 - g.mods.shell * 0.5));
       g.shake = 0.8;
       // the flood tears working limbs back to the body
       arms.forEach((a) => {
@@ -482,6 +485,7 @@ export function createGame(seed, hooks = {}) {
     g.spawnTimer = 1.5;
     scheduleCurrent();
     say(`Tide ${g.tide}. ${pickFrom(rng, TIDE_OPENERS)}`, "big");
+    if (g.mods.surge) { g.surgeTime = 6 + g.mods.surge * 5; g.flash = 0.6; say("FLARE. Every limb burns bright.", "good"); }
     emit("tideStart", { tide: g.tide });
   };
 
@@ -517,6 +521,7 @@ export function createGame(seed, hooks = {}) {
 
     // combo decays
     g.comboTimer -= dt;
+    if (g.surgeTime > 0) g.surgeTime = Math.max(0, g.surgeTime - dt);
     if (g.comboTimer <= 0 && g.mult > 1) { g.mult = Math.max(1, g.mult - dt * 0.5); }
 
     if (g.phase === "play") {
@@ -586,7 +591,7 @@ export function createGame(seed, hooks = {}) {
 
     // light: regen minus every open fault's drain
     const drain = g.faults.reduce((sum, f) => sum + (f.type === "rupture" ? 0 : faultDrain(f)), 0);
-    g.light += (LIGHT.regen + g.mods.glow * 0.7) * dt * (drain === 0 ? 1 : 0.5) - drain * dt;
+    g.light += (LIGHT.regen + g.mods.glow * 1.0) * dt * (drain === 0 ? 1 : 0.5) - drain * dt;
     g.light = Math.min(LIGHT.max, g.light);
     g.score += SCORE.perSecond * (g.light / LIGHT.max) * g.mult * dt;
 
@@ -609,6 +614,15 @@ export function createGame(seed, hooks = {}) {
     moveArms(dt);
     workFaults(dt);
 
+    if (g.light <= 0 && g.heartsUsed < g.mods.heart) {
+      // Second heart: the first darkness is survived
+      g.heartsUsed += 1;
+      g.light = LIGHT.max * 0.6;
+      g.flash = 1;
+      g.shake = 0.6;
+      say("A second heart beats. The city lights again.", "big");
+      emit("call", {});
+    }
     if (g.light <= 0) {
       g.light = 0;
       g.phase = "over";

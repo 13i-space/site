@@ -34,6 +34,20 @@ function wrap(v, max) {
   return v;
 }
 
+// Does the segment (x1,y1)-(x2,y2) pass within `r` of (cx,cy)? Ignores a
+// segment that wrapped across the screen edge (just checks the end point).
+function segmentNear(x1, y1, x2, y2, cx, cy, r) {
+  const sx = x2 - x1, sy = y2 - y1;
+  const len2 = sx * sx + sy * sy;
+  if (len2 === 0 || len2 > 400) {
+    const dx = x2 - cx, dy = y2 - cy;
+    return dx * dx + dy * dy < r * r;
+  }
+  const t = Math.max(0, Math.min(1, ((cx - x1) * sx + (cy - y1) * sy) / len2));
+  const px = x1 + sx * t - cx, py = y1 + sy * t - cy;
+  return px * px + py * py < r * r;
+}
+
 function makeAsteroidShape() {
   const points = 10;
   return Array.from({ length: points }, () => 0.78 + Math.random() * 0.4);
@@ -256,10 +270,14 @@ export default function AsteroidBelt() {
         a.rot += a.vrot;
         const r = ASTEROID_TIERS[a.tier].radius;
 
+        // forgiving hit box: the drawn rock reaches past its base radius
+        // (its jagged outline), so count anything that touches what you see,
+        // plus a little - and check the bullet's whole step, not just where it
+        // landed, so a fast shot can't slip through a small rock
+        const hitR = r * Math.max(1, ...a.shape) * 1.15 + 4;
         s.bullets.forEach((b) => {
           if (b.life <= 0) return;
-          const dx = b.x - a.x, dy = b.y - a.y;
-          if (dx * dx + dy * dy < r * r) {
+          if (segmentNear(b.x - b.vx, b.y - b.vy, b.x, b.y, a.x, a.y, hitR)) {
             b.life = 0;
             a.alive = false;
             s.score += ASTEROID_TIERS[a.tier].points;
@@ -427,7 +445,7 @@ export default function AsteroidBelt() {
         ctx.lineTo(-r * 0.55, r * 0.4);
         ctx.lineTo(-r * 1.8, 0);
         ctx.closePath();
-        ctx.fillStyle = "#C97B6E";
+        ctx.fillStyle = "rgba(201, 123, 110, 0.35)"; // see-through, so it never hides a rock
         ctx.fill();
         // ring body
         ctx.strokeStyle = "#C97B6E";
@@ -444,7 +462,7 @@ export default function AsteroidBelt() {
           ctx.beginPath();
           ctx.moveTo(-r * 1.8, 0);
           ctx.lineTo(-r * 2.6, 0);
-          ctx.strokeStyle = "#E8CFC0";
+          ctx.strokeStyle = "rgba(232, 207, 192, 0.4)";
           ctx.lineWidth = 1.6;
           ctx.stroke();
         }

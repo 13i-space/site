@@ -636,7 +636,7 @@
           const tp = targetPos(et);
           const dist = Math.hypot(p.tx - tp.x, p.ty - tp.y);
           if (e.type === 'kinetic'){
-            if (dist <= 30){
+            if (dist <= 42){ // a bigger intercept: easier to land, softer when it does
               if (deflectionActive(et)){
                 e.deflects++;
                 sfx.deflect();
@@ -644,7 +644,7 @@
               } else {
                 e.hits++;
                 sfx.hit();
-                const dmg = 6 + Math.random()*5;
+                const dmg = 3.5 + Math.random()*3;
                 state.hull = Math.max(0, state.hull - dmg);
                 state.score += Math.round(dmg*10);
                 showToast('HIT — HULL -' + dmg.toFixed(0) + '%', 'hit');
@@ -799,7 +799,7 @@
         const t = Math.min(p.t,1);
         const x = p.sx + (p.tx-p.sx)*t;
         const y = p.sy + (p.ty-p.sy)*t - Math.sin(t*Math.PI)*90;
-        const size = e.type === 'nuke' ? 7 : (e.type === 'emp' ? 6 : 4);
+        const size = e.type === 'nuke' ? 7 : (e.type === 'emp' ? 6 : 7);
         const color = e.type === 'nuke' ? '#ff4136' : (e.type === 'emp' ? '#9b6bff' : '#ffb020');
         ctx.beginPath();
         ctx.arc(x,y,size,0,Math.PI*2);
@@ -851,7 +851,20 @@
     ctx.fillRect(20, 18, 200*remain, 6);
     ctx.fillStyle = '#6f8ea3';
     ctx.font = "10px 'JetBrains Mono'";
+    ctx.textAlign = 'left';
     ctx.fillText('HITS ' + e.hits + '  MISS ' + e.misses + '  DEFLECTED ' + e.deflects, 20, 40);
+
+    // 13i's hull, top right: what this whole run has done to it so far
+    const hullPct = Math.max(0, state.hull) / 100;
+    const bw = 200, bx = W - 20 - bw, by = 18;
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(bx, by, bw, 6);
+    ctx.fillStyle = state.hull < 30 ? '#ff8a80' : (state.hull < 60 ? '#c9a8ff' : '#9b6bff');
+    ctx.fillRect(bx + bw*(1-hullPct), by, bw*hullPct, 6);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#6f8ea3';
+    ctx.fillText('13i HULL ' + Math.round(Math.max(0, state.hull)) + '%  ·  TOTAL DAMAGE ' + Math.round(100 - Math.max(0, state.hull)) + '%', W - 20, 40);
+    ctx.textAlign = 'left';
 
     // large persistent firing instruction, on-canvas so it can't be missed
     ctx.textAlign = 'center';

@@ -643,6 +643,10 @@ main {
 .game-frame:-webkit-full-screen .ia-stage { flex: 1; height: auto; min-height: 0; border: 0; border-radius: 0; }
 .game-frame.pseudo-fullscreen .ia-stage { flex: 1; height: auto; min-height: 0; border: 0; border-radius: 0; }
 
+.ia-progress { height: 4px; margin-top: 8px; background: #14163A; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.ia-progress-fill { height: 100%; background: linear-gradient(to right, #8B95F6, #E8CFC0); transition: width 0.6s ease; }
+.game-frame:fullscreen .ia-progress, .game-frame:-webkit-full-screen .ia-progress, .game-frame.pseudo-fullscreen .ia-progress { margin-top: 0; border-radius: 0; }
+
 .ia-hud {
   position: absolute; top: 14px; left: 16px; right: 260px;
   font-size: 10.5px; letter-spacing: 1.5px; color: #8B95F6;
