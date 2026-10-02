@@ -20,6 +20,9 @@ import { onPlayerTwo, playerTwo, playerTwoEnd } from "../lib/lyraAssist";
 // And when Lyra Assist is on in a game (lib/lyraAssist.js), she is player
 // two: her eye locks onto her character, her ring races, a thread of light
 // runs from her to it, and she flares each time it fires.
+// In the Oracle's chamber (state "deferring") she withdraws: smaller, dim,
+// eye lowered toward the chamber. 13i is speaking, not her. She glances up
+// as each answer arrives (the "13i:oracle" event), then settles back.
 const PALETTE = [
   { ring: "#B9C0FF", pupil: "#DCDFFF", glow: "139,149,246" },
   { ring: "#B9C0FF", pupil: "#E8CFC0", glow: "160,160,240" },
@@ -31,6 +34,22 @@ const PALETTE = [
 export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false, size = 48 }) {
   const ref = useRef(null);
   const [look, setLook] = useState({ x: 0, y: 0 });
+  const deferring = state === "deferring";
+  const deferringRef = useRef(false);
+  deferringRef.current = deferring;
+  const [oracle, setOracle] = useState(null); // null | "asking" | "answer"
+  useEffect(() => {
+    let t;
+    const on = (e) => {
+      const ph = e.detail && e.detail.phase;
+      setOracle(ph || null);
+      clearTimeout(t);
+      if (ph === "answer") t = setTimeout(() => setOracle(null), 2600);
+    };
+    window.addEventListener("13i:oracle", on);
+    return () => { window.removeEventListener("13i:oracle", on); clearTimeout(t); };
+  }, []);
+  const glancing = deferring && !!oracle;
   const [blink, setBlink] = useState(false);
   const c = PALETTE[Math.max(0, Math.min(4, stage))];
   const dormant = state === "dormant";
@@ -42,6 +61,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     let raf = 0;
     const onMove = (e) => {
       if (playerTwo().active) return; // she's busy watching her own character
+      if (deferringRef.current) return; // in the Oracle's chamber her eyes stay on 13i
       cancelAnimationFrame(raf);
       raf = requestAnimationFrame(() => {
         const r = ref.current?.getBoundingClientRect();
@@ -113,8 +133,8 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
         m.spin += dt * (0.02 + m.level * 0.5 + m.high * 0.6) * e;
         set(spinRef.current, `rotate(${(m.spin % 360).toFixed(1)}deg)`);
         const flap = (6 + 20 * m.pulse) * e * (0.3 + m.level);
-        set(wingLRef.current, `rotate(${(-flap).toFixed(1)}deg)`);
-        set(wingRRef.current, `rotate(${flap.toFixed(1)}deg)`);
+        set(wingLRef.current, `rotate(${flap.toFixed(1)}deg)`); // a lift on each beat
+        set(wingRRef.current, `rotate(${(-flap).toFixed(1)}deg)`);
       }
       set(eyeRef.current, `scale(${(1 + 0.4 * m.bass * e).toFixed(3)})`);
       if (listener || m.energy > 0.01 || m.pulse > 0.01) raf = requestAnimationFrame(frame);
@@ -171,12 +191,14 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     return () => cancelAnimationFrame(raf);
   }, [p2]);
 
-  const lid = dormant && !p2 ? 0.45 : blink ? 0.08 : 1; // playing wakes her right up
+  const lid = blink ? 0.08 : deferring && !glancing ? 0.5 : dormant && !p2 ? 0.45 : 1; // playing wakes her right up
+  // deferring: eyes lowered toward the chamber; glancing: looking up at it
+  const lookNow = deferring ? (glancing ? { x: -3, y: -2.6 } : { x: -2.2, y: 0.8 }) : look;
   const pupilR = state === "thinking" ? 2.6 : dormant && !p2 ? 3 : 4.2;
   const motes = stage >= 2 ? stage - 1 : 0;
 
   return (
-    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}`} style={{ width: size, height: size, opacity: dormant && !p2 ? 0.6 : 1 }}>
+    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}${glancing ? " lyra-glance" : ""}`} style={{ width: size, height: size, opacity: deferring && !p2 ? (glancing ? 0.85 : 0.4) : dormant && !p2 ? 0.6 : 1 }}>
       {p2 && <span className="mono lyra-p2-badge">P2 · PLAYING</span>}
       {p2 && mounted && createPortal(
         <svg className="lyra-tether" aria-hidden="true">
@@ -193,6 +215,10 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
       <svg width={size} height={size} viewBox="-26 -26 52 52" aria-hidden="true" style={{ overflow: "visible" }}>
         <g ref={danceRef}>
         <defs>
+          <linearGradient id="lyra-feather" x1="0" y1="0" x2="1" y2="0" gradientUnits="objectBoundingBox">
+            <stop offset="0%" stopColor={c.ring} stopOpacity="0.08" />
+            <stop offset="100%" stopColor={c.ring} stopOpacity="0.5" />
+          </linearGradient>
           <radialGradient id="lyra-glow">
             <stop offset="0%" stopColor={`rgba(${c.glow},0.55)`} />
             <stop offset="100%" stopColor={`rgba(${c.glow},0)`} />
@@ -201,14 +227,24 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
 
         <g ref={glowRef}><circle className="lyra-breath" r="24" fill="url(#lyra-glow)" /></g>
         {p2 && <circle ref={p2GlowRef} r="26" fill="none" stroke="#B9C0FF" strokeWidth="1.4" opacity="0.45" />}
-        <circle r="17.5" fill="#0C0E28" stroke="#3A3E75" strokeWidth="1" />
-
         {stage >= 4 && (
-          <g className="lyra-wings" stroke={c.ring} strokeWidth="1.3" fill="none" strokeLinecap="round" opacity="0.85">
-            <g ref={wingLRef} style={{ transformOrigin: "-17px 0" }}><path className="lyra-wing-l" d="M -17 -2 C -24 -12, -31 -9, -33 -2 M -17 2 C -23 -4, -28 -2, -30 3 M -17 5 C -21 2, -25 4, -26 8" /></g>
-            <g ref={wingRRef} style={{ transformOrigin: "17px 0" }}><path className="lyra-wing-r" d="M 17 -2 C 24 -12, 31 -9, 33 -2 M 17 2 C 23 -4, 28 -2, 30 3 M 17 5 C 21 2, 25 4, 26 8" /></g>
+          // three translucent feathers a side, fanned up and out (Update 5.47 -
+          // the old three-stroke wings read as spider legs)
+          <g className="lyra-wings" fill="url(#lyra-feather)" stroke={c.ring} strokeWidth="0.7" strokeLinejoin="round">
+            <g ref={wingLRef} style={{ transformOrigin: "-14px 0" }}><g className="lyra-wing-l">
+              <path d="M 0 0 C -9.3 -4.6, -23.2 -4.6, -31 0 C -23.2 2.8, -9.3 2.8, 0 0 Z" transform="translate(-13 1) rotate(34)" />
+              <path d="M 0 0 C -7.8 -4.2, -19.5 -4.2, -26 0 C -19.5 2.5, -7.8 2.5, 0 0 Z" transform="translate(-13 1) rotate(16)" />
+              <path d="M 0 0 C -6 -3.6, -15 -3.6, -20 0 C -15 2.2, -6 2.2, 0 0 Z" transform="translate(-13 1) rotate(-2)" />
+            </g></g>
+            <g ref={wingRRef} style={{ transformOrigin: "14px 0" }}><g className="lyra-wing-r"><g transform="scale(-1 1)">
+              <path d="M 0 0 C -9.3 -4.6, -23.2 -4.6, -31 0 C -23.2 2.8, -9.3 2.8, 0 0 Z" transform="translate(-13 1) rotate(34)" />
+              <path d="M 0 0 C -7.8 -4.2, -19.5 -4.2, -26 0 C -19.5 2.5, -7.8 2.5, 0 0 Z" transform="translate(-13 1) rotate(16)" />
+              <path d="M 0 0 C -6 -3.6, -15 -3.6, -20 0 C -15 2.2, -6 2.2, 0 0 Z" transform="translate(-13 1) rotate(-2)" />
+            </g></g></g>
           </g>
         )}
+        <circle r="17.5" fill="#0C0E28" stroke="#3A3E75" strokeWidth="1" />
+
 
         <g ref={spinRef}>
         {stage >= 1 && (
@@ -227,7 +263,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
 
         <g style={{ transform: `scaleY(${lid})`, transition: "transform 0.09s ease", transformOrigin: "0 0" }}>
           <circle r="11" fill="none" stroke={c.ring} strokeWidth="2" />
-          <g style={{ transform: `translate(${look.x}px, ${look.y}px)`, transition: "transform 0.25s ease-out" }}>
+          <g style={{ transform: `translate(${lookNow.x}px, ${lookNow.y}px)`, transition: deferring ? "transform 0.7s ease" : "transform 0.25s ease-out" }}>
             <g ref={eyeRef}>
             <g ref={p2EyeRef} style={{ transition: "transform 0.08s linear" }}>
             <circle r={pupilR} fill={c.pupil} style={{ transition: "r 0.3s ease" }} />

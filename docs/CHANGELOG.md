@@ -3,6 +3,30 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.47 — Lyra: restraint, the Oracle, new wings, the launch moment
+- **Restraint.** Lyra now speaks up on her own only when it matters: a page
+  you've never seen, a game you haven't played, something new (news, mail,
+  your next step), a celebration, an alert, or coming back after a week or
+  more. Anywhere you've been before she stays in the background with her
+  line held (no dot): hover over her or click to see it. On the 3rd, 6th and
+  9th page of a visit, then every 9th, she offers a little conversation of
+  her own. Games you keep playing (5+ runs) she recognises, with your best.
+- **The Oracle.** In the Oracle's chamber she withdraws: smaller, dim, eye
+  lowered toward the chamber, rings slowed, never speaking up and never
+  popping open (alerts wait). She glances up as each answer arrives, then
+  settles. Hovering shows "This is where 13i speaks. I'll stay quiet here."
+- **Wings.** Her top-stage wings are now three translucent feathers a side,
+  fanned up and out, instead of the three thin strokes that read as spider
+  legs. On the beat they lift.
+- **The launch moment** (countdown page, `components/LaunchMoment.js`). For
+  anyone on the page as it reaches zero: in the final minute Lyra appears
+  under the countdown and charges, growing through all her forms; at zero
+  she is drawn into the dark and the Big Bang plays live over the whole
+  page, from the 13i eye; then she is born into the new universe with her
+  wings, "THE SIGNAL HAS ARRIVED", and an Enter 13i button. Purely visual.
+  Arriving after launch goes straight to the button. Rehearse with
+  `/?launchtest=70` (zero in 70 seconds; nothing is saved).
+
 ## Update 5.46 — Lyra is player two
 - **NEMESIS Command:** Lyra's help is scaled back and plays by your rules. She
   moves slower than you, has to line up directly under an invader and fires

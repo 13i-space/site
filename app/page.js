@@ -1,5 +1,5 @@
 import "./globals.css";
-import Countdown from "../components/Countdown";
+import LaunchMoment from "../components/LaunchMoment";
 import ThemedHero from "../components/ThemedHero";
 import EmailSignup from "../components/EmailSignup";
 import EasterStars from "../components/EasterStars";
@@ -7,7 +7,10 @@ import EasterStars from "../components/EasterStars";
 export default function CountdownPage() {
   return (
     <div style={styles.page}>
-      <ThemedHero logoWrapStyle={styles.logoWrap} />
+      {/* the Big Bang begins here at zero (components/LaunchMoment.js) */}
+      <div data-launch-origin style={styles.origin}>
+        <ThemedHero logoWrapStyle={styles.logoWrap} />
+      </div>
       <EasterStars />
       <div style={styles.glow} />
       <div className="mono" style={styles.subtitle}>
@@ -17,7 +20,7 @@ export default function CountdownPage() {
         We have been watching for some time. What we found, we are about to
         share.
       </p>
-      <Countdown />
+      <LaunchMoment />
       <p className="mono" style={styles.footNote}>
         the book and the first signal arrive 4.6.2027
       </p>
@@ -54,6 +57,7 @@ const styles = {
       "radial-gradient(circle, rgba(139,149,246,0.18) 0%, rgba(139,149,246,0) 70%)",
     pointerEvents: "none",
   },
+  origin: { display: "flex", justifyContent: "center", width: "100%", position: "relative", zIndex: 1 },
   logoWrap: {
     width: "min(70vw, 380px)",
     position: "relative",

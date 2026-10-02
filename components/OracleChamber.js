@@ -261,6 +261,7 @@ export default function OracleChamber() {
     setRising({ text, key: Date.now() });
     setUtterance("");
     setPhase("transmitting");
+    window.dispatchEvent(new CustomEvent("13i:oracle", { detail: { phase: "asking" } })); // Lyra looks up
     sound.current && sound.current.transmit();
     ripple.current(1);
 
@@ -283,6 +284,7 @@ export default function OracleChamber() {
         setError(true);
         setPhase("speaking");
         setUtterance(data.message || data.error || "THE SIGNAL IS LOST. SPEAK AGAIN.");
+        window.dispatchEvent(new CustomEvent("13i:oracle", { detail: { phase: null } }));
         setRising(null);
         return;
       }
@@ -293,8 +295,10 @@ export default function OracleChamber() {
       setMessages((m) => [...m, { role: "assistant", content: data.reply }]);
       setPhase("speaking");
       setUtterance(data.reply);
+      window.dispatchEvent(new CustomEvent("13i:oracle", { detail: { phase: "answer" } })); // she glances at the answer, then settles
       recordMilestone("oracle"); // a step of Your First Assignment
     } catch (e) {
+      window.dispatchEvent(new CustomEvent("13i:oracle", { detail: { phase: null } }));
       sound.current && sound.current.stopReceiving();
       setError(true);
       setMessages((m) => m.slice(0, -1));

@@ -308,10 +308,17 @@ main {
 .lyra-state-thinking .lyra-outer { animation-duration: 2.4s; }
 .lyra-state-thinking .lyra-motes { animation-duration: 3s; }
 @keyframes lyra-spin { to { transform: rotate(360deg); } }
-.lyra-wing-l { animation: lyra-wing-l 5s ease-in-out infinite; transform-origin: -17px 0; }
-.lyra-wing-r { animation: lyra-wing-r 5s ease-in-out infinite; transform-origin: 17px 0; }
+.lyra-wing-l { animation: lyra-wing-l 5s ease-in-out infinite; transform-origin: -14px 0; }
+.lyra-wing-r { animation: lyra-wing-r 5s ease-in-out infinite; transform-origin: 14px 0; }
 @keyframes lyra-wing-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(8deg); } }
 @keyframes lyra-wing-r { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(-8deg); } }
+/* Lyra in the Oracle's chamber: she withdraws while 13i speaks */
+.lyra-body svg { transition: transform 0.8s ease; }
+.lyra-state-deferring svg { transform: scale(0.82) translate(4px, 5px); }
+.lyra-state-deferring.lyra-glance svg { transform: scale(0.92) translate(1px, 2px); }
+.lyra-state-deferring .lyra-outer { animation-duration: 120s; }
+.lyra-state-deferring .lyra-breath { animation-duration: 9s; }
+
 /* Lyra as player two (Lyra Assist in the games) */
 .lyra-p2 .lyra-outer { animation-duration: 2.4s; opacity: 0.9; }
 .lyra-p2 .lyra-motes { animation-duration: 1.8s; }
@@ -756,3 +763,15 @@ main {
 .season-strip-cover { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0.85; }
 .season-strip-num { position: absolute; left: 0; right: 0; bottom: 4px; text-align: center; font-size: 11px; text-shadow: 0 0 6px #000; }
 @media (max-width: 560px) { .season-strip { grid-template-columns: repeat(7, minmax(0, 1fr)); } }
+
+/* The launch moment on the countdown page (components/LaunchMoment.js):
+   Lyra's breathing and rings quicken as zero nears */
+.launch-lyra-charging .lyra-breath { animation-duration: calc(4.2s - 3.6s * var(--charge)); }
+.launch-lyra-charging .lyra-outer { animation-duration: calc(48s - 46s * var(--charge)); }
+.launch-lyra-charging .lyra-motes { animation-duration: calc(18s - 16.5s * var(--charge)); }
+.launch-lyra .lyra-body { filter: drop-shadow(0 0 calc(4px + 22px * var(--charge, 1)) rgba(139,149,246,0.55)); }
+.launch-enter {
+  display: inline-block; padding: 10px 22px; border: 1px solid #8B95F6; border-radius: 4px;
+  color: #DCDFFF; background: rgba(139,149,246,0.12); font-size: 13px; letter-spacing: 1px;
+  text-decoration: none; animation: lyra-panel-in 0.8s ease;
+}

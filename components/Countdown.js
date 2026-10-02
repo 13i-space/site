@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 
-const LAUNCH = new Date("2027-04-06T00:00:00");
+export const LAUNCH = new Date("2027-04-06T00:00:00");
 
-function getRemaining() {
+function getRemaining(target = LAUNCH) {
   const now = new Date();
-  const diff = Math.max(0, LAUNCH.getTime() - now.getTime());
+  const diff = Math.max(0, target.getTime() - now.getTime());
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
   const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
   const minutes = Math.floor((diff / (1000 * 60)) % 60);
@@ -14,14 +14,16 @@ function getRemaining() {
   return { days, hours, minutes, seconds };
 }
 
-export default function Countdown() {
+// target: when it reaches zero (defaults to launch; components/LaunchMoment.js
+// passes its own so ?launchtest can rehearse the moment)
+export default function Countdown({ target = LAUNCH }) {
   const [time, setTime] = useState(null);
 
   useEffect(() => {
-    setTime(getRemaining());
-    const id = setInterval(() => setTime(getRemaining()), 1000);
+    setTime(getRemaining(target));
+    const id = setInterval(() => setTime(getRemaining(target)), 250);
     return () => clearInterval(id);
-  }, []);
+  }, [target]);
 
   if (!time) return null;
 

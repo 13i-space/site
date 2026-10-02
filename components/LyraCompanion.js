@@ -16,6 +16,7 @@ import {
 } from "../lib/lyraLines";
 import { isAlpha, alphaNumber, ALPHA_FORUM } from "../lib/alpha";
 import LyraOrb from "./LyraOrb";
+import { getPersonalBest } from "../lib/trackActivity";
 
 // Lyra: the site's companion, bottom-right on every (site) page.
 //
@@ -37,7 +38,26 @@ import LyraOrb from "./LyraOrb";
 // universe and its stories, or small everyday things. The conversation is
 // only for the moment - it clears when you close her or change pages. Her
 // panel's box also searches the site as you type.
-const LONG_ABSENCE_DAYS = 3;
+// Restraint (Update 5.47): she speaks up on her own only when it matters -
+// a page you've never seen, a game you haven't played, something new, a
+// celebration, a message for you, or after a week away. Anywhere you've
+// been before she stays in the background: her line is held, and hovering
+// over her or clicking brings it up. Every 3rd, 6th and 9th page of a visit
+// (then every 9th) she offers a little conversation of her own - 13i's
+// number, in threes. In the Oracle's chamber she says nothing at all.
+const LONG_ABSENCE_DAYS = 7;
+const ORACLE_LINE = "This is where 13i speaks. I'll stay quiet here. Ask it anything.";
+// the visit's page count, per browser session: true on the pages she talks
+function talkTurn(uid) {
+  try {
+    const k = `lyra_pages_${uid || "guest"}`;
+    const n = Number(sessionStorage.getItem(k) || 0) + 1;
+    sessionStorage.setItem(k, String(n));
+    return n === 3 || n === 6 || n === 9 || (n > 9 && n % 9 === 0);
+  } catch (e) {
+    return false;
+  }
+}
 const LAUNCH_LINE_MS = 30 * 60 * 1000;
 const PEEK_MS = 2500; // how long an arrival message shows by itself
 const COMMS_POLL_MS = 45000; // how often she checks for new messages and forum replies
@@ -352,6 +372,29 @@ export default function LyraCompanion() {
     });
     clearTimeout(autoCloseTimer.current);
     let cancelled = false;
+    const talk = talkTurn(uid);
+    // background: hold the line quietly (no dot); hover or click shows it
+    const hold = (text) => { if (text) setLine(text); };
+
+    // the Oracle's chamber: 13i speaks there, not her
+    if (pathname.startsWith("/oracle")) {
+      if (openedBy.current === "peek") setOpen(false);
+      setLine(ORACLE_LINE);
+      return;
+    }
+
+    // back after a week or more: a quiet welcome, once, wherever you land
+    if (loggedIn && pathname !== "/launch") {
+      const s0 = session.current;
+      const away = s0.prevSeen ? Math.floor((Date.now() - new Date(s0.prevSeen)) / 86400000) : 0;
+      let welcomed = true;
+      try { welcomed = !!sessionStorage.getItem(`lyra_welcomed_${uid}`); } catch (e) { /* treat as welcomed */ }
+      if (!welcomed && away >= LONG_ABSENCE_DAYS && !(queue.current.length)) {
+        try { sessionStorage.setItem(`lyra_welcomed_${uid}`, "1"); } catch (e) { /* ignore */ }
+        speak(welcomeBackLine({ days: away, stage: bond.stage, username: user?.username }).text, { auto: true });
+        return () => { cancelled = true; };
+      }
+    }
 
     // anything worth celebrating comes first, one after another - unless
     // this is the very first hello, which goes before everything
@@ -375,13 +418,25 @@ export default function LyraCompanion() {
     if (g) {
       if (!loggedIn) { setLine(g.text); return; }
       (async () => {
+        let plays = 0;
         try {
           const supabase = createClient();
           const { data: existing } = await supabase.from("game_plays").select("play_count").eq("user_id", uid).eq("game", g.game).maybeSingle();
-          if (!cancelled) speak(g.text, { auto: true});
-        } catch (e) {
-          if (!cancelled) speak(g.text, { auto: true});
+          plays = existing?.play_count || 0;
+        } catch (e) { /* treat as new */ }
+        if (cancelled) return;
+        // never played: the instructions, shown
+        if (!plays || firstVisitHere) { speak(g.text, { auto: true }); return; }
+        // a game you keep coming back to: she knows it
+        let line = g.text;
+        if (plays >= 5) {
+          let best = null;
+          try { best = await getPersonalBest(g.game); } catch (e) { /* no best yet */ }
+          if (cancelled) return;
+          const name = GAME_LABELS[g.game] || "This one";
+          line = `${name} again - that's ${plays} runs.${best ? ` Your best is ${best.toLocaleString()}.` : ""} ${g.text}`;
         }
+        if (talk) speak(line, { auto: true }); else hold(line);
       })();
       return () => { cancelled = true; };
     }
@@ -391,7 +446,8 @@ export default function LyraCompanion() {
       (async () => {
         try {
           const text = await gamesHubMessage(createClient(), { id: uid });
-          if (!cancelled) speak(text, { auto: firstVisitHere});
+          if (cancelled) return;
+          if (firstVisitHere || talk) speak(text, { auto: true }); else hold(text);
         } catch (e) { /* nothing to add */ }
       })();
       return () => { cancelled = true; };
@@ -432,7 +488,7 @@ export default function LyraCompanion() {
       const staleMail = m.launchLine && String(m.launchLine.id || "").startsWith("dm-") && !unread;
       if (staleMail) remember((mm) => { mm.launchLine = null; });
       if (m.launchLine && !staleMail && Date.now() - m.launchLine.at < LAUNCH_LINE_MS) {
-        speak(m.launchLine.text, { auto: true });
+        if (talk) speak(m.launchLine.text, { auto: true }); else hold(m.launchLine.text);
         return;
       }
       const unvisited = AREAS.filter((a) => !m.visited.some((v) => v.startsWith(a.prefix))).map((a) => ({ id: `area-${a.prefix}`, priority: 3, text: a.text }));
@@ -452,7 +508,10 @@ export default function LyraCompanion() {
         mm.launchLine = { id: choice.id, text: choice.text, at: Date.now() };
         if (choice.headline) mm.headlines.push(choice.headline);
       });
-      speak(choice.text, { auto: true, id: choice.id });
+      // something new (news, mail, your next step) is worth saying; the rest waits
+      const isNew = extras.some((l) => l.id === choice.id);
+      if (isNew || talk) speak(choice.text, { auto: true, id: choice.id });
+      else hold(choice.text);
       return;
     }
 
@@ -465,9 +524,10 @@ export default function LyraCompanion() {
       else setLine(tip);
       return;
     }
+    // been here before: she stays in the background, unless it's her turn to talk
     const choice = pickFresh(lines, m.recent) || lines[0];
-    if (loggedIn) speak(choice ? choice.text : DEFAULT_TIP, { auto: true, id: choice?.id });
-    else setLine(choice ? choice.text : DEFAULT_TIP);
+    if (loggedIn && talk) speak(choice ? choice.text : DEFAULT_TIP, { auto: true, id: choice?.id });
+    else hold(choice ? choice.text : DEFAULT_TIP);
     return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, pathname]);
@@ -513,7 +573,7 @@ export default function LyraCompanion() {
     const isNew = found.some((a) => !alertsRef.current.some((b) => b.ids.join(",") === a.ids.join(",")));
     setAlerts(found);
     if (found.some((a) => a.kind === "dm")) window.dispatchEvent(new CustomEvent("13i:messages-new"));
-    if (found.length && isNew) {
+    if (found.length && isNew && !window.location.pathname.startsWith("/oracle")) {
       clearTimeout(autoCloseTimer.current);
       setOpen(true);
       openedBy.current = "alert";
@@ -622,7 +682,8 @@ export default function LyraCompanion() {
   };
 
   const results = query.trim() ? searchSite(query).slice(0, 4) : [];
-  const state = !loggedIn ? "dormant" : sending ? "thinking" : celebrating ? "celebrating" : open ? "speaking" : "aware";
+  const inOracle = pathname?.startsWith("/oracle");
+  const state = inOracle && !open ? "deferring" : !loggedIn ? "dormant" : sending ? "thinking" : celebrating ? "celebrating" : open ? "speaking" : "aware";
   const text = line || (loggedIn ? TIPS.find((t) => pathname?.startsWith(t.prefix))?.text || DEFAULT_TIP : "I'm Lyra. Sign in and I'll start remembering what you've found here.");
 
   return (
