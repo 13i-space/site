@@ -1,6 +1,12 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { lyraReact } from "../lib/lyraReact";
+
+// Lyra remembers (in this browser) which entry you signed. The first time
+// she sees someone else has signed after you, she waves.
+const MINE_KEY = "13i_guestbook_mine";
+const WAVED_KEY = "13i_guestbook_waved";
 
 export default function Guestbook() {
   const [entries, setEntries] = useState([]);
@@ -19,8 +25,20 @@ export default function Guestbook() {
         return;
       }
       if (!res.ok) throw new Error();
-      setEntries(data.entries || []);
+      const list = data.entries || [];
+      setEntries(list);
       setLoadState("ready");
+      try {
+        const mine = JSON.parse(localStorage.getItem(MINE_KEY) || "null");
+        if (mine && !mine.id) {
+          // just signed: find our entry to remember it
+          const e = list.find((x) => x.name === mine.name && x.message === mine.message);
+          if (e) localStorage.setItem(MINE_KEY, JSON.stringify({ id: e.id, at: e.created_at }));
+        } else if (mine && mine.id && !localStorage.getItem(WAVED_KEY)) {
+          const after = list.find((x) => x.id !== mine.id && x.created_at > mine.at);
+          if (after) { localStorage.setItem(WAVED_KEY, "1"); setTimeout(() => lyraReact("wave"), 900); }
+        }
+      } catch (e2) { /* storage unavailable - no wave */ }
     } catch {
       setLoadState("error");
     }
@@ -42,6 +60,8 @@ export default function Guestbook() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      try { localStorage.setItem(MINE_KEY, JSON.stringify({ name: (name || "Anonymous").slice(0, 60), message })); localStorage.removeItem(WAVED_KEY); } catch (e2) { /* ignore */ }
+      lyraReact("notice");
       setMessage("");
       load();
     } catch (err) {

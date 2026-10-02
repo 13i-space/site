@@ -354,6 +354,15 @@ main {
 @keyframes lyra-r-droop { 0%, 100% { transform: none; filter: none; } 30%, 75% { transform: translateY(6px) scale(0.88) rotate(4deg); filter: saturate(0.3) brightness(0.8); } }
 .lyra-react-celebrate svg { animation: lyra-r-wow 1.7s ease; }
 
+.lyra-react-wave svg { animation: lyra-r-wave 1.8s ease-in-out; }
+@keyframes lyra-r-wave { 0%, 100% { transform: none; } 15% { transform: rotate(-14deg); } 35% { transform: rotate(12deg); } 55% { transform: rotate(-10deg); } 75% { transform: rotate(6deg); } }
+.lyra-react-spin svg { animation: lyra-r-spin 1.1s cubic-bezier(.5,0,.3,1); }
+@keyframes lyra-r-spin { 0% { transform: none; } 70% { transform: rotate(380deg) scale(1.1); } 100% { transform: rotate(360deg); } }
+.lyra-react-proud svg { animation: lyra-r-proud 3s ease; }
+@keyframes lyra-r-proud { 0%, 100% { transform: none; filter: none; } 30%, 70% { transform: translateY(-4px) scale(1.08); filter: brightness(1.4) drop-shadow(0 0 8px rgba(233,210,154,0.8)); } }
+/* writing a private message: she closes her eye and turns away a little */
+.lyra-private svg { transform: translate(4px, 2px) rotate(14deg) scale(0.9); }
+
 /* Lyra as player two (Lyra Assist in the games) */
 .lyra-p2 .lyra-outer { animation-duration: 2.4s; opacity: 0.9; }
 .lyra-p2 .lyra-motes { animation-duration: 1.8s; }

@@ -17,6 +17,7 @@ import {
 import { isAlpha, alphaNumber, ALPHA_FORUM } from "../lib/alpha";
 import LyraOrb from "./LyraOrb";
 import { getPersonalBest } from "../lib/trackActivity";
+import { lyraReact } from "../lib/lyraReact";
 
 // Lyra: the site's companion, bottom-right on every (site) page.
 //
@@ -205,6 +206,14 @@ function Rich({ text, onNavigate }) {
   return <>{parts}</>;
 }
 
+// Phones (Update 5.50): there's no room for her panel to pop over the page,
+// and no hover. So on a phone she never opens by herself - what she'd have
+// said waits behind her dot, and she shows it with her body instead (a
+// brightening, a burst for celebrations). Tap her to read.
+const isPhone = () => {
+  try { return window.matchMedia("(max-width: 640px), (hover: none) and (pointer: coarse)").matches; } catch (e) { return false; }
+};
+
 export default function LyraCompanion() {
   const pathname = usePathname();
   const [authChecked, setAuthChecked] = useState(false);
@@ -255,6 +264,12 @@ export default function LyraCompanion() {
       setCelebrating(true);
       clearTimeout(celebrateTimer.current);
       celebrateTimer.current = setTimeout(() => setCelebrating(false), 2600);
+    }
+    if (auto && isPhone()) {
+      // phone: no pop-up - a sign from her body, and the dot to tap
+      if (!celebrate) lyraReact("notice");
+      setHasMessage(true);
+      return;
     }
     if (auto) {
       if (openedBy.current === "click" || openedBy.current === "alert") return; // don't take over a panel in use
@@ -588,7 +603,9 @@ export default function LyraCompanion() {
     const isNew = found.some((a) => !alertsRef.current.some((b) => b.ids.join(",") === a.ids.join(",")));
     setAlerts(found);
     if (found.some((a) => a.kind === "dm")) window.dispatchEvent(new CustomEvent("13i:messages-new"));
-    if (found.length && isNew && !window.location.pathname.startsWith("/oracle")) {
+    // a reply on your thread or a new message: she brightens either way
+    if (found.length && isNew) lyraReact("wow");
+    if (found.length && isNew && !window.location.pathname.startsWith("/oracle") && !isPhone()) {
       clearTimeout(autoCloseTimer.current);
       setOpen(true);
       openedBy.current = "alert";

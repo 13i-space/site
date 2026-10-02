@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { lyraPrivacy } from "../lib/lyraReact";
 import { createClient } from "../lib/supabaseBrowser";
 
 // A private conversation between two Kin: the messages, oldest first, and a
@@ -44,6 +45,8 @@ export default function MessageThread({ meId, other }) {
   }, [load]);
 
   useEffect(() => { end.current?.scrollIntoView({ block: "end" }); }, [messages]);
+
+  useEffect(() => () => lyraPrivacy(false), []);
 
   const send = async (e) => {
     e.preventDefault();
@@ -97,6 +100,8 @@ export default function MessageThread({ meId, other }) {
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
+          onFocus={() => lyraPrivacy(true)}
+          onBlur={() => lyraPrivacy(false)}
           onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(e); } }}
           rows={2}
           maxLength={2000}

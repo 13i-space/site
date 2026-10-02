@@ -61,6 +61,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
   const [reading, setReading] = useState(false);
   const [react, setReact] = useState(null); // a passing reaction (class lyra-react-*)
   const [lookAt, setLookAt] = useState(null); // { x, y } - something she's been pointed at
+  const [privateMode, setPrivate] = useState(false); // you're writing a private message
   useEffect(() => {
     let rt, lt;
     setReading(isReading()); // a page may have opened before she did
@@ -83,7 +84,9 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
       clearTimeout(lt);
       lt = setTimeout(() => setLookAt(null), d.ms || 1500);
     };
-    const TIMES = { notice: 1300, wow: 1700, warm: 3200, watchful: 3000, subdued: 3200, sway: 2200, flinch: 700, droop: 3200, celebrate: 2600 };
+    const TIMES = { notice: 1300, wow: 1700, warm: 3200, watchful: 3000, subdued: 3200, sway: 2200, flinch: 700, droop: 3200, celebrate: 2600, wave: 1800, spin: 1100, proud: 3000, curious: 2600 };
+    const onPrivacy = (e) => setPrivate(!!(e.detail && e.detail.on));
+    window.addEventListener("13i:lyra-privacy", onPrivacy);
     const onReact = (e) => { const n = e.detail && e.detail.react; if (TIMES[n]) flash(n, TIMES[n]); };
     window.addEventListener("13i:lyra", onReact);
     window.addEventListener("13i:reading", onReading);
@@ -91,6 +94,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     window.addEventListener("13i:lyra-look", onLook);
     return () => {
       window.removeEventListener("13i:lyra", onReact);
+      window.removeEventListener("13i:lyra-privacy", onPrivacy);
       window.removeEventListener("13i:reading", onReading);
       window.removeEventListener("13i:story", onStory);
       window.removeEventListener("13i:lyra-look", onLook);
@@ -259,8 +263,8 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
     return () => cancelAnimationFrame(raf);
   }, [p2]);
 
-  const reactingWide = react === "curious" || react === "recognize" || react === "chapter" || react === "wow" || react === "warm" || react === "celebrate";
-  const lid = blink ? 0.08 : deferring && !glancing ? 0.5 : react === "flinch" ? 0.35 : reactingWide ? 1 : readingNow ? 0.8 : dormant && !p2 ? 0.45 : 1; // playing wakes her right up
+  const reactingWide = react === "curious" || react === "recognize" || react === "chapter" || react === "wow" || react === "warm" || react === "celebrate" || react === "proud";
+  const lid = privateMode ? 0.06 : blink ? 0.08 : deferring && !glancing ? 0.5 : react === "flinch" ? 0.35 : reactingWide ? 1 : readingNow ? 0.8 : dormant && !p2 ? 0.45 : 1; // playing wakes her right up
   // deferring: eyes lowered toward the chamber; glancing: looking up at it.
   // reading: eyes on the page (left of her), flicking back to the top of a new page
   const lookNow = deferring ? (glancing ? { x: -3, y: -2.6 } : { x: -2.2, y: 0.8 })
@@ -269,7 +273,7 @@ export default function LyraOrb({ stage = 0, state = "aware", hasMessage = false
   const motes = stage >= 2 ? stage - 1 : 0;
 
   return (
-    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}${glancing ? " lyra-glance" : ""}${readingNow ? " lyra-reading" : ""}${react ? ` lyra-react-${react}` : ""}`} style={{ width: size, height: size, opacity: deferring && !p2 ? (glancing ? 0.85 : 0.4) : react === "subdued" || react === "droop" ? 0.5 : react ? 1 : readingNow ? 0.7 : dormant && !p2 ? 0.6 : 1 }}>
+    <span ref={ref} className={`lyra-body lyra-state-${state}${p2 ? " lyra-p2" : ""}${glancing ? " lyra-glance" : ""}${readingNow ? " lyra-reading" : ""}${react ? ` lyra-react-${react}` : ""}${privateMode ? " lyra-private" : ""}`} style={{ width: size, height: size, opacity: privateMode ? 0.55 : deferring && !p2 ? (glancing ? 0.85 : 0.4) : react === "subdued" || react === "droop" ? 0.5 : react ? 1 : readingNow ? 0.7 : dormant && !p2 ? 0.6 : 1 }}>
       {p2 && <span className="mono lyra-p2-badge">P2 · PLAYING</span>}
       {p2 && mounted && createPortal(
         <svg className="lyra-tether" aria-hidden="true">

@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "../../../../lib/supabaseServer";
 import { isAlpha } from "../../../../lib/alpha";
 import AlphaBadge from "../../../../components/AlphaBadge";
+import LyraKinReaction from "../../../../components/LyraKinReaction";
 
 export default async function KinProfilePage({ params }) {
   const supabase = await createClient();
@@ -28,6 +29,7 @@ export default async function KinProfilePage({ params }) {
 
   return (
     <div style={{ maxWidth: 460, margin: "0 auto", textAlign: "center" }}>
+      <LyraKinReaction own={!!viewer && viewer.id === profile.id} />
       <div
         style={{
           width: 90, height: 90, borderRadius: "50%", overflow: "hidden", margin: "0 auto 18px",

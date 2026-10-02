@@ -1,24 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { lyraReact } from "../lib/lyraReact";
 import { createClient } from "../lib/supabaseBrowser";
 import { currentPeriodStart } from "../lib/dailyPeriod";
 
 export default function Leaderboard({ game, limit = 8, refreshKey }) {
   const [rows, setRows] = useState(null);
+  const myRank = useRef(null); // your place when the board last loaded
 
   useEffect(() => {
     (async () => {
       try {
         const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
         const { data } = await supabase
           .from("daily_scores")
-          .select("score, profiles(username)")
+          .select("score, user_id, profiles(username)")
           .eq("game", game)
           .eq("period_start", currentPeriodStart())
           .order("score", { ascending: false })
           .limit(limit);
         setRows(data || []);
+        // you climbed past someone since the board last loaded: Lyra spins
+        if (user) {
+          const i = (data || []).findIndex((r) => r.user_id === user.id);
+          const rank = i < 0 ? Infinity : i;
+          if (myRank.current !== null && rank < myRank.current) lyraReact("spin");
+          myRank.current = rank;
+        }
       } catch (e) {
         setRows([]);
       }

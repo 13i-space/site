@@ -3,6 +3,21 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.50 — Lyra in the community, on the leaderboards, and on phones
+- **Messages.** While you write a private message she closes her eye and
+  turns a little away, and opens it again when you're done.
+- **Forum replies and new messages.** She brightens when one arrives.
+- **Guestbook.** She remembers (in this browser) the entry you signed, and
+  the first time someone else signs after you, she gives a small wave.
+- **Kin pages.** A proud golden lift on your own profile, a curious tilt on
+  someone else's.
+- **Leaderboards.** If a run moves you up today's board past someone, she
+  does a quick, mischievous spin. Personal bests keep their celebration.
+- **Phones.** She never pops her panel open by herself on a phone (no room,
+  no hover): what she'd have said waits behind her dot, and she shows it
+  with her body instead - a brightening, a burst of light for a
+  celebration. Tap her to read. New messages and replies work the same way.
+
 ## Update 5.49 — Lyra in the Create section
 Small, wordless reactions (`lib/lyraReact.js`).
 - **Alien Lab.** Her eye goes to each answer you pick; the big ones (a blue
