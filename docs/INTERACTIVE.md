@@ -6,15 +6,15 @@ COMMUNICATE, ANALYZE, INTERVENE). One ending is the story as written (the
 **canon record**); the rest are **divergent records**. That fits the
 Archive: "the archive is where the universe discovers itself."
 
-The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34). The second is **Assignment 0028657, *The Quiet Moon*** (Update 5.35, Season 1 Week 1).
+The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34). The second is **Assignment 0028657, *The Quiet Moon*** (Update 5.35, Season 1 Week 1). The third is **Assignment 0000087, *The Deep Walkers*** (Update 5.38).
 
 ## Where it lives
 | Piece | File |
 |---|---|
-| The stories (every word, choice and ending) | `lib/interactive/nerathsSecret.js`, `lib/interactive/quietMoon.js` |
+| The stories (every word, choice and ending) | `lib/interactive/nerathsSecret.js`, `lib/interactive/quietMoon.js`, `lib/interactive/deepWalkers.js` |
 | List of interactive stories | `lib/interactive/index.js` |
 | The player (text, choices, saving, endings screen) | `components/InteractivePlayer.js` |
-| The living backdrop (all drawn in code) | `components/InteractiveScene.js` (host + Nerath scenes); `components/interactiveScenes/tacet.js` (Quiet Moon scenes) |
+| The living backdrop (all drawn in code) | `components/InteractiveScene.js` (host + Nerath scenes); `components/interactiveScenes/tacet.js` (Quiet Moon), `components/interactiveScenes/veyra.js` (Deep Walkers) |
 | The ambient drone + choice chime (synthesized) | `lib/interactive/ambience.js` |
 | Saving + Kin stats | `lib/interactive/progress.js` |
 | Database (one table, one function) | `docs/v5.34-interactive-assignments.sql` |
@@ -158,3 +158,49 @@ including a near-silent `silent`), `climaxLabel` / `climaxWords` for the
 Kin stats line, and a choice's `set` can be a function of the current
 flags. New scene sets plug into `components/InteractiveScene.js` through
 its drawing kit (see `makeTacetScenes`).
+
+## The Deep Walkers: the branch map
+You are 13i on Veyra. The theme is patience: 13i is fast and used to
+answers; the walkers are slow, think through stone, and decide together.
+The canon record is **Where the Individual Ends**.
+```
+ORBIT ─ how do we look?
+   ANALYZE  one active seismic pulse ........ sounded (everything stops for 2 days)
+   OBSERVE  descend slowly
+   INTERVENE  land on a stone tower ......... carried (it sinks; they felt our weight)
+      │
+SURFACE → THE FIRST WALKER → THE CIRCLE OF TWELVE ─
+   COMMUNICATE  press our hull into the stone ── grounded (we start to feel it)
+   OBSERVE  hover and watch
+   INTERVENE  lift one to examine it ─────────── lifted (it can't feel the ground for days)
+      │
+MANY DAYS → THE RIDGE ─ they walk toward a ridge our instruments say will fall
+   OBSERVE  trust them
+   INTERVENE  shake the ground to warn them ──── feared
+   COMMUNICATE  ask through the stone (needs grounded) ─ "known · wait"
+      │
+THE COLLAPSE ─ lifted and not warned ─► ✦ THE MISSING VOICE (4 lost: the one we
+      │          lifted was the one who had felt the ridge move)
+      │
+THE ARCHIVE CALL ─ feared ─► they won't begin while we're there:
+      │                 OBSERVE leave ─► ✦ WHAT WE DID NOT HEAR
+      │                 ANALYZE scan it anyway ─► ✦ THE COPY
+      └─ otherwise ─► THE ARCHIVE (the ancestors in the stone):
+                        OBSERVE  only listen ─► ✦ WHERE THE INDIVIDUAL ENDS (canon)
+                        ANALYZE  copy it ─► ✦ THE COPY (the oldest layers go silent)
+                        COMMUNICATE  add our record (needs grounded) ─► ✦ A VOICE IN THE STONE
+```
+45 paths; every node and all five endings reachable.
+
+### What changed from the written story (deliberately)
+- The story's events and closing question are kept; the canon ending ends
+  on "We did not know. That was sufficient."
+- **New, for the choices:** why the walkers walk toward a failing ridge
+  (the collapse opens a cavity full of the burrowing life they eat), what
+  lifting one out of the ground does to it, and that a deep scan of the
+  archive would erase its oldest, faintest layers.
+- **Kept out on purpose:** the Warden from *The Deep Signal* game. Its
+  nature is deliberately unknown (WORLD.md), so it doesn't appear here.
+- The story's walkers are low, plated, six-limbed and eyeless; the scenes
+  and the redrawn cover follow that (the first code-drawn cover gave them
+  long legs, which the story doesn't).

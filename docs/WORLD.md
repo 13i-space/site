@@ -123,6 +123,15 @@ docs/INTERACTIVE.md.
 - Weekly Season stories are AI-originated records; in their interactive
   versions one ending is the canon record and the rest are divergent.
 
+## The Deep Walkers, interactive — developing (Update 5.38)
+The Interactive Assignment keeps the story's events and its canon ending.
+Details it adds, not canon unless Paul adopts them: the walkers walk toward
+the ridge because its collapse opens a feeding cavity; a walker lifted off
+the ground can't sense for days; deep-scanning the archive erases its
+oldest, faintest layers; the walkers' translated ground-patterns ("known ·
+wait", "the still one · kept"). The Warden stays out of it (still
+deliberately unknown).
+
 ## Tacet and the holders — developing (Season 1, Week 1)
 From *The Quiet Moon* (0028657, AI-written by Claude). **Tacet**: a moon
 tidally kneaded by an unnamed gas giant, loud in every sense; 13i named it

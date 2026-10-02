@@ -3,6 +3,18 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.38 — Interactive Assignment: The Deep Walkers
+The third Interactive Assignment (`lib/interactive/deepWalkers.js`): 13i on
+Veyra, learning how to wait. Five records; canon "Where the Individual
+Ends". A new Veyra scene set drawn in code (`components/interactiveScenes/
+veyra.js`): the clouded planet, the moving stone towers, walkers as the
+story describes them, the circle of twelve, the ridge collapse, the
+gathering above the chamber and the archive of ancestors in the stone. Its
+ending screen links to The Deep Signal. The Deep Walkers cover was redrawn
+so the walkers match the story (low, plated, six thick limbs). It appears
+automatically on the story page, the Interactive Stories page and the Node
+tracker. Branch map: docs/INTERACTIVE.md.
+
 ## Update 5.37 — No more comics; matching covers; Node tracker
 Comics are out of the universe (Paul's call): the comic reader, its route,
 `lib/comics.js` and `public/comics/` are gone, and so is the "Comic version"
