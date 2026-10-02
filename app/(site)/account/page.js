@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { archiveStory, storyLabel } from "../../../lib/archiveStories";
+import { INTERACTIVE_STORIES } from "../../../lib/interactive";
 import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
 import ClaimUsername from "../../../components/ClaimUsername";
@@ -45,6 +46,16 @@ export default async function AccountPage() {
     (titledRows || []).forEach((r) => { titleByNumber[r.assignment_number] = r.designation; });
   }
   otherNumbers.forEach((n) => { if (!titleByNumber[n] && archiveStory(n)) titleByNumber[n] = archiveStory(n).designation; });
+
+  // Interactive Assignments: which records (endings) this Kin has found.
+  // Needs docs/v5.34-interactive-assignments.sql; until then, nothing found.
+  let foundByStory = {};
+  try {
+    const { data: runs, error } = await supabase.from("interactive_runs").select("story, ending").eq("user_id", user.id);
+    if (!error) (runs || []).forEach((r) => { (foundByStory[r.story] = foundByStory[r.story] || new Set()).add(r.ending); });
+  } catch (e) {
+    foundByStory = {};
+  }
 
   const { data: scores } = await supabase
     .from("high_scores")
@@ -245,13 +256,39 @@ export default async function AccountPage() {
                 <Link
                   key={r.assignment_number}
                   href={r.assignment_number === 1 ? "/assignments/0000001" : `/assignments/${r.assignment_number}`}
-                  style={{ display: "block", fontSize: 13.5, color: "#B9C0FF", padding: "6px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
+                  className="mono"
+                  style={{ display: "block", fontSize: 11, color: "#6E76B8", padding: "6px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
                 >
-                  {storyLabel(titleByNumber[r.assignment_number], r.assignment_number)}
+                  {storyLabel(titleByNumber[r.assignment_number], r.assignment_number)} &rarr;
                 </Link>
               ))}
             </div>
           )}
+
+          <div className="panel">
+            <div className="mono node-label">INTERACTIVE ASSIGNMENTS</div>
+            {INTERACTIVE_STORIES.map((st) => {
+              const endings = Object.entries(st.endings).sort((a, b) => a[1].order - b[1].order);
+              const found = foundByStory[st.number] || new Set();
+              return (
+                <Link
+                  key={st.number}
+                  href={`/assignments/${st.number}/interactive`}
+                  className="mono"
+                  style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, fontSize: 11, color: "#6E76B8", padding: "7px 0", borderBottom: "1px solid #21244A", textDecoration: "none" }}
+                >
+                  <span>{storyLabel(st.title, st.number)} &rarr;</span>
+                  <span style={{ display: "flex", alignItems: "center", gap: 4, flexShrink: 0 }} title={`${found.size} of ${endings.length} records found`}>
+                    {endings.map(([id, e]) => (
+                      <span key={id} style={{ width: 7, height: 7, borderRadius: 1, background: found.has(id) ? (e.canon ? "#E8CFC0" : "#8B95F6") : "transparent", border: `1px solid ${found.has(id) ? (e.canon ? "#E8CFC0" : "#8B95F6") : "#3A3E75"}` }} />
+                    ))}
+                    <span style={{ marginLeft: 6, color: found.size ? "#B9C0FF" : "#565B8F" }}>{found.size}/{endings.length}</span>
+                  </span>
+                </Link>
+              );
+            })}
+            <div className="mono" style={{ fontSize: 10, color: "#565B8F", marginTop: 10 }}>each square is a record · the warm one is canon</div>
+          </div>
         </div>
       </div>
 

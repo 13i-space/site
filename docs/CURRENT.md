@@ -30,8 +30,8 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   follows the current chapter, and a two-chapter PDF download; the Book hub
   offers Read / Download / Listen to Chapter 1 / Listen to Chapter 2
 - Narrated audio on all three short stories (compact "Audio version" box at
-  the top of the reader); Nerath's Secret also has a "Comic version" box
-  linking to an 8-page comic reader (`lib/comics.js`)
+  the top of the reader). Comics were removed from the universe in Update
+  5.37 (Paul's call); the code-drawn covers replaced the comic art
 - About hub: About Paul (ends with Contact Paul), The Origin of 13i, Mission & Values
 - Update 5.14 (needs docs/v5.14-oracle-usage.sql + ORACLE_IP_SALT in
   Vercel): Oracle usage log and daily caps, Lyra message/reply alerts,

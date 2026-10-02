@@ -110,7 +110,7 @@ endings are **divergent records**, explicitly not canon. Details it adds to
 make the choices mean something, not canon unless Paul adopts them: why the
 elder's plan fails (holding the breach traps pressure in a trench below; the
 fix is a deep valve), a juvenile's limb touching 13i through a biological
-interface, the dissenting limbs being 03, 07 and 12 (from the comic's
+interface, the dissenting limbs being 03, 07 and 12 (from the since-retired comic's
 panels), and the limb/mind "voices" as translated fragments. See
 docs/INTERACTIVE.md.
 

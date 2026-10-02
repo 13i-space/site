@@ -3,7 +3,6 @@ import { createClient } from "../../../../lib/supabaseServer";
 import { paginateStory } from "../../../../lib/paginateStory";
 import BookReader from "../../../../components/BookReader";
 import TrackStoryRead from "../../../../components/TrackStoryRead";
-import { comicHrefFor } from "../../../../lib/comics";
 import { interactiveHrefFor } from "../../../../lib/interactive";
 import { bundleForAssignment } from "../../../../lib/seasons";
 import { archiveStory } from "../../../../lib/archiveStories";
@@ -87,7 +86,7 @@ export default async function DynamicAssignmentPage({ params }) {
         )}
       </div>
       <div style={{ marginTop: 20 }}>
-        <BookReader meta={meta} pages={pages} coverImage={row.cover_url} audioSrc={STORY_AUDIO[row.assignment_number]} comicHref={comicHrefFor(row.assignment_number)} interactiveHref={interactiveHrefFor(row.assignment_number)} />
+        <BookReader meta={meta} pages={pages} coverImage={row.cover_url} audioSrc={STORY_AUDIO[row.assignment_number]} interactiveHref={interactiveHrefFor(row.assignment_number)} />
       </div>
     </div>
   );

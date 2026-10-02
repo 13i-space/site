@@ -457,7 +457,6 @@ export default function InteractivePlayer({ number }) {
                 <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 24 }}>
                   <button className="ia-btn ia-btn-primary" onClick={() => begin(false)}>Begin again</button>
                   <Link className="ia-btn" href={story.storyHref}>Read it as written</Link>
-                  {story.comicHref && <Link className="ia-btn" href={story.comicHref}>Read the comic</Link>}
                   {story.gameHref && <Link className="ia-btn" href={story.gameHref}>Play {story.gameTitle}</Link>}
                 </div>
               </div>

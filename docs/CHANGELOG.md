@@ -3,6 +3,18 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.37 — No more comics; matching covers; Node tracker
+Comics are out of the universe (Paul's call): the comic reader, its route,
+`lib/comics.js` and `public/comics/` are gone, and so is the "Comic version"
+box. All four short stories now have covers drawn in code in one style (The
+First Silence, The Deep Walkers and Nerath's Secret redrawn to match The
+Quiet Moon); Nerath's interactive version uses its new cover. The Node lists
+stories in the small mono link style, and has a new INTERACTIVE ASSIGNMENTS
+tracker under Stories Read (a square per record, warm for canon; needs
+docs/v5.34-interactive-assignments.sql to fill in). Play's Interactive
+Stories card: "Be 13i: Choose the Story Decisions in a Visual Novel."
+Seasons left the Explore page (they live on Short Stories).
+
 ## Update 5.36 — The Quiet Moon becomes Season 1, Week 1; tidy-ups
 Season stories now ship with the site (`lib/archiveStories.js`): the story
 page, the Short Stories list, the Node, link previews, Lyra and the Oracle

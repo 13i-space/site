@@ -25,7 +25,7 @@ The first one is **Assignment 0215783, *Nerath's Secret*** (Update 5.34). The se
 - **The index:** `/assignments/interactive` (Play → *Interactive Stories* in the nav)
 - **Play landing page:** an *Interactive Assignments* card
 - **Assignments hub:** an *Interactive Assignments* strip above the two story columns
-- **The story itself:** an **INTERACTIVE VERSION** box beside *Audio* and *Comic*
+- **The story itself:** an **INTERACTIVE VERSION** box beside *Audio*
 - **Lyra:** a tip on both pages. **Site search:** both pages.
 - Playing it counts as opening the story, so it unlocks **SIXTEEN** like reading does.
 
@@ -83,9 +83,9 @@ There are 152 distinct paths; every node and all five endings are reachable
   breach shut traps pressure building in a trench below. The fix is to open a
   deep valve first. The three limbs' dissent is about that, so "listen" has
   a concrete meaning.
-- **New:** a juvenile's curious limb touches 13i (the comic already shows a
+- **New:** a juvenile's curious limb touches 13i (the since-retired comic showed a
   "biological interface" moment; this makes it a choice).
-- The limbs that touch the elder are **03, 07 and 12**, matching the comic's
+- The limbs that touch the elder are **03, 07 and 12**, matching the since-retired comic's
   "Appendage 03 / 07 / 12 (disagreement)" panels.
 - Species name: **Nerathi**, as in SIXTEEN (the story never names them).
 - The canon ending still closes on the original line: *"They had not

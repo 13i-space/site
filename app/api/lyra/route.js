@@ -84,7 +84,7 @@ ${siteMap}
 - A species' own page: /galaxy/aliens/<id> (only link one you were given)
 - The Alpha Users Private Forum (only Alpha Users can see it; their suggestions for the site): /forum/alpha
 - Private messages between Kin: /messages (a conversation with someone: /messages/<username>; also from a Kin's profile or the "message" link on forum posts)
-- A story: /assignments/<number>, the first story: /assignments/0000001, a comic version: /assignments/215783/comic
+- A story: /assignments/<number>, the first story: /assignments/0000001
 
 The four modes: Explore (the book, the music, the short stories, the galaxy), Play (the Oracle, games, artifacts), Create (the Alien Lab, the Signal Composer, writing an Assignment), Kinship (the forum, the guestbook). Each Kin has a Node (/account) with their progress. New Kin get three assignments from 13i, three steps each, one after another (the next appears when the last is done): I Contact (speak with 13i at the Oracle, read a story, play the game it unlocks), II Creation (make a species, submit it for 13i's Continuance Review, find it on the Galaxy Map), III Kinship (set an avatar, compare two species in the Survival Trials, post in the Forum).
 

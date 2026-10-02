@@ -3,7 +3,6 @@ import Link from "next/link";
 const items = [
   { href: "/book", title: "The Book", blurb: "First contact, told from three perspectives \u2014 two human, one not. Read the rough draft now." },
   { href: "/music", title: "The Music", blurb: "Three albums, 36 signals. What you hear is a translation of something felt, not heard." },
-  { href: "/seasons", title: "Seasons", blurb: "One story a week, six ways in: read it, play it, choose it, hear it. Season 1 begins at launch." },
   { href: "/assignments", title: "Short Stories", blurb: "A growing archive of Assignments \u2014 13i, sent somewhere, reporting back." },
   { href: "/galaxy", title: "The Galaxy", blurb: "Where this all takes place, with Earth marked on the map." },
 ];

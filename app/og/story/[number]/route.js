@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 import { OG_SIZE, publicRows, absolute } from "../../../../lib/og";
 import { assignmentMeta } from "../../../../lib/assignment1";
-import { COMICS } from "../../../../lib/comics";
 import { archiveStory } from "../../../../lib/archiveStories";
 
 // Link preview for a short story (/assignments/<number>): its cover beside
@@ -27,7 +26,7 @@ export async function GET(request, { params }) {
     }
   }
   if (!story) return Response.redirect(new URL("/og", request.url));
-  const extras = ["Read", AUDIO.has(number) && "Listen", COMICS[number] && "Comic"].filter(Boolean).join("  ·  ");
+  const extras = ["Read", AUDIO.has(number) && "Listen"].filter(Boolean).join("  ·  ");
 
   return new ImageResponse(
     (

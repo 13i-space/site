@@ -3,7 +3,7 @@ import Link from "next/link";
 const items = [
   { href: "/oracle", title: "The Oracle", blurb: "Speak to 13i directly. You are not talking to one voice." },
   { href: "/games", title: "Games", blurb: "NEMESIS Command, Asteroid Belt, 13i vs NEMESIS, and Short Story Games." },
-  { href: "/assignments/interactive", title: "Interactive Stories", blurb: "Be 13i: Choose the Story Decisions." },
+  { href: "/assignments/interactive", title: "Interactive Stories", blurb: "Be 13i: Choose the Story Decisions in a Visual Novel." },
   { href: "/artifacts", title: "Artifacts", blurb: "The Ninefold and the Cryptex \u2014 puzzles from beyond." },
 ];
 

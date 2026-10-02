@@ -14,9 +14,8 @@ function sectionHeadingAt(pages, index) {
 // audioSrc: one recording for the whole reader (short stories).
 // audioByHeading: { [section heading]: { label, src } } - the player follows
 // whichever section the reader is on (the book's chapters).
-// comicHref: when a story has a comic version, a box beside the audio links to it.
 // interactiveHref: the same, for its Interactive Assignment (lib/interactive/).
-export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification, audioSrc, audioByHeading, comicHref, interactiveHref }) {
+export default function BookReader({ meta, pages, inProgress, downloadHref, downloadLabel, coverImage, identification, audioSrc, audioByHeading, interactiveHref }) {
   const [pageIndex, setPageIndex] = useState(0);
   const offset = coverImage ? 1 : 0;
   const totalPages = pages.length + offset + (inProgress ? 1 : 0);
@@ -76,7 +75,7 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
             </a>
           </div>
         )}
-        {(audio || comicHref || interactiveHref) && (
+        {(audio || interactiveHref) && (
           <div style={{ display: "flex", justifyContent: "center", gap: 12, flexWrap: "wrap", marginTop: 14 }}>
             {audio && (
               <div style={versionBox}>
@@ -90,14 +89,6 @@ export default function BookReader({ meta, pages, inProgress, downloadHref, down
                   <div className="mono" style={{ fontSize: 9.5, color: "#565B8F", marginTop: 4 }}>{audio.label}</div>
                 )}
               </div>
-            )}
-            {comicHref && (
-              <a href={comicHref} style={{ ...versionBox, textDecoration: "none", justifyContent: "center" }}>
-                <div className="mono" style={versionLabel}>COMIC VERSION</div>
-                <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 17, color: "#DCDFFF" }}>
-                  Read it as a comic &rarr;
-                </div>
-              </a>
             )}
             {interactiveHref && (
               <a href={interactiveHref} style={{ ...versionBox, textDecoration: "none", justifyContent: "center", borderColor: "#6B5E3E" }}>
