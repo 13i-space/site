@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.39 (needs docs/v5.39-spacecore.sql): SpaceCore at
+  `/create/spacecore`, the shared Mars building game (Create, not Games),
+  with a SPACECORE panel on the Node. See docs/SPACECORE.md
 - Update 5.32 (needs supabase/v5.32-story-waitlist.sql in the Story project):
   voice notes in the Champion chat, the Lighthouse founders' dashboard at
   `/story/team`, the launch list at `/story/waitlist` + homepage band

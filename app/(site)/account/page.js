@@ -13,6 +13,7 @@ import { gatherVisitor } from "../../../lib/visitorContext";
 import { QUIZ } from "../../../lib/universeQuiz";
 import { isAlpha, alphaNumber, ALPHA_FORUM } from "../../../lib/alpha";
 import AlphaBadge from "../../../components/AlphaBadge";
+import SpaceCoreNode from "../../../components/SpaceCoreNode";
 
 export default async function AccountPage() {
   const supabase = await createClient();
@@ -79,6 +80,18 @@ export default async function AccountPage() {
     .eq("user_id", user.id)
     .maybeSingle();
 
+  // SpaceCore (needs docs/v5.39-spacecore.sql; until then the panel stays away)
+  let spacecore = null;
+  try {
+    const [{ data: scPlayer, error: e1 }, { data: scColony, error: e2 }] = await Promise.all([
+      supabase.from("spacecore_players").select("summary").eq("user_id", user.id).maybeSingle(),
+      supabase.from("spacecore_colony").select("stage, have").eq("id", 1).maybeSingle(),
+    ]);
+    if (!e1 && !e2) spacecore = { player: scPlayer, colony: scColony };
+  } catch (e) {
+    spacecore = null;
+  }
+
   const sentinel = isSentinelUser(profile?.username);
   // Aaron's Story of Self briefing (lib/story/briefAccess.js): a hidden panel
   // that only shows for the usernames listed there.
@@ -115,6 +128,7 @@ export default async function AccountPage() {
     { label: "SPECIES", value: (species || []).length, href: "/galaxy/aliens" },
     { label: "GAMES SCORED", value: (scores || []).length, href: "/games" },
     { label: "QUIZ", value: quiz?.grade || "\u2014", href: "/quiz" },
+    spacecore && { label: "MARS", value: spacecore.player ? `Lv ${spacecore.player.summary?.level || 1}` : "\u2014", href: "/create/spacecore" },
     { label: "MESSAGES", value: unread ? `${unread} new` : "\u2709", href: "/messages", hot: !!unread },
     bondName && { label: "LYRA", value: bondName, small: true },
   ].filter(Boolean);
@@ -214,6 +228,8 @@ export default async function AccountPage() {
 
         {/* right: what you've done here */}
         <div className="node-col">
+          {spacecore && <SpaceCoreNode player={spacecore.player} colony={spacecore.colony} />}
+
           {scores && scores.length > 0 && (
             <div className="panel">
               <div className="mono node-label">HIGH SCORES</div>

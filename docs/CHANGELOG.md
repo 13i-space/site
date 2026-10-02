@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.39 — SpaceCore: Build a Universe (Mars, Alpha)
+The first version of Paul's shared building game, in Create at
+`/create/spacecore` (signed-in only). Every Kin flies to Mars for SpaceCore,
+Xavier's mining company. The intro covers the launch, the voyage (where you
+train your crew member with 8 permanent attribute points) and the landing.
+Then you dig into one shared underground world with a borer: digging is
+mining. You build sealed rooms, O2 pumps, greenhouses, lamps and auto-drills
+that mine while you're away. You send resources up to the colony, where
+robots build five Great Works (Landing Base to Launch Facility, which opens
+Season 2). Cooperative throughout: a 10% Commons dividend from everyone's
+mining, a scarcity bonus, other Kin's tunnels and parked borers in the world,
+and colony news. Activity elsewhere on the site becomes boosts (story read,
+species created, quiz score, another game, forum). Lyra is on the crew's
+comms: nine tutorial missions, a daily colony call, scanner pings, alerts,
+gifts and "Ask Lyra" (app/api/lyra now gets a SpaceCore briefing on that
+page). Fullscreen inside the game and from the page. A SPACECORE panel and
+MARS tile on the Node. One attribute point per level. Needs
+docs/v5.39-spacecore.sql. Details: docs/SPACECORE.md.
+
 ## Update 5.38 — Interactive Assignment: The Deep Walkers
 The third Interactive Assignment (`lib/interactive/deepWalkers.js`): 13i on
 Veyra, learning how to wait. Five records; canon "Where the Individual

@@ -238,6 +238,12 @@ based on what you understand"). Provisional: Paul can overrule any of it.
   numbered among the real Assignments (the earlier "Assignment 0000000"
   label is retired).
 
+## SpaceCore — developing (site-side game, Update 5.39)
+Paul's direction: SpaceCore is Xavier's mining company, and it sends the
+first human crews (the players) to Mars in the shared building game at
+`/create/spacecore`. It's a playful extension like the other games, not book
+canon. Its relationship to NovaCore is not established; don't invent one.
+
 ## Intentionally unknown / open questions
 - What 13i's creators actually looked like, and what became of them, is
   not established anywhere in site content reviewed for this document.
