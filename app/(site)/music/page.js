@@ -24,13 +24,15 @@ export default function MusicPage() {
     if (releases.current[key]) releases.current[key]();
     releases.current[key] = null;
   };
+  // when each track was last asked to play, so a fall back moments later
+  // carries on playing instead of leaving the listener with silence
+  const wanted = useRef({});
   const fallBack = (key, el, directSrc) => {
     if (fellBack.current[key]) return;
     fellBack.current[key] = true;
-    const wasPlaying = !el.paused;
     el.src = directSrc;
     el.load();
-    if (wasPlaying) el.play().catch(() => {});
+    if (Date.now() - (wanted.current[key] || 0) < 10000) el.play().catch(() => {});
   };
 
   const stopAll = () => {
@@ -150,12 +152,13 @@ export default function MusicPage() {
                     ref={(el) => { audioRefs.current[`${albumIdx}_${i}`] = el; }}
                     onEnded={() => { unhear(`${albumIdx}_${i}`); handleEnded(albumIdx, i); }}
                     onPointerDown={primeAudio}
+                    onPlay={() => { wanted.current[`${albumIdx}_${i}`] = Date.now(); }}
                     onPlaying={(e) => hear(`${albumIdx}_${i}`, e.currentTarget)}
                     onPause={() => unhear(`${albumIdx}_${i}`)}
                     onError={(e) => fallBack(`${albumIdx}_${i}`, e.currentTarget, BASE + file + ".mp3")}
                     controls
                     preload="none"
-                    src={`/api/track/${encodeURIComponent(file)}.mp3`}
+                    src={`/api/track/${encodeURIComponent(file)}.mp3?v=2`}
                     style={{ flex: 1, minWidth: 180, height: 32 }}
                   />
                 </div>

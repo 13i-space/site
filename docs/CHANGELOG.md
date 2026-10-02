@@ -3,6 +3,14 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.44 — Music page fix
+5.43 broke song playback: `/api/track` replies were marked cacheable, so
+Vercel's CDN kept a two-byte slice of a song (a browser's first Range
+request) and served it to everyone after. The route now says `no-store`
+(plus `Vary: Range`), the song links carry `?v=2` to skip anything already
+cached, and if a track ever does fall back to its original address it now
+keeps playing instead of needing a second click.
+
 ## Update 5.43 — Lyra dances to the music
 Lyra now reacts to whatever music is playing: Paul's songs on the Music
 page, the Signal Composer, and story signals. Only the sound drives her, no

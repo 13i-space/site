@@ -32,6 +32,9 @@ export async function GET(request, { params }) {
   });
   if (!out.get("content-type")) out.set("content-type", "audio/mpeg");
   if (!out.get("accept-ranges")) out.set("accept-ranges", "bytes");
-  out.set("cache-control", "public, max-age=86400");
+  // Never let a shared cache keep these: a cached slice of a song (a Range
+  // reply) would be handed to the next listener as if it were the whole song.
+  out.set("cache-control", "private, no-store");
+  out.set("vary", "Range");
   return new Response(upstream.body, { status: upstream.status, headers: out });
 }
