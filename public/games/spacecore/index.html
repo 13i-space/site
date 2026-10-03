@@ -98,6 +98,10 @@ a{color:var(--lav)}
 #lyraAsk{display:flex;gap:5px}
 #lyraAsk input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line2);border-radius:4px;color:var(--text);font:inherit;font-size:12px;padding:6px 8px}
 #lyra.min .lyra-body{display:none}
+.lyra-x{background:none;border:none;color:var(--muted);font-size:15px;line-height:1;padding:0 2px;margin-left:4px}
+.lyra-x:hover{color:var(--text)}
+#lyra.right{left:auto;right:12px;flex-direction:row-reverse}
+@media (hover:none),(pointer:coarse),(max-width:759px){#lyra.right{bottom:172px}}
 @media (prefers-reduced-motion:reduce){#lyra.speaking .orb .ring{animation:none}.toast{transition:none}.gbar i{transition:none}}
 
 .overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:16px;overflow:auto}
@@ -108,6 +112,8 @@ a{color:var(--lav)}
 .card p{margin:0;line-height:1.6;max-width:62ch}
 .eyebrow{font-size:11px;letter-spacing:1.6px;text-transform:uppercase;color:var(--lav2);margin:0}
 .scene-label{position:absolute;left:16px;top:16px;display:flex;flex-direction:column;gap:4px}
+.count{position:absolute;left:50%;top:16%;transform:translateX(-50%);font-family:var(--display);font-style:italic;font-weight:600;font-size:clamp(46px,9vw,96px);color:var(--warm);text-shadow:0 2px 24px rgba(0,0,0,.5);pointer-events:none}
+.skip{position:absolute;right:16px;bottom:16px}
 .scene-label .sub{font-family:var(--mono);font-size:11px;color:var(--muted)}
 .fine{font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.6}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
@@ -187,7 +193,7 @@ a{color:var(--lav)}
         </svg>
       </button>
       <div class="lyra-body">
-        <div class="lyra-name"><span>LYRA · COMMS</span><span id="lyraCount"></span></div>
+        <div class="lyra-name"><span>LYRA · COMMS</span><span><span id="lyraCount"></span> <button id="lyraClose" class="lyra-x" type="button" aria-label="Close Lyra's messages" title="Close">×</button></span></div>
         <div id="lyraText" class="lyra-text"></div>
         <div id="lyraMission" class="lyra-mission"></div>
         <div class="lyra-row">
@@ -255,7 +261,6 @@ const ATTRS = [
 ];
 // Blocks: building materials from Mars itself. Placed straight from your resources.
 const BLOCKS = [
-  {id:'lock', tile:LOCK, n:'Airlock', cost:{iron:3, silicon:2}, d:'Seals a room but lets you pass.'},
   {id:'brick', tile:BRICK, n:'Sintered brick', cost:{iron:2}, d:'Regolith baked into brick. The classic Mars build.'},
   {id:'basalt', tile:BASB, n:'Basalt block', cost:{silicon:2}, d:'Cut volcanic rock. Grey and heavy.'},
   {id:'hema', tile:HEMA, n:'Hematite block', cost:{iron:3}, d:'The iron oxide that makes Mars red, polished almost black.'},
@@ -271,6 +276,7 @@ const BLOCKS = [
 ];
 // Equipment: crafted in the Fabricator first (takes Mars time), then placed from your kit.
 const EQUIPS = [
+  {id:'lock', tile:LOCK, n:'Airlock', cost:{iron:3, silicon:2}, min:10, d:'Seals a room but lets you pass through.'},
   {id:'lamp', tile:LAMP, n:'Lamp', cost:{iron:1, silicon:1}, min:10, d:'Lights the dark.'},
   {id:'o2', tile:O2, n:'O₂ pump', cost:{iron:5, silicon:3, ice:3}, min:30, d:'Pressurizes a fully sealed room.'},
   {id:'heater', tile:HEATER, n:'Heater', cost:{iron:4, silicon:2, rare:1}, min:30, d:'Mars sits around −60°C. Warms a sealed room.'},
@@ -281,7 +287,11 @@ const EQUIPS = [
   {id:'charger', tile:CHARGER, n:'Charger', cost:{iron:6, silicon:4, rare:1}, min:40, d:'Charges your borer. Needs a reactor within 10 blocks.'},
   {id:'reactor', tile:REACTOR, n:'Reactor', cost:{iron:10, silicon:6, ice:2, rare:3}, min:120, d:'A small fission reactor. Powers chargers within 10 blocks.'},
 ];
-const ITEMS = BLOCKS.concat(EQUIPS);
+const MOVE = {id:'move', tile:-2, n:'Move', cost:{}, d:'Pick up one of your pieces of equipment, then tap where it should go.'};
+const REMOVE = BLOCKS.find(b=>b.id==='remove');
+const EQUIP_PALETTE = EQUIPS.concat([MOVE, REMOVE]);
+const ITEMS = BLOCKS.concat(EQUIPS,[MOVE]);
+const isKit = b => !!b && EQUIPS.includes(b);
 const itemById = id => ITEMS.find(i=>i.id===id);
 const itemByTile = t => ITEMS.find(i=>i.tile===t);
 // Must match lib/spacecore.js and spacecore_needs() in docs/v5.39-spacecore.sql
@@ -440,7 +450,7 @@ function fresh(){
     res:{iron:10,silicon:6,ice:3,rare:0,food:0}, mined:{iron:0,silicon:0,ice:0,rare:0,food:0}, given:0, shared:0,
     dug:0, sealBlocks:0, collected:0, maxDepth:0, charged:0,
     px:SPAWN_X, py:GY-1, rigs:[], training:{attr:'eng',min:0}, boosts:[], mission:0, daily:null, gifts:{day:'',n:0},
-    inv:{o2:1, lamp:1}, craft:[], bat:100,
+    inv:{o2:1, lamp:1, lock:2}, lockGift:true, craft:[], bat:100,
     gameMin:0, lastReal:Date.now(), introDone:false, foodFrac:0, cSnap:null, commonsFrac:{}, unsynced:{}, lastLogId:0, seen:''};
 }
 let S = fresh();
@@ -482,7 +492,7 @@ function nextLyra(){
   lyraEl.classList.toggle('speaking',!!lyraCur); lyraEl.classList.toggle('celebrate',!!(lyraCur&&lyraCur.celebrate));
   if(lyraCur){ lyraEl.classList.remove('min'); lyraLeft=lyraCur.hold?Infinity:(lyraQ.length?2.5:4.5)+lyraCur.text.length/(lyraQ.length?28:18); beep(880,.07,'sine',.025,1320); if(lyraCur.celebrate) chime([659,784,988]); }
   else lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`;
-  $('#lyraNext').textContent = lyraQ.length ? 'Next' : 'Got it';
+  $('#lyraNext').textContent = lyraQ.length ? `Next (${lyraQ.length})` : 'Got it';
   updateLyraCount();
 }
 function updateLyraCount(){ $('#lyraCount').textContent = lyraQ.length ? `+${lyraQ.length}` : ''; }
@@ -492,7 +502,9 @@ function tickLyra(dt){
   if(lyraType<lyraCur.text.length){ lyraType = reduce ? lyraCur.text.length : Math.min(lyraCur.text.length, lyraType+dt*70); lyraText.innerHTML = lyraType>=lyraCur.text.length ? mdLinks(lyraCur.text) : esc(lyraCur.text.slice(0,Math.floor(lyraType))); }
   lyraLeft-=dt; if(lyraLeft<=0) nextLyra();
 }
-$('#lyraNext').onclick=()=>nextLyra();
+function closeLyra(){ lyraQ=[]; lyraCur=null; lyraEl.classList.remove('speaking','celebrate'); lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`; lyraEl.classList.add('min'); updateLyraCount(); }
+$('#lyraNext').onclick=()=>{ if(lyraQ.length) nextLyra(); else closeLyra(); };
+$('#lyraClose').onclick=closeLyra;
 $('#lyraOrb').onclick=()=>{ lyraEl.classList.toggle('min'); };
 $('#lyraAskBtn').onclick=()=>{ const f=$('#lyraAsk'); f.hidden=!f.hidden; if(!f.hidden) $('#lyraQ').focus(); };
 $('#lyraAsk').addEventListener('submit',async e=>{
@@ -527,7 +539,7 @@ const MISSIONS = [
    brief:'Carve out a room off your tunnel, about four blocks wide and three tall. Or find a natural cave: nobody owns those until someone builds there.',
    done:"That's a room. Now let's make it somewhere you can breathe."},
   {n:'Seal a room', d:'Place 6 blocks of any material around a room.', test:()=>S.sealBlocks>=6, prog:()=>`${Math.min(6,S.sealBlocks)}/6`, reward:{ice:3},
-   brief:"Press B to Build. Pick a material (brick, basalt, glass, olivine...) and tap the open spots around your room to close it off. Put an Airlock where you want to come and go. Dug somewhere by mistake? Backfill packs the rock back in.",
+   brief:"Press B to Build. Pick a material (brick, basalt, glass, olivine...) and tap the open spots around your room to close it off. Put an Airlock (Equipment, E: you have two in your kit) where you want to come and go. Dug somewhere by mistake? Backfill packs the rock back in.",
    done:'Sealed, or close to it. One more piece and you can breathe in there.'},
   {n:'First breath', d:'Place an O₂ pump inside a sealed room.', test:()=>my.press>0, reward:{silicon:5},
    brief:"SpaceCore packed an O₂ pump in your kit. Press B, switch to Equipment (E), and place it inside the sealed room. If every gap is closed, the room fills with air and glows. If it leaks, I'll tell you.",
@@ -843,12 +855,13 @@ function buildCheck(x,y){
   const b=itemById(sel), i=idx(x,y), t=tile(x,y);
   if(!inReach(x,y)) return 'Too far away. Move your borer closer.';
   if(b.id==='remove'){ if(t<10) return 'Pick something you built to remove it.'; if(own[i]!==1) return `That's ${ownerName(i)}'s build. Only they can remove it.`; return null; }
+  if(b.id==='move'){ if(!isKit(itemByTile(t))) return 'Pick a piece of your equipment to move.'; if(own[i]!==1) return `That's ${ownerName(i)}'s. Only they can move it.`; return null; }
   if(t===AIR) return 'The surface belongs to the colony. Build underground.';
   if(t!==TUN) return 'You can only build in open tunnel.';
   if(own[i]>=2) return `${ownerName(i)} dug that tunnel. Build in your own tunnels or in unclaimed caves.`;
   if(x===S.px&&y===S.py) return 'Your borer is in that spot. Move first.';
   if(b.id==='fill'){ if(own[i]!==1) return 'Backfill only works in tunnels you dug.'; return null; }
-  if(isEquip(b.tile)){
+  if(isKit(b)){
     if(!(S.inv[b.id]>0)) return `No ${b.n} in your kit. Craft one in the Fabricator (Dashboard).`;
     if(b.tile===RIG&&!touchesRock(x,y)) return 'An Auto-drill has to touch rock. Pick a tunnel spot right next to the rock wall.';
     return null;
@@ -859,17 +872,19 @@ function buildCheck(x,y){
 function tryBuild(x,y){
   const err=buildCheck(x,y); if(err){ toast(err); return; }
   const b=itemById(sel), t=tile(x,y);
-  if(b.id==='remove'){
+  if(b.id==='remove'||b.id==='move'){
     const src=itemByTile(t);
-    if(isEquip(t)){
+    if(isKit(src)){
       S.inv[src.id]=(S.inv[src.id]||0)+1;
       if(t===RIG){ const i=S.rigs.findIndex(rg=>rg.x===x&&rg.y===y); if(i>=0){ for(const [r,v] of Object.entries(S.rigs[i].st)) if(v>=1) grant(r,v); flushGained(); S.rigs.splice(i,1);} }
-      toast(`${src.n} back in your kit.`);
+      if(b.id==='remove') toast(`${src.n} back in your kit.`);
     } else if(src){ for(const [r,v] of Object.entries(costOf(src))) S.res[r]+=Math.floor(v/2); }
-    setTile(x,y,TUN); recomputePressure(); beep(300,.08,'sine',.04,200); renderPalette(true); return;
+    setTile(x,y,TUN); recomputePressure(); beep(300,.08,'sine',.04,200);
+    if(b.id==='move'&&isKit(src)){ sel=src.id; group='equip'; renderPalette(true); toast(`Picked up the ${src.n}. Tap where it should go.`); return; }
+    renderPalette(true); return;
   }
   if(b.id==='fill'){ setTile(x,y,FILL); recomputePressure(); noise(.25,.06,300,'lowpass'); return; }
-  if(isEquip(b.tile)){ S.inv[b.id]--; } else { pay(costOf(b)); if(b.tile!==FILL) S.sealBlocks++; }
+  if(isKit(b)){ S.inv[b.id]--; if(b.tile===LOCK) S.sealBlocks++; } else { pay(costOf(b)); if(b.tile!==FILL) S.sealBlocks++; }
   setTile(x,y,b.tile);
   if(b.tile===RIG){ const rg={x,y,st:{}}; S.rigs.push(rg); const rt=rigRates(rg); lyra(`Auto-drill online, mining ${Object.keys(rt).sort((a,c)=>rt[c]-rt[a]).map(k=>RNAME[k]).join(' and ')}. It keeps going while you're away.`,{prio:2}); }
   recomputePressure();
@@ -1155,56 +1170,14 @@ function sceneLabel(a,b){ intro.innerHTML=`<div class="scene-label"><span class=
 function drawIntro(time,dt){
   ctx.setTransform(dpr,0,0,dpr,0,0);
   if(phase==='wait'||phase==='title'||phase==='offline'){ drawStars(time,6,0); drawMars(vw*.78,vh*.62,Math.min(vw,vh)*.32,time); }
-  else if(phase==='launch'){
-    const k=Math.min(1,phaseT/4.2), e=k*k;
-    drawStars(time,0,40+e*500);
-    const R=vw*1.1; ctx.fillStyle='#22508a'; ctx.beginPath(); ctx.arc(vw/2,vh+R*.72+e*vh*1.4,R,0,7); ctx.fill();
-    ctx.strokeStyle='rgba(143,184,255,.6)'; ctx.lineWidth=6; ctx.stroke();
-    ctx.fillStyle='#3f7a4e'; ctx.beginPath(); ctx.ellipse(vw*.4,vh*.98+e*vh*1.4,vw*.18,vh*.05,0,0,7); ctx.fill();
-    const shake=phaseT<1.4?(Math.random()-.5)*4:0;
-    drawRocket(vw/2+shake, vh*.62-e*vh*.12, Math.max(1.4,vw/420), true);
-    if(phaseT>4.4) setPhase('transit');
-  } else if(phase==='transit'){
+  else if(phase==='launch'){ drawLaunch(time,dt); }
+  else if(phase==='transit'){
     drawStars(time,90,0);
-    drawMars(vw*.86,vh*.5,24+Math.min(phaseT,60)*1.2,time);
+    drawMars(vw*.86,vh*.5,24+Math.min(phaseT,30)*1.2,time);
     ctx.save(); ctx.translate(vw*.12,vh*.5+Math.sin(time)*4); ctx.rotate(Math.PI/2); drawRocket(0,0,1.1,Math.random()<.5); ctx.restore();
     const day=Math.min(180,1+Math.floor(phaseT*4)); const el=$('#day'); if(el&&el.textContent!==String(day)) el.textContent=day;
-  } else if(phase==='arrival'){
-    // finish the voyage: approach, orbit, descent
-    const cxM=vw*.55, cyM=vh*.52, Rf=Math.min(vw,vh)*.3;
-    if(phaseT<3){
-      const k=phaseT/3, e=k*k*(3-2*k);
-      drawStars(time,90*(1-e)+8,0);
-      const R=(24+Math.min(60,1)*0)+(Rf-24)*e+Math.max(0,60-60*e)*0; const mx=vw*.86+(cxM-vw*.86)*e, my=vh*.5+(cyM-vh*.5)*e;
-      drawMars(mx,my,Math.max(40,R),time);
-      ctx.save(); ctx.translate(vw*.12+(vw*.3)*e,vh*.5+Math.sin(time)*4); ctx.rotate(Math.PI/2); drawRocket(0,0,1.1,true); ctx.restore();
-      const day=Math.min(210,180+Math.floor(phaseT*10)); if(arrivalStage<1){ arrivalStage=1; sceneLabel('Approaching Mars','Day 180 of 210 · braking'); }
-      const el=$('#arrDay'); if(el) el.textContent=day;
-    } else if(phaseT<7){
-      if(arrivalStage<2){ arrivalStage=2; sceneLabel('Mars orbit','Insertion burn complete · one pass over the landing site'); burnSound(); }
-      drawStars(time,4,0);
-      const a=-Math.PI*.95+(phaseT-3)/4*Math.PI*2.05, ox=cxM+Math.cos(a)*Rf*1.42, oy=cyM+Math.sin(a)*Rf*.42, behind=Math.sin(a)<-.05;
-      ctx.strokeStyle='rgba(185,192,255,.18)'; ctx.lineWidth=1; ctx.setLineDash([4,6]); ctx.beginPath(); ctx.ellipse(cxM,cyM,Rf*1.42,Rf*.42,0,0,7); ctx.stroke(); ctx.setLineDash([]);
-      const ship=()=>{ ctx.save(); ctx.translate(ox,oy); ctx.rotate(a+Math.PI); drawRocket(0,0,.75,phaseT<3.6); ctx.restore(); };
-      if(behind) ship();
-      drawMars(cxM,cyM,Rf,time,.12);
-      if(!behind) ship();
-      if(phaseT>5.6){ ctx.fillStyle=`rgba(232,207,192,${.5+Math.sin(time*6)*.4})`; ctx.beginPath(); ctx.arc(cxM+Rf*.18,cyM-Rf*.1,3,0,7); ctx.fill(); ctx.font="11px 'JetBrains Mono', monospace"; ctx.fillText('LANDING SITE ALPHA',cxM+Rf*.18+8,cyM-Rf*.1+4); }
-    } else {
-      if(arrivalStage<3){ arrivalStage=3; sceneLabel('Entry, descent and landing','Heat shield · 1,600°C'); entrySound(); }
-      const k=Math.min(1,(phaseT-7)/2.6), e=k*k;
-      ctx.fillStyle='#07081a'; ctx.fillRect(0,0,vw,vh);
-      drawStars(time,0,20+e*200);
-      const R=Rf*(1+e*9), cy=cyM+Rf*.2+R*.86;
-      drawMars(vw*.5,cy,R,time,0,false);
-      const g=ctx.createLinearGradient(0,0,0,vh); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(120,50,40,${e*.8})`); ctx.fillStyle=g; ctx.fillRect(0,0,vw,vh);
-      const shake=(Math.random()-.5)*4*k;
-      drawRocket(vw*.5+shake,vh*.32+e*vh*.12,1.4,false,.4+k*.6);
-      if(Math.random()<.8) parts.push({x:vw*.5+(Math.random()-.5)*30,y:vh*.32+e*vh*.12-30,vx:(Math.random()-.5)*60,vy:-120-Math.random()*120,life:.5,c:Math.random()<.5?'#ffcf9a':'#ff8a55'});
-      for(let i=parts.length-1;i>=0;i--){ const q=parts[i]; q.life-=dt; if(q.life<=0){parts.splice(i,1);continue;} q.x+=q.vx*dt; q.y+=q.vy*dt; ctx.fillStyle=q.c; ctx.fillRect(q.x,q.y,3,3); }
-      if(phaseT>9.8) setPhase('landing');
-    }
-  } else if(phase==='landing'){
+  } else if(phase==='arrival'){ drawArrival(time,dt); }
+  else if(phase==='landing'){
     const k=Math.min(1,phaseT/4), e=1-(1-k)*(1-k);
     const g=ctx.createLinearGradient(0,0,0,vh); g.addColorStop(0,'#0b0c22'); g.addColorStop(.7,'#3a1d2a'); g.addColorStop(1,'#7a3a2e'); ctx.fillStyle=g; ctx.fillRect(0,0,vw,vh);
     const ground=vh*(1.25-.47*e);
@@ -1221,14 +1194,160 @@ function drawIntro(time,dt){
 }
 const colonyStarted=()=>C.stage>0||stageProgress()>0||crews.length>0;
 
+// ---------- launch: countdown, pad, liftoff, staging, injection burn ----------
+let L={smoke:[],cues:{}};
+function mixHex(a,b,k){ const pa=parseInt(a.slice(1),16), pb=parseInt(b.slice(1),16); const ch=(sh)=>{ const x=(pa>>sh)&255, y=(pb>>sh)&255; return Math.round(x+(y-x)*k); }; return `rgb(${ch(16)},${ch(8)},${ch(0)})`; }
+function cue(name,at,fn){ if(phaseT>=at&&!L.cues[name]){ L.cues[name]=1; fn(); } }
+function setLabel(a,b){ const A=$('#lblA'), B=$('#lblB'); if(A) A.textContent=a; if(B) B.textContent=b||''; }
+function introOverlay(a,b,count){
+  intro.hidden=false;
+  intro.innerHTML=`<div class="scene-label"><span class="eyebrow mono" id="lblA">${a}</span><span class="sub" id="lblB">${b||''}</span></div>${count?'<div class="count" id="count"></div>':''}<button class="btn sm skip" type="button" id="skipBtn">Skip</button>`;
+  $('#skipBtn').onclick=()=>{ if(phase==='launch') setPhase('transit'); else if(phase==='arrival') setPhase('landing'); };
+}
+function drawFlame(x,y,w,len,a=1){
+  const g=ctx.createLinearGradient(x,y,x,y+len); g.addColorStop(0,`rgba(255,250,230,${a})`); g.addColorStop(.25,`rgba(255,205,140,${a})`); g.addColorStop(.7,`rgba(255,120,60,${a*.7})`); g.addColorStop(1,'rgba(255,90,40,0)');
+  ctx.fillStyle=g; ctx.beginPath(); ctx.moveTo(x-w/2,y); ctx.quadraticCurveTo(x-w*.75,y+len*.45,x+(Math.random()-.5)*w*.3,y+len); ctx.quadraticCurveTo(x+w*.75,y+len*.45,x+w/2,y); ctx.fill();
+}
+function drawBooster(x,base,s,rot,flame,big){
+  ctx.save(); ctx.translate(x,base); ctx.rotate(rot);
+  if(flame){ const len=(big?60+Math.random()*16:8+flame*26+Math.random()*6)*s; drawFlame(-3.5*s,0,4.6*s,len,.95); drawFlame(3.5*s,0,4.6*s,len,.95); drawFlame(0,0,5.4*s,len*1.08,1); }
+  ctx.fillStyle='#3a3d55'; for(const ex of [-4,0,4]){ ctx.beginPath(); ctx.moveTo(ex*s-1.6*s,-2.5*s); ctx.lineTo(ex*s+1.6*s,-2.5*s); ctx.lineTo(ex*s+2.2*s,0); ctx.lineTo(ex*s-2.2*s,0); ctx.fill(); }
+  ctx.fillStyle='#e3e5f2'; ctx.fillRect(-6.5*s,-72*s,13*s,69.5*s);
+  ctx.fillStyle='rgba(20,22,58,.18)'; ctx.fillRect(2.5*s,-72*s,4*s,69.5*s);
+  ctx.fillStyle='#1b1d30'; ctx.fillRect(-6.5*s,-60*s,13*s,3*s); ctx.fillRect(-6.5*s,-18*s,13*s,2*s); ctx.fillRect(-6.5*s,-72*s,13*s,4*s);
+  ctx.fillStyle='#8B95F6'; ctx.fillRect(-6.5*s,-46*s,13*s,1.4*s);
+  ctx.fillStyle='#c9ccdf'; ctx.beginPath(); ctx.moveTo(-6.5*s,-14*s); ctx.lineTo(-11*s,-2.5*s); ctx.lineTo(-6.5*s,-2.5*s); ctx.fill(); ctx.beginPath(); ctx.moveTo(6.5*s,-14*s); ctx.lineTo(11*s,-2.5*s); ctx.lineTo(6.5*s,-2.5*s); ctx.fill();
+  ctx.restore();
+}
+function drawPadScene(t,dt,s,time){
+  const cx=vw*.5, padTop=vh*.8, holdY=vh*.62;
+  const lt=Math.max(0,t-10), lift=lt>0?(35*lt*lt+12*lt)*s:0;
+  const follow=Math.max(0,lift-(padTop-holdY)), ground=padTop+follow, k=clamp(follow/(vh*5),0,1);
+  ctx.save();
+  if(t>6.8&&t<13){ const sh=(t<10?(t-6.8)/3.2:1-(t-10)/3)*5; ctx.translate((Math.random()-.5)*sh,(Math.random()-.5)*sh); }
+  const g=ctx.createLinearGradient(0,0,0,vh); g.addColorStop(0,mixHex('#16294d','#04050c',k)); g.addColorStop(.7,mixHex('#4f6290','#06071a',k)); g.addColorStop(1,mixHex('#d9a07a','#0a0b1e',k));
+  ctx.fillStyle=g; ctx.fillRect(-10,-10,vw+20,vh+20);
+  if(k>.05) for(const st of stars){ ctx.fillStyle=`rgba(220,223,255,${(.2+st.z*.6)*Math.min(1,k*2)})`; ctx.fillRect(st.x*vw,st.y*vh,st.z*1.8,st.z*1.8); }
+  if(ground<vh+200){
+    ctx.fillStyle='#1c2629'; ctx.beginPath(); ctx.moveTo(0,ground); for(let x=0;x<=vw+10;x+=10) ctx.lineTo(x,ground-14*s-Math.sin(x*.006)*10*s-Math.sin(x*.017)*4*s); ctx.lineTo(vw,ground+5); ctx.lineTo(0,ground+5); ctx.fill();
+    ctx.fillStyle='#20282b'; ctx.fillRect(0,ground,vw,vh-ground+20);
+    ctx.fillStyle='#4a4f5c'; ctx.fillRect(cx-46*s,ground-6*s,92*s,6*s); ctx.fillStyle='#14161f'; ctx.fillRect(cx-9*s,ground-6*s,18*s,6*s);
+    // the launch tower, with the arm that swings away before ignition
+    const tx=cx-24*s, tTop=ground-150*s;
+    ctx.strokeStyle='#9a5b3e'; ctx.lineWidth=Math.max(1,1.2*s);
+    ctx.beginPath(); ctx.moveTo(tx-6*s,ground-6*s); ctx.lineTo(tx-6*s,tTop); ctx.moveTo(tx+6*s,ground-6*s); ctx.lineTo(tx+6*s,tTop);
+    for(let y=ground-6*s;y>tTop;y-=12*s){ ctx.moveTo(tx-6*s,y); ctx.lineTo(tx+6*s,y-12*s); ctx.moveTo(tx+6*s,y); ctx.lineTo(tx-6*s,y-12*s); ctx.moveTo(tx-6*s,y); ctx.lineTo(tx+6*s,y); }
+    ctx.stroke();
+    ctx.fillStyle='#E8CFC0'; ctx.fillRect(tx-1.2*s,tTop-8*s,2.4*s,8*s); if(Math.sin(time*5)>0){ ctx.fillStyle='#ff6a5a'; ctx.beginPath(); ctx.arc(tx,tTop-9*s,1.6*s,0,7); ctx.fill(); }
+    const armA=t<7?0:-Math.min(1,(t-7)/1.6)*1.15, armY=ground-108*s;
+    ctx.save(); ctx.translate(tx+6*s,armY); ctx.rotate(armA); ctx.fillStyle='#7a4a34'; ctx.fillRect(0,-2*s,16*s,4*s); ctx.restore();
+  }
+  // smoke: billows from the pad from ignition to just after liftoff
+  if(t>6.6&&t<13.5) for(let i=0;i<(t>10?5:3);i++) L.smoke.push({x:cx+(Math.random()-.5)*14*s,gy:-4*s,r:(5+Math.random()*5)*s,vx:(Math.random()<.5?-1:1)*(40+Math.random()*120)*s,vy:-(Math.random()*18)*s,life:3.5,max:3.5});
+  for(let i=L.smoke.length-1;i>=0;i--){ const q=L.smoke[i]; q.life-=dt; if(q.life<=0){L.smoke.splice(i,1);continue;} q.x+=q.vx*dt; q.gy+=q.vy*dt; q.vx*=.985; q.r+=dt*9*s; const a=Math.min(.55,q.life/q.max*.6); ctx.fillStyle=`rgba(205,205,215,${a})`; ctx.beginPath(); ctx.arc(q.x,ground+q.gy,q.r,0,7); ctx.fill(); }
+  // the stack
+  const rocketBase=ground-6*s-lift, sep=t>=15, bOff=sep?(28*(t-15)**2+30*(t-15))*s:0, bRot=sep?(t-15)*.32:0;
+  const boosterFlame=t>=7&&t<15 ? (t<10?(t-7)/3:1) : 0;
+  if(t<15||rocketBase+bOff-72*s<vh+40) drawBooster(cx-(sep?(t-15)*8*s:0),rocketBase+bOff,s,bRot,boosterFlame,t>=10);
+  if(sep&&t<15.5){ ctx.fillStyle=`rgba(230,230,240,${(15.5-t)*1.4})`; ctx.beginPath(); ctx.arc(cx,rocketBase-72*s,(6+(t-15)*30)*s,0,7); ctx.fill(); }
+  const upY=rocketBase-72*s-14*s;
+  drawRocket(cx,upY,s,t>=15.7);
+  ctx.restore();
+}
+function drawTMI(u,s,time){
+  drawStars(time,0,0);
+  const R=vw*1.4, ecx=vw*.45, ecy=vh*1.02+R*.64+(u>1?(u-1)*(u-1)*vh*.22:0);
+  ctx.fillStyle='#24548c'; ctx.beginPath(); ctx.arc(ecx,ecy,R,0,7); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(ecx,ecy,R,0,7); ctx.clip();
+  ctx.fillStyle='#3f7a4e'; for(let i=0;i<7;i++){ ctx.beginPath(); ctx.ellipse(ecx-R*.5+i*R*.17+((time*8)%40),ecy-R*.985+(i%3)*R*.01,R*.06,R*.012,0,0,7); ctx.fill(); }
+  ctx.fillStyle='rgba(255,255,255,.35)'; for(let i=0;i<9;i++){ ctx.beginPath(); ctx.ellipse(ecx-R*.55+i*R*.13+((time*14)%50),ecy-R*.99+(i%2)*R*.006,R*.05,R*.006,0,0,7); ctx.fill(); }
+  ctx.restore();
+  ctx.strokeStyle='rgba(143,184,255,.55)'; ctx.lineWidth=8; ctx.beginPath(); ctx.arc(ecx,ecy,R+3,0,7); ctx.stroke();
+  const burn=u>.9, acc=u>.9?(u-.9):0;
+  const x=vw*.3+u*vw*.03+acc*acc*vw*.09, y=vh*.4-acc*acc*vh*.035;
+  ctx.save(); ctx.translate(x,y); ctx.rotate(Math.PI/2-Math.min(.25,acc*.08));
+  if(burn){ ctx.save(); ctx.translate(0,14*s); drawFlame(0,0,6*s,(26+acc*10+Math.random()*8)*s,1); ctx.restore(); }
+  drawRocket(0,0,s,false); ctx.restore();
+}
+function drawLaunch(time,dt){
+  const t=phaseT, s=clamp(Math.min(vw,vh)/420,1.05,2.2);
+  for(let i=0;i<10;i++) cue('tick'+i,i,()=>beep(i>=7?880:660,.09,'sine',.05));
+  cue('rumble',4,()=>{ noise(6.4,.14,110,'lowpass',240); setLabel('T−6 · Engine chill','Propellant loading complete'); });
+  cue('ignite',7,()=>{ noise(3.4,.3,160,'lowpass',520); beep(46,3.2,'sawtooth',.06,62); setLabel('T−3 · Ignition','Main engines building thrust'); });
+  cue('lift',10,()=>{ launchSound(); setLabel('Liftoff','SpaceCore Mission One has cleared the tower'); });
+  cue('maxq',12.6,()=>setLabel('Max Q','Peak aerodynamic pressure'));
+  cue('sep',15,()=>{ noise(.5,.3,1300,'bandpass',400); beep(320,.25,'square',.04,110); setLabel('Stage separation','The booster falls away · upper stage ignition'); });
+  cue('ign2',15.7,()=>noise(1.8,.14,320,'lowpass',700));
+  cue('orbit',17.5,()=>setLabel('Earth orbit','Coasting · lining up the burn for Mars'));
+  cue('tmi',18.4,()=>{ burnSound(); setLabel('Trans-Mars injection','Full burn · next stop, Mars'); });
+  const cnt=$('#count'); if(cnt){ const txt=t<10?`T−${Math.ceil(10-t)}`:t<12?'Liftoff':''; if(cnt.textContent!==txt) cnt.textContent=txt; }
+  if(t>22){ setPhase('transit'); return; }
+  if(t<17.5) drawPadScene(t,dt,s,time); else drawTMI(t-17.5,s,time);
+}
+
+// ---------- arrival: approach, a smooth orbit insertion, two passes, deorbit, entry ----------
+function drawArrival(time,dt){
+  const t=phaseT, cx=vw*.55, cy=vh*.52, Rf=Math.min(vw,vh)*.3, A=Rf*1.45, B=Rf*.42;
+  const T1=3.2, T2=11.2, T3=12.8, T4=15.4;
+  const orbitPos=th=>({x:cx+A*Math.cos(th), y:cy+B*Math.sin(th)});
+  const tang=th=>({x:A*Math.sin(th), y:-B*Math.cos(th)});           // direction of travel (θ decreasing)
+  const ship=(x,y,v,sc,flame,glow)=>{ ctx.save(); ctx.translate(x,y); ctx.rotate(Math.atan2(v.y,v.x)+Math.PI/2); drawRocket(0,0,sc,flame,glow); ctx.restore(); };
+  const site={x:cx+Rf*.12, y:cy+Rf*.24};
+  if(t<T1){
+    if(arrivalStage<1){ arrivalStage=1; setLabel('Approaching Mars','Day 205 of 210 · braking for orbit'); }
+    const k=t/T1, e=k*k*(3-2*k);
+    drawStars(time,50*(1-e)+3,0);
+    const mx=vw*.86+(cx-vw*.86)*e, my=vh*.5+(cy-vh*.5)*e, R=60+(Rf-60)*e;
+    drawMars(mx,my,R,time);
+    // a curve that meets the orbit at its left edge, already moving along it
+    const j0=orbitPos(Math.PI), j={x:j0.x+(cx-mx)*0, y:j0.y};
+    const p0={x:vw*.08,y:vh*.36}, p2=j, p1={x:j.x-vw*.02,y:vh*.36};
+    const bx=(1-e)*(1-e)*p0.x+2*(1-e)*e*p1.x+e*e*p2.x, by=(1-e)*(1-e)*p0.y+2*(1-e)*e*p1.y+e*e*p2.y;
+    const dv={x:2*(1-e)*(p1.x-p0.x)+2*e*(p2.x-p1.x), y:2*(1-e)*(p1.y-p0.y)+2*e*(p2.y-p1.y)};
+    const v= e>.97 ? tang(Math.PI) : dv;
+    ship(bx,by,v,.85,false);
+  } else if(t<T2){
+    if(arrivalStage<2){ arrivalStage=2; setLabel('Mars orbit','Orbit insertion · two passes over Landing Site Alpha'); burnSound(); }
+    drawStars(time,3,0);
+    const u=(t-T1)/(T2-T1), th=Math.PI-u*Math.PI*4.5;                  // two full orbits, ending low over the site
+    const p=orbitPos(th), v=tang(th), behind=Math.sin(th)<0, sc=behind?.6:.82;
+    ctx.strokeStyle='rgba(185,192,255,.16)'; ctx.lineWidth=1; ctx.setLineDash([4,6]); ctx.beginPath(); ctx.ellipse(cx,cy,A,B,0,0,7); ctx.stroke(); ctx.setLineDash([]);
+    if(behind) ship(p.x,p.y,v,sc,u<.06);
+    drawMars(cx,cy,Rf,time,.05);
+    if(u>.25){ ctx.fillStyle=`rgba(232,207,192,${.55+Math.sin(time*6)*.4})`; ctx.beginPath(); ctx.arc(site.x,site.y,3,0,7); ctx.fill(); ctx.font="11px 'JetBrains Mono', monospace"; ctx.fillText('LANDING SITE ALPHA',site.x+8,site.y+4); }
+    if(!behind) ship(p.x,p.y,v,sc,u<.06);
+  } else if(t<T3){
+    if(arrivalStage<3){ arrivalStage=3; setLabel('Deorbit burn','Dropping toward Landing Site Alpha'); burnSound(); }
+    const k=(t-T2)/(T3-T2), e=k*k*(3-2*k), Z=1+e*6, target={x:vw*.5,y:vh*.62};
+    drawStars(time,2,0);
+    const Ax=site.x+(target.x-site.x)*e, Ay=site.y+(target.y-site.y)*e;
+    ctx.save(); ctx.translate(Ax,Ay); ctx.scale(Z,Z); ctx.translate(-site.x,-site.y); drawMars(cx,cy,Rf,time,0,false); ctx.restore();
+    const p0=orbitPos(Math.PI*.5-0), sx=p0.x+(vw*.5-p0.x)*e, sy=p0.y+(vh*.32-p0.y)*e;
+    ship(sx,sy,{x:Math.cos(-.4)*(1-e)+0*e,y:.2+e},.82+e*.5,k<.5,e*.6);
+  } else {
+    if(arrivalStage<4){ arrivalStage=4; setLabel('Entry, descent and landing','Heat shield · 1,600°C'); entrySound(); }
+    const k=Math.min(1,(t-T3)/(T4-T3-.2)), e=k*k;
+    ctx.fillStyle='#07081a'; ctx.fillRect(0,0,vw,vh);
+    drawStars(time,0,20+e*200);
+    const R=Rf*(7+e*6), mcy=vh*.62+R*.98-Rf*.0;
+    drawMars(vw*.5,mcy,R,time,0,false);
+    const g=ctx.createLinearGradient(0,0,0,vh); g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1,`rgba(120,50,40,${.3+e*.6})`); ctx.fillStyle=g; ctx.fillRect(0,0,vw,vh);
+    const shake=(Math.random()-.5)*4*k;
+    drawRocket(vw*.5+shake,vh*.32+e*vh*.1,1.32,false,.6+k*.4);
+    if(Math.random()<.85) parts.push({x:vw*.5+(Math.random()-.5)*30,y:vh*.32+e*vh*.1-30,vx:(Math.random()-.5)*60,vy:-120-Math.random()*120,life:.5,c:Math.random()<.5?'#ffcf9a':'#ff8a55'});
+    for(let i=parts.length-1;i>=0;i--){ const q=parts[i]; q.life-=dt; if(q.life<=0){parts.splice(i,1);continue;} q.x+=q.vx*dt; q.y+=q.vy*dt; ctx.fillStyle=q.c; ctx.fillRect(q.x,q.y,3,3); }
+    if(t>T4) setPhase('landing');
+  }
+}
+
 // ---------- intro screens ----------
 const intro=$('#intro');
 function setPhase(p){
   phase=p; phaseT=0; parts.length=0;
   if(p==='title') showTitle();
-  else if(p==='launch'){ intro.hidden=false; sceneLabel('SpaceCore · Mission One · Liftoff',''); launchSound(); }
+  else if(p==='launch'){ L={smoke:[],cues:{}}; introOverlay('T−10 · SpaceCore Mission One','Launch Complex 1 · all systems go',true); }
   else if(p==='transit') showCreation();
-  else if(p==='arrival'){ arrivalStage=0; intro.hidden=false; intro.innerHTML=''; }
+  else if(p==='arrival'){ arrivalStage=0; introOverlay('Approaching Mars',''); }
   else if(p==='landing'){ touched=false; sceneLabel('Touchdown · Landing Site Alpha',''); landingSound(); }
   else if(p==='play'){ intro.hidden=true; intro.innerHTML=''; ['#tools','#dpad','#lyra','#gauges','#mini'].forEach(s=>$(s).hidden=false); renderPalette(true); $('#lyraMission').textContent=missionLine(); post({type:'play'}); }
 }
@@ -1334,13 +1453,15 @@ function resume(){
 
 // ---------- HUD ----------
 function bump(r){ const el=document.querySelector(`.chip[data-r="${r}"]`); if(el){ el.classList.add('bump'); clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('bump'),400);} }
-function renderRes(){ $('#res').innerHTML=RES.map(r=>`<span class="chip" data-r="${r}" title="${RNAME[r]}"><i style="background:${RCOL[r]}"></i>${RNAME[r]} <b id="rv-${r}">0</b></span>`).join(''); }
+const RTIP={iron:'Iron: from regolith (the red surface rock)',silicon:'Silicon: from basalt, the darker rock deeper down',ice:'Ice: frozen water, pale blue veins',rare:'Rare metals: gold-flecked veins, mostly deep down',food:'Food: grown in your greenhouses'};
+function renderRes(){ $('#res').innerHTML=RES.map(r=>`<span class="chip" data-r="${r}" title="${RTIP[r]}"><i style="background:${RCOL[r]}"></i>${RNAME[r]} <b id="rv-${r}">0</b></span>`).join(''); }
 renderRes();
 function updateRes(){ for(const r of RES){ const el=$('#rv-'+r); if(el){ const v=String(Math.floor(S.res[r])); if(el.textContent!==v) el.textContent=v; } } }
 function swatch(it){
   const c=document.createElement('canvas'); c.width=44; c.height=44; const x=c.getContext('2d');
   x.fillStyle='#170d12'; x.fillRect(0,0,44,44);
-  if(it.id==='remove'){ x.strokeStyle='#C97B6E'; x.lineWidth=3; x.beginPath(); x.moveTo(12,12); x.lineTo(32,32); x.moveTo(32,12); x.lineTo(12,32); x.stroke(); }
+  if(it.id==='move'){ x.strokeStyle='#B9C0FF'; x.lineWidth=3; x.beginPath(); x.moveTo(22,8); x.lineTo(22,36); x.moveTo(8,22); x.lineTo(36,22); x.stroke(); x.fillStyle='#B9C0FF'; for(const [a,b2,c,d] of [[22,4,17,10],[22,40,17,34],[4,22,10,17],[40,22,34,17]]){ x.beginPath(); x.moveTo(a,b2); x.lineTo(c,d); x.lineTo(a===22?27:c,a===22?d:27); x.fill(); } }
+  else if(it.id==='remove'){ x.strokeStyle='#C97B6E'; x.lineWidth=3; x.beginPath(); x.moveTo(12,12); x.lineTo(32,32); x.moveTo(32,12); x.lineTo(12,32); x.stroke(); }
   else if(it.id==='fill'){ x.fillStyle='#7a4434'; x.fillRect(0,0,44,44); x.fillStyle='#8c5240'; for(let k=0;k<6;k++) x.fillRect((k*13)%38,(k*17)%38,8,6); }
   else if(isEquip(it.tile)) drawEquip(x,it.tile,0,0,44,0,true,null);
   else drawMaterial(x,it.tile,0,0,44,12345);
@@ -1348,28 +1469,28 @@ function swatch(it){
 }
 let palSig='';
 function renderPalette(force){
-  const list=group==='blocks'?BLOCKS:EQUIPS;
-  const sig=group+'|'+sel+'|'+list.map(b=>isEquip(b.tile)?(S.inv[b.id]||0):canPay(costOf(b))?1:0).join(',')+'|'+S.attrs.fab;
+  const list=group==='blocks'?BLOCKS:EQUIP_PALETTE;
+  const sig=group+'|'+sel+'|'+list.map(b=>isKit(b)?(S.inv[b.id]||0):canPay(costOf(b))?1:0).join(',')+'|'+S.attrs.fab;
   if(!force&&sig===palSig) return; palSig=sig;
   const pal=$('#palette'); pal.innerHTML='';
   list.forEach((b,i)=>{
     const btn=document.createElement('button'); btn.type='button';
-    const eq=isEquip(b.tile), have=S.inv[b.id]||0;
+    const eq=isKit(b), have=S.inv[b.id]||0;
     const key=group==='blocks'&&i<10?`${(i+1)%10}. `:'';
     btn.className=`pitem ${sel===b.id?'sel':''} ${!eq&&!canPay(costOf(b))?'poor':''} ${eq&&!have?'none':''}`;
     btn.title=b.d;
     btn.appendChild(swatch(b));
     const span=document.createElement('span');
-    span.innerHTML=`<b>${key}${b.n}</b><small>${eq?(have?`${have} in kit`:'craft in Fabricator'):(costText(costOf(b))||(b.id==='fill'?'free':'refund'))}</small>`;
+    span.innerHTML=`<b>${key}${b.n}</b><small>${eq?(have?`${have} in kit`:'craft in Fabricator'):(costText(costOf(b))||(b.id==='fill'?'free':b.id==='move'?'pick up, place again':'refund'))}</small>`;
     btn.appendChild(span);
     btn.onclick=()=>selectBuild(b.id);
     pal.appendChild(btn);
   });
 }
-function setGroup(g){ group=g; $('#gBlocks').classList.toggle('on',g==='blocks'); $('#gEquip').classList.toggle('on',g==='equip'); const list=g==='blocks'?BLOCKS:EQUIPS; if(!list.some(b=>b.id===sel)) sel=list[g==='blocks'?1:0].id; renderPalette(true); }
+function setGroup(g){ group=g; $('#gBlocks').classList.toggle('on',g==='blocks'); $('#gEquip').classList.toggle('on',g==='equip'); const list=g==='blocks'?BLOCKS:EQUIP_PALETTE; if(!list.some(b=>b.id===sel)) sel=list[0].id; renderPalette(true); }
 function selectBuild(id){
-  sel=id; const b=itemById(id); group=BLOCKS.includes(b)?'blocks':'equip'; setMode('build'); setGroup(group);
-  if(isEquip(b.tile)&&!(S.inv[id]>0)){ toast(`No ${b.n} in your kit yet. Craft one in the Fabricator.`); openDash('fab'); return; }
+  sel=id; const b=itemById(id); const cur=group==='blocks'?BLOCKS:EQUIP_PALETTE; if(!cur.includes(b)) group=BLOCKS.includes(b)?'blocks':'equip'; setMode('build'); setGroup(group);
+  if(isKit(b)&&!(S.inv[id]>0)){ toast(`No ${b.n} in your kit yet. Craft one in the Fabricator.`); openDash('fab'); return; }
   if(id==='rig') lyra('Auto-drill selected. Tap an open tunnel spot that touches rock. Green outline means it fits.',{prio:2,key:'rigsel',cool:120});
   else toast(`${b.n}: ${b.d}`);
 }
@@ -1402,7 +1523,7 @@ function renderDash(){
   const rigs=S.rigs.map((rg,i)=>{ const rt=rigRates(rg); const ks=Object.keys(rt).sort((a,b)=>rt[b]-rt[a]); const f=rigFill(rg); return `<div><div class="kv"><span class="lbl">Drill ${i+1} · ${depthOf(rg.y)*2} m</span><span>${ks.length?ks.map(k=>`${RNAME[k]} ${rt[k].toFixed(1)}/h`).join(', '):'No rock nearby'}</span><span>${Math.round(f*100)}%</span></div><div class="meter ${f>=.99?'warm':''}"><i style="width:${f*100}%"></i></div></div>`; }).join('');
   const boosts=allBoosts();
   const activeCrews=crews.filter(c=>Date.now()-new Date(c.updated_at)<15*60000);
-  const queue=S.craft.map((c,i)=>{ const e=itemById(c.id); return `<div><div class="kv"><span class="lbl">${i===0?'Building':'Queued'}</span><span>${e.n}</span><span>${i===0?fmtH(c.left)+' left':fmtH(c.left)}</span></div>${i===0?`<div class="meter warm"><i style="width:${(1-c.left/c.total)*100}%"></i></div>`:''}</div>`; }).join('');
+  const queue=S.craft.map((c,i)=>{ const e=itemById(c.id); return `<div><div class="kv"><span class="lbl">${i===0?'Building':'Queued'}</span><span>${e.n} · ${i===0?fmtH(c.left)+' left':fmtH(c.left)}</span><button type="button" class="btn sm" data-act="cancel" data-i="${i}" aria-label="Cancel ${e.n} and get its materials back" title="Cancel and refund">×</button></div>${i===0?`<div class="meter warm"><i style="width:${(1-c.left/c.total)*100}%"></i></div>`:''}</div>`; }).join('');
   dash.innerHTML=`
   <div class="dhead"><div><p class="eyebrow mono">SpaceCore crew · Level ${S.level}</p><h2>${esc(ME.username)}</h2></div><button class="btn" type="button" data-act="close">Close</button></div>
   <section><div class="kv"><span class="lbl">Experience</span><span></span><span>${S.xp} / ${xpNeed}</span></div><div class="meter"><i style="width:${S.xp/xpNeed*100}%"></i></div></section>
@@ -1432,7 +1553,7 @@ function renderDash(){
   <section><h3>Auto-drills</h3>
     ${S.rigs.length?rigs:'<p class="small">No auto-drills yet. Craft one in the Fabricator, then place it touching rock.</p>'}
     <p class="small">Each holds ${rigCapHours()} Mars hours of mining (Endurance raises that).</p>
-    <div class="row"><button class="btn primary" type="button" data-act="collect" ${S.rigs.length?'':'disabled'}>Collect all</button>${ME.sentinel?'<button class="btn" type="button" data-act="overnight">Skip ahead 8 Mars hours (Sentinel)</button>':''}</div>
+    <div class="row"><button class="btn primary" type="button" data-act="collect" ${S.rigs.length?'':'disabled'}>Collect all</button>${ME.sentinel?'<button class="btn" type="button" data-act="overnight">Skip my crew ahead 8 Mars hours</button>':''}</div>
   </section>
   <section><h3>Colony</h3>
     ${st?`<p><b>${st.n}</b> <span class="tag">Great Work ${C.stage+1} of ${STAGES.length}</span></p>
@@ -1448,7 +1569,8 @@ function renderDash(){
   </section>
   <section><h3>Voyage</h3>
     <p class="small">Watch the launch, the trip, the orbit and the landing again. Your progress isn't touched.</p>
-    <div class="row"><button class="btn" type="button" data-act="replay">Replay launch and landing</button>${ME.sentinel?`<button class="btn" type="button" data-act="reset">${dash.dataset.reset?'This erases this crew\'s progress. Confirm':'Start this crew over (Sentinel)'}</button>`:''}</div>
+    <div class="row"><button class="btn" type="button" data-act="replay">Replay launch and landing</button>${ME.sentinel?`<button class="btn" type="button" data-act="reset">${dash.dataset.reset?`Erase ${esc(ME.username)}'s crew? Confirm`:'Start my crew over'}</button>`:''}</div>
+    ${ME.sentinel?`<p class="fine">Sentinel testing tools, only on your accounts. They only touch this account's crew (${esc(ME.username)}): never other Kin, the shared world or the colony. Skip ahead runs your own drills, training, Fabricator and greenhouses forward 8 Mars hours. Start over resets this crew to brand new, so you can play the first-time experience; your tunnels stay in the world.</p>`:''}
   </section>
   <section><h3>Ledger</h3>
     <div class="kv">${RES.map(r=>`<span class="lbl">${RNAME[r]} mined</span><span></span><span>${S.mined[r]}</span>`).join('')}
@@ -1473,6 +1595,7 @@ dash.addEventListener('click',e=>{
   if(a==='overnight'){ advance(480,true); toast('Skipped ahead 8 hours on Mars.'); }
   if(a==='give') contribute(b.dataset.r, !!b.dataset.half);
   if(a==='craft') craft(b.dataset.id);
+  if(a==='cancel'){ const c=S.craft.splice(+b.dataset.i,1)[0]; if(c){ const e=itemById(c.id); for(const [r,v] of Object.entries(costOf(e))) S.res[r]+=v; toast(`Cancelled the ${e.n}. Materials refunded.`); save(true); } }
   if(a==='replay'){ startReplay(); return; }
   if(a==='reset'){ if(!dash.dataset.reset){ dash.dataset.reset='1'; } else { delete dash.dataset.reset; resetCrew(); return; } }
   renderDash();
@@ -1504,6 +1627,7 @@ addEventListener('keydown',e=>{
   else if(e.code==='KeyE'){ setMode('build'); setGroup(group==='blocks'?'equip':'blocks'); }
   else if(e.code==='KeyX') selectBuild('fill');
   else if(e.code==='KeyR') selectBuild('remove');
+  else if(e.code==='KeyV') selectBuild('move');
   else if(e.code==='KeyC'&&S.rigs.length) collectRigs();
   else if(e.code==='KeyQ') scan();
   else if(e.code==='KeyF') toggleFull();
@@ -1574,7 +1698,8 @@ window.addEventListener('message',e=>{
     ownerNames=m.owners||[];
     applyTiles(m.tiles||[], false);
     if(m.state&&m.state.v>=2){ S=migrate(m.state); if(S.seen) seenDec(S.seen); }
-    S.name=ME.username; S.inv=S.inv||{}; S.craft=S.craft||[]; if(S.bat==null) S.bat=batCap();
+    S.name=ME.username; S.inv=S.inv||{}; S.craft=S.craft||[];
+    if(!S.lockGift){ S.lockGift=true; S.inv.lock=(S.inv.lock||0)+2; } if(S.bat==null) S.bat=batCap();
     recomputePressure(); validateRigs();
     if(m.colony) C={stage:m.colony.stage|0, have:m.colony.have||{}, mined:m.colony.mined||{}};
     setColony(m.colony);
@@ -1634,7 +1759,11 @@ function frame(now){
     tileAcc+=dt; if(tileAcc>2){ tileAcc=0; flushTiles(); }
     syncAcc+=dt; if(syncAcc>25){ syncAcc=0; requestSync(); }
     giftAcc+=dt; if(giftAcc>240){ giftAcc=0; lyraGift(); }
-    gaugeAcc+=dt; if(gaugeAcc>.1){ gaugeAcc=0; updateGauges(); }
+    gaugeAcc+=dt; if(gaugeAcc>.1){ gaugeAcc=0; updateGauges();
+      // Lyra keeps clear of the borer: she moves to the other side of the screen
+      // where you're working: the cursor while building, otherwise just ahead of the drill
+      const bx=(P.rx+.5)*T-cam.x+P.fx*T*2.5, fx=(mode==='build'&&hover)?(hover.x+.5)*T-cam.x:bx, right=lyraEl.classList.contains('right');
+      if(!right&&fx<vw*.5-T) lyraEl.classList.add('right'); else if(right&&fx>vw*.5+T) lyraEl.classList.remove('right'); }
     miniAcc+=dt; if(miniAcc>.5){ miniAcc=0; drawMini(); }
     slowAcc+=dt; if(slowAcc>.25){ slowAcc=0; updateRes(); updateStatus(); if(mode==='build') renderPalette(); $('#lyraMission').textContent=missionLine(); if(!lyraCur) lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`; if(!dash.hidden&&!dashBusy&&Math.floor(time)%2===0&&Math.floor(time)!==dash._t){ dash._t=Math.floor(time); renderDash(); } }
     drawGame(time,dt);

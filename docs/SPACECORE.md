@@ -116,6 +116,22 @@ Signed-in Kin only: it is one world every Kin builds together.
 - Dashboard › Voyage: "Replay launch and landing" for everyone (progress
   untouched). "Start this crew over" is Sentinel-only.
 
+## Update 5.52
+- **Launch** (~22s, skippable): T−10 countdown, then pad and tower, ignition
+  smoke, liftoff, Max Q, stage separation at 15s, Earth orbit, and the
+  trans-Mars injection burn.
+- **Arrival** (~15s, skippable): a curved approach that joins the orbit at its
+  left edge, two full orbits (drawn behind Mars on the far side), a deorbit
+  zoom onto Landing Site Alpha, and entry.
+- **Lyra:** "Got it" closes her (or shows "Next (n)" if more are queued), and ×
+  clears the queue. `#lyra.right` puts her on the opposite side from the
+  build cursor or the drill direction.
+- **Fabricator:** queued items can be cancelled for a full refund.
+- **Airlock:** it's Equipment now. The `isKit()` check (in EQUIPS) decides "crafted,
+  placed from the kit". `isEquip()` is still tile-level (interior and
+  passable for pressure), and the Airlock tile stays a seal.
+- **Move tool (V):** picks equipment up into the kit and selects it to place again.
+
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player
 could edit them. That's fine for Alpha. Before Beta, move mining and

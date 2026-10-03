@@ -3,6 +3,32 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.52 — SpaceCore: a real launch, a smooth orbit, playtest fixes
+From Paul's playtest notes:
+- **Launch:** a 10-second countdown with ticks and a growing rumble, from a pad with a
+  launch tower whose arm swings away. Ignition smoke, liftoff on a booster,
+  Max Q, stage separation (the booster tumbles away and the upper stage
+  ignites), then Earth orbit and the trans-Mars injection burn.
+- **Arrival:** the ship now curves smoothly into orbit, already moving along
+  it, flies two full orbits (in front of and behind Mars) over Landing Site
+  Alpha, makes a deorbit burn that zooms toward the site, then goes through
+  entry and the landing.
+- **Skip:** both sequences have a Skip button.
+- **Lyra:** "Got it" closes her comms (they reopen with the next message), and a
+  × closes everything queued. She moves to the other side of the screen
+  from where you're working: your cursor while building, or the direction
+  you're drilling.
+- **Fabricator:** anything queued can be cancelled with its × for a full refund.
+- **Airlock:** it's now Equipment, crafted in the Fabricator. New crews start with two,
+  and existing crews get two once.
+- **Move (V):** a new Equipment tool picks up a piece of equipment so you can
+  place it somewhere else. Remove (R) also appears in Equipment.
+- **Resource tooltips:** hovering a resource now says where it comes from. Food is grown in greenhouses.
+- **Sentinel buttons:** renamed ("Skip my crew ahead 8 Mars hours", "Start my
+  crew over") with a note explaining that they only affect that account's crew.
+
+No database change.
+
 ## Update 5.51 — Tightening up
 - **Lyra, calmer.** Her rings and motes now turn slowly (outer ring 160s a
   turn, motes 110s), as do her "thinking", player-two and dancing spins.

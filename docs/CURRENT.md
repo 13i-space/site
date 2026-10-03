@@ -4,6 +4,8 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.52 (no SQL): SpaceCore launch countdown + staging, smooth orbit,
+  Lyra close/side-switch, Fabricator cancel, Airlock as equipment, Move tool
 - Update 5.42 (needs docs/v5.42-spacecore-saving.sql): SpaceCore version check,
   save confirmations, replay the landing
 - Update 5.40 (needs docs/v5.40-spacecore-v2.sql after 5.39): SpaceCore v2:
