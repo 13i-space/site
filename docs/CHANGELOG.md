@@ -3,6 +3,36 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.53 — The front door (/launch)
+/launch is now five parts, kept short at the top because it's also home for
+returning Kin:
+1. **Hero** - the eye (radar easter egg intact), "a signal, translated", one
+   line, and one real action: *Begin your first assignment* / *Continue your
+   assignment* (scrolls to Your First Assignment), or *Keep exploring* once
+   it's done or set aside. "launching 4.6.2027 · everything here is in
+   progress" under it. Your First Assignment sits right below.
+2. **The journey** (`components/LaunchJourney.js`) - Explore, Play, Create,
+   Kinship as one path: a thread through four markers that warm from blue
+   to gold, each with one verb (discover it / step inside it / add to it /
+   find the others), one line and its real places. Create is marked a little
+   more strongly. On phones the thread runs down the left.
+3. **What's alive right now** (`components/LaunchAlive.js`) - this Season's
+   week (The Quiet Moon) as the feature, then the newest Kin species, the
+   current Mars Great Work and how far the Kin have built it, and the next
+   song. All from data the site already has (`lib/seasons.js`,
+   `/api/lyra/feed`, the public `spacecore_colony` row - Great Work names
+   and needs in `lib/spacecoreStages.js`, kept in step with the game);
+   anything that can't load just doesn't show.
+4. **Kinship** (`components/LaunchKinship.js`) - "You are not the only one
+   who found this." with the latest line from the Kinbook. Draft wording for
+   Paul to review; no new Kinship lore.
+5. **The footer** - unchanged (the email signup lives there).
+Also: page title/description/canonical (`app/(site)/launch/layout.js`), a
+hidden h1, focus outlines, reduced-motion respected. The Big Bang reveal,
+EasterStars and Lyra's homepage lines are unchanged. `FirstAssignment`
+gained an optional `onJourney` callback and an anchor id; nothing else
+about it changed.
+
 ## Update 5.52 — SpaceCore: a real launch, a smooth orbit, playtest fixes
 From Paul's playtest notes:
 - **Launch:** a 10-second countdown with ticks and a growing rumble, from a pad with a

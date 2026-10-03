@@ -14,7 +14,9 @@ import { ASSIGNMENTS } from "../lib/assignments";
 const HIDE_KEY = "first_assignment_hidden_until";
 const HIDE_DAYS = 7;
 
-export default function FirstAssignment({ variant = "launch" }) {
+// onJourney(journey, hiddenForNow): /launch uses it to word its main button
+// (begin / continue / keep exploring) without loading the journey twice.
+export default function FirstAssignment({ variant = "launch", onJourney }) {
   const [journey, setJourney] = useState(null);
   const [hidden, setHidden] = useState(false);
 
@@ -23,7 +25,9 @@ export default function FirstAssignment({ variant = "launch" }) {
       try { setHidden(Number(localStorage.getItem(HIDE_KEY) || 0) > Date.now()); } catch (e) { /* ignore */ }
     }
     let cancelled = false;
-    const refresh = () => loadJourney().then((j) => { if (!cancelled) setJourney(j); });
+    let hiddenNow = false;
+    if (variant === "launch") { try { hiddenNow = Number(localStorage.getItem(HIDE_KEY) || 0) > Date.now(); } catch (e) { /* ignore */ } }
+    const refresh = () => loadJourney().then((j) => { if (!cancelled) { setJourney(j); if (onJourney) onJourney(j, hiddenNow); } });
     refresh();
     window.addEventListener("13i:milestone", refresh);
     return () => { cancelled = true; window.removeEventListener("13i:milestone", refresh); };
@@ -57,10 +61,11 @@ export default function FirstAssignment({ variant = "launch" }) {
   const hide = () => {
     try { localStorage.setItem(HIDE_KEY, String(Date.now() + HIDE_DAYS * 86400000)); } catch (e) { /* ignore */ }
     setHidden(true);
+    if (onJourney) onJourney(journey, true);
   };
 
   return (
-    <div className="panel" style={{ marginTop: variant === "launch" ? 28 : 16, textAlign: "left", borderColor: "#3A3E75" }}>
+    <div id={variant === "launch" ? "first-assignment" : undefined} className="panel" style={{ marginTop: variant === "launch" ? 28 : 16, textAlign: "left", borderColor: "#3A3E75", scrollMarginTop: 90 }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap", marginBottom: 4 }}>
         <span className="mono" style={{ fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>
           YOUR {assignment.ordinal.toUpperCase()} ASSIGNMENT &middot; {assignment.title.toUpperCase()}
