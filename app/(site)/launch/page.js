@@ -1,6 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { needsBefore, takeArrival } from "../../../lib/beforeVisit";
 import ThemedHero from "../../../components/ThemedHero";
 import BigBangField from "../../../components/BigBangField";
 import RadarField from "../../../components/RadarField";
@@ -23,6 +25,10 @@ import LaunchKinship from "../../../components/LaunchKinship";
 //   4. Kinship, quietly (components/LaunchKinship.js)
 //   5. the site footer (unchanged, from the layout)
 // The Big Bang reveal, EasterStars and Lyra's homepage lines are unchanged.
+// Update 5.54: anyone who hasn't been through Assignment 0000000 - Before
+// is sent there first (lib/beforeVisit.js); arriving back from it, there's
+// no second Big Bang (they just made one) and the hero points straight at
+// their First Assignment.
 
 // First-ever play runs long (~10s) so the origin moment actually lands;
 // every visit after that is fast (~2s) since the visitor has already seen
@@ -36,11 +42,14 @@ export default function LaunchHome() {
   const [bigBangMs, setBigBangMs] = useState(null); // null = not decided yet
   const [radarMode, setRadarMode] = useState(false); // easter egg: click the eye
   const [cta, setCta] = useState(null); // { label, target } once the journey is known
+  const [arrived, setArrived] = useState(null); // "1234567" | "skipped" | null: just came from /before
+  const router = useRouter();
+  const arrivedNow = !!arrived;
   const onJourney = (j, hiddenForNow) => {
     if (!j) return;
     const started = j.signedIn && (j.current > 0 || Object.values(j.done || {}).some(Boolean));
     if ((j.signedIn && j.allDone) || hiddenForNow) setCta({ label: "Keep exploring", target: "journey" });
-    else setCta({ label: started ? "Continue your assignment" : "Begin your first assignment", target: "first-assignment" });
+    else setCta({ label: started ? "Continue your assignment" : arrivedNow ? "Your First Assignment awaits" : "Begin your first assignment", target: "first-assignment" });
   };
   const go = (target) => {
     const el = document.getElementById(target);
@@ -50,16 +59,31 @@ export default function LaunchHome() {
   };
 
   useEffect(() => {
-    let seen = false;
-    try {
-      seen = !!localStorage.getItem(SEEN_KEY);
-      if (!seen) localStorage.setItem(SEEN_KEY, "1");
-    } catch (e) {
-      // private browsing etc. — just default to the fast version below
-      seen = true;
-    }
-    setBigBangMs(seen ? REPEAT_PLAY_MS : FIRST_PLAY_MS);
-  }, []);
+    let cancelled = false;
+    (async () => {
+      // first time here at all? Before comes first
+      if (await needsBefore()) { if (!cancelled) router.replace("/before"); return; }
+      if (cancelled) return;
+      const from = takeArrival();
+      if (from) {
+        // they just made their own Big Bang: no second one
+        setArrived(from);
+        setRevealed(true);
+        setBigBangMs(0);
+        return;
+      }
+      let seen = false;
+      try {
+        seen = !!localStorage.getItem(SEEN_KEY);
+        if (!seen) localStorage.setItem(SEEN_KEY, "1");
+      } catch (e) {
+        // private browsing etc. — just default to the fast version below
+        seen = true;
+      }
+      setBigBangMs(seen ? REPEAT_PLAY_MS : FIRST_PLAY_MS);
+    })();
+    return () => { cancelled = true; };
+  }, [router]);
 
   // Avoid a flash of the wrong-length animation before we know which one
   // to play — this resolves in well under a frame in practice.
@@ -67,7 +91,7 @@ export default function LaunchHome() {
 
   return (
     <div style={{ position: "relative" }}>
-      {!revealed && (
+      {!revealed && bigBangMs > 0 && (
         <BigBangField onSettled={() => setRevealed(true)} originXPct={0.5} originYPct={0.28} totalMs={bigBangMs} />
       )}
 
@@ -111,6 +135,9 @@ export default function LaunchHome() {
             </button>
           </div>
           <div className="mono launch-hero-date">launching 4.6.2027 &middot; everything here is in progress</div>
+          {arrived && arrived !== "skipped" && (
+            <div className="mono launch-arrived">assignment 0000000 &middot; complete<br />universe no. {arrived} &middot; yours</div>
+          )}
         </div>
 
         <FirstAssignment variant="launch" onJourney={onJourney} />

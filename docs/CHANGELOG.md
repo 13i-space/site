@@ -3,6 +3,37 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.54 — Assignment 0000000: Before (/before)
+A first visit's first piece of 13i, about three minutes, before /launch.
+Nothing explains the four ideas; the visitor does them:
+- **Explore** - one faint point in the dark that drifts toward your cursor
+  or finger and grows structure as you hold it: *You found the force.*
+- **Play** - it splits into motes; draw them in, sling them past each other,
+  and gentle meetings merge (fast passes slingshot). *What happens if you
+  bring them together?* The last one becomes a star: *It holds.*
+- **Create** - touch the dark to make up to three of your own; hold to give
+  weight, drag to set their path. Close in is gold, further rose, far out
+  periwinkle. They orbit your star.
+- **The Big Bang** - press and hold *let it expand*: your system collapses,
+  the star turns the eye's blue, true silence, then the bang - from your
+  star, in your colours, your seeds flung out as its arms. Its light
+  gathers into the 13i eye; the logo forms around it; Lyra is born winged.
+  *You were here at the beginning. Welcome, Kin.* Each creation makes its
+  own universe number, shown at the end and on /launch.
+- **Enter 13i** -> /launch: no second Big Bang, hero reads *Your First
+  Assignment awaits*.
+Sound is synthesised (lib/beforeSound.js), starts on the begin tap, mute
+toggle, never required. A faint "enter 13i" skip is always there after the
+first screen. Works with mouse, touch and keyboard; reduced motion drops the
+flash and shake.
+Who sees it (lib/beforeVisit.js): everyone once, including existing Kin.
+Done = a browser flag, plus `before_done` in Supabase user metadata for
+signed-in Kin (no new table). /launch sends anyone not done to /before;
+abandoning midway restarts it; /before always replays when opened directly.
+Files: app/before/, components/Before.js, lib/beforeVisit.js,
+lib/beforeSound.js, app/(site)/launch/page.js, app/globals.css.
+See docs/BEFORE.md.
+
 ## Update 5.53 — The front door (/launch)
 /launch is now five parts, kept short at the top because it's also home for
 returning Kin:
