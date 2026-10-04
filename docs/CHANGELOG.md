@@ -3,6 +3,34 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.57 — Rooms, doors and the eye (Oct 2026)
+No SQL. Paul's env: CLAUDE_MONTHLY_BUDGET_USD=20, CLAUDE_CREDIT_USD=20.
+- **Beta sign-ups**: no email service (Paul's call). Requests are saved to
+  `beta_requests` and listed on Sentinel-X (newest first, with a copy-all box).
+  Resend code removed from `/api/beta`.
+- **Calendar**: each month's single now has three dates: song on the 6th,
+  music video on the 13th, extended version on the 26th (26 = 2 x 13, and it
+  ends in 6).
+- **Launch**: the hero is just the eye and "a signal, translated" (moved
+  closer); the line, button and date are gone and everything moves up. The
+  First Assignment's three steps fill the row. The path's light runs across
+  at half speed and arcs back at three-quarters.
+- **About** uses the mode-page look (ModeLanding, soft violet) with new
+  emblems: a rough Paul silhouette, Origin, Mission, and a Kinship mark.
+- **Orbit badges are links** on Explore / Play / Create / Kinship / About;
+  the orbit pauses under the pointer and names the badge.
+- **The Oracle's eye** is a WebGL sphere bigger than the ring, peering in;
+  the eyeball itself rotates (veins and iris fixed to its surface). The
+  5.55 canvas eye is kept as the no-WebGL fallback (OracleEyeFlat.js).
+- **The Book** rebuilt as a front door: lifted cover, first line, three
+  voices (the third kept back), contents with narration, the trilogy.
+- **Write an Assignment**: "You are 13i." hero, the Protocol as four cards
+  (full text folded), a cleaner writing sheet with sparks to start from,
+  a word meter, and the checklist and credit folded into steps.
+- **Forum, Kinbook, Messages** share a Kinship room header with tabs
+  (components/KinRoom.js); forum spaces as cards, threads with a reply
+  rail, the Kinbook as a wall of notes, messages as chat bubbles.
+
 ## Update 5.56 — Week 5, the 2027 calendar, Claude usage, Kinship (Oct 2026)
 Needs: `docs/v5.56-api-usage.sql` (api_usage table). Optional Vercel env:
 `CLAUDE_MONTHLY_BUDGET_USD`, `CLAUDE_CREDIT_USD` + `CLAUDE_CREDIT_SINCE`

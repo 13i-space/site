@@ -4,6 +4,12 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.57 (no SQL): beta list on Sentinel-X (no email), monthly
+  video (13th) + extended version (26th), launch hero trimmed, About in the
+  mode look, clickable orbit badges, WebGL Oracle eye, new Book, Write an
+  Assignment, Forum/Kinbook/Messages rooms. The forum and messages pages
+  could not be rendered in the cloud session (no database): check them on
+  the first deploy.
 - Update 5.56 (needs docs/v5.56-api-usage.sql; optional env
   CLAUDE_MONTHLY_BUDGET_USD, CLAUDE_CREDIT_USD, CLAUDE_CREDIT_SINCE): Season 1
   Week 5 (The Borrowed Seconds + RUBATO), Sentinel-X 2027 calendar + next

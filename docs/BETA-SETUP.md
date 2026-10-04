@@ -1,3 +1,11 @@
+# Beta sign-up (Update 5.55, simplified in 5.57)
+
+**5.57: no email service.** Paul chose not to add Resend. Requests are saved
+in Supabase and listed on **Sentinel-X → Beta sign-ups** (with every email in
+one copyable box). The only setup is the table, already created.
+
+The rest of this file is kept for reference, in case email is wanted later.
+
 # Beta sign-up: one-time setup (Update 5.55)
 
 The countdown page (`/`) now has a "Become a Beta Kin" card. Each request is

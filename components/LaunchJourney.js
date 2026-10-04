@@ -50,7 +50,7 @@ function useJourneyLight(listRef, svgRef) {
     const path = svg.querySelector(".journey-loop");
     const trail = svg.querySelector(".journey-loop-trail");
     const dots = [...svg.querySelectorAll(".journey-comet")];
-    let pts = [], total = 0, raf = 0, start = performance.now(), stopsAt = [];
+    let pts = [], total = 0, raf = 0, start = performance.now(), stopsAt = [], straightF = 0.5;
     const stops = [...list.querySelectorAll(".journey-stop")];
 
     const build = () => {
@@ -71,15 +71,20 @@ function useJourneyLight(listRef, svgRef) {
       const straight = vertical ? b.y - a.y : b.x - a.x;
       stopsAt = pts.map((p) => (vertical ? p.y - a.y : p.x - a.x) / total);
       stopsAt.push(straight / total); // (last stop)
+      straightF = straight / total;
     };
     build();
     const ro = new ResizeObserver(build);
     ro.observe(list);
 
-    const LOOP_MS = 7200;
+    // The pace (Update 5.57, Paul's call): the run across, Explore to
+    // Kinship, at half the old speed; the arc back at three-quarters.
+    const BASE_MS = 7200; // the old loop, at one even speed
     const tick = (now) => {
       if (total > 0) {
-        const t = ((now - start) % LOOP_MS) / LOOP_MS;
+        const across = straightF * BASE_MS / 0.5, back = (1 - straightF) * BASE_MS / 0.75;
+        const e = (now - start) % (across + back);
+        const t = e < across ? straightF * (e / across) : straightF + (1 - straightF) * ((e - across) / back);
         dots.forEach((dot, k) => {
           const f = (t - k * 0.008 + 1) % 1;
           const p = path.getPointAtLength(f * total);

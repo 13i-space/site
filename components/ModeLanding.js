@@ -15,10 +15,12 @@ const PATH = [
   { key: "create", label: "Create", href: "/create", color: "#E8CFC0" },
   { key: "kinship", label: "Kinship", href: "/kinship", color: "#E9D29A" },
 ];
+// About isn't one of the four stops, but wears the same look (Update 5.57).
+const OTHER = { about: "#C9B8F0" };
 
 export default function ModeLanding({ mode, title, subtitle, line, items, next }) {
   const at = PATH.findIndex((p) => p.key === mode);
-  const color = PATH[at]?.color || "#B9C0FF";
+  const color = PATH[at]?.color || OTHER[mode] || "#B9C0FF";
   const cols = items.length === 3 ? 3 : 2;
   return (
     <div className="mode" style={{ "--mode": color }}>
@@ -38,7 +40,9 @@ export default function ModeLanding({ mode, title, subtitle, line, items, next }
           <div className="mono mode-subtitle">{subtitle}</div>
           <p className="mode-line">{line}</p>
         </div>
-        <div className="mode-orbit" aria-hidden="true">
+        {/* the orbit's badges are links too (Update 5.57): it pauses while
+            the pointer is on it, so they can be caught */}
+        <nav className="mode-orbit" aria-label={`${title}: places`}>
           <div className="mode-orbit-ring mode-orbit-ring-a" />
           <div className="mode-orbit-ring mode-orbit-ring-b" />
           <div className="mode-orbit-core" />
@@ -47,14 +51,15 @@ export default function ModeLanding({ mode, title, subtitle, line, items, next }
               const a = (i / items.length) * 360;
               return (
                 <div key={it.href} className="mode-orbit-slot" style={{ transform: `rotate(${a}deg) translate(var(--orbit-r)) rotate(${-a}deg)` }}>
-                  <div className="mode-orbit-badge">
+                  <Link href={it.href} className="mode-orbit-badge" title={it.title} aria-label={it.title}>
                     <Emblem name={it.emblem} size={34} color={color} />
-                  </div>
+                    <span className="mono mode-orbit-name" aria-hidden="true">{it.title}</span>
+                  </Link>
                 </div>
               );
             })}
           </div>
-        </div>
+        </nav>
       </section>
 
       <div className="mode-grid" style={{ "--cols": cols }}>

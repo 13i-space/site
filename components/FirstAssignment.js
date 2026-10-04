@@ -147,7 +147,7 @@ function Stamp({ done, n, size = 26 }) {
 const styles = {
   grid: {
     display: "grid",
-    gridTemplateColumns: "repeat(auto-fill, minmax(230px, 1fr))",
+    gridTemplateColumns: "repeat(auto-fit, minmax(230px, 1fr))",
     gap: 10,
   },
   step: {

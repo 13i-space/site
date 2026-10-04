@@ -73,10 +73,11 @@ export default function NewMessageForm() {
           data-lpignore="true"
           data-1p-ignore="true"
           data-form-type="other"
-          style={{ flex: 1, background: "transparent", border: "1px solid #262A55", borderRadius: 4, color: "#E4E4EF", fontSize: 13.5, padding: "9px 11px", outline: "none" }}
+          className="kr-input"
+          style={{ flex: 1 }}
         />
-        <button type="submit" disabled={!results.length} className="mono" style={{ background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#B9C0FF", fontSize: 12, padding: "0 14px", cursor: "pointer", opacity: results.length ? 1 : 0.4 }}>
-          write
+        <button type="submit" disabled={!results.length} className="kr-pill">
+          Write
         </button>
       </form>
       {note && <p className="mono" style={{ fontSize: 11, color: "#8A8FBF", margin: "8px 0 0" }}>{note}</p>}

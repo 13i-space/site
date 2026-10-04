@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
 import AlphaBadge from "../../../components/AlphaBadge";
 import NewMessageForm from "../../../components/NewMessageForm";
+import KinRoom, { KinAvatar } from "../../../components/KinRoom";
 
 // Private messages: your conversations with other Kin, newest first.
 // Only the two people in a conversation can read it (row-level security,
@@ -37,49 +38,38 @@ export default async function MessagesPage() {
   }
   const conversations = [...byPerson.values()].filter((c) => profiles[c.other]?.username);
 
+  const unread = conversations.reduce((n, c) => n + c.unread, 0);
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <Link href="/forum" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>&larr; the forum</Link>
-      <div className="page-title" style={{ marginTop: 14 }}>Messages</div>
-      <div className="page-subtitle">private conversations between Kin</div>
-
+    <KinRoom room="messages" title="Messages" line="Private conversations between Kin. Only the two of you can ever read them." unread={unread}>
       <NewMessageForm />
 
       {error ? (
-        <div className="panel"><p style={{ margin: 0, color: "#8A8FBF" }}>Messages aren't switched on yet. (docs/v5.12-forum-order-and-messages.sql needs to be run.)</p></div>
+        <div className="kr-note">Messages aren&rsquo;t switched on yet. (docs/v5.12-forum-order-and-messages.sql needs to be run.)</div>
       ) : conversations.length === 0 ? (
-        <p style={{ color: "#565B8F", fontStyle: "italic", textAlign: "center" }}>No conversations yet. Find a Kin in the forum and say hello.</p>
+        <div className="kr-empty">No conversations yet. Find a Kin above, or in the <Link href="/forum" style={{ color: "#E9D29A" }}>forum</Link>, and say hello.</div>
       ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        <div className="kr-convos">
           {conversations.map((c) => {
             const p = profiles[c.other];
             const mine = c.last.sender_id === user.id;
             return (
-              <Link key={c.other} href={`/messages/${p.username}`} className="launch-card" style={{ ...styles.row, borderColor: c.unread ? "#6B5E3E" : "#21244A" }}>
-                <span style={styles.avatar}>
-                  {p.avatar_url ? <img src={p.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span className="mono" style={{ color: "#8B95F6" }}>{p.username[0].toUpperCase()}</span>}
-                </span>
+              <Link key={c.other} href={`/messages/${p.username}`} className={`kr-card kr-convo ${c.unread ? "kr-convo-unread" : ""}`}>
+                <KinAvatar profile={p} size={44} />
                 <span style={{ flex: 1, minWidth: 0 }}>
                   <span style={{ display: "flex", justifyContent: "space-between", gap: 10 }}>
-                    <span style={{ color: "#DCDFFF", fontSize: 14.5 }}>{p.username}<AlphaBadge profile={p} /></span>
-                    <span className="mono" style={{ fontSize: 10.5, color: "#565B8F", flexShrink: 0 }}>{new Date(c.last.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
+                    <span style={{ color: "#F1EAD6", fontSize: 16 }}>{p.username}<AlphaBadge profile={p} /></span>
+                    <span className="mono" style={{ fontSize: 10.5, color: "#6E76B8", flexShrink: 0 }}>{new Date(c.last.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}</span>
                   </span>
-                  <span style={{ display: "block", fontSize: 13, color: c.unread ? "#E8CFC0" : "#8A8FBF", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span style={{ display: "block", fontSize: 13.5, marginTop: 2, color: c.unread ? "#E9D29A" : "#9DA2CC", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {mine ? "You: " : ""}{c.last.body}
                   </span>
                 </span>
-                {c.unread > 0 && <span className="mono" style={styles.unread}>{c.unread}</span>}
+                {c.unread > 0 && <span className="kr-dot">{c.unread}</span>}
               </Link>
             );
           })}
         </div>
       )}
-    </div>
+    </KinRoom>
   );
 }
-
-const styles = {
-  row: { display: "flex", alignItems: "center", gap: 12, background: "rgba(14,16,38,0.55)", border: "1px solid #21244A", borderRadius: 4, padding: "12px 16px", textDecoration: "none", color: "inherit" },
-  avatar: { width: 38, height: 38, borderRadius: "50%", overflow: "hidden", flexShrink: 0, background: "#1C1F48", border: "1px solid #3A3E75", display: "flex", alignItems: "center", justifyContent: "center" },
-  unread: { minWidth: 20, height: 20, borderRadius: 10, background: "#E8CFC0", color: "#0A0B1C", fontSize: 11, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 6px", boxSizing: "border-box" },
-};

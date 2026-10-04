@@ -16,9 +16,9 @@ import LaunchKinship from "../../../components/LaunchKinship";
 // /launch - the front door to the 13i universe, and home for returning Kin
 // (Update 5.53). Five parts, kept short at the top so regulars get straight
 // to their next step:
-//   1. the hero: the eye (radar easter egg intact), "a signal, translated",
-//      one line, and one real action - your First Assignment (begin /
-//      continue), or, once that's done or set aside, the path below
+//   1. the hero: the eye (radar easter egg intact) and "a signal,
+//      translated" - nothing else (Update 5.57: the line, the button and
+//      the launch date came out, so the assignment sits right under it)
 //   2. the journey: Explore -> Play -> Create -> Kinship as one path
 //      (components/LaunchJourney.js)
 //   3. what's alive right now (components/LaunchAlive.js)
@@ -41,23 +41,8 @@ export default function LaunchHome() {
   const [revealed, setRevealed] = useState(false);
   const [bigBangMs, setBigBangMs] = useState(null); // null = not decided yet
   const [radarMode, setRadarMode] = useState(false); // easter egg: click the eye
-  const [cta, setCta] = useState(null); // { label, target } once the journey is known
   const [arrived, setArrived] = useState(null); // "1234567" | "skipped" | null: just came from /before
   const router = useRouter();
-  const arrivedNow = !!arrived;
-  const onJourney = (j, hiddenForNow) => {
-    if (!j) return;
-    const started = j.signedIn && (j.current > 0 || Object.values(j.done || {}).some(Boolean));
-    if ((j.signedIn && j.allDone) || hiddenForNow) setCta({ label: "Keep exploring", target: "journey" });
-    else setCta({ label: started ? "Continue your assignment" : arrivedNow ? "Your First Assignment awaits" : "Begin your first assignment", target: "first-assignment" });
-  };
-  const go = (target) => {
-    const el = document.getElementById(target);
-    if (!el) return;
-    const reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    el.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "start" });
-  };
-
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -99,8 +84,8 @@ export default function LaunchHome() {
       {revealed && <EasterStars radar={radarMode} />}
 
       <div style={{ opacity: revealed ? 1 : 0, transition: "opacity 1.2s ease" }}>
-        <div style={{ textAlign: "center", padding: "20px 0 50px" }}>
-          <div style={{ maxWidth: 160, margin: "0 auto 20px", position: "relative" }}>
+        <div style={{ textAlign: "center", padding: "20px 0 26px" }}>
+          <div style={{ maxWidth: 160, margin: "0 auto 4px", position: "relative" }}>
             {radarMode ? <RadarLogo /> : <ThemedHero background={false} />}
             {/* a quiet easter egg: the dot in the eye toggles the Radar look */}
             <button
@@ -125,22 +110,12 @@ export default function LaunchHome() {
           </div>
           <h1 className="sr-only">13i</h1>
           <div className="page-subtitle" style={{ marginBottom: 0 }}>a signal, translated</div>
-          <p className="launch-hero-line">
-            A science-fiction universe, still arriving. Read it, hear it,
-            step inside it, and add to it.
-          </p>
-          <div className="launch-hero-actions">
-            <button type="button" className="launch-begin" onClick={() => go(cta?.target || "first-assignment")} style={{ visibility: cta ? "visible" : "hidden" }}>
-              {cta?.label || "Begin your first assignment"}
-            </button>
-          </div>
-          <div className="mono launch-hero-date">launching 4.6.2027 &middot; everything here is in progress</div>
           {arrived && arrived !== "skipped" && (
             <div className="mono launch-arrived">assignment 0000000 &middot; complete<br />universe no. {arrived} &middot; yours</div>
           )}
         </div>
 
-        <FirstAssignment variant="launch" onJourney={onJourney} />
+        <FirstAssignment variant="launch" />
         <LaunchJourney />
         <LaunchAlive />
         <LaunchKinship />

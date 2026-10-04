@@ -72,7 +72,7 @@ export default function MessageThread({ meId, other }) {
 
   return (
     <div>
-      <div className="panel" style={{ minHeight: 220, maxHeight: "55vh", overflowY: "auto", display: "flex", flexDirection: "column", gap: 10, margin: 0 }}>
+      <div className="kr-chat">
         {messages === null ? (
           <p className="mono" style={{ fontSize: 11, color: "#565B8F", margin: "auto" }}>opening the channel...</p>
         ) : messages.length === 0 ? (
@@ -82,10 +82,10 @@ export default function MessageThread({ meId, other }) {
             const mine = m.sender_id === meId;
             return (
               <div key={m.id} style={{ alignSelf: mine ? "flex-end" : "flex-start", maxWidth: "80%" }}>
-                <div style={{ fontSize: 14, lineHeight: 1.55, whiteSpace: "pre-wrap", color: mine ? "#E8CFC0" : "#D9DCFF", background: mine ? "rgba(232,207,192,0.08)" : "rgba(139,149,246,0.09)", borderRadius: mine ? "10px 10px 2px 10px" : "10px 10px 10px 2px", padding: "8px 12px" }}>
+                <div className={`kr-bubble ${mine ? "kr-bubble-mine" : "kr-bubble-theirs"}`}>
                   {m.body}
                 </div>
-                <div className="mono" style={{ fontSize: 9.5, color: "#3A3E75", marginTop: 3, textAlign: mine ? "right" : "left" }}>
+                <div className="mono" style={{ fontSize: 9.5, color: "#565B8F", marginTop: 4, textAlign: mine ? "right" : "left" }}>
                   {new Date(m.created_at).toLocaleString("en-US", { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}
                   {mine && m.read_at ? " · read" : ""}
                 </div>
@@ -96,7 +96,7 @@ export default function MessageThread({ meId, other }) {
         <div ref={end} />
       </div>
 
-      <form onSubmit={send} style={{ display: "flex", gap: 8, marginTop: 12 }}>
+      <form onSubmit={send} className="kr-chat-form">
         <textarea
           value={body}
           onChange={(e) => setBody(e.target.value)}
@@ -106,10 +106,11 @@ export default function MessageThread({ meId, other }) {
           rows={2}
           maxLength={2000}
           placeholder={`Message ${other.username}...`}
-          style={{ flex: 1, resize: "vertical", background: "transparent", border: "1px solid #262A55", borderRadius: 4, color: "#E4E4EF", fontSize: 14, padding: "9px 11px", outline: "none", fontFamily: "'Inter', sans-serif" }}
+          className="kr-input"
+          style={{ flex: 1 }}
         />
-        <button type="submit" disabled={sending || !body.trim()} className="mono" style={{ background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#E8CFC0", fontSize: 12, padding: "0 16px", cursor: "pointer", opacity: sending || !body.trim() ? 0.4 : 1 }}>
-          {sending ? "..." : "send"}
+        <button type="submit" disabled={sending || !body.trim()} className="kr-pill">
+          {sending ? "..." : "Send"}
         </button>
       </form>
       {error && <p className="mono" style={{ fontSize: 11, color: "#C97B6E", marginTop: 8 }}>{error}</p>}
