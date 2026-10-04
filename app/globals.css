@@ -1238,3 +1238,73 @@ main {
   .bh-dots { grid-column: 1 / -1; grid-row: 2; }
   .bh-readout { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* the fourth side of an Alien Lab card: its own world (components/AlienHabitat.js) */
+.hab { position: absolute; inset: 0; overflow: hidden; border-radius: inherit; }
+.hab-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.hab-portrait { position: absolute; left: 50%; top: 52%; width: 120%; height: auto; max-height: 92%; object-fit: contain; mix-blend-mode: screen; pointer-events: none;
+  transform: translate(-50%, -50%) scaleX(-1);
+  -webkit-mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 55%, transparent 100%); mask-image: radial-gradient(ellipse 60% 60% at 50% 50%, #000 55%, transparent 100%); }
+.hab-float, .hab-fly { animation: hab-float 5s ease-in-out infinite; }
+.hab-swim { animation: hab-swim 6s ease-in-out infinite; }
+.hab-walk { animation: hab-walk 2.4s ease-in-out infinite; }
+.hab-slither { animation: hab-slither 3.4s ease-in-out infinite; }
+.hab-rooted { animation: hab-rooted 7s ease-in-out infinite; transform-origin: 50% 90%; }
+@keyframes hab-float { 0%, 100% { transform: translate(-50%, -52%) scaleX(-1) scale(1); } 50% { transform: translate(-50%, -46%) scaleX(-1) scale(1.03); } }
+@keyframes hab-swim { 0%, 100% { transform: translate(-54%, -50%) scaleX(-1) rotate(-2deg); } 50% { transform: translate(-46%, -48%) scaleX(-1) rotate(2deg); } }
+@keyframes hab-walk { 0%, 100% { transform: translate(-50%, -50%) scaleX(-1); } 25% { transform: translate(-50%, -51.5%) scaleX(-1) rotate(0.6deg); } 75% { transform: translate(-50%, -51.5%) scaleX(-1) rotate(-0.6deg); } }
+@keyframes hab-slither { 0%, 100% { transform: translate(-52%, -50%) scaleX(-1) skewX(2deg); } 50% { transform: translate(-48%, -50%) scaleX(-1) skewX(-2deg); } }
+@keyframes hab-rooted { 0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(-1.2deg); } 50% { transform: translate(-50%, -50%) scaleX(-1) rotate(1.2deg); } }
+@media (prefers-reduced-motion: reduce) { .hab-portrait { animation: none !important; } }
+
+/* ───────── the Alien Lab's room (Update 5.55, components/AlienLab.js) ───────── */
+.lab { max-width: 1060px; margin: 0 auto; border-radius: 18px; overflow: hidden; position: relative;
+  background:
+    repeating-linear-gradient(90deg, rgba(111,195,168,0.035) 0 1px, transparent 1px 46px),
+    repeating-linear-gradient(0deg, rgba(111,195,168,0.035) 0 1px, transparent 1px 46px),
+    radial-gradient(circle at 30% 40%, rgba(111,195,168,0.12), transparent 55%),
+    radial-gradient(circle at 80% 90%, rgba(232,180,200,0.10), transparent 50%),
+    linear-gradient(160deg, #0c1a1c, #0a0b1c 60%);
+  border: 1px solid rgba(111,195,168,0.35); box-shadow: 0 30px 70px rgba(0,0,0,0.5), inset 0 0 60px rgba(111,195,168,0.06); }
+.lab-head { display: flex; justify-content: space-between; gap: 10px; padding: 10px 18px; font-size: 10px; letter-spacing: 2px; color: #6FC3A8;
+  border-bottom: 1px solid rgba(111,195,168,0.25); background: rgba(5,12,14,0.6); }
+.lab-head-glyphs { color: rgba(232,180,200,0.6); animation: lab-flicker 3s steps(2) infinite; }
+@keyframes lab-flicker { 50% { opacity: 0.4; } }
+.lab-crew { display: grid; grid-template-columns: 96px 1fr 96px; gap: 14px; align-items: end; padding: 16px 18px 6px; }
+.lab-member { text-align: center; opacity: 0.6; transition: opacity 0.3s, transform 0.3s; }
+.lab-member-on { opacity: 1; transform: translateY(-3px); }
+.lab-alien { width: 84px; height: 112px; overflow: visible; }
+.lab-alien-talk .lab-mouth { animation: lab-talk 0.22s ease-in-out infinite alternate; transform-origin: 45px 52px; }
+.lab-alien-ilu.lab-alien-talk .lab-mouth { transform-origin: 45px 90px; }
+@keyframes lab-talk { to { transform: scaleY(1.9); } }
+.lab-blink { animation: lab-blink 5s infinite; transform-origin: center 34px; }
+@keyframes lab-blink { 0%, 95%, 100% { transform: scaleY(1); } 97% { transform: scaleY(0.1); } }
+.lab-tentacle { animation: lab-wiggle 1.6s ease-in-out infinite alternate; transform-origin: top center; }
+@keyframes lab-wiggle { to { transform: rotate(6deg); } }
+.lab-antenna { animation: lab-flicker 1.4s steps(2) infinite; }
+.lab-name { font-size: 8.5px; letter-spacing: 1.5px; color: #6E76B8; margin-top: 2px; }
+.lab-bubble { position: relative; padding: 12px 16px; border-radius: 14px; background: rgba(10,22,24,0.85); border: 1px solid rgba(111,195,168,0.45); min-height: 70px; align-self: center; }
+.lab-bubble-ilu { border-color: rgba(232,180,200,0.5); }
+.lab-bubble::before { content: ""; position: absolute; bottom: 18px; width: 12px; height: 12px; background: inherit; border: inherit; border-width: 0 0 1px 1px; }
+.lab-bubble-qeth::before { left: -7px; transform: rotate(45deg); }
+.lab-bubble-ilu::before { right: -7px; transform: rotate(-135deg); }
+.lab-bubble-who { font-size: 9px; letter-spacing: 2px; color: #6FC3A8; margin-bottom: 4px; }
+.lab-bubble-ilu .lab-bubble-who { color: #E8B4C8; }
+.lab-bubble-text { font-family: var(--font-display); font-style: italic; font-size: 17px; color: #E6F4F0; line-height: 1.45; }
+.lab-grid { display: grid; grid-template-columns: minmax(240px, 0.85fr) 1.15fr; gap: 20px; padding: 10px 18px 22px; align-items: start; }
+.lab-vat { position: sticky; top: 20px; border-radius: 14px; padding: 10px 10px 14px; background: rgba(5,10,14,0.55); border: 1px solid rgba(111,195,168,0.2); }
+.lab-vat-canvas { width: 100%; aspect-ratio: 4 / 5; display: block; }
+.lab-vat-label { text-align: center; font-size: 10px; letter-spacing: 2.5px; color: #E9D29A; margin-top: 4px; }
+.lab-vat-read { text-align: center; font-size: 10px; color: #6FC3A8; margin-top: 4px; line-height: 1.5; }
+.lab-console { padding: 22px; border-radius: 14px; background: rgba(8,12,24,0.88); border: 1px solid rgba(139,149,246,0.3); box-shadow: inset 0 0 30px rgba(139,149,246,0.06); }
+.lab-console > div > button:not([disabled]):hover { border-color: #6FC3A8 !important; }
+@media (max-width: 820px) {
+  .lab-grid { grid-template-columns: 1fr; }
+  .lab-vat { position: relative; top: 0; max-width: 300px; margin: 0 auto; width: 100%; }
+  .lab-crew { grid-template-columns: 60px 1fr 60px; gap: 8px; padding: 12px 10px 4px; }
+  .lab-alien { width: 56px; height: 76px; }
+  .lab-name { display: none; }
+  .lab-bubble-text { font-size: 15px; }
+  .lab-head-glyphs { display: none; }
+}
+@media (prefers-reduced-motion: reduce) { .lab-alien *, .lab-head-glyphs { animation: none !important; } }

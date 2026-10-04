@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
 import { ALIEN_QUESTIONS } from "../lib/alienQuestions";
@@ -30,6 +30,8 @@ const BIG_ANSWERS = new Set([
 import { STAT_GROUPS, evenStats, groupTotal } from "../lib/alienStats";
 import AlienCard from "./AlienCard";
 import StatRadar from "./StatRadar";
+import { LabVat, LabCrew, crewLine } from "./AlienLab";
+import { specimenTraits } from "../lib/specimen";
 
 const OTHER = "__other__";
 
@@ -48,6 +50,12 @@ export default function AlienCreator({ loggedIn }) {
   const [drawSeconds, setDrawSeconds] = useState(0);
   const [stats, setStats] = useState(evenStats);
   const [savedId, setSavedId] = useState(null);
+  // the lab (Update 5.55): the vat scans on every answer, the crew talk
+  const [pulse, setPulse] = useState(0);
+  const [crew, setCrew] = useState(["qeth", "Welcome to the bay, guest. Answer as you go. The vat does the rest."]);
+  const reacted = useRef(0);
+  const [review, setReview] = useState(null);
+  const [reviewStatus, setReviewStatus] = useState("idle"); // idle | waiting | error
 
   // elapsed-time clock while a portrait is being drawn
   useEffect(() => {
@@ -64,6 +72,51 @@ export default function AlienCreator({ loggedIn }) {
   const current = step < total ? ALIEN_QUESTIONS[step] : null;
   const pointsLeft = STAT_GROUPS.reduce((n, g) => n + g.pool - groupTotal(stats, g), 0);
 
+  // the crew: a reaction to the answer just given, then the next question
+  useEffect(() => {
+    const line = onPoints ? crewLine("points", {}) : onSheet ? crewLine(saveStatus === "done" ? "saved" : "sheet", {}) : crewLine("question", { questionId: ALIEN_QUESTIONS[step]?.id });
+    const id = setTimeout(() => setCrew(line), step === 0 && !onSheet ? 900 : 1700);
+    return () => clearTimeout(id);
+  }, [step, saveStatus]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // what the vat knows so far
+  const traits = specimenTraits((id) => {
+    const a = answers[id];
+    if (a === undefined) return undefined;
+    return a === OTHER ? otherText[id] || "" : a;
+  });
+  const lab = (panel, vatLabel = "SPECIMEN IN PROGRESS") => (
+    <div className="lab">
+      <div className="lab-head">
+        <span className="mono">⟡ XENOGENESIS BAY 13 &middot; ALIEN-RUN &middot; GUESTS WELCOME</span>
+        <span className="mono lab-head-glyphs" aria-hidden="true">⌬ ⏃ ⍜ ⟁ ◬ ⋔ ⏚</span>
+      </div>
+      <LabCrew line={crew} />
+      <div className="lab-grid">
+        <LabVat traits={traits} pulse={pulse} label={vatLabel} />
+        <div className="lab-console">{panel}</div>
+      </div>
+    </div>
+  );
+
+  // 13i's full assessment of the saved species (shows on the card's third side)
+  const askReview = async () => {
+    if (!savedId) return;
+    setReviewStatus("waiting");
+    try {
+      const res = await fetch("/api/alien", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "review", speciesId: savedId }) });
+      const data = await res.json();
+      if (!data.review) throw new Error(data.error || "No assessment came back. Try again.");
+      setReview(data.review);
+      lyraReact({ granted: "warm", observation: "watchful", not_yet: "subdued" }[data.review.verdict] || "notice");
+      setCrew(["qeth", "13i has spoken. Turn the card to its third side, guest."]);
+      setReviewStatus("idle");
+    } catch (e) {
+      setError(e.message);
+      setReviewStatus("error");
+    }
+  };
+
   // Lyra watches the species take shape: her eye goes to each answer, and the
   // big ones (a blue giant, a hive mind, technology like 13i's...) widen it
   const choose = (option, e) => {
@@ -72,6 +125,9 @@ export default function AlienCreator({ loggedIn }) {
       lyraLookAt(r.left + r.width / 2, r.top + r.height / 2, 1100);
     }
     lyraReact(BIG_ANSWERS.has(option) ? "wow" : "notice");
+    setPulse((n) => n + 1);
+    reacted.current += 1;
+    setCrew(crewLine("question", { answered: true, big: BIG_ANSWERS.has(option), n: reacted.current }));
     setAnswers((a) => ({ ...a, [current.id]: option }));
     setTimeout(() => setStep((s) => s + 1), 150);
   };
@@ -82,6 +138,8 @@ export default function AlienCreator({ loggedIn }) {
 
   const submitOther = () => {
     if (!otherText[current.id]?.trim()) return;
+    setPulse((n) => n + 1);
+    setCrew(["ilu", "A write-in! The vat will improvise."]);
     setStep((s) => s + 1);
   };
 
@@ -206,20 +264,9 @@ export default function AlienCreator({ loggedIn }) {
     }
   };
 
-  if (!loggedIn) {
-    return (
-      <div className="panel" style={{ textAlign: "center", maxWidth: 500, margin: "0 auto" }}>
-        <p style={{ color: "#8A8FBF", margin: 0 }}>
-          You'll need to be logged in to save a species to your Node &mdash;
-          you can still click through the questions to see how it works.
-        </p>
-      </div>
-    );
-  }
-
   if (onSheet) {
-    return (
-      <div className="panel" style={{ maxWidth: 560, margin: "0 auto" }}>
+    return lab(
+      <div>
         <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>
           SPECIES SHEET
         </div>
@@ -273,9 +320,9 @@ export default function AlienCreator({ loggedIn }) {
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
           <div style={{ textAlign: "center" }}>
-            <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>YOUR CARD &middot; TAP TO FLIP</div>
+            <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>YOUR CARD &middot; FOUR SIDES &middot; TAP TO TURN</div>
             <AlienCard
-              species={{ id: null, name: speciesName.trim() || "Unnamed species", answers: sheetAnswers(), portrait_svg: portraitStatus === "drawing" ? null : portrait, stats, created_at: new Date().toISOString() }}
+              species={{ id: null, name: speciesName.trim() || "Unnamed species", answers: sheetAnswers(), portrait_svg: portraitStatus === "drawing" ? null : portrait, stats, review, created_at: new Date().toISOString() }}
               creator="you"
               width={230}
             />
@@ -301,11 +348,20 @@ export default function AlienCreator({ loggedIn }) {
             <p style={{ color: "#8B95F6", margin: "0 0 14px" }}>
               Saved to your Node and added to <a href="/galaxy/aliens">Aliens of the Galaxy</a>.
             </p>
-            {savedId && (
-              <a href={`/galaxy/aliens/${savedId}`} className="mono" style={{ ...btnStyle, display: "inline-block", textDecoration: "none", borderColor: "#6B5E3E", color: "#E8CFC0" }}>
-                Submit it to 13i for its Continuance Review &rarr;
-              </a>
+            {savedId && !review && (
+              <button onClick={askReview} disabled={reviewStatus === "waiting"} className="mono" style={{ ...btnStyle, borderColor: "#6B5E3E", color: "#E8CFC0" }}>
+                {reviewStatus === "waiting" ? "13i is assessing it..." : "Ask 13i for its assessment"}
+              </button>
             )}
+            {review && <p className="mono" style={{ fontSize: 11, color: "#6FC3A8", margin: "4px 0 10px" }}>13i&rsquo;s assessment is on the card&rsquo;s third side.</p>}
+            {savedId && (
+              <div style={{ marginTop: 12 }}>
+                <a href={`/galaxy/aliens/${savedId}`} className="mono" style={{ fontSize: 12, color: "#8B95F6" }}>
+                  open its page, and send it into the Survival Trials &rarr;
+                </a>
+              </div>
+            )}
+            {error && reviewStatus === "error" && <p className="mono" style={{ fontSize: 11, color: "#C97B6E" }}>{error}</p>}
           </div>
         ) : (
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
@@ -323,7 +379,8 @@ export default function AlienCreator({ loggedIn }) {
           Portraits are drawn from your answers, as line art rather than a
           painting, so each one is an interpretation.
         </p>
-      </div>
+      </div>,
+      saveStatus === "done" ? "SPECIMEN FILED" : "SPECIMEN COMPLETE"
     );
   }
 
@@ -335,8 +392,8 @@ export default function AlienCreator({ loggedIn }) {
         return { ...st, [id]: Math.max(0, Math.min(Math.round(value), group.pool - others)) };
       });
     };
-    return (
-      <div className="panel" style={{ maxWidth: 640, margin: "0 auto" }}>
+    return lab(
+      <div>
         <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 4 }}>
           ATTRIBUTES &middot; LAST STEP
         </div>
@@ -405,12 +462,18 @@ export default function AlienCreator({ loggedIn }) {
         >
           &larr; back
         </button>
-      </div>
+      </div>,
+      "SPECIMEN · CALIBRATING"
     );
   }
 
-  return (
-    <div className="panel" style={{ maxWidth: 560, margin: "0 auto" }}>
+  return lab(
+    <div>
+      {!loggedIn && step === 0 && (
+        <p className="mono" style={{ fontSize: 11, color: "#E8CFC0", margin: "0 0 14px", lineHeight: 1.6 }}>
+          Guests may grow a specimen. To name it with 13i&rsquo;s help, draw its portrait and save it to your Node, <a href="/login?next=/create/alien-lab">sign in</a>.
+        </p>
+      )}
       <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 4 }}>
         {current.category.toUpperCase()} &middot; {step + 1} OF {total}
       </div>
