@@ -1084,3 +1084,89 @@ main {
 @media (prefers-reduced-motion: reduce) {
   .mode-orbit-spin, .mode-orbit-badge, .mode-orbit-ring-b, .mode-orbit-core, .mode-card { animation: none !important; }
 }
+
+/* ───────── The Music (Update 5.55, app/(site)/music/page.js) ───────── */
+.mx { max-width: 1060px; margin: 0 auto; padding: 0 16px; }
+.mx-hero { margin: 4px 0 18px; }
+.mx-kicker { font-size: 11px; letter-spacing: 2px; color: #C9B98F; text-transform: uppercase; }
+.mx-title { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(48px, 7vw, 80px); margin: 6px 0 8px; color: #F1F1FF; line-height: 1; text-shadow: 0 0 40px rgba(139,149,246,0.45); }
+.mx-lede { color: #A9AEDB; font-size: 16px; line-height: 1.7; max-width: 620px; margin: 0; }
+.mx-about-btn { background: none; border: none; color: #8B95F6; font-size: 11px; letter-spacing: 1.5px; padding: 8px 0 0; cursor: pointer; }
+.mx-about { margin-bottom: 18px; }
+
+.mx-deck { display: grid; grid-template-columns: 300px 1fr; gap: 34px; align-items: center; padding: 26px; border-radius: 18px; margin-top: 8px;
+  background: radial-gradient(circle at 15% 50%, rgba(139,149,246,0.16), transparent 55%), linear-gradient(150deg, rgba(22,24,60,0.9), rgba(10,11,28,0.92));
+  border: 1px solid #2c3066; box-shadow: 0 24px 60px rgba(0,0,0,0.45); }
+.mx-record-wrap { position: relative; width: 100%; aspect-ratio: 1; }
+.mx-ring { position: absolute; inset: -8%; width: 116%; height: 116%; }
+.mx-record { position: absolute; inset: 14%; border-radius: 50%; animation: mx-spin 5s linear infinite;
+  background: repeating-radial-gradient(circle, #121218 0 2px, #1b1b24 2px 4px); box-shadow: 0 10px 30px rgba(0,0,0,0.6), inset 0 0 0 2px #2a2a3a; display: flex; align-items: center; justify-content: center; }
+.mx-record::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: linear-gradient(120deg, rgba(255,255,255,0.12), transparent 40%, transparent 60%, rgba(255,255,255,0.06)); }
+.mx-label { width: 46%; height: 46%; border-radius: 50%; object-fit: cover; border: 2px solid #0a0a10; background: #2A2F6B; }
+.mx-spindle { position: absolute; width: 4%; height: 4%; border-radius: 50%; background: #E9D29A; box-shadow: 0 0 8px #E9D29A; }
+@keyframes mx-spin { to { transform: rotate(360deg); } }
+.mx-now-kicker { font-size: 10.5px; letter-spacing: 2px; color: #C9B98F; }
+.mx-now-title { font-size: clamp(30px, 4vw, 44px); color: #F1F1FF; margin: 6px 0 4px; line-height: 1.1; }
+.mx-now-album { color: #8A8FBF; font-size: 14px; }
+.mx-seek { display: flex; align-items: center; gap: 12px; margin: 18px 0 14px; font-size: 11px; color: #6E76B8; }
+.mx-seek input { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 4px; cursor: pointer;
+  background: linear-gradient(90deg, #8B95F6, #E9D29A var(--p), #262A55 var(--p)); }
+.mx-seek input::-webkit-slider-thumb { -webkit-appearance: none; width: 14px; height: 14px; border-radius: 50%; background: #fff; box-shadow: 0 0 10px #8B95F6; }
+.mx-seek input::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: #fff; border: none; }
+.mx-controls { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.mx-controls button { background: none; border: 1px solid #3A3E75; color: #DCDFFF; border-radius: 999px; width: 44px; height: 44px; font-size: 15px; cursor: pointer; transition: all 0.2s; }
+.mx-controls button:hover:not(:disabled) { border-color: #8B95F6; box-shadow: 0 0 14px rgba(139,149,246,0.4); }
+.mx-controls button:disabled { opacity: 0.35; cursor: default; }
+.mx-controls .mx-play { width: 60px; height: 60px; font-size: 20px; background: linear-gradient(135deg, #E9D29A, #B9C0FF); color: #14163A; border: none; }
+.mx-controls .mx-small { width: auto; height: 32px; padding: 0 14px; font-size: 10.5px; letter-spacing: 1px; color: #8A8FBF; }
+.mx-controls .mx-active { color: #14163A; background: #E9D29A; border-color: #E9D29A; }
+.mx-upnext { margin-top: 14px; font-size: 11px; color: #565B8F; letter-spacing: 0.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.mx-ways { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin: 18px 0 10px; }
+.mx-way { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 16px; border-radius: 12px; cursor: pointer; text-align: left; text-decoration: none; color: inherit;
+  background: rgba(14,16,38,0.78); border: 1px solid #262A55; transition: all 0.25s; font: inherit; }
+.mx-way:hover { transform: translateY(-2px); border-color: #8B95F6; box-shadow: 0 10px 26px rgba(0,0,0,0.35), 0 0 22px rgba(139,149,246,0.2); text-decoration: none; }
+.mx-way-on { border-color: #E9D29A; box-shadow: 0 0 20px rgba(233,210,154,0.18); }
+.mx-way-icon { font-size: 16px; color: #E9D29A; letter-spacing: -2px; }
+.mx-way-title { font-family: var(--font-display); font-style: italic; font-size: 20px; color: #E6E8FF; }
+.mx-way-sub { font-size: 10.5px; color: #6E76B8; letter-spacing: 0.5px; }
+.mx-way-video { background: linear-gradient(135deg, rgba(201,123,110,0.22), rgba(14,16,38,0.85)); border-color: rgba(201,123,110,0.5); }
+.mx-video-band { display: block; margin: 0 0 6px; padding: 12px 16px; border-radius: 10px; color: #F3E6DC; text-decoration: none;
+  background: linear-gradient(90deg, rgba(201,123,110,0.25), rgba(139,149,246,0.12)); border: 1px solid rgba(201,123,110,0.45); font-size: 14px; }
+.mx-video-band span { font-size: 10px; letter-spacing: 2px; color: #E9D29A; margin-right: 8px; }
+
+.mx-albums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin-top: 20px; align-items: start; }
+.mx-album { border-radius: 14px; padding: 16px; background: rgba(14,16,38,0.75); border: 1px solid #262A55; transition: border-color 0.3s; }
+.mx-album-on { border-color: #8B95F6; box-shadow: 0 0 26px rgba(139,149,246,0.15); }
+.mx-album-head { display: flex; flex-direction: column; gap: 12px; }
+.mx-cover-btn { position: relative; padding: 0; border: none; background: none; cursor: pointer; border-radius: 10px; overflow: hidden; aspect-ratio: 1; width: 100%; }
+.mx-cover-btn img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.6s ease; background: linear-gradient(135deg, #2A2F6B, #14163A); }
+.mx-cover-btn:hover img { transform: scale(1.04); }
+.mx-cover-play { position: absolute; right: 12px; bottom: 12px; width: 48px; height: 48px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #E9D29A, #B9C0FF); color: #14163A; font-size: 16px; opacity: 0; transform: translateY(6px); transition: all 0.25s; box-shadow: 0 6px 18px rgba(0,0,0,0.5); }
+.mx-cover-btn:hover .mx-cover-play, .mx-cover-btn:focus-visible .mx-cover-play { opacity: 1; transform: none; }
+.mx-album-title { font-size: 26px; color: #DCDFFF; }
+.mx-album-year { font-size: 11px; color: #6E76B8; margin-top: 2px; }
+.mx-album-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.mx-album-actions button { background: none; border: 1px solid #3A3E75; color: #B9C0FF; border-radius: 999px; padding: 5px 12px; font-size: 10.5px; cursor: pointer; }
+.mx-album-actions button:hover { border-color: #8B95F6; }
+.mx-tracks { list-style: none; padding: 0; margin: 12px 0 0; }
+.mx-track { width: 100%; display: grid; grid-template-columns: 26px 1fr auto; gap: 10px; align-items: center; padding: 9px 6px; border: none; border-top: 1px solid #1c1f45; background: none; color: #D9DCFF; cursor: pointer; text-align: left; font: inherit; font-size: 14px; border-radius: 6px; }
+.mx-track:hover { background: rgba(139,149,246,0.08); }
+.mx-track-on { color: #E9D29A; background: rgba(233,210,154,0.07); }
+.mx-track-n { font-size: 11px; color: #565B8F; }
+.mx-track-date { font-size: 10px; color: #565B8F; }
+.mx-eq { display: inline-flex; gap: 2px; align-items: flex-end; height: 12px; }
+.mx-eq i { width: 3px; background: #E9D29A; animation: mx-eq 0.8s ease-in-out infinite; }
+.mx-eq i:nth-child(2) { animation-delay: 0.2s; } .mx-eq i:nth-child(3) { animation-delay: 0.4s; }
+@keyframes mx-eq { 0%, 100% { height: 3px; } 50% { height: 12px; } }
+
+@media (max-width: 900px) {
+  .mx-deck { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 22px 16px; }
+  .mx-record-wrap { width: min(260px, 70vw); }
+  .mx-controls { justify-content: center; }
+  .mx-ways { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mx-albums { grid-template-columns: 1fr; }
+  .mx-upnext { white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .mx-record, .mx-eq i { animation: none !important; } }
