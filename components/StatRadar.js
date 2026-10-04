@@ -11,7 +11,7 @@ export default function StatRadar({ stats, size = 200, labels = true }) {
   const n = ALL_STATS.length;
   const point = (i, k) => {
     const a = -Math.PI / 2 + (i / n) * Math.PI * 2;
-    return [cx + Math.cos(a) * r * k, cy + Math.sin(a) * r * k];
+    return [+(cx + Math.cos(a) * r * k).toFixed(2), +(cy + Math.sin(a) * r * k).toFixed(2)]; // rounded: server and browser agree
   };
   const value = (s) => Math.sqrt(Math.min(1, (Number(stats[s.id]) || 0) / s.group.pool));
   const ring = (k) => ALL_STATS.map((_, i) => point(i, k).join(",")).join(" ");

@@ -107,6 +107,7 @@ export default async function AccountPage() {
     "deep-signal": { label: "13i: The Deep Signal", href: "/games/deep-signal" },
     sixteen: { label: "SIXTEEN", href: "/games/sixteen" },
     tacet: { label: "TACET", href: "/games/tacet" },
+    prism: { label: "PRISM", href: "/games/prism" },
   };
 
   const alphaProfile = { ...profile, created_at: profile?.created_at || user.created_at };

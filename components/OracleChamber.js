@@ -1,5 +1,6 @@
 "use client";
 
+import OracleEye3D from "./OracleEye3D";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createOracleSound } from "../lib/oracleSound";
 import { recordMilestone } from "../lib/milestones";
@@ -125,8 +126,8 @@ function ChamberSky({ rippleRef, intensity }) {
 
 // The great eye. open: 0..1. mood: sleeping | listening | receiving | speaking
 function Eye({ open, mood }) {
-  const pupil = { sleeping: 10, listening: 19, receiving: 8, speaking: 27 }[mood] || 19;
   return (
+    <>
     <svg viewBox="-200 -200 400 400" className={`oracle-eye oracle-eye-${mood}`} aria-hidden="true">
       <defs>
         <radialGradient id="oracle-halo">
@@ -167,15 +168,10 @@ function Eye({ open, mood }) {
         </g>
       )}
 
-      {/* the eye itself: lids part as it opens */}
-      <g style={{ transform: `scaleY(${Math.max(0.03, open)})`, transition: "transform 2.6s cubic-bezier(0.2, 0.8, 0.2, 1)", transformOrigin: "0 0" }}>
-        <circle r="104" fill="#07061A" stroke="#E9D29A" strokeWidth="6" />
-        <circle r="86" fill="url(#oracle-iris)" opacity="0.95" />
-        <circle className="oracle-iris-lines" r="70" fill="none" stroke="rgba(26,20,48,0.55)" strokeWidth="1.2" strokeDasharray="2 5" />
-        <circle r={pupil} fill="#020108" style={{ transition: "r 1.2s cubic-bezier(0.2, 0.8, 0.2, 1)" }} />
-        <circle cx={-pupil * 0.5} cy={-pupil * 0.6} r={Math.max(3, pupil * 0.22)} fill="#FFFFFF" opacity="0.55" style={{ transition: "all 1.2s ease" }} />
-      </g>
     </svg>
+    {/* the eye itself, in the round (components/OracleEye3D.js) */}
+    <OracleEye3D open={open} mood={mood} />
+    </>
   );
 }
 

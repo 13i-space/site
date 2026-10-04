@@ -3,6 +3,7 @@ import LaunchMoment from "../components/LaunchMoment";
 import ThemedHero from "../components/ThemedHero";
 import EmailSignup from "../components/EmailSignup";
 import EasterStars from "../components/EasterStars";
+import BetaSignup from "../components/BetaSignup";
 
 export default function CountdownPage() {
   return (
@@ -24,6 +25,9 @@ export default function CountdownPage() {
       <p className="mono" style={styles.footNote}>
         the book and the first signal arrive 4.6.2027
       </p>
+      <div style={styles.betaWrap}>
+        <BetaSignup />
+      </div>
       <div style={{ ...styles.signupWrap }}>
         <div className="mono" style={styles.signupLabel}>
           get updates before launch
@@ -83,6 +87,12 @@ const styles = {
     fontSize: 12,
     color: "#565B8F",
     marginTop: 8,
+    position: "relative",
+    zIndex: 1,
+  },
+  betaWrap: {
+    marginTop: 30,
+    width: "100%",
     position: "relative",
     zIndex: 1,
   },

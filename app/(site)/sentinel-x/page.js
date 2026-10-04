@@ -18,6 +18,7 @@ const GAME_NAMES = {
   "deep-signal": "13i: The Deep Signal",
   sixteen: "SIXTEEN",
   tacet: "TACET",
+  prism: "PRISM",
 };
 
 function ago(iso) {

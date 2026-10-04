@@ -159,6 +159,24 @@ Kin stats line, and a choice's `set` can be a function of the current
 flags. New scene sets plug into `components/InteractiveScene.js` through
 its drawing kit (see `makeTacetScenes`).
 
+## The Sea of Glass: the branch map (Update 5.55)
+You are 13i on Dacapo, the archive that keeps everything, among a people
+who forget on purpose. Canon record: **What We Kept**.
+```
+ORBIT ─ OBSERVE oldest first · COMMUNICATE newest first (metFirst) · ANALYZE core the sea (cored)
+CANYON ─ OBSERVE read by light (11 days) · ANALYZE pulse a tower (cracked) · COMMUNICATE answer in its colours (warColor)
+FIRST WORDS ─ COMMUNICATE copy the bright one (fluent 2; with warColor: feared, fluent 1)
+              OBSERVE watch first (fluent 1) · ANALYZE scan its body (fluent 1, scannedBody)
+THE HEAVY ONE ─ OBSERVE leave it be · COMMUNICATE stand with them (needs fluent 2: stood)
+                INTERVENE offer to keep its rings (needs fluent 1: promised)
+THE COMPANION ─ cracked ─► THE CRACK: INTERVENE hold it (held) · OBSERVE let it fall ─► ✦ THE FALLEN TOWER
+THE REQUEST ─ COMMUNICATE set it down ─► ✦ WHAT WE KEPT (canon)
+              OBSERVE keep it ─► ✦ THE LIBRARY
+              ANALYZE show them first (needs fluent ≥1) ─► ✦ DA CAPO
+              INTERVENE carry the heavy one's rings (needs promised) ─► ✦ THE BORROWED WEIGHT
+```
+228 paths; every node and all five endings reachable (walked every path).
+
 ## The Deep Walkers: the branch map
 You are 13i on Veyra. The theme is patience: 13i is fast and used to
 answers; the walkers are slow, think through stone, and decide together.

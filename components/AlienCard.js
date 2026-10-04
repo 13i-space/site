@@ -7,7 +7,17 @@ import { verdictFor } from "../lib/continuance";
 import { playSignal, stopSignal } from "../lib/speciesSignal";
 import { playFlip } from "../lib/cardSound";
 import StatRadar from "./StatRadar";
+import AlienHabitat from "./AlienHabitat";
+import SpecimenStill from "./SpecimenStill";
+import { assessmentFor } from "../lib/alienAssessment";
 
+// Update 5.55: the card has four sides now, and keeps turning the same way:
+//   1 front (portrait + stats) · 2 back (chart, traits, signal) ·
+//   3 13i's assessment (four readings + its review, or a preliminary note) ·
+//   4 the species in its own world, animated, filling the whole card.
+// A 3D card only has two faces, so the hidden face swaps what it shows while
+// it's turned away: front shows side 1 or 3, back shows side 2 or 4.
+//
 // A collectible card for one Alien Lab species. The front has the name,
 // portrait, a line of flavour and the twelve stats; click it (with a soft flip sound) and it turns to
 // a stats chart, the rest of its traits, its signal (lib/speciesSignal.js)
@@ -19,7 +29,9 @@ import StatRadar from "./StatRadar";
 // mode) instead of flipping it; `selected` highlights it.
 // creatorAlpha: the creator is an Alpha User (lib/alpha.js) - an α by their name.
 export default function AlienCard({ species, creator, creatorAlpha, width = 280, onSelect, selected }) {
-  const [flipped, setFlipped] = useState(false);
+  const [turns, setTurns] = useState(0); // every click turns the card half a revolution
+  const side = turns % 4; // 0..3, the side showing
+  const flipped = side % 2 === 1;
   const [playing, setPlaying] = useState(false);
   const verdict = verdictFor(species);
   const playingRef = useRef(false);
@@ -45,8 +57,18 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
   const activate = () => {
     if (onSelect) { onSelect(); return; }
     playFlip();
-    setFlipped((f) => !f);
+    setTurns((n) => n + 1);
   };
+
+  // which side each physical face carries right now (see the note at the top)
+  const frontShows3 = !onSelect && (side === 1 || side === 2);
+  const backShows4 = !onSelect && (side === 2 || side === 3);
+  const dots = (k) => (
+    <span aria-hidden="true" style={{ letterSpacing: "2px" }}>
+      {k === 0 && <span style={{ letterSpacing: 0, marginRight: 4 }}>tap to turn</span>}
+      {[0, 1, 2, 3].map((i) => <span key={i} style={{ color: i === k ? "#E8CFC0" : "#3A3E75" }}>{"\u25CF"}</span>)}
+    </span>
+  );
 
   const frame = {
     padding: 7 * s,
@@ -93,16 +115,17 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
       role="button"
       tabIndex={0}
       aria-pressed={onSelect ? !!selected : flipped}
-      aria-label={onSelect ? `Select ${species.name}` : `${species.name} card, ${flipped ? "back" : "front"}. Click to flip.`}
+      aria-label={onSelect ? `Select ${species.name}` : `${species.name} card, side ${side + 1} of 4. Click to turn it.`}
       onClick={activate}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); activate(); }
       }}
       style={{ width, height, flexShrink: 0, alignSelf: "flex-start", perspective: 1200 }}
     >
-      <div className="alien-card-inner" style={{ transform: flipped ? "rotateY(180deg)" : "none" }}>
-        {/* ---- front ---- */}
+      <div className="alien-card-inner" style={{ transform: `rotateY(${turns * 180}deg)` }}>
+        {/* ---- front: side 1, or side 3 (13i's assessment) ---- */}
         <div className="alien-card-face alien-card-frame" style={frame}>
+          {frontShows3 ? <AssessmentSide species={species} s={s} inner={inner} nameBar={nameBar} footer={footer} dots={dots} /> : (
           <div style={inner}>
             {nameBar}
 
@@ -126,9 +149,7 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
               ) : (
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span className="mono" style={{ fontSize: 9 * s, color: "#3A3E75", letterSpacing: "1px" }}>NO PORTRAIT YET</span>
-                </div>
+                <SpecimenStill answers={species.answers} />
               )}
             </div>
 
@@ -163,12 +184,22 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
               ))}
             </div>
 
-            {footer(onSelect ? date : "tap to flip")}
+            {footer(onSelect ? date : dots(0))}
           </div>
+          )}
         </div>
 
-        {/* ---- back ---- */}
+        {/* ---- back: side 2, or side 4 (its world) ---- */}
         <div className="alien-card-face alien-card-frame" style={{ ...frame, transform: "rotateY(180deg)" }}>
+          {backShows4 ? (
+            <div style={{ ...inner, padding: 0, position: "relative" }}>
+              <AlienHabitat species={species} active={side === 3} />
+              <div style={{ position: "absolute", left: 0, right: 0, top: 0, padding: `${8 * s}px ${10 * s}px`, background: "linear-gradient(rgba(5,6,16,0.75), rgba(5,6,16,0))" }}>{nameBar}</div>
+              <div className="mono" style={{ position: "absolute", left: 0, right: 0, bottom: 0, padding: `${12 * s}px ${10 * s}px ${7 * s}px`, display: "flex", justifyContent: "space-between", fontSize: 8 * s, color: "#DCDFFF", background: "linear-gradient(rgba(5,6,16,0), rgba(5,6,16,0.8))", letterSpacing: "1px" }}>
+                <span>IN ITS OWN WORLD</span><span>{dots(3)}</span>
+              </div>
+            </div>
+          ) : (
           <div style={inner}>
             {nameBar}
             <div style={{ position: "relative", display: "flex", justifyContent: "center", margin: `${6 * s}px 0 ${2 * s}px` }}>
@@ -207,10 +238,51 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
                 </a>
               )}
             </div>
-            {footer(date)}
+            {footer(onSelect ? date : dots(1))}
           </div>
+          )}
         </div>
       </div>
+    </div>
+  );
+}
+
+// Side 3: 13i's assessment. Four readings, then 13i's own review if it has
+// written one, or a preliminary note from the record alone.
+function AssessmentSide({ species, s, inner, nameBar, footer, dots }) {
+  const { readings, text, review } = assessmentFor(species);
+  const verdict = verdictFor(species);
+  return (
+    <div style={{ ...inner, background: "radial-gradient(circle at 50% 0%, rgba(139,149,246,0.18), transparent 60%), linear-gradient(180deg, #14163A 0%, #0A0B1C 100%)" }}>
+      {nameBar}
+      <div style={{ display: "flex", alignItems: "center", gap: 6 * s, margin: `${7 * s}px 0 ${5 * s}px` }}>
+        <svg viewBox="0 0 24 24" width={16 * s} height={16 * s} aria-hidden="true"><circle cx="12" cy="11" r="7" fill="none" stroke="#B9C0FF" strokeWidth="1.6" /><circle cx="12" cy="11" r="2.4" fill="#E8CFC0" /><path d="M12 18 V23" stroke="#B9C0FF" strokeWidth="1.6" /></svg>
+        <span className="mono" style={{ fontSize: 8.5 * s, letterSpacing: "1.5px", color: "#B9C0FF" }}>13i &middot; ASSESSMENT</span>
+        {verdict && <span className="mono" style={{ marginLeft: "auto", fontSize: 7.5 * s, letterSpacing: "1px", color: verdict.color, border: `1px solid ${verdict.color}`, borderRadius: 3 * s, padding: `${1 * s}px ${4 * s}px` }}>{verdict.short}</span>}
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 5 * s, marginBottom: 7 * s }}>
+        {readings.map((r) => (
+          <div key={r.id}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+              <span className="mono" style={{ fontSize: 8 * s, color: "#DCDFFF", letterSpacing: "0.5px" }}>{r.label.toUpperCase()}</span>
+              <span className="mono" style={{ fontSize: 7 * s, color: "#6E76B8" }}>{r.note}</span>
+            </div>
+            <div style={{ height: 4 * s, borderRadius: 2 * s, background: "rgba(38,42,85,0.8)", overflow: "hidden", marginTop: 2 * s }}>
+              <div style={{ width: `${r.value}%`, height: "100%", background: r.color, boxShadow: `0 0 ${6 * s}px ${r.color}` }} />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div style={{ flex: 1, minHeight: 0, overflow: "hidden", position: "relative" }}>
+        <p style={{ margin: 0, fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 9.6 * s, lineHeight: 1.42, color: "#D9DCFF" }}>
+          {review ? review.text : text}
+        </p>
+        <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 14 * s, background: "linear-gradient(rgba(10,11,28,0), #0A0B1C)" }} />
+      </div>
+      <div className="mono" style={{ fontSize: 7 * s, color: review ? "#6FC3A8" : "#8A8FBF", marginTop: 4 * s, letterSpacing: "0.5px" }}>
+        {review ? "CONTINUANCE REVIEW · WRITTEN BY 13i" : "PRELIMINARY · FROM ITS RECORD ALONE"}
+      </div>
+      {footer(dots(2))}
     </div>
   );
 }
