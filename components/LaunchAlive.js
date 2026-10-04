@@ -56,7 +56,7 @@ export default function LaunchAlive() {
           <Link href={`/seasons/${season.number}/${week.week}`} className="alive-feature launch-card">
             <img src={week.cover} alt="" className="alive-cover" loading="lazy" />
             <span className="alive-feature-body">
-              <span className="mono alive-label">{season.title.toUpperCase()} &middot; WEEK {week.week} &middot; {season.subtitle.toUpperCase()}</span>
+              <span className="mono alive-label">{season.title.toUpperCase()} &middot; WEEK {week.week} &middot; BETA BEGINS 1.1.2027</span>
               <span className="wordmark alive-feature-title">{week.title}</span>
               <span className="alive-text">{week.blurb}</span>
               <span className="mono alive-more">one record, six ways in &rarr;</span>

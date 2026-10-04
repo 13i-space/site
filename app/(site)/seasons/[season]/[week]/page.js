@@ -2,7 +2,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import AlienCard from "../../../../../components/AlienCard";
 import SignalPlayer from "../../../../../components/SignalPlayer";
-import { seasonFor, weekFor, PIECES, isOpen } from "../../../../../lib/seasons";
+import { seasonFor, weekFor, PIECES, isOpen, weekDates } from "../../../../../lib/seasons";
+import { STORY_GAMES } from "../../../../../lib/storyGames";
 import { ARCHIVE_SPECIES } from "../../../../../lib/archiveSpecies";
 
 export function generateMetadata({ params }) {
@@ -19,6 +20,9 @@ export default function WeekPage({ params }) {
   if (!season || !week) notFound();
   const species = ARCHIVE_SPECIES[week.assignment];
   const piece = (kind) => week.pieces.find((p) => p.kind === kind);
+  const gameTitle = STORY_GAMES.find((g) => g.assignment === week.assignment)?.title || "";
+  const dates = weekDates(season, week.week);
+  const day = (d) => d && d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
 
   const Tile = ({ p, children }) => {
     const open = isOpen(p);
@@ -69,13 +73,20 @@ export default function WeekPage({ params }) {
           <div className="page-title" style={{ fontSize: 44, margin: "8px 0 6px" }}>{week.title}</div>
           <p style={{ color: "#A9AEDB", fontSize: 15, lineHeight: 1.7, margin: 0, maxWidth: 560 }}>{week.blurb}</p>
           <div className="mono" style={{ fontSize: 11, color: "#6E76B8", marginTop: 12 }}>WORLD · {week.world.toUpperCase()} · <Link href="/galaxy/map" style={{ color: "#8B95F6" }}>find it on the Galaxy Map</Link></div>
+          {(dates.beta || dates.launch) && (
+            <div className="mono" style={{ fontSize: 11, color: "#C9B98F", marginTop: 6, letterSpacing: "0.5px" }}>
+              {dates.beta && <>BETA · WEEK OF {day(dates.beta).toUpperCase()}</>}
+              {dates.beta && dates.launch && " · "}
+              {dates.launch && <>EVERYONE · WEEK OF {day(dates.launch).toUpperCase()}</>}
+            </div>
+          )}
         </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 14, marginTop: 30 }}>
         {piece("story") && <Tile p={piece("story")}>{big("Read", "~12 min")}</Tile>}
         {piece("interactive") && <Tile p={piece("interactive")}>{big("Choose", "~15–20 min")}</Tile>}
-        {piece("game") && <Tile p={piece("game")}>{big("Play", "TACET")}</Tile>}
+        {piece("game") && <Tile p={piece("game")}>{big("Play", gameTitle)}</Tile>}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.4fr) minmax(0, 1fr)", gap: 18, marginTop: 18 }} className="season-split">
