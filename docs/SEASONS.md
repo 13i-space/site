@@ -25,13 +25,25 @@ The week page `/seasons/<season>/<week>` shows all of it; each piece has a
 "Opens Wednesday..." until then). That's the "produce ahead, release on a
 schedule" idea: a whole bundle can ship early and reveal day by day.
 
-## Season 1 as of Update 5.55
+## Season 1 as of Update 5.56
 Runs twice, back to back: a beta season for Beta Kin from **January 1,
 2027**, then for everyone from launch, **April 6, 2027** (`beta` and
 `launch` on the season in `lib/seasons.js`; week pages show both).
 1 The Deep Walkers (0000087) · 2 Nerath's Secret (0215783) · 3 The Quiet
-Moon (0028657) · 4 The Sea of Glass (0514229). Weeks 5-12 to build before
-the beta; 13 is the finale. Every built week has all six pieces.
+Moon (0028657) · 4 The Sea of Glass (0514229) · 5 The Borrowed Seconds (0832040). Weeks 6-12
+to build before the beta (paused after 5 at Paul's request); 13 is the
+finale. Release weeks run Monday to Sunday from a season's first Monday
+(beta week 1 = Jan 4 2027, public week 1 = Apr 12 2027); the full weekly
+rhythm lives in `lib/siteCalendar.js`.
+
+Paul's direction for the remaining weeks: some stories should feature
+advanced beings at roughly Earth's level of technology (local space travel
+at most), and some should meet them first through their own AI, so a
+pattern builds across the season. Week 5 is the first of these.
+
+Assignment numbers are Fibonacci numbers outside the human range
+(50,000-250,000). Used: 28657, 514229, 832040. Next free: 1346269,
+2178309, 3524578, 5702887, 9227465, 1597, 2584, 4181. Every built week has all six pieces.
 
 ## Canon
 - **Book canon** is Paul's and drives everything; nothing contradicts it.

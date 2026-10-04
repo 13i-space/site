@@ -1,3 +1,4 @@
+import { recordClaudeUsage } from "../../../lib/apiUsage";
 import { createClient } from "../../../lib/supabaseServer";
 
 // The Signal Composer's "compose from words": Claude turns a description
@@ -78,6 +79,7 @@ export async function POST(request) {
         });
         if (!res.ok) { send({ error: "The composer couldn't be reached. Try again in a moment." }); return; }
         const data = await res.json();
+        await recordClaudeUsage({ feature: "music", model: data.model || MODEL, usage: data.usage });
         if (data.stop_reason === "refusal") { send({ error: "No composition came back for that. Try describing it differently." }); return; }
         const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
         const song = extractJson(text);

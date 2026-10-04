@@ -4,6 +4,12 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.56 (needs docs/v5.56-api-usage.sql; optional env
+  CLAUDE_MONTHLY_BUDGET_USD, CLAUDE_CREDIT_USD, CLAUDE_CREDIT_SINCE): Season 1
+  Week 5 (The Borrowed Seconds + RUBATO), Sentinel-X 2027 calendar + next
+  seven days, Claude usage + site version on Sentinel-X, About > Kinship.
+  New weeks paused after 5 (Paul, Oct 2026). Bump SITE_VERSION in
+  lib/version.js with each update.
 - Update 5.55 (needs docs/v5.55-beta-and-kinbook.sql + RESEND_API_KEY, see
   docs/BETA-SETUP.md): beta sign-up, Galactic Gazette, Season 1 for the beta
   (4 weeks built, incl. The Sea of Glass + PRISM), 3D Oracle eye, new mode

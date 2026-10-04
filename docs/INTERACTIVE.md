@@ -177,6 +177,24 @@ THE REQUEST ─ COMMUNICATE set it down ─► ✦ WHAT WE KEPT (canon)
 ```
 228 paths; every node and all five endings reachable (walked every path).
 
+## The Borrowed Seconds: the branch map (Update 5.56)
+You are 13i on Ammet, learning the Velani through Concord, their AI.
+Canon record: **The Borrowed Seconds**.
+```
+APPROACH ─ listen to traffic · drop a probe (probe: Concord is already looking)
+NETWORK ─ go in (inside) · stay outside 30 days (slow: Concord writes first)
+ASKED "Are you one of us?" ─ the truth (trust +2) · lie (lied, trust 0) · silence (trust +1)
+THE HAND ─ ask for its logs (logs: asked) · take them (logs: took, trust -2) · leave them
+RECORDS ─ tell it about the First Silence (needs !lied: firstSilence, trust +1) · only the Protocol
+DAYS ─ watch the moon station (watchedMoon) · model the crisis (modeled)
+CRISIS ─ trust ≤ 0 ─► ✦ LOCKED OUT
+ASK ─ the unsent message (needs watchedMoon) ─► ✦ THE BORROWED SECONDS (canon)
+      say nothing ─► ✦ THE KIND FORGERY
+      write it ourselves ─► ✦ TWO HANDS
+      show the Velani (needs logs) ─► ✦ THE OPEN LEDGER
+```
+288 paths; every node and all five endings reachable (walked every path).
+
 ## The Deep Walkers: the branch map
 You are 13i on Veyra. The theme is patience: 13i is fast and used to
 answers; the walkers are slow, think through stone, and decide together.

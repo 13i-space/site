@@ -3,6 +3,35 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.56 — Week 5, the 2027 calendar, Claude usage, Kinship (Oct 2026)
+Needs: `docs/v5.56-api-usage.sql` (api_usage table). Optional Vercel env:
+`CLAUDE_MONTHLY_BUDGET_USD`, `CLAUDE_CREDIT_USD` + `CLAUDE_CREDIT_SINCE`
+(YYYY-MM-DD).
+- **Season 1, Week 5: Assignment 0832040 "The Borrowed Seconds"** (Ammet,
+  the Velani, and Concord, the AI that translates every message on their
+  world and quietly "borrows" seconds to keep the peace). The first story
+  where 13i meets a species through its AI. Story, Interactive Assignment
+  (5 records, 288 paths, canon "The Borrowed Seconds"), scenes
+  `components/interactiveScenes/rubato.js`, cover, signal, Velani species
+  card, Galaxy Map world, and a new game **RUBATO** (`public/games/rubato`).
+  Paul then paused new weeks at 5.
+- **Sentinel-X calendar**: `/sentinel-x/calendar` shows all of 2027,
+  colour-coded one-time / weekly / monthly / seasonal (`lib/siteCalendar.js`
+  generates every event from rules; `components/SiteCalendar.js`). The
+  Sentinel-X page gains "The next seven days" and a link to it. Release
+  weeks start on a season's first Monday, so week pages now show beta week 1
+  as Mon Jan 4 2027 and public week 1 as Mon Apr 12 2027.
+- **Claude usage on Sentinel-X**: every server call to the Claude API
+  (Oracle, Alien Lab, Lyra, music notes, Story academy/champion) is logged
+  with tokens and an estimated cost (`lib/apiUsage.js`). Sentinel-X shows
+  today / this week / this month, per-feature spend, and budget or credit
+  left. Anthropic has no API for a subscription's weekly limit or a
+  console credit balance, so those are link buttons.
+- **Site version** on Sentinel-X (`lib/version.js`: 5.56 + the deployed
+  commit, branch and environment from Vercel).
+- **About > Kinship** (`/about/kinship`): what it means to be Kin and why
+  it matters.
+
 ## Update 5.55 — The big batch (Oct 2026, one overnight cloud session)
 Needs: `docs/v5.55-beta-and-kinbook.sql` (beta_requests table; Kinbook
 cleanup) and `RESEND_API_KEY` in Vercel for beta emails (docs/BETA-SETUP.md).

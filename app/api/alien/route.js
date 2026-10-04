@@ -1,3 +1,4 @@
+import { recordClaudeUsage, foldStreamUsage } from "../../../lib/apiUsage";
 import { createClient } from "../../../lib/supabaseServer";
 
 // The Alien Lab's Claude calls: suggest a name, draw a portrait, and write
@@ -97,6 +98,7 @@ async function writeReview(apiKey, supabase, userId, speciesId) {
   });
   if (!res.ok) return Response.json({ error: "13i didn't answer. Try again in a moment." }, { status: 502 });
   const data = await res.json();
+  await recordClaudeUsage({ feature: "alien-review", model: data.model || MODEL, usage: data.usage });
   if (data.stop_reason === "refusal") return Response.json({ error: "No review came back for that one. Try again." }, { status: 422 });
   const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
   let parsed = null;
@@ -167,6 +169,7 @@ async function suggestName(apiKey, answers) {
   });
   if (!res.ok) return Response.json({ error: "The name didn't come through. Try again." }, { status: 502 });
   const data = await res.json();
+  await recordClaudeUsage({ feature: "alien-name", model: data.model || MODEL, usage: data.usage });
   if (data.stop_reason === "refusal") return Response.json({ error: "No name came back for that one. Try again." }, { status: 422 });
   const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join(" ");
   const name = text.replace(/["'“”*_`]/g, "").split("\n")[0].trim().slice(0, 40);
@@ -206,7 +209,7 @@ function drawPortrait(apiKey, answers, name) {
         // parts arrive on this stream - cleanSvg keeps the last complete SVG.)
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let buffer = "", text = "", stopReason = null;
+        let buffer = "", text = "", stopReason = null, usage = null, served = MODEL;
         for (;;) {
           const { value, done } = await reader.read();
           if (done) break;
@@ -220,8 +223,11 @@ function drawPortrait(apiKey, answers, name) {
             if (evt.type === "content_block_delta" && evt.delta && evt.delta.type === "text_delta") text += evt.delta.text;
             if (evt.type === "message_delta" && evt.delta && evt.delta.stop_reason) stopReason = evt.delta.stop_reason;
             if (evt.type === "error") stopReason = "error";
+            if (evt.type === "message_start" && evt.message && evt.message.model) served = evt.message.model;
+            usage = foldStreamUsage(usage, evt);
           }
         }
+        await recordClaudeUsage({ feature: "alien-portrait", model: served, usage });
         const svg = stopReason === "refusal" || stopReason === "error" ? null : cleanSvg(text);
         send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
       } catch (e) {

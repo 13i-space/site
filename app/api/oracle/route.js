@@ -1,3 +1,4 @@
+import { recordClaudeUsage } from "../../../lib/apiUsage";
 import { ORACLE_SYSTEM_PROMPT } from "../../../lib/oracleSystemPrompt";
 import { createClient } from "../../../lib/supabaseServer";
 import { gatherVisitor, describeVisitor, quote } from "../../../lib/visitorContext";
@@ -187,6 +188,7 @@ export async function POST(request) {
     }
 
     const data = await response.json();
+    await recordClaudeUsage({ feature: "oracle", model: data.model || model, usage: data.usage });
     const reply = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim() || "WE HAVE NOTHING MORE TO SAY TO THAT.";
     if (admin) {
       await logUsage(admin, {

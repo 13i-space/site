@@ -5,6 +5,7 @@
 // POST { mode: "mentor",   checkpoint, messages, name }  -> { reply, done }
 // POST { mode: "practice", persona, messages }           -> { reply }
 // POST { mode: "debrief",  persona, messages, name }     -> { feedback }
+import { recordClaudeUsage } from "../../../../lib/apiUsage";
 import { getStoryUserFromRequest, storyConfigured } from "../../../../lib/story/storySupabase";
 import { mentorPrompt, studentPrompt, debriefPrompt, MENTOR_CHECKPOINTS, PERSONA_IDS } from "../../../../lib/story/academy/academyPrompts";
 import { PERSONAS, RUBRIC } from "../../../../lib/story/academy/curriculum";
@@ -71,6 +72,7 @@ async function claude({ system, messages, maxTokens }) {
       return { error: "resting" };
     }
     const data = await res.json();
+    await recordClaudeUsage({ feature: "story-academy", model: data.model || model, usage: data.usage });
     return { text: (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim() };
   } catch (e) {
     console.error("Academy: request failed", e);
