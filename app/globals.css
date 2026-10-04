@@ -1014,3 +1014,73 @@ main {
 
 /* /launch, just arrived from Before */
 .launch-arrived { margin-top: 18px; font-size: 10px; letter-spacing: 2px; line-height: 1.9; color: #6E76B8; }
+
+/* ───────── the four mode landing pages (Update 5.55, components/ModeLanding.js) ───────── */
+.mode { max-width: 1060px; margin: 0 auto; padding: 0 16px; }
+.mode-hero { display: grid; grid-template-columns: 1.15fr 1fr; gap: 30px; align-items: center; margin: 4px 0 34px; }
+.mode-path { list-style: none; padding: 0; margin: 0 0 22px; display: flex; gap: 18px; flex-wrap: wrap; position: relative; }
+.mode-path li a { display: flex; align-items: center; gap: 7px; font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: #565B8F; text-decoration: none; }
+.mode-path li a:hover { color: var(--stop); }
+.mode-path-dot { width: 9px; height: 9px; border-radius: 50%; border: 1px solid var(--stop); opacity: 0.6; }
+.mode-path-here a { color: var(--stop) !important; }
+.mode-path-here .mode-path-dot { background: var(--stop); opacity: 1; box-shadow: 0 0 12px 3px color-mix(in srgb, var(--stop) 60%, transparent); }
+.mode-title { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(52px, 8vw, 92px); line-height: 0.95; margin: 0; color: #F1F1FF;
+  text-shadow: 0 0 40px color-mix(in srgb, var(--mode) 55%, transparent); }
+.mode-subtitle { font-size: 12px; letter-spacing: 2.5px; color: var(--mode); margin: 14px 0 0; text-transform: uppercase; }
+.mode-line { color: #A9AEDB; font-size: 16px; line-height: 1.7; max-width: 470px; margin: 16px 0 0; }
+
+.mode-orbit { --orbit-r: min(150px, 34vw); position: relative; aspect-ratio: 1; width: min(380px, 86vw); justify-self: center; }
+.mode-orbit-ring { position: absolute; inset: 50%; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--mode) 35%, transparent); transform: translate(-50%, -50%); }
+.mode-orbit-ring-a { width: calc(var(--orbit-r) * 2); height: calc(var(--orbit-r) * 2); }
+.mode-orbit-ring-b { width: calc(var(--orbit-r) * 1.35); height: calc(var(--orbit-r) * 1.35); border-style: dashed; opacity: 0.6; animation: mode-spin-centered 70s linear infinite reverse; }
+.mode-orbit-core { position: absolute; left: 50%; top: 50%; width: 70px; height: 70px; border-radius: 50%; transform: translate(-50%, -50%);
+  background: radial-gradient(circle, #fff 0 8%, var(--mode) 22%, color-mix(in srgb, var(--mode) 25%, transparent) 50%, transparent 70%);
+  animation: mode-breathe 5s ease-in-out infinite; }
+.mode-orbit-spin { position: absolute; inset: 0; animation: mode-spin 60s linear infinite; }
+.mode-orbit-slot { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.mode-orbit-badge { position: absolute; left: -31px; top: -31px; width: 62px; height: 62px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 35% 30%, #1d2050, #0b0c22); border: 1px solid color-mix(in srgb, var(--mode) 55%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--mode) 25%, transparent); animation: mode-spin 60s linear infinite reverse; }
+@keyframes mode-spin { to { transform: rotate(360deg); } }
+@keyframes mode-spin-centered { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes mode-breathe { 0%, 100% { transform: translate(-50%, -50%) scale(0.92); opacity: 0.85; } 50% { transform: translate(-50%, -50%) scale(1.08); opacity: 1; } }
+
+.mode-grid { display: grid; grid-template-columns: repeat(var(--cols), minmax(0, 1fr)); gap: 18px; }
+.mode-card { position: relative; display: flex; gap: 20px; align-items: flex-start; padding: 24px 22px; border-radius: 14px; text-decoration: none; color: inherit; overflow: hidden;
+  background: linear-gradient(150deg, color-mix(in srgb, var(--mode) 10%, rgba(16,18,44,0.85)), rgba(10,11,28,0.88) 60%);
+  border: 1px solid color-mix(in srgb, var(--mode) 22%, #262A55);
+  transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+  animation: mode-rise 0.7s ease both; animation-delay: calc(var(--i) * 90ms); }
+.mode-card::after { content: ""; position: absolute; width: 220px; height: 220px; right: -90px; top: -110px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--mode) 18%, transparent), transparent 70%); pointer-events: none; transition: opacity 0.3s; opacity: 0.6; }
+.mode-card:hover { text-decoration: none; transform: translateY(-3px); border-color: color-mix(in srgb, var(--mode) 60%, transparent);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4), 0 0 30px color-mix(in srgb, var(--mode) 18%, transparent); }
+.mode-card:hover::after { opacity: 1; }
+@keyframes mode-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+.mode-badge { flex-shrink: 0; width: 92px; height: 92px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;
+  background: radial-gradient(circle at 35% 30%, #20245a, #0a0b20 75%);
+  border: 1px solid color-mix(in srgb, var(--mode) 55%, transparent);
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--mode) 18%, transparent), 0 0 0 5px rgba(10,11,28,0.6), 0 0 0 6px color-mix(in srgb, var(--mode) 22%, transparent); }
+.mode-badge svg { transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.mode-card:hover .mode-badge svg { transform: scale(1.1) rotate(-6deg); }
+.mode-card-body { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+.mode-card-title { font-size: 26px; color: #E6E8FF; line-height: 1.15; }
+.mode-card-blurb { font-size: 14px; color: #9EA3D1; line-height: 1.6; }
+.mode-card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.mode-card-tags span { font-size: 9.5px; letter-spacing: 1px; color: var(--mode); border: 1px solid color-mix(in srgb, var(--mode) 30%, transparent); border-radius: 999px; padding: 2px 8px; }
+.mode-card-go { font-size: 11px; letter-spacing: 1.5px; color: var(--mode); margin-top: 4px; opacity: 0.75; transition: opacity 0.3s, transform 0.3s; }
+.mode-card:hover .mode-card-go { opacity: 1; transform: translateX(4px); }
+.mode-next { text-align: center; font-size: 14px; color: #6E76B8; margin: 40px 0 10px; font-style: italic; font-family: var(--font-display); }
+
+@media (max-width: 860px) {
+  .mode-hero { grid-template-columns: 1fr; text-align: left; }
+  .mode-orbit { --orbit-r: min(120px, 30vw); width: min(300px, 80vw); }
+  .mode-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 520px) {
+  .mode-card { flex-direction: column; gap: 14px; }
+  .mode-badge { width: 78px; height: 78px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-orbit-spin, .mode-orbit-badge, .mode-orbit-ring-b, .mode-orbit-core, .mode-card { animation: none !important; }
+}
