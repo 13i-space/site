@@ -19,6 +19,7 @@ const GAME_NAMES = {
   sixteen: "SIXTEEN",
   tacet: "TACET",
   prism: "PRISM",
+  rubato: "RUBATO",
 };
 
 function ago(iso) {

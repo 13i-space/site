@@ -108,6 +108,7 @@ export default async function AccountPage() {
     sixteen: { label: "SIXTEEN", href: "/games/sixteen" },
     tacet: { label: "TACET", href: "/games/tacet" },
     prism: { label: "PRISM", href: "/games/prism" },
+    rubato: { label: "RUBATO", href: "/games/rubato" },
   };
 
   const alphaProfile = { ...profile, created_at: profile?.created_at || user.created_at };
