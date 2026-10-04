@@ -94,7 +94,7 @@ export default function MusicPage() {
   const [time, setTime] = useState({ now: 0, dur: 0 });
   const [repeatOne, setRepeatOne] = useState(false);
   const [resume, setResume] = useState(null);
-  const [open, setOpen] = useState({ 0: true });
+  const [open, setOpen] = useState({ 0: true, 1: true, 2: true });
   const [about, setAbout] = useState(false);
   const current = pos >= 0 ? queue[pos] : null;
   const today = useRef(null);
