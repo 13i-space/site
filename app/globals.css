@@ -860,6 +860,16 @@ main {
 .journey-places a:hover { color: #DCDFFF; border-bottom-color: #3A3E75; }
 .journey-stop-marked .journey-body { border-left: 1px solid rgba(232,207,192,0.35); padding-left: 14px; margin-left: -15px; }
 .journey-stop-marked .journey-line { color: #B7BADF; }
+/* the travelling light (Update 5.55) */
+.journey-track { position: relative; }
+.journey .journey-kicker { margin-bottom: 52px; }
+.journey-light { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 2; }
+.journey-loop-trail { stroke: rgba(185,192,255,0.10); stroke-width: 1; stroke-dasharray: 2 5; }
+.journey-node { transition: transform 0.35s ease, box-shadow 0.35s ease; z-index: 1; }
+.journey-title { transition: color 0.35s ease, text-shadow 0.35s ease; }
+.journey-lit .journey-node { transform: scale(1.55); box-shadow: 0 0 22px 6px color-mix(in srgb, var(--stop) 75%, transparent); }
+.journey-lit .journey-node::after { opacity: 1; }
+.journey-lit .journey-title { color: #FFFFFF; text-shadow: 0 0 18px color-mix(in srgb, var(--stop) 70%, transparent); }
 
 /* what's alive: one feature, a few small things beside it */
 .alive { margin: 64px 0 0; }
@@ -878,6 +888,46 @@ main {
 .alive-more { font-size: 11px; color: #E8CFC0; margin-top: auto; }
 .alive-bar { display: block; height: 3px; background: #14163A; border-radius: 2px; overflow: hidden; margin: 2px 0 2px; }
 .alive-bar span { display: block; height: 100%; background: linear-gradient(90deg, #8B95F6, #E8CFC0); }
+/* the three side tiles: one size, a picture each (Update 5.55) */
+.alive-side { display: grid; grid-template-rows: repeat(3, 1fr); }
+.alive-tile { flex-direction: row; align-items: center; gap: 14px; padding: 12px 14px; min-height: 112px; position: relative; transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.alive-tile:hover, .alive-feature:hover { transform: translateY(-2px); border-color: #3A3E75; box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 24px rgba(139,149,246,0.12); text-decoration: none; }
+.alive-tile::before { content: ""; position: absolute; left: 0; top: 14px; bottom: 14px; width: 2px; border-radius: 2px; background: var(--tile, #8B95F6); opacity: 0.7; }
+.alive-tile-species { --tile: #8B95F6; }
+.alive-tile-mars { --tile: #C97B6E; }
+.alive-tile-music { --tile: #E8CFC0; }
+.alive-tile-body { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.alive-visual { width: 84px; height: 84px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; }
+.alive-feature { transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease; }
+.alive-feature .alive-cover { transition: transform 0.6s ease; }
+.alive-feature:hover .alive-cover { transform: scale(1.04); }
+/* the mini species card */
+.alive-minicard { width: 60px; height: 84px; border-radius: 6px; padding: 3px; display: flex; flex-direction: column; box-sizing: border-box;
+  background: linear-gradient(145deg, #C9B98F, #8B95F6 55%, #E8CFC0); box-shadow: 0 6px 14px rgba(0,0,0,0.45); transform: rotate(-5deg); transition: transform 0.3s ease; }
+.alive-tile:hover .alive-minicard { transform: rotate(0deg) scale(1.06); }
+.alive-minicard-art { flex: 1; border-radius: 4px 4px 0 0; background: #0A0B1C; overflow: hidden; display: flex; }
+.alive-minicard-art img, .alive-minicard-art svg { width: 100%; height: 100%; object-fit: cover; }
+.alive-minicard-name { background: #14163A; color: #DCDFFF; font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 8px; padding: 2px 3px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.alive-minicard-no { background: #14163A; color: #C9B98F; font-size: 5.5px; padding: 0 3px 2px; border-radius: 0 0 4px 4px; letter-spacing: 0.5px; }
+/* the rocket on the pad */
+.alive-rocket { width: 84px; height: 84px; border-radius: 6px; border: 1px solid #262A55; }
+.alive-rocket-body { animation: aliveIdle 3.2s ease-in-out infinite; transform-origin: 40px 56px; }
+.alive-flame { transform-origin: 40px 56px; animation: aliveFlame 0.18s ease-in-out infinite alternate; }
+.alive-tile-mars:hover .alive-rocket-body { animation: aliveLift 1.4s ease-in forwards; }
+@keyframes aliveIdle { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-1.2px); } }
+@keyframes aliveFlame { from { transform: scaleY(0.75); opacity: 0.8; } to { transform: scaleY(1.15); opacity: 1; } }
+@keyframes aliveLift { 0% { transform: translateY(0); } 15% { transform: translateY(1px); } 100% { transform: translateY(-80px); } }
+/* the album, sliding off its record */
+.alive-vinyl { width: 84px; }
+.alive-disc { position: absolute; width: 74px; height: 74px; right: -2px; border-radius: 50%;
+  background: radial-gradient(circle, #E8CFC0 0 9%, #111 10% 12%, #1b1b22 13% 100%), repeating-radial-gradient(circle, #222 0 1px, #111 1px 3px);
+  background-blend-mode: normal; box-shadow: inset 0 0 0 1px #333; transition: transform 0.5s ease; animation: aliveSpin 6s linear infinite; }
+.alive-album { position: relative; width: 70px; height: 70px; object-fit: cover; border-radius: 3px; margin-right: 12px; box-shadow: 0 6px 14px rgba(0,0,0,0.5); background: linear-gradient(135deg, #2A2F6B, #14163A); }
+.alive-tile-music:hover .alive-disc { transform: translateX(10px); }
+@keyframes aliveSpin { to { rotate: 360deg; } }
+@media (prefers-reduced-motion: reduce) {
+  .alive-rocket-body, .alive-flame, .alive-disc { animation: none !important; }
+}
 
 /* kinship: quiet */
 .kinship-close { margin: 84px auto 20px; max-width: 560px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
