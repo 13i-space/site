@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../../../lib/supabaseServer";
 import NewThreadForm from "../../../../../components/NewThreadForm";
 import { isAlpha } from "../../../../../lib/alpha";
+import KinRoom from "../../../../../components/KinRoom";
 
 export default async function NewThreadPage({ params }) {
   const supabase = await createClient();
@@ -31,13 +32,8 @@ export default async function NewThreadPage({ params }) {
   }
 
   return (
-    <div>
-      <Link href={`/forum/${params.space}`} className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
-        &larr; back to {space.name}
-      </Link>
-      <div className="page-title" style={{ marginTop: 14 }}>New Thread</div>
-      <div className="page-subtitle">{space.name}</div>
+    <KinRoom room="forum" title="Start a thread" line={`In ${space.name}. Ask a question, share an idea, or just say hello.`} back={{ href: `/forum/${params.space}`, label: space.name }}>
       <NewThreadForm spaceId={space.id} spaceSlug={params.space} />
-    </div>
+    </KinRoom>
   );
 }

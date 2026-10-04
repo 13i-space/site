@@ -13,8 +13,8 @@ export default function ReplyForm({ threadId, loggedIn }) {
 
   if (!loggedIn) {
     return (
-      <p style={{ fontSize: 12.5, color: "#565B8F" }}>
-        <a href="/login" style={{ color: "#8B95F6" }}>Log in</a> to reply.
+      <p style={{ fontSize: 13.5, color: "#8A8FBF", margin: 0 }}>
+        <a href="/login" style={{ color: "#E9D29A" }}>Sign in</a> to join the conversation.
       </p>
     );
   }
@@ -49,27 +49,16 @@ export default function ReplyForm({ threadId, loggedIn }) {
   };
 
   return (
-    <form onSubmit={submit} style={{ marginTop: 20 }}>
+    <form onSubmit={submit}>
       <textarea
         rows={3}
         value={body}
         onChange={(e) => setBody(e.target.value)}
-        placeholder="Write a reply..."
-        style={{
-          width: "100%", background: "transparent", border: "1px solid #262A55", borderRadius: 3,
-          color: "#E4E4EF", fontSize: 14, padding: "10px 12px", outline: "none", resize: "vertical",
-          boxSizing: "border-box", fontFamily: "'Inter', sans-serif", marginBottom: 10,
-        }}
+        placeholder="Add your voice..."
+        className="kr-input"
+        style={{ marginBottom: 10 }}
       />
-      <button
-        type="submit"
-        disabled={loading || !body.trim()}
-        style={{
-          background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#B9C0FF",
-          fontFamily: "'JetBrains Mono', monospace", fontSize: 13, padding: "8px 16px",
-          cursor: "pointer", opacity: loading || !body.trim() ? 0.5 : 1,
-        }}
-      >
+      <button type="submit" disabled={loading || !body.trim()} className="kr-pill">
         {loading ? "Posting..." : "Reply"}
       </button>
       {error && <p style={{ color: "#C97B6E", fontSize: 12, marginTop: 8 }}>{error}</p>}

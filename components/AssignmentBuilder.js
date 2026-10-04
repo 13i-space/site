@@ -30,6 +30,17 @@ const WRITING_PROMPTS = [
   "Remember, 13i is never all-knowing. Let it misread something.",
 ];
 
+// A spark to start from, if the page is blank (Update 5.57)
+const SPARKS = [
+  "We arrive at a world whose people have stopped speaking. Not one of them. All of them, on the same day.",
+  "A signal has been repeating from the same empty point for nine thousand years. We were sent to find out who is still listening to it.",
+  "The species we were sent to assess has already assessed us. They are waiting at the edge of their system.",
+  "Something on this moon is growing in perfect circles. We do not know if it is alive.",
+  "We were sent to stop a war. When we arrived, both sides asked us which of them we had come to help.",
+  "A manifestation of ours went silent here forty years ago. We have come to learn what it learned.",
+  "They have built a machine to talk to their dead. We were sent because it has started to answer.",
+];
+
 export default function AssignmentBuilder() {
   const [ready, setReady] = useState(false);
   const [userId, setUserId] = useState(null);
@@ -44,6 +55,7 @@ export default function AssignmentBuilder() {
   const [saveStatus, setSaveStatus] = useState("idle"); // idle | saving | saved
   const [submitStatus, setSubmitStatus] = useState("idle");
   const [error, setError] = useState("");
+  const [spark, setSpark] = useState(0);
   const loadedDraft = useRef(false);
 
   useEffect(() => {
@@ -160,164 +172,121 @@ export default function AssignmentBuilder() {
 
   if (!userId) {
     return (
-      <div className="panel" style={{ textAlign: "center" }}>
-        <p style={{ margin: 0, color: "#8A8FBF" }}>
-          You need to be logged in to write an Assignment &mdash; it's tied to
-          your Node so you can save progress and come back to it.
-        </p>
-        <a
-          href="/login"
-          className="mono"
-          style={{ display: "inline-block", marginTop: 14, fontSize: 12, color: "#B9C0FF", border: "1px solid #3A3E75", borderRadius: 4, padding: "8px 18px" }}
-        >
-          Log in
-        </a>
+      <div className="wa-sheet wa-gate">
+        <div className="wa-gate-title">Your Assignment is waiting.</div>
+        <p>Sign in to write one. It&rsquo;s tied to your Node, so you can save as you go and come back to it any time.</p>
+        <a href="/login" className="wa-primary">Sign in to write &rarr;</a>
       </div>
     );
   }
 
   if (submitStatus === "done") {
     return (
-      <div className="panel" style={{ textAlign: "center" }}>
-        <p style={{ margin: 0, color: "#8B95F6" }}>
-          Received. Assignment {String(assignmentNumber).padStart(7, "0")} has been submitted.
-        </p>
+      <div className="wa-sheet wa-gate">
+        <div className="mono wa-stamp wa-stamp-sent">transmitted</div>
+        <div className="wa-gate-title">Received.</div>
+        <p>Assignment {String(assignmentNumber).padStart(7, "0")} has reached the archive. The collective will read it.</p>
       </div>
     );
   }
 
+  const goal = Math.min(1, wordCount / 1500);
+  const ticks = Object.values(checked).filter(Boolean).length;
+
   return (
-    <form onSubmit={submit} className="panel">
-      <div className="mono" style={{ fontSize: 11, color: "#565B8F", letterSpacing: "1px", marginBottom: 4 }}>
-        ASSIGNMENT NUMBER
+    <form onSubmit={submit} className="wa-sheet">
+      <div className="wa-sheet-head">
+        <div>
+          <div className="mono wa-small">assignment</div>
+          <div className="mono wa-number">{assignmentNumber ? String(assignmentNumber).padStart(7, "0") : ""}</div>
+        </div>
+        <button type="button" onClick={saveProgress} disabled={saveStatus === "saving"} className="mono wa-save">
+          {saveStatus === "saving" ? "saving..." : saveStatus === "saved" ? "saved \u2713" : "save progress"}
+        </button>
       </div>
-      <div className="mono" style={{ fontSize: 20, color: "#E8CFC0", marginBottom: 18 }}>
-        {assignmentNumber ? String(assignmentNumber).padStart(7, "0") : ""}
-      </div>
+
+      {!story.trim() && (
+        <div className="wa-spark">
+          <span className="mono wa-small">need a spark?</span>
+          <p>&ldquo;{SPARKS[spark]}&rdquo;</p>
+          <span className="wa-spark-actions">
+            <button type="button" className="mono" onClick={() => setSpark((n) => (n + 1) % SPARKS.length)}>another &rarr;</button>
+            <button type="button" className="mono" onClick={() => { setStory(SPARKS[spark] + "\n\n"); setTimeout(() => storyRef.current?.focus(), 0); }}>start from this one</button>
+          </span>
+        </div>
+      )}
 
       <input
         required
         value={title}
         onChange={(e) => setTitle(e.target.value)}
-        placeholder="Title"
-        style={{ ...inputStyle, width: "100%", marginBottom: 12, boxSizing: "border-box", fontSize: 16 }}
+        placeholder="Give it a title"
+        className="wa-title-input"
       />
 
       <textarea
         required
-        placeholder="Begin writing here or paste story here..."
+        placeholder="We arrived..."
         value={story}
         onChange={(e) => { setStory(e.target.value); onStoryInput(); }}
         onSelect={followCaret}
         ref={storyRef}
-        rows={16}
-        style={{ ...inputStyle, width: "100%", resize: "vertical", fontFamily: "'Inter', sans-serif", lineHeight: 1.6, boxSizing: "border-box" }}
+        rows={14}
+        className="wa-story"
       />
 
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 6, marginBottom: 4 }}>
-        <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>
-          {wordCount.toLocaleString()} words &middot; 1,500&ndash;5,000 is a guideline, not a rule
-        </span>
-        <button
-          type="button"
-          onClick={saveProgress}
-          disabled={saveStatus === "saving"}
-          className="mono"
-          style={{ background: "none", border: "1px solid #262A55", borderRadius: 4, color: "#B9C0FF", fontSize: 11, padding: "5px 12px", cursor: "pointer" }}
-        >
-          {saveStatus === "saving" ? "Saving..." : saveStatus === "saved" ? "Saved \u2713" : "Save progress"}
-        </button>
+      <div className="wa-meter">
+        <div className="wa-meter-bar"><span style={{ width: `${goal * 100}%` }} /></div>
+        <span className="mono">{wordCount.toLocaleString()} words &middot; 1,500&ndash;5,000 is a guideline, not a rule</span>
       </div>
 
-      <p style={{ fontSize: 12.5, color: "#6E76B8", fontStyle: "italic", marginTop: 14, marginBottom: 20 }}>
-        Remember: you are 13i. Think collectively. You don't know everything. Let the Assignment change you.
-      </p>
-
-      <div style={{ marginBottom: 20 }}>
-        <div className="mono" style={{ fontSize: 11, color: "#565B8F", letterSpacing: "1px", marginBottom: 10 }}>
-          BEFORE YOU SUBMIT
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+      <details className="wa-step">
+        <summary>
+          <span className="wa-step-n">1</span>
+          <span>Before you send it <span className="mono wa-small">{ticks}/{CHECKLIST.length} checked &middot; optional</span></span>
+        </summary>
+        <div className="wa-checks">
           {CHECKLIST.map((item, i) => (
-            <label key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "#8A8FBF", cursor: "pointer" }}>
-              <input
-                type="checkbox"
-                checked={!!checked[i]}
-                onChange={() => setChecked((c) => ({ ...c, [i]: !c[i] }))}
-                style={{ marginTop: 3 }}
-              />
+            <label key={i} className={checked[i] ? "wa-check-on" : ""}>
+              <input type="checkbox" checked={!!checked[i]} onChange={() => setChecked((c) => ({ ...c, [i]: !c[i] }))} />
               {item}
             </label>
           ))}
         </div>
-      </div>
+      </details>
 
-      <div style={{ marginBottom: 16 }}>
-        <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>
-          COVER IMAGE (OPTIONAL)
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          {coverPreview && (
-            <img src={coverPreview} alt="" style={{ width: 52, height: 78, objectFit: "cover", borderRadius: 3, border: "1px solid #3A3E75" }} />
-          )}
-          <label
-            className="mono"
-            style={{ fontSize: 11, color: "#B9C0FF", border: "1px solid #3A3E75", borderRadius: 4, padding: "7px 14px", cursor: "pointer" }}
-          >
-            {coverFile ? "Change image" : "Upload a cover"}
-            <input
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={(e) => {
+      <details className="wa-step">
+        <summary>
+          <span className="wa-step-n">2</span>
+          <span>Cover and credit <span className="mono wa-small">{coverFile ? "cover added" : "optional cover"} &middot; {name || "your name"}</span></span>
+        </summary>
+        <div className="wa-step-body">
+          <div className="wa-cover-row">
+            {coverPreview && <img src={coverPreview} alt="" />}
+            <label className="mono wa-ghost">
+              {coverFile ? "change image" : "upload a cover"}
+              <input type="file" accept="image/*" style={{ display: "none" }} onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
                 setCoverFile(file);
                 setCoverPreview(URL.createObjectURL(file));
-              }}
-            />
-          </label>
+              }} />
+            </label>
+          </div>
+          <div className="wa-credit">
+            <input type="text" placeholder="Your name or username" value={name} onChange={(e) => setName(e.target.value)} style={inputStyle} />
+            <input type="email" placeholder="Email for feedback" value={email} onChange={(e) => setEmail(e.target.value)} style={inputStyle} />
+          </div>
+          <p className="wa-hint">Defaults to your account; change either for this Assignment if you like.</p>
         </div>
-      </div>
+      </details>
 
-      <div style={{ marginBottom: 16 }}>
-        <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>
-          CREDIT & CONTACT
-        </div>
-        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-          <input
-            type="text"
-            placeholder="Your name or username"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            style={inputStyle}
-          />
-          <input
-            type="email"
-            placeholder="Email for feedback"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={inputStyle}
-          />
-        </div>
-        <p style={{ fontSize: 11, color: "#3A3E75", marginTop: 6 }}>
-          Defaults to your account &mdash; change either if you'd rather use something else for this Assignment.
-        </p>
-      </div>
-
-      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-        <button
-          type="submit"
-          disabled={submitStatus === "loading"}
-          style={{
-            background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#B9C0FF",
-            fontFamily: "'JetBrains Mono', monospace", fontSize: 13, padding: "10px 22px",
-            cursor: "pointer", opacity: submitStatus === "loading" ? 0.5 : 1,
-          }}
-        >
-          {submitStatus === "loading" ? "Sending..." : "Submit Assignment"}
+      <div className="wa-send">
+        <p>Remember: you are 13i. Think collectively. Let the Assignment change you.</p>
+        <button type="submit" disabled={submitStatus === "loading"} className="wa-primary">
+          {submitStatus === "loading" ? "Transmitting..." : "Transmit Assignment \u2192"}
         </button>
-        {error && <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{error}</span>}
+        {error && <span className="mono wa-error">{error}</span>}
       </div>
     </form>
   );

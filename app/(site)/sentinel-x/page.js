@@ -54,6 +54,47 @@ function Tile({ label, value, note }) {
   );
 }
 
+// Beta sign-ups from the countdown page, newest first (Update 5.57).
+function BetaList({ b }) {
+  if (!b) {
+    return (
+      <Panel title="BETA SIGN-UPS" span>
+        <p style={styles.muted}>Unavailable - run docs/v5.55-beta-and-kinbook.sql (section 1) in Supabase.</p>
+      </Panel>
+    );
+  }
+  const all = b.list.map((r) => r.email).join(", ");
+  return (
+    <Panel title="BETA SIGN-UPS" span>
+      <div style={styles.tiles}>
+        <Tile label="BETA KIN WAITING" value={b.total} note={`${fmt(b.week)} this week`} />
+      </div>
+      {b.list.length ? (
+        <>
+          <div style={{ marginTop: 14, maxHeight: 360, overflowY: "auto" }}>
+            {b.list.map((r) => (
+              <div key={r.email} style={styles.row}>
+                <span style={{ minWidth: 0 }}>
+                  <a href={`mailto:${r.email}`} style={{ color: "#B9C0FF" }}>{r.email}</a>
+                  {r.name && <span style={{ color: "#8A8FBF" }}> · {r.name}</span>}
+                  {r.why && <span style={{ display: "block", fontSize: 12, color: "#8A8FBF", marginTop: 2 }}>&ldquo;{r.why}&rdquo;</span>}
+                </span>
+                <span className="mono" style={styles.rowRight}>{ago(r.created_at)}</span>
+              </div>
+            ))}
+          </div>
+          <details style={{ marginTop: 12 }}>
+            <summary className="mono" style={{ fontSize: 10.5, letterSpacing: "1px", color: "#6E76B8", cursor: "pointer" }}>ALL EMAILS, READY TO COPY</summary>
+            <textarea readOnly value={all} style={{ width: "100%", minHeight: 80, marginTop: 8, background: "#0E1026", color: "#C7CAE8", border: "1px solid #21244A", borderRadius: 4, padding: 8, fontSize: 12 }} />
+          </details>
+        </>
+      ) : (
+        <p style={{ ...styles.muted, marginTop: 12 }}>No requests yet. They&rsquo;ll appear here as people ask from the countdown page.</p>
+      )}
+    </Panel>
+  );
+}
+
 function Unavailable() {
   return <p style={styles.muted}>Unavailable right now.</p>;
 }
@@ -150,6 +191,7 @@ function SentinelView({ d }) {
       <div style={styles.grid}>
         <NextSevenDays />
         <ClaudeUsage c={d.claude} />
+        <BetaList b={d.beta} />
 
         <Panel title="KIN" span>
           {a ? (

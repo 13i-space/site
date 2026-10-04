@@ -1,6 +1,10 @@
 import Link from "next/link";
 import { createClient } from "../../../lib/supabaseServer";
 import { isAlpha } from "../../../lib/alpha";
+import KinRoom from "../../../components/KinRoom";
+
+// Each space gets its own pair of colours for its glyph (Update 5.57)
+const GLYPH = [["#E9D29A", "#E8CFC0"], ["#B9C0FF", "#8B95F6"], ["#6FC3A8", "#B9E4D4"], ["#E8B4C8", "#E8CFC0"], ["#C9B8F0", "#8B95F6"]];
 
 export default async function ForumHub() {
   const supabase = await createClient();
@@ -31,44 +35,28 @@ export default async function ForumHub() {
   (spacesWithId || []).forEach((s) => { countBySlug[s.slug] = counts[s.id] || 0; });
 
   return (
-    <div>
-      <div className="page-title">The Forum</div>
-      <div className="page-subtitle">a meeting place for Kin — new guests always welcome</div>
-
-      {user && (
-        <div style={{ maxWidth: 640, margin: "0 auto 16px", display: "flex", justifyContent: "flex-end" }}>
-          <Link href="/messages" className="mono" style={{ fontSize: 12, color: unread ? "#E8CFC0" : "#B9C0FF", border: `1px solid ${unread ? "#6B5E3E" : "#3A3E75"}`, borderRadius: 4, padding: "7px 14px", textDecoration: "none" }}>
-            &#9993; messages{unread ? ` \u00b7 ${unread} new` : ""}
-          </Link>
-        </div>
-      )}
-
-      <div style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 640, margin: "0 auto" }}>
-        {(spaces || []).map((s) => (
-          <Link
-            key={s.slug}
-            href={`/forum/${s.slug}`}
-            className="launch-card"
-            style={{
-              display: "block",
-              background: "rgba(14,16,38,0.72)",
-              border: "1px solid #262A55",
-              borderRadius: 4,
-              padding: "18px 20px",
-              textDecoration: "none",
-              color: "inherit",
-            }}
-          >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-              <span className="wordmark" style={{ fontSize: 19, color: s.slug === "alpha" ? "#E8CFC0" : "#DCDFFF" }}>{s.name}</span>
-              <span className="mono" style={{ fontSize: 11, color: "#565B8F" }}>
-                {countBySlug[s.slug] || 0} {countBySlug[s.slug] === 1 ? "thread" : "threads"}
-              </span>
-            </div>
-            <p style={{ fontSize: 13, color: "#8A8FBF", marginTop: 6, marginBottom: 0 }}>{s.description}</p>
-          </Link>
-        ))}
+    <KinRoom room="forum" title="The Forum" line="A meeting place for Kin. New guests are always welcome: pull up a chair." unread={unread}>
+      <div className="kr-note">
+        <strong style={{ color: "#F5EEDB" }}>New here?</strong> Say hello: tell us what brought you to 13i, or what you&rsquo;d like to see next.
+        {!user && <> <Link href="/login?next=/forum">Sign in</Link> to post; anyone can read.</>}
       </div>
-    </div>
+      <div className="kr-spaces">
+        {(spaces || []).map((s, i) => {
+          const [c1, c2] = GLYPH[i % GLYPH.length];
+          const n = countBySlug[s.slug] || 0;
+          return (
+            <Link key={s.slug} href={`/forum/${s.slug}`} className={`kr-card ${s.slug === "alpha" ? "kr-space-alpha" : ""}`}>
+              <div className="kr-space-top">
+                <span className="kr-space-glyph" style={{ "--c1": c1, "--c2": c2 }}>{s.slug === "alpha" ? "\u03b1" : (s.name || "?").replace(/^the\s+/i, "")[0]}</span>
+                <span className="mono kr-count">{n} {n === 1 ? "thread" : "threads"}</span>
+              </div>
+              <div className="kr-space-name">{s.name}</div>
+              <p className="kr-space-desc">{s.description}</p>
+              <span className="mono kr-go">step in &rarr;</span>
+            </Link>
+          );
+        })}
+      </div>
+    </KinRoom>
   );
 }

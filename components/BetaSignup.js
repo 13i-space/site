@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 // Countdown page: ask to join the Season 1 beta (opens 1.1.2027).
-// Posts to /api/beta, which saves the request and emails Paul.
+// Posts to /api/beta, which saves the request (listed on Sentinel-X).
 export default function BetaSignup() {
   const [open, setOpen] = useState(false);
   const [email, setEmail] = useState("");

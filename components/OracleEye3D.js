@@ -1,150 +1,226 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import OracleEyeFlat, { paintIris } from "./OracleEyeFlat";
 
-// The Oracle's eye, in the round (Update 5.55). Drawn on a canvas every
-// frame, as a sphere rather than a disc:
-//   - a dark, glossy eyeball inside the gold 13i ring
-//   - an iris painted once in fine detail (hundreds of fibres, a collarette,
-//     crypts, gold flecks) and laid onto the sphere where the eye is looking:
-//     turned away, it foreshortens into an ellipse and slides toward the rim
-//   - a pupil that widens and narrows with the Oracle's mood, with a few
-//     stars deep inside it
-//   - a wet cornea: a soft window highlight, a sharp glint, a rim of light
-//   - lids that part as the eye opens
-// It follows the visitor's pointer, and glances about on its own when left
-// alone. Reduced motion: it holds still and looks straight out.
+// The Oracle's eye, in the round (Update 5.57, replacing 5.55's flat one).
+// Something enormous is pressed up to the far side of the 13i ring and
+// looking through it: the eyeball is bigger than the window, so you only
+// ever see the middle of it - the iris and the dark sclera around it -
+// never the whole eye.
+//
+// Drawn by a WebGL shader every frame, per pixel, as a real sphere:
+//   - the eyeball ROTATES to look at you: veins and iris are fixed to its
+//     surface, so as it turns they swing across, foreshorten, and roll
+//     toward the edge of the window - not a flat disc sliding about
+//   - the iris is the same hand-painted texture as before (paintIris), the
+//     pupil widens and narrows with the Oracle's mood, stars deep inside
+//   - the light stays put while the eye turns: a window reflection and a
+//     glint on the wet cornea, shadow at the rim of the porthole
+//   - alien lids slide in from above and below when it closes
+//   - the gold 13i ring frames it all
+// Falls back to the flat version without WebGL. Reduced motion: it holds
+// still and looks straight out.
 //
 // open: 0..1 (lids). mood: sleeping | listening | receiving | speaking
 
-const PUPIL = { sleeping: 0.12, listening: 0.24, receiving: 0.1, speaking: 0.34 };
+const PUPIL = { sleeping: 0.16, listening: 0.3, receiving: 0.14, speaking: 0.42 };
 
-function rng(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
+const VERT = `
+attribute vec2 a;
+varying vec2 v;
+void main() { v = a; gl_Position = vec4(a, 0.0, 1.0); }
+`;
+
+const FRAG = `
+precision highp float;
+varying vec2 v;
+uniform sampler2D uIris;
+uniform vec3 uF, uR, uU;   // the eye's forward, right and up, in view space
+uniform float uT, uPupil, uLid, uPx;
+
+const float WIN = 0.90;    // the window inside the gold ring
+const float RS = 1.32;     // the eyeball's radius, in window units: bigger than the window
+const float IRIS = 0.40;   // the iris's angular radius on the sphere (radians)
+
+float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+float noise(vec3 x) {
+  vec3 i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash(i), hash(i + vec3(1,0,0)), f.x), mix(hash(i + vec3(0,1,0)), hash(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash(i + vec3(0,0,1)), hash(i + vec3(1,0,1)), f.x), mix(hash(i + vec3(0,1,1)), hash(i + vec3(1,1,1)), f.x), f.y), f.z);
 }
+float fbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a * noise(p); p *= 2.03; a *= 0.5; } return s; }
+// thin branching lines: the ridges of a noise field
+float veins(vec3 p) { float n = 1.0 - abs(fbm(p) * 2.0 - 1.0); return pow(n, 9.0); }
 
-// the iris, painted once (S x S, iris radius S/2, pupil hole left for later)
-function paintIris(S) {
-  const c = document.createElement("canvas");
-  c.width = c.height = S;
-  const g = c.getContext("2d");
-  const r = rng(13);
-  const R = S / 2;
-  g.translate(R, R);
-  // base colour: pale gold at the pupil, amber, then deep violet-blue at the limbus
-  const base = g.createRadialGradient(0, 0, R * 0.08, 0, 0, R);
-  base.addColorStop(0, "#FFF4DC");
-  base.addColorStop(0.22, "#F2D9A0");
-  base.addColorStop(0.45, "#C9984E");
-  base.addColorStop(0.7, "#7A5A8E");
-  base.addColorStop(0.9, "#2C2A6B");
-  base.addColorStop(1, "#0E0B26");
-  g.fillStyle = base;
-  g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fill();
-  // stroma: fine radial fibres, each with a little wander
-  for (let i = 0; i < 1400; i++) {
-    const a = r() * Math.PI * 2;
-    const r0 = R * (0.14 + r() * 0.1);
-    const r1 = R * (0.55 + r() * 0.43);
-    const bend = (r() - 0.5) * 0.18;
-    const light = r() < 0.55;
-    g.strokeStyle = light ? `rgba(255,240,205,${0.06 + r() * 0.16})` : `rgba(20,12,40,${0.08 + r() * 0.18})`;
-    g.lineWidth = 0.4 + r() * 1.1;
-    g.beginPath();
-    g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0);
-    const am = a + bend, rm = (r0 + r1) / 2;
-    g.quadraticCurveTo(Math.cos(am) * rm, Math.sin(am) * rm, Math.cos(a + bend * 0.4) * r1, Math.sin(a + bend * 0.4) * r1);
-    g.stroke();
+void main() {
+  vec2 q = v;                       // -1..1 across the canvas, y up
+  float r = length(q);
+  vec3 col = vec3(0.0);
+  float alpha = 0.0;
+
+  if (r < WIN) {
+    vec2 p = q / WIN;               // window units
+    float z = sqrt(RS * RS - dot(p, p));
+    vec3 n = normalize(vec3(p, z)); // surface normal, view space
+    // the same point, in the eye's own coordinates: this is what turns
+    vec3 L = vec3(dot(n, uR), dot(n, uU), dot(n, uF));
+    float th = acos(clamp(L.z, -1.0, 1.0));
+
+    // sclera: deep violet-black, veins of light fixed to the surface
+    vec3 base = mix(vec3(0.09, 0.08, 0.22), vec3(0.025, 0.02, 0.07), smoothstep(0.3, 1.1, th));
+    float vn = veins(L * 4.2) * 0.9 + veins(L * 9.0 + 3.1) * 0.45;
+    vn *= smoothstep(IRIS * 1.05, IRIS * 1.6, th);
+    base += vec3(0.42, 0.45, 0.95) * vn * 0.38;
+    base += vec3(0.05, 0.04, 0.10) * fbm(L * 14.0);
+    // a gold warmth the iris throws onto the sclera
+    base += vec3(0.55, 0.42, 0.18) * 0.35 * smoothstep(IRIS * 1.7, IRIS, th);
+    col = base;
+
+    // the iris and pupil
+    if (th < IRIS * 1.02) {
+      float rr = th / IRIS;                         // 0 centre .. 1 limbus
+      float ang = atan(L.y, L.x) + uT * 0.02;       // a slow drift of the stroma
+      float pu = uPupil;
+      // the pupil pushes the iris fibres outward as it widens
+      float tr = rr < pu ? 0.0 : mix(0.12, 1.0, (rr - pu) / (1.0 - pu));
+      vec2 uv = 0.5 + 0.5 * tr * vec2(cos(ang), sin(ang));
+      vec3 ir = texture2D(uIris, uv).rgb;
+      float edge = smoothstep(1.02, 0.97, rr);
+      col = mix(col, ir, edge);
+      // the pupil, with stars a long way down
+      float pm = smoothstep(pu + 0.02, pu - 0.01, rr);
+      vec3 deep = vec3(0.012, 0.008, 0.05);
+      vec2 sp = vec2(cos(ang), sin(ang)) * rr / max(pu, 0.01) * 6.0;
+      vec2 cell = floor(sp), fr = fract(sp) - 0.5;
+      float h = hash(vec3(cell, 7.0));
+      float star = step(0.82, h) * smoothstep(0.16, 0.0, length(fr)) * (0.45 + 0.55 * abs(sin(uT * 0.9 + h * 40.0)));
+      deep += mix(vec3(0.72, 0.75, 1.0), vec3(0.91, 0.82, 0.6), step(0.92, h)) * star;
+      col = mix(col, deep, pm);
+    }
+
+    // light from the upper left; it stays put while the eye turns
+    vec3 Ld = normalize(vec3(-0.45, 0.55, 0.7));
+    float lam = 0.55 + 0.6 * max(dot(n, Ld), 0.0);
+    col *= lam;
+    // the wet cornea: a bulge over the iris catches a window of light and a glint
+    vec3 H = normalize(Ld + vec3(0.0, 0.0, 1.0));
+    float spec = pow(max(dot(n, H), 0.0), 220.0);
+    float win = smoothstep(0.12, 0.0, length((p - vec2(-0.36, 0.38)) * vec2(1.0, 1.7)));
+    col += vec3(1.0) * spec * 0.9 + vec3(0.85, 0.88, 1.0) * win * 0.22;
+    col += vec3(1.0) * smoothstep(0.03, 0.0, length(p - vec2(0.34, -0.3))) * 0.35;
+
+    // the porthole's own shadow: the eye is behind the ring, darker at its edge
+    col *= mix(1.0, 0.25, smoothstep(0.6, 1.0, r / WIN));
+
+    // alien lids, closing from above and below
+    float lidH = uLid * 1.05;
+    float curve = lidH * (1.0 - 0.38 * p.x * p.x);
+    float d = abs(p.y) - curve;              // > 0: under a lid
+    if (d > 0.0) {
+      vec3 lid = mix(vec3(0.07, 0.065, 0.17), vec3(0.03, 0.03, 0.08), clamp(d * 2.0, 0.0, 1.0));
+      lid += vec3(0.54, 0.58, 0.96) * 0.08 * smoothstep(0.02, 0.0, abs(fract(d * 9.0) - 0.5) - 0.47);
+      col = lid * mix(1.0, 0.4, smoothstep(0.6, 1.0, r / WIN));
+    }
+    // the lid edges catch the light
+    col += vec3(0.91, 0.82, 0.6) * 0.6 * smoothstep(uPx * 2.5, 0.0, abs(d)) * step(0.02, uLid);
+    alpha = 1.0;
   }
-  // collarette: a wavy ring about a third of the way out
-  g.strokeStyle = "rgba(255,236,190,0.55)";
-  g.lineWidth = R * 0.018;
-  g.beginPath();
-  for (let i = 0; i <= 120; i++) {
-    const a = (i / 120) * Math.PI * 2;
-    const rr = R * (0.36 + Math.sin(a * 11) * 0.025 + Math.sin(a * 5 + 1) * 0.02);
-    i ? g.lineTo(Math.cos(a) * rr, Math.sin(a) * rr) : g.moveTo(Math.cos(a) * rr, Math.sin(a) * rr);
+
+  // the gold 13i ring
+  float ringIn = WIN - 0.005, ringOut = 0.985;
+  float ring = smoothstep(ringIn - uPx, ringIn + uPx, r) * smoothstep(ringOut + uPx, ringOut - uPx, r);
+  if (ring > 0.0) {
+    vec3 gold = vec3(0.91, 0.82, 0.60);
+    float a = atan(q.y, q.x);
+    float hl = smoothstep(0.5, 0.0, abs(a - 2.4)) * 0.5;      // a highlight at the upper left
+    float bevel = 1.0 - abs((r - (ringIn + ringOut) * 0.5) / ((ringOut - ringIn) * 0.5));
+    vec3 g = gold * (0.65 + 0.35 * bevel) + vec3(1.0, 0.96, 0.86) * hl * bevel;
+    col = mix(col, g, ring);
+    alpha = max(alpha, ring);
   }
-  g.closePath(); g.stroke();
-  // crypts: small dark hollows around the collarette
-  for (let i = 0; i < 46; i++) {
-    const a = r() * Math.PI * 2, rr = R * (0.4 + r() * 0.35);
-    const w = R * (0.02 + r() * 0.035), h = w * (1.6 + r() * 1.5);
-    g.save();
-    g.translate(Math.cos(a) * rr, Math.sin(a) * rr);
-    g.rotate(a);
-    g.fillStyle = `rgba(16,8,30,${0.25 + r() * 0.3})`;
-    g.beginPath(); g.ellipse(0, 0, h, w, 0, 0, Math.PI * 2); g.fill();
-    g.restore();
-  }
-  // contraction furrows: faint rings in the outer iris
-  [0.68, 0.76, 0.84].forEach((k) => {
-    g.strokeStyle = "rgba(10,6,28,0.35)";
-    g.lineWidth = 1;
-    g.setLineDash([R * 0.04, R * 0.03]);
-    g.beginPath(); g.arc(0, 0, R * k, 0, Math.PI * 2); g.stroke();
-  });
-  g.setLineDash([]);
-  // gold flecks
-  for (let i = 0; i < 90; i++) {
-    const a = r() * Math.PI * 2, rr = R * (0.2 + r() * 0.6);
-    const s = R * (0.004 + r() * 0.012);
-    const f = g.createRadialGradient(Math.cos(a) * rr, Math.sin(a) * rr, 0, Math.cos(a) * rr, Math.sin(a) * rr, s * 3);
-    f.addColorStop(0, "rgba(255,226,150,0.9)");
-    f.addColorStop(1, "rgba(255,226,150,0)");
-    g.fillStyle = f;
-    g.fillRect(Math.cos(a) * rr - s * 3, Math.sin(a) * rr - s * 3, s * 6, s * 6);
-  }
-  // limbal ring: a dark edge that makes the iris sit in the eye
-  const limb = g.createRadialGradient(0, 0, R * 0.86, 0, 0, R);
-  limb.addColorStop(0, "rgba(8,6,24,0)");
-  limb.addColorStop(1, "rgba(8,6,24,0.95)");
-  g.fillStyle = limb;
-  g.beginPath(); g.arc(0, 0, R, 0, Math.PI * 2); g.fill();
-  return c;
+  gl_FragColor = vec4(col * alpha, alpha);
+}
+`;
+
+function compile(gl, type, src) {
+  const s = gl.createShader(type);
+  gl.shaderSource(s, src);
+  gl.compileShader(s);
+  if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+  return s;
 }
 
 export default function OracleEye3D({ open = 1, mood = "listening" }) {
   const canvasRef = useRef(null);
+  const [flat, setFlat] = useState(false);
   const live = useRef({ open, mood });
   live.current.open = open;
   live.current.mood = mood;
 
   useEffect(() => {
+    if (flat) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    let gl = null;
+    try { gl = canvas.getContext("webgl", { premultipliedAlpha: true, alpha: true, antialias: true }); } catch (e) { gl = null; }
+    if (!gl) { setFlat(true); return; }
+    let prog;
+    try {
+      prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
+      gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+    } catch (e) { setFlat(true); return; }
+    gl.useProgram(prog);
+
+    const buf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const aLoc = gl.getAttribLocation(prog, "a");
+    gl.enableVertexAttribArray(aLoc);
+    gl.vertexAttribPointer(aLoc, 2, gl.FLOAT, false, 0, 0);
+
+    const tex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, paintIris(512));
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+    const U = {};
+    ["uIris", "uF", "uR", "uU", "uT", "uPupil", "uLid", "uPx"].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
+    gl.uniform1i(U.uIris, 0);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+
     const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const iris = paintIris(512);
-    const stars = (() => { const r = rng(317811); return Array.from({ length: 40 }, () => ({ a: r() * 6.28, d: Math.sqrt(r()), s: 0.4 + r() * 1.1, p: r() * 6.28 })); })();
     let W = 0, dpr = 1, raf = 0;
-    const st = { gx: 0, gy: 0, tx: 0, ty: 0, pupil: 0.2, lid: 0, lastMove: 0, nextGlance: 0 };
+    const st = { yaw: 0, pitch: 0, ty: 0, tp: 0, pupil: 0.3, lid: 0, lastMove: 0, nextGlance: 0 };
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
       W = canvas.clientWidth;
       canvas.width = Math.round(W * dpr);
       canvas.height = Math.round(W * dpr);
+      gl.viewport(0, 0, canvas.width, canvas.height);
     };
     resize();
     const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(resize) : null;
     ro?.observe(canvas);
 
+    // where you are, as angles for the eyeball to turn through
     const onMove = (e) => {
       if (reduced) return;
       const r = canvas.getBoundingClientRect();
       const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
       const dx = (e.clientX - cx) / (window.innerWidth * 0.5);
       const dy = (e.clientY - cy) / (window.innerHeight * 0.5);
-      st.tx = Math.max(-1, Math.min(1, dx)) * 0.55;
-      st.ty = Math.max(-1, Math.min(1, dy)) * 0.45;
+      st.ty = Math.max(-1, Math.min(1, dx)) * 0.55;
+      st.tp = -Math.max(-1, Math.min(1, dy)) * 0.45;
       st.lastMove = performance.now();
     };
     window.addEventListener("pointermove", onMove);
@@ -152,182 +228,52 @@ export default function OracleEye3D({ open = 1, mood = "listening" }) {
     const draw = (now) => {
       const t = now / 1000;
       const { open: o, mood: m } = live.current;
-      // where to look: the pointer, or a glance of its own after a while
       if (!reduced) {
-        if (m === "receiving") { st.tx = 0; st.ty = -0.35; }
+        if (m === "receiving") { st.ty = 0; st.tp = 0.35; }
         else if (now - st.lastMove > 3500 && now > st.nextGlance) {
-          st.tx = (Math.random() - 0.5) * 0.7;
-          st.ty = (Math.random() - 0.5) * 0.4;
+          st.ty = (Math.random() - 0.5) * 0.8;
+          st.tp = (Math.random() - 0.5) * 0.5;
           st.nextGlance = now + 1800 + Math.random() * 2600;
         }
       }
-      const k = reduced ? 1 : 0.085;
-      st.gx += (st.tx - st.gx) * k;
-      st.gy += (st.ty - st.gy) * k;
-      st.pupil += ((PUPIL[m] || 0.24) * (1 + (m === "speaking" ? 0.06 * Math.sin(t * 3) : 0.02 * Math.sin(t * 0.8))) - st.pupil) * 0.06;
+      // eyes move in quick, eased turns
+      const k = reduced ? 1 : 0.09;
+      st.yaw += (st.ty - st.yaw) * k;
+      st.pitch += (st.tp - st.pitch) * k;
+      st.pupil += ((PUPIL[m] || 0.3) * (1 + (m === "speaking" ? 0.06 * Math.sin(t * 3) : 0.03 * Math.sin(t * 0.8))) - st.pupil) * 0.06;
       st.lid += (Math.max(0, Math.min(1, o)) - st.lid) * (reduced ? 1 : 0.04);
 
-      const S = W * dpr;
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.clearRect(0, 0, S, S);
-      ctx.translate(S / 2, S / 2);
-      const R = S * 0.5 * 0.92; // the eyeball
+      // the eye's basis: forward toward the gaze, with a little roll of its own
+      const cy = Math.cos(st.yaw), sy = Math.sin(st.yaw), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
+      const F = [sy * cp, sp, cy * cp];
+      const roll = reduced ? 0 : 0.06 * Math.sin(t * 0.21);
+      const up0 = [Math.sin(roll), Math.cos(roll), 0];
+      const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
+      const norm = (a) => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; };
+      const R = norm(cross(up0, F));
+      const Uv = cross(F, R);
 
-      // the lids themselves: dark, faintly lit from above, filling the ring
-      const lids = ctx.createRadialGradient(0, -R * 0.4, R * 0.2, 0, 0, S * 0.48);
-      lids.addColorStop(0, "#1d1b48");
-      lids.addColorStop(0.7, "#100f2e");
-      lids.addColorStop(1, "#08071a");
-      ctx.fillStyle = lids;
-      ctx.beginPath(); ctx.arc(0, 0, S * 0.475, 0, Math.PI * 2); ctx.fill();
-      // fine creases in the lids, following their curve
-      ctx.strokeStyle = "rgba(139,149,246,0.12)";
-      ctx.lineWidth = Math.max(1, S * 0.002);
-      for (let i = 1; i <= 3; i++) {
-        const lh = R * (0.04 + 0.96 * st.lid) * 1.36 + R * 0.09 * i;
-        ctx.beginPath(); ctx.moveTo(-R * (1 - i * 0.04), 0); ctx.quadraticCurveTo(0, -lh, R * (1 - i * 0.04), 0); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(-R * (1 - i * 0.04), 0); ctx.quadraticCurveTo(0, lh, R * (1 - i * 0.04), 0); ctx.stroke();
-      }
-
-      // the lids: an almond opening; closed is a thin line
-      const open01 = st.lid;
-      const lidH = R * (0.04 + 0.96 * open01);
-      ctx.save();
-      ctx.beginPath();
-      ctx.moveTo(-R * 1.02, 0);
-      ctx.quadraticCurveTo(0, -lidH * 1.36, R * 1.02, 0);
-      ctx.quadraticCurveTo(0, lidH * 1.36, -R * 1.02, 0);
-      ctx.closePath();
-      ctx.clip();
-
-      // eyeball: dark obsidian sphere, lit from the upper left
-      const ball = ctx.createRadialGradient(-R * 0.35, -R * 0.4, R * 0.05, 0, 0, R);
-      ball.addColorStop(0, "#2a2a5c");
-      ball.addColorStop(0.45, "#121236");
-      ball.addColorStop(0.85, "#07061A");
-      ball.addColorStop(1, "#020108");
-      ctx.fillStyle = ball;
-      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
-      // faint veins of light under the surface
-      ctx.globalAlpha = 0.18;
-      ctx.strokeStyle = "#8B95F6";
-      ctx.lineWidth = Math.max(1, S * 0.0015);
-      for (let i = 0; i < 9; i++) {
-        const a = (i / 9) * Math.PI * 2 + 0.3;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(a) * R * 0.98, Math.sin(a) * R * 0.98);
-        ctx.quadraticCurveTo(Math.cos(a + 0.25) * R * 0.8, Math.sin(a + 0.25) * R * 0.8, Math.cos(a + 0.1) * R * 0.66, Math.sin(a + 0.1) * R * 0.66);
-        ctx.stroke();
-      }
-      ctx.globalAlpha = 1;
-
-      // the iris on the sphere: centre moves with the gaze, foreshortened by the turn
-      const ang = Math.hypot(st.gx, st.gy); // radians-ish off axis
-      const dir = Math.atan2(st.gy, st.gx);
-      const ir = R * 0.62;
-      const icx = Math.sin(st.gx) * R * 0.78, icy = Math.sin(st.gy) * R * 0.78;
-      const squash = Math.cos(Math.min(1.2, ang * 1.05));
-      ctx.save();
-      ctx.translate(icx, icy);
-      ctx.rotate(dir);
-      ctx.scale(squash, 1);
-      ctx.rotate(-dir);
-      // a glow the iris throws into the eye
-      const halo = ctx.createRadialGradient(0, 0, ir * 0.5, 0, 0, ir * 1.35);
-      halo.addColorStop(0, "rgba(233,210,154,0.25)");
-      halo.addColorStop(1, "rgba(233,210,154,0)");
-      ctx.fillStyle = halo;
-      ctx.beginPath(); ctx.arc(0, 0, ir * 1.35, 0, Math.PI * 2); ctx.fill();
-      // the iris itself, turning very slowly
-      ctx.save();
-      ctx.rotate(reduced ? 0 : t * 0.02);
-      ctx.drawImage(iris, -ir, -ir, ir * 2, ir * 2);
-      ctx.restore();
-      // the pupil, with stars a long way down
-      const pr = ir * st.pupil * 1.5;
-      const pg = ctx.createRadialGradient(0, 0, 0, 0, 0, pr * 1.18);
-      pg.addColorStop(0, "#05031a");
-      pg.addColorStop(0.82, "#020108");
-      pg.addColorStop(1, "rgba(2,1,8,0)");
-      ctx.fillStyle = pg;
-      ctx.beginPath(); ctx.arc(0, 0, pr * 1.18, 0, Math.PI * 2); ctx.fill();
-      ctx.save();
-      ctx.beginPath(); ctx.arc(0, 0, pr * 0.92, 0, Math.PI * 2); ctx.clip();
-      stars.forEach((s) => {
-        const tw = 0.4 + 0.6 * Math.abs(Math.sin(t * 0.9 + s.p));
-        ctx.globalAlpha = tw * 0.9;
-        ctx.fillStyle = s.p > 3 ? "#E9D29A" : "#B9C0FF";
-        const x = Math.cos(s.a + t * 0.03) * s.d * pr * 0.9, y = Math.sin(s.a + t * 0.03) * s.d * pr * 0.9;
-        ctx.fillRect(x, y, s.s * dpr * 0.8, s.s * dpr * 0.8);
-      });
-      ctx.globalAlpha = 1;
-      ctx.restore();
-      ctx.restore();
-
-      // shading: the sphere darkens toward its edge and under the upper lid
-      const shade = ctx.createRadialGradient(-R * 0.2, -R * 0.25, R * 0.4, 0, 0, R * 1.02);
-      shade.addColorStop(0, "rgba(0,0,0,0)");
-      shade.addColorStop(0.75, "rgba(2,1,10,0.25)");
-      shade.addColorStop(1, "rgba(2,1,10,0.85)");
-      ctx.fillStyle = shade;
-      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
-      const lidShadow = ctx.createLinearGradient(0, -lidH * 1.36, 0, -lidH * 0.3);
-      lidShadow.addColorStop(0, "rgba(2,1,10,0.75)");
-      lidShadow.addColorStop(1, "rgba(2,1,10,0)");
-      ctx.fillStyle = lidShadow;
-      ctx.fillRect(-R, -R, R * 2, R);
-
-      // the cornea: a window of light, a sharp glint, and a rim
-      ctx.save();
-      ctx.translate(-R * 0.34, -R * 0.36);
-      ctx.rotate(-0.5);
-      const win = ctx.createRadialGradient(0, 0, 0, 0, 0, R * 0.32);
-      win.addColorStop(0, "rgba(255,255,255,0.32)");
-      win.addColorStop(1, "rgba(255,255,255,0)");
-      ctx.fillStyle = win;
-      ctx.beginPath(); ctx.ellipse(0, 0, R * 0.32, R * 0.18, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.restore();
-      ctx.fillStyle = "rgba(255,255,255,0.9)";
-      ctx.beginPath(); ctx.ellipse(-R * 0.3, -R * 0.33, R * 0.045, R * 0.03, -0.6, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "rgba(255,255,255,0.45)";
-      ctx.beginPath(); ctx.arc(R * 0.36, R * 0.3, R * 0.018, 0, Math.PI * 2); ctx.fill();
-      const rim = ctx.createRadialGradient(0, 0, R * 0.86, 0, 0, R);
-      rim.addColorStop(0, "rgba(139,149,246,0)");
-      rim.addColorStop(1, "rgba(139,149,246,0.28)");
-      ctx.fillStyle = rim;
-      ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
-      ctx.restore(); // end lid clip
-
-      // lid edges, catching the light
-      if (open01 > 0.02) {
-        ctx.strokeStyle = "rgba(233,210,154,0.55)";
-        ctx.lineWidth = Math.max(1, S * 0.004);
-        ctx.beginPath();
-        ctx.moveTo(-R * 1.02, 0);
-        ctx.quadraticCurveTo(0, -lidH * 1.36, R * 1.02, 0);
-        ctx.stroke();
-        ctx.strokeStyle = "rgba(139,149,246,0.35)";
-        ctx.beginPath();
-        ctx.moveTo(-R * 1.02, 0);
-        ctx.quadraticCurveTo(0, lidH * 1.36, R * 1.02, 0);
-        ctx.stroke();
-      }
-      // the gold ring of the 13i eye, around everything
-      ctx.strokeStyle = "#E9D29A";
-      ctx.lineWidth = S * 0.028;
-      ctx.globalAlpha = 0.9;
-      ctx.beginPath(); ctx.arc(0, 0, S * 0.485, 0, Math.PI * 2); ctx.stroke();
-      ctx.globalAlpha = 0.35;
-      ctx.strokeStyle = "#FFF4DC";
-      ctx.lineWidth = S * 0.006;
-      ctx.beginPath(); ctx.arc(0, 0, S * 0.485, Math.PI * 1.05, Math.PI * 1.6); ctx.stroke();
-      ctx.globalAlpha = 1;
-
+      gl.clearColor(0, 0, 0, 0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+      gl.uniform3fv(U.uF, F);
+      gl.uniform3fv(U.uR, R);
+      gl.uniform3fv(U.uU, Uv);
+      gl.uniform1f(U.uT, t);
+      gl.uniform1f(U.uPupil, st.pupil);
+      gl.uniform1f(U.uLid, st.lid);
+      gl.uniform1f(U.uPx, 2 / Math.max(1, canvas.width));
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       raf = requestAnimationFrame(draw);
     };
     raf = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(raf); ro?.disconnect(); window.removeEventListener("pointermove", onMove); };
-  }, []);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro?.disconnect();
+      window.removeEventListener("pointermove", onMove);
+      gl.deleteTexture(tex); gl.deleteBuffer(buf); gl.deleteProgram(prog);
+    };
+  }, [flat]);
 
+  if (flat) return <OracleEyeFlat open={open} mood={mood} />;
   return <canvas ref={canvasRef} className="oracle-eye3d" aria-hidden="true" />;
 }

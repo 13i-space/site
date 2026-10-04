@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "../../../../lib/supabaseServer";
 import AlphaBadge from "../../../../components/AlphaBadge";
 import MessageThread from "../../../../components/MessageThread";
+import KinRoom, { KinAvatar } from "../../../../components/KinRoom";
 
 // One private conversation (components/MessageThread.js does the talking).
 export const dynamic = "force-dynamic";
@@ -25,18 +26,11 @@ export default async function ConversationPage({ params }) {
   }
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <Link href="/messages" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>&larr; messages</Link>
-      <div style={{ display: "flex", alignItems: "center", gap: 14, margin: "18px 0 20px" }}>
-        <Link href={`/kin/${other.username}`} style={{ width: 46, height: 46, borderRadius: "50%", overflow: "hidden", background: "#1C1F48", border: "1px solid #3A3E75", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-          {other.avatar_url ? <img src={other.avatar_url} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : <span className="mono" style={{ color: "#8B95F6" }}>{other.username[0].toUpperCase()}</span>}
-        </Link>
-        <div>
-          <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 24, color: "#DCDFFF" }}>{other.username}<AlphaBadge profile={other} /></div>
-          <div className="mono" style={{ fontSize: 10.5, color: "#565B8F", letterSpacing: "1px" }}>PRIVATE &middot; ONLY THE TWO OF YOU CAN READ THIS</div>
-        </div>
-      </div>
+    <KinRoom room="messages" title={other.username} line="Private: only the two of you can read this." back={{ href: "/messages", label: "all messages" }}>
+      <Link href={`/kin/${other.username}`} className="mono" style={{ display: "inline-flex", alignItems: "center", gap: 10, fontSize: 11, color: "#B59E68", textDecoration: "none", margin: "-12px 0 16px" }}>
+        <KinAvatar profile={other} size={28} /> {other.username}<AlphaBadge profile={other} /> &middot; view their Node &rarr;
+      </Link>
       <MessageThread meId={user.id} other={{ id: other.id, username: other.username }} />
-    </div>
+    </KinRoom>
   );
 }

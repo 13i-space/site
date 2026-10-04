@@ -103,88 +103,54 @@ export default function Guestbook() {
   return (
     <div>
       {me === null && (
-        <div className="panel" style={{ marginBottom: 24, textAlign: "center" }}>
-          <p style={{ margin: 0, fontSize: 14, color: "#8A8FBF" }}>
-            <Link href="/login?next=/kinbook" style={{ color: "#B9C0FF" }}>Sign in</Link> to leave a message in the Kinbook.
-          </p>
+        <div className="kr-note" style={{ textAlign: "center" }}>
+          <Link href="/login?next=/kinbook">Sign in</Link> to leave a note on the wall. Anyone can read it.
         </div>
       )}
       {me && !me.username && (
-        <div className="panel" style={{ marginBottom: 24, textAlign: "center" }}>
-          <p style={{ margin: 0, fontSize: 14, color: "#8A8FBF" }}>
-            Claim a username on <Link href="/account" style={{ color: "#B9C0FF" }}>your Node</Link> first - it's the name your messages go under.
-          </p>
+        <div className="kr-note" style={{ textAlign: "center" }}>
+          Claim a username on <Link href="/account">your Node</Link> first: it&rsquo;s the name your notes go under.
         </div>
       )}
       {me && me.username && (
-      <form onSubmit={submit} className="panel" style={{ marginBottom: 24 }}>
-        <div className="mono" style={{ fontSize: 11, color: "#6E76B8", marginBottom: 8 }}>
-          WRITING AS <span style={{ color: "#B9C0FF" }}>{me.username}</span>
-        </div>
-        <textarea
-          required
-          placeholder="Say something to the Kin..."
-          value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          rows={3}
-          maxLength={500}
-          style={{ ...inputStyle, width: "100%", resize: "vertical" }}
-        />
-        <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 14 }}>
-          <button
-            type="submit"
-            disabled={posting}
-            style={{
-              background: "none",
-              border: "1px solid #3A3E75",
-              borderRadius: 4,
-              color: "#B9C0FF",
-              fontFamily: "'JetBrains Mono', monospace",
-              fontSize: 13,
-              padding: "9px 20px",
-              cursor: "pointer",
-              opacity: posting ? 0.5 : 1,
-            }}
-          >
-            {posting ? "..." : "Post"}
-          </button>
-          {postError && (
-            <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{postError}</span>
-          )}
-        </div>
-      </form>
+        <form onSubmit={submit} className="kr-compose">
+          <textarea
+            required
+            placeholder="Leave a note for the Kin..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            rows={3}
+            maxLength={500}
+            className="kr-input"
+          />
+          <div className="kr-compose-row">
+            <span className="mono" style={{ fontSize: 11, color: "#B59E68" }}>
+              signed, <span style={{ color: "#F5EEDB" }}>{me.username}</span> &middot; {500 - message.length} left
+            </span>
+            <button type="submit" disabled={posting || !message.trim()} className="kr-pill">
+              {posting ? "Pinning..." : "Pin it to the wall"}
+            </button>
+          </div>
+          {postError && <div className="mono" style={{ fontSize: 12, color: "#C97B6E", marginTop: 8 }}>{postError}</div>}
+        </form>
       )}
 
-      {loadState === "loading" && (
-        <div style={{ fontSize: 13, color: "#565B8F", fontStyle: "italic" }}>Loading...</div>
-      )}
-      {loadState === "error" && (
-        <div style={{ fontSize: 13, color: "#C97B6E" }}>Couldn't load entries right now.</div>
-      )}
-      {loadState === "ready" && entries.length === 0 && (
-        <div style={{ fontSize: 13, color: "#565B8F", fontStyle: "italic" }}>
-          Nothing here yet. Be the first.
+      {loadState === "loading" && <div className="kr-empty">Reading the wall...</div>}
+      {loadState === "error" && <div style={{ fontSize: 13, color: "#C97B6E" }}>Couldn&rsquo;t load the notes right now.</div>}
+      {loadState === "ready" && entries.length === 0 && <div className="kr-empty">The wall is empty. Be the first to leave word.</div>}
+      {loadState === "ready" && entries.length > 0 && (
+        <div className="kr-wall">
+          {entries.map((e, i) => (
+            <div key={e.id} className="kr-entry" style={{ "--tilt": `${[-0.8, 0.6, -0.3, 0.9, -0.6, 0.3][i % 6]}deg`, "--tint": TINTS[i % TINTS.length] }}>
+              <p className="kr-entry-text">{e.message}</p>
+              <div className="mono kr-entry-name">&mdash; {e.name || "a Kin"}{e.created_at ? <span style={{ color: "#565B8F" }}> &middot; {new Date(e.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span> : null}</div>
+            </div>
+          ))}
         </div>
       )}
-      {loadState === "ready" && entries.map((e) => (
-        <div key={e.id} style={{ padding: "14px 0", borderBottom: "1px solid #21244A" }}>
-          <div className="mono" style={{ fontSize: 11, color: "#6E76B8", marginBottom: 4 }}>
-            {e.name || "Anonymous"}
-          </div>
-          <div style={{ fontSize: 14, color: "#D9DCFF", lineHeight: 1.6 }}>{e.message}</div>
-        </div>
-      ))}
     </div>
   );
 }
 
-const inputStyle = {
-  flex: 1,
-  background: "transparent",
-  border: "1px solid #262A55",
-  borderRadius: 3,
-  color: "#E4E4EF",
-  fontSize: 13,
-  padding: "9px 12px",
-  outline: "none",
-};
+// a soft wash per note, so the wall isn't one colour
+const TINTS = ["rgba(233,210,154,.10)", "rgba(139,149,246,.12)", "rgba(232,180,200,.10)", "rgba(111,195,168,.10)", "rgba(201,184,240,.11)"];

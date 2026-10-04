@@ -167,6 +167,51 @@ export const EMBLEMS = {
       <circle cx="56" cy="27" r="2" fill={GOLD} />
     </>
   ),
+  // ─── About (Update 5.57) ───
+  paul: (
+    <>
+      {/* a rough silhouette: head and shoulders, headphones on - he writes the music */}
+      <path d="M12 56 Q13 42 24 39 Q28 44 32 44 Q36 44 40 39 Q51 42 52 56 Z" {...wash} />
+      <path d="M12 56 Q13 42 24 39 Q28 44 32 44 Q36 44 40 39 Q51 42 52 56" {...line} />
+      <ellipse cx="32" cy="26" rx="9.5" ry="11" {...wash} />
+      <ellipse cx="32" cy="26" rx="9.5" ry="11" {...line} />
+      <path d="M20 27 Q20 11 32 11 Q44 11 44 27" {...gold} />
+      <rect x="18" y="25" width="4" height="8" rx="2" {...gold} />
+      <rect x="42" y="25" width="4" height="8" rx="2" {...gold} />
+    </>
+  ),
+  origin: (
+    <>
+      {/* where it began: a song or two, a spark of curiosity */}
+      <circle cx="32" cy="34" r="20" {...wash} />
+      <path d="M8 40 Q14 28 20 40 T32 40 T44 40 T56 40" {...line} />
+      <path d="M8 46 Q14 38 20 46 T32 46 T44 46 T56 46" {...line} strokeWidth="1" opacity="0.5" />
+      <path d="M32 8 V16 M32 22 V30 M18 15 L23 20 M46 15 L41 20" {...gold} />
+      <circle cx="32" cy="19" r="2.4" fill={GOLD} />
+    </>
+  ),
+  mission: (
+    <>
+      {/* a compass with three points: Explore, Play, Create */}
+      <circle cx="32" cy="32" r="22" {...wash} />
+      <circle cx="32" cy="32" r="22" {...line} />
+      <circle cx="32" cy="32" r="16" {...line} strokeWidth="0.8" strokeDasharray="1 3" opacity="0.6" />
+      <path d="M32 12 L36 30 L32 34 L28 30 Z" {...gold} />
+      <path d="M14.7 42 L31 33 L33 37 L17.5 45 Z M49.3 42 L33 33 L31 37 L46.5 45 Z" {...line} strokeWidth="1.2" />
+      <circle cx="32" cy="33" r="2" fill={GOLD} />
+    </>
+  ),
+  kin: (
+    <>
+      {/* the Kinship mark: the Kinbook's gold heart, held by a ring of Kin */}
+      <circle cx="32" cy="32" r="22" {...wash} />
+      <circle cx="32" cy="32" r="22" {...line} strokeWidth="1" opacity="0.6" />
+      {[0, 60, 120, 180, 240, 300].map((a) => (
+        <circle key={a} cx={32 + 22 * Math.sin((a * Math.PI) / 180)} cy={32 - 22 * Math.cos((a * Math.PI) / 180)} r="3.2" {...line} fill="#0b0c22" />
+      ))}
+      <path d="M32 42 C23 35 21 30 23.5 26 C26 22 31 23 32 27.5 C33 23 38 22 40.5 26 C43 30 41 35 32 42 Z" {...gold} />
+    </>
+  ),
 };
 
 export function Emblem({ name, size = 64, color = "#B9C0FF" }) {
