@@ -4,6 +4,14 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.55 (needs docs/v5.55-beta-and-kinbook.sql + RESEND_API_KEY, see
+  docs/BETA-SETUP.md): beta sign-up, Galactic Gazette, Season 1 for the beta
+  (4 weeks built, incl. The Sea of Glass + PRISM), 3D Oracle eye, new mode
+  pages, Music deck + Apprehension video, The Black Hole, four-sided Alien
+  Lab cards. See CHANGELOG. Built and checked in a cloud session with no
+  access to the music host or news feeds: album covers, songs and feed
+  pictures were never seen loading - check /music, /music/apprehension and
+  /galaxy/news on the first deploy.
 - Update 5.52 (no SQL): SpaceCore launch countdown + staging, smooth orbit,
   Lyra close/side-switch, Fabricator cancel, Airlock as equipment, Move tool
 - Update 5.42 (needs docs/v5.42-spacecore-saving.sql): SpaceCore version check,

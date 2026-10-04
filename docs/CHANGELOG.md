@@ -3,6 +3,52 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.55 — The big batch (Oct 2026, one overnight cloud session)
+Needs: `docs/v5.55-beta-and-kinbook.sql` (beta_requests table; Kinbook
+cleanup) and `RESEND_API_KEY` in Vercel for beta emails (docs/BETA-SETUP.md).
+- **Beta sign-up** on the countdown page: "Become a Beta Kin" (Season 1 beta
+  opens 1.1.2027). `/api/beta` saves to `beta_requests` and emails Paul via
+  Resend (Paul asked for this; Resend is used only here).
+- **Kinbook**: old anonymous messages hidden by the API; SQL to delete them.
+- **Space News is The Galactic Gazette**: an old broadsheet with a masthead,
+  a pictured front-page lead, and a section per source. Pictures come from
+  each feed (media:content/thumbnail, enclosures, first <img>) or, for lead
+  stories without one, the article's og:image (`lib/spaceNews.js`).
+- **Interactive Assignments** show the story's name, centred and large,
+  between the two top links.
+- **Launch**: a light runs the four-stop path and loops back; the three
+  "alive" tiles are one size, each with a picture (mini species card,
+  rocket on the pad, album cover on a spinning record).
+- **Season 1 reordered for the beta**: 1 The Deep Walkers, 2 Nerath's
+  Secret, 3 The Quiet Moon, 4 The Sea of Glass. Beta from Jan 1 2027,
+  everyone from Apr 6 2027 (`lib/seasons.js` `beta`/`launch`, week pages
+  show both dates). New species cards (Deep Walkers, Nerathi, Returners)
+  and signals for weeks 1, 2 and 4. The Quiet Moon cover footer now reads
+  "FROM THE 13i ARCHIVE" like the others.
+- **New story, Assignment 0514229 "The Sea of Glass"** (Dacapo, the
+  returners): story, Interactive Assignment (5 records, 228 paths, canon
+  "What We Kept"), scene set `components/interactiveScenes/glass.js`,
+  cover, signal, species card, Galaxy Map world, and a new game **PRISM**
+  (`public/games/prism`, unlocks by reading the story).
+- **The Oracle's eye is 3D** (`components/OracleEye3D.js`): a sphere with a
+  painted iris that follows the pointer, stars in the pupil, real lids.
+- **Explore / Play / Create / Kinship** share a new look
+  (`components/ModeLanding.js`) with an emblem for every place
+  (`components/ModeEmblems.js`).
+- **The Music** rebuilt around one deck: Play all three albums, Shuffle
+  everything, Today's signal, resume, repeat one, a live ring visualizer,
+  lock-screen controls.
+- **Apprehension, the first music video** (`/music/apprehension`): drawn
+  live to the track in six movements; "save as a video file" records .webm.
+- **The Black Hole** (`/galaxy/black-hole`): a weekly visual deep dive.
+  No. 1 "The Shape of Gravity", ten hands-on steps + a check
+  (`lib/blackHole.js`, `components/BlackHoleDive.js`).
+- **The Alien Lab** is an alien-run bay: a vat where the specimen grows as
+  you answer (`lib/specimen.js`), technicians Qeth and Ilu, guests can try
+  it signed out. **Cards have four sides**: 3 is 13i's assessment (four
+  readings + its review, or a preliminary note), 4 is the species in its own
+  world, animated, full-bleed. Cards with no portrait show the specimen.
+
 ## Update 5.54 — Assignment 0000000: Before (/before)
 A first visit's first piece of 13i, about three minutes, before /launch.
 Nothing explains the four ideas; the visitor does them:

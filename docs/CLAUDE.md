@@ -73,7 +73,8 @@ Desktop**, and Vercel deploys. No more zip files. This means:
   growing record.
 - Don't reintroduce Resend or other removed dependencies without Paul
   raising it — assignment submissions were deliberately moved to an
-  in-house Supabase-only flow.
+  in-house Supabase-only flow. (Update 5.55: Paul asked for Resend for one
+  thing only, the beta sign-up email in app/api/beta.)
 - Don't assume a file's purpose from its name alone (see the
   `ThirteenIVsNemesis.js` situation in PROJECT.md) — confirm what's actually
   wired into a live route before treating something as current behavior.

@@ -25,6 +25,14 @@ The week page `/seasons/<season>/<week>` shows all of it; each piece has a
 "Opens Wednesday..." until then). That's the "produce ahead, release on a
 schedule" idea: a whole bundle can ship early and reveal day by day.
 
+## Season 1 as of Update 5.55
+Runs twice, back to back: a beta season for Beta Kin from **January 1,
+2027**, then for everyone from launch, **April 6, 2027** (`beta` and
+`launch` on the season in `lib/seasons.js`; week pages show both).
+1 The Deep Walkers (0000087) · 2 Nerath's Secret (0215783) · 3 The Quiet
+Moon (0028657) · 4 The Sea of Glass (0514229). Weeks 5-12 to build before
+the beta; 13 is the finale. Every built week has all six pieces.
+
 ## Canon
 - **Book canon** is Paul's and drives everything; nothing contradicts it.
 - **Archive canon** comes from the Assignments. Weekly stories are

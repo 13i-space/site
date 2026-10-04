@@ -172,6 +172,24 @@ The game's world is Veyra (the Deep Walkers' planet); a Discovery Log
 entry confirms the match once Signal passes 30%. Its transmission
 fragments and log entries are game text, not canon events.
 
+## Dacapo and the returners — developing (Season 1, Week 4)
+From *The Sea of Glass* (0514229, AI-written by Claude, Update 5.55).
+**Dacapo**: a world of a red dwarf with an eccentric white-dwarf companion
+that comes close every 41 of its years; 13i named it for the musical mark
+"da capo" (back to the beginning). A plain of ground glass covers its south
+(the sea of glass); a canyon in the north holds towers that were people.
+**The returners**: tall, three-legged; bodies of glass layers, one grown a
+year, each recording that year; speak in light cast through their layers.
+At each companion approach their outer layers turn brittle and they shed
+all but one ring, by custom the memory of a kindness (the Return). The
+towers are ancestors from before they learned to forget, standing in a war
+that never ended; the returners leave them unread. In the canon ending 13i
+deletes its record of the canyon war at their request - the first record it
+has ever deleted - and keeps the record of the world it ended. The
+interactive version adds, not canon: the bright one, the heavy one, the
+eldest, the light-glyph translations, the cracked-tower branch. The
+Returners' verdict (granted) and card stats are Claude's, provisional.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they
