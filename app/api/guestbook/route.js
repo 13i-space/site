@@ -17,7 +17,10 @@ export async function GET() {
     return Response.json({ error: "Could not load the Kinbook." }, { status: 502 });
   }
   const data = await res.json();
-  return Response.json({ entries: data });
+  // Old anonymous messages (from before sign-in was required) stay hidden;
+  // docs/v5.55-beta-and-kinbook.sql deletes them for good.
+  const named = data.filter((e) => e.name && e.name.trim() && !/^anon/i.test(e.name.trim()));
+  return Response.json({ entries: named });
 }
 
 export async function POST(request) {
