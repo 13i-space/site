@@ -1,3 +1,4 @@
+import { recordClaudeUsage } from "../../../lib/apiUsage";
 import { withArchiveStories } from "../../../lib/archiveStories";
 import { createClient } from "../../../lib/supabaseServer";
 import { gatherVisitor, describeVisitor } from "../../../lib/visitorContext";
@@ -185,6 +186,7 @@ Today's date: ${new Date().toDateString()}`;
       return Response.json({ error: "I lost the thread for a moment. Try me again?" }, { status: 502 });
     }
     const data = await res.json();
+        await recordClaudeUsage({ feature: "lyra", model: data.model || MODEL, usage: data.usage });
     const reply = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("\n").trim();
     if (!reply || data.stop_reason === "refusal") return Response.json({ reply: "I'd rather not go there. Ask me something else?" });
     return Response.json({ reply, stage });

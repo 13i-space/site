@@ -4,6 +4,7 @@ const items = [
   { href: "/about/paul", title: "About Paul", blurb: "The person behind 13i: where I came from, and why it's never too late." },
   { href: "/about/origin", title: "The Origin of 13i", blurb: "It didn't begin with a novel. It began with curiosity, and a song or two." },
   { href: "/about/mission", title: "Mission & Values", blurb: "Why 13i exists, Explore. Play. Create., and what it means to be Kin." },
+  { href: "/about/kinship", title: "Kinship", blurb: "What it means to be Kin, why it matters, and how to be one here." },
 ];
 
 export default function AboutHub() {

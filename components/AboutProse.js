@@ -10,6 +10,7 @@ const PAGES = [
   { href: "/about/paul", title: "About Paul" },
   { href: "/about/origin", title: "The Origin of 13i" },
   { href: "/about/mission", title: "Mission & Values" },
+  { href: "/about/kinship", title: "Kinship" },
 ];
 
 export default function AboutProse({ title, subtitle, current, blocks, closing }) {

@@ -5,6 +5,7 @@
 //
 // Runs on the server only, so the Anthropic key and the Champion's
 // instructions never reach the browser.
+import { recordClaudeUsage } from "../../../../lib/apiUsage";
 import { TIMELINE_ID, timelineSummary } from "../../../../lib/story/timeline";
 import { buildChampionPrompt, parseChampionReply } from "../../../../lib/story/championPrompt";
 import { getStoryUserFromRequest, storyConfigured } from "../../../../lib/story/storySupabase";
@@ -228,6 +229,7 @@ export async function POST(request) {
       return json({ resting: true, reply: RESTING, progress: p }, 502);
     }
     const data = await res.json();
+    await recordClaudeUsage({ feature: "story-champion", model: data.model || model, usage: data.usage });
     raw = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("").trim();
   } catch (e) {
     console.error("Story Champion: request failed", e);

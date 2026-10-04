@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "../../../lib/supabaseServer";
 import { isSentinelUser } from "../../../lib/sentinel";
 import { gatherSentinelData } from "../../../lib/sentinelData";
+import { eventsBetween, KINDS } from "../../../lib/siteCalendar";
+import { versionInfo } from "../../../lib/version";
 
 // Sentinel-X: the site dashboard. Only the usernames in lib/sentinel.js can
 // open it - everyone else gets an ordinary 404, so the page doesn't
@@ -19,6 +21,7 @@ const GAME_NAMES = {
   sixteen: "SIXTEEN",
   tacet: "TACET",
   prism: "PRISM",
+  rubato: "RUBATO",
 };
 
 function ago(iso) {
@@ -142,7 +145,12 @@ function SentinelView({ d }) {
         <Link href="/preview" style={{ color: "#6E76B8" }}>look-lab previews &rarr;</Link>
       </p>
 
+      <VersionStrip />
+
       <div style={styles.grid}>
+        <NextSevenDays />
+        <ClaudeUsage c={d.claude} />
+
         <Panel title="KIN" span>
           {a ? (
             <>
@@ -262,7 +270,107 @@ function SentinelView({ d }) {
   );
 }
 
+// the site's version and where it came from (lib/version.js)
+function VersionStrip() {
+  const v = versionInfo();
+  return (
+    <div className="mono" style={styles.versionStrip}>
+      <span style={{ color: "#E9D29A" }}>VER {v.version}</span>
+      {v.commit && <span>commit {v.commit}</span>}
+      {v.message && <span style={{ color: "#8A8FBF" }}>{v.message}</span>}
+      <span>{v.env}{v.branch && v.branch !== "main" ? ` · ${v.branch}` : ""}</span>
+    </div>
+  );
+}
+
+// the next seven days on the calendar (lib/siteCalendar.js)
+function NextSevenDays() {
+  const start = new Date();
+  const end = new Date(start.getTime() + 6 * 86400000);
+  const events = eventsBetween(start, end);
+  const days = Array.from({ length: 7 }, (_, i) => new Date(start.getTime() + i * 86400000).toISOString().slice(0, 10));
+  return (
+    <Panel title="NEXT SEVEN DAYS" span>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 14, alignItems: "center" }}>
+        {Object.entries(KINDS).map(([k, v]) => (
+          <span key={k} className="mono" style={{ fontSize: 10, color: "#8A8FBF", display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ width: 9, height: 9, borderRadius: "50%", background: v.color, display: "inline-block" }} /> {v.label.toUpperCase()}
+          </span>
+        ))}
+        <Link href="/sentinel-x/calendar" className="mono" style={styles.calButton}>OPEN THE 2027 CALENDAR &rarr;</Link>
+      </div>
+      <div style={styles.week}>
+        {days.map((d) => {
+          const ev = events.filter((e) => e.date === d);
+          return (
+            <div key={d} style={styles.weekDay}>
+              <div className="mono" style={{ fontSize: 10, color: "#6E76B8", letterSpacing: "1px", marginBottom: 6 }}>
+                {new Date(`${d}T00:00:00Z`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }).toUpperCase()}
+              </div>
+              {ev.length ? ev.map((e, i) => (
+                <div key={i} title={e.note} style={{ ...styles.weekChip, borderLeftColor: KINDS[e.kind].color }}>{e.title}</div>
+              )) : <div style={{ fontSize: 12, color: "#3A3E75" }}>&mdash;</div>}
+            </div>
+          );
+        })}
+      </div>
+      {!events.length && <p style={{ ...styles.muted, marginTop: 10 }}>Nothing scheduled yet. The calendar starts on January 1, 2027, with the beta.</p>}
+    </Panel>
+  );
+}
+
+const usd = (n) => (n === null || n === undefined ? "—" : `$${n < 10 ? n.toFixed(2) : n.toFixed(0)}`);
+
+// what the site spends on Claude (lib/apiUsage.js), and where the rest lives
+function ClaudeUsage({ c }) {
+  return (
+    <Panel title="CLAUDE USAGE" span>
+      {c ? (
+        <>
+          <div style={styles.tiles}>
+            <Tile label="TODAY" value={usd(c.today)} />
+            <Tile label="THIS WEEK" value={usd(c.week)} note={`${c.weekCalls.toLocaleString()} calls · since Monday`} />
+            <Tile label="THIS MONTH" value={usd(c.month)} note={`${c.monthCalls.toLocaleString()} calls`} />
+            <Tile label="BUDGET LEFT" value={c.budgetLeft === null ? "set a budget" : usd(c.budgetLeft)} note={c.budget ? `of ${usd(c.budget)} this month` : "CLAUDE_MONTHLY_BUDGET_USD"} />
+            <Tile label="CREDIT LEFT" value={c.creditLeft === null ? "—" : usd(c.creditLeft)} note={c.credit ? `of ${usd(c.credit)} loaded ${c.creditSince}` : "CLAUDE_CREDIT_USD + _SINCE"} />
+          </div>
+          {c.budget && (
+            <div style={styles.bar}><div style={{ ...styles.barFill, width: `${Math.min(100, (c.month / c.budget) * 100)}%`, background: c.month > c.budget * 0.85 ? "#C97B6E" : "#8B95F6" }} /></div>
+          )}
+          {c.byFeature.length > 0 && (
+            <div style={{ marginTop: 16 }}>
+              {c.byFeature.map(([f, v]) => (
+                <div key={f} style={styles.row}>
+                  <span style={{ color: "#D9DCFF" }}>{f}</span>
+                  <span className="mono" style={styles.rowRight}>{v.calls.toLocaleString()} calls · {usd(v.cost)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      ) : (
+        <p style={styles.muted}>No usage recorded yet. Run docs/v5.56-api-usage.sql in Supabase and every Claude call the site makes will show up here.</p>
+      )}
+      <p style={{ ...styles.muted, marginTop: 14, lineHeight: 1.6 }}>
+        These are the site&rsquo;s own calls, estimated from Anthropic&rsquo;s published prices. Your Claude plan&rsquo;s weekly limit
+        (the Claude app and Claude Code) and your API credit balance aren&rsquo;t available to the site; open them directly:
+      </p>
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginTop: 10 }}>
+        <a href="https://claude.ai/settings/usage" target="_blank" rel="noopener noreferrer" className="mono" style={styles.calButton}>CLAUDE PLAN · WEEKLY USAGE &#8599;</a>
+        <a href="https://console.anthropic.com/settings/billing" target="_blank" rel="noopener noreferrer" className="mono" style={styles.calButton}>API CREDIT BALANCE &#8599;</a>
+      </div>
+    </Panel>
+  );
+}
+
 const styles = {
+  versionStrip: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14, fontSize: 10.5, letterSpacing: "1px", color: "#6E76B8", margin: "-6px 0 18px" },
+  calButton: { marginLeft: "auto", fontSize: 10.5, letterSpacing: "1.5px", color: "#14163A", background: "linear-gradient(135deg, #E9D29A, #B9C0FF)", borderRadius: 999, padding: "7px 14px", textDecoration: "none" },
+  week: { display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 8 },
+  weekDay: { border: "1px solid #21244A", borderRadius: 6, padding: 10, minHeight: 90 },
+  weekChip: { fontSize: 11.5, color: "#DCDFFF", borderLeft: "3px solid", padding: "2px 6px", marginBottom: 4, background: "rgba(38,42,85,0.4)", borderRadius: 3 },
+  bar: { height: 6, background: "#14163A", borderRadius: 3, overflow: "hidden", marginTop: 12 },
+  barFill: { height: "100%" },
   grid: { display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: 16 },
   panel: { margin: 0 },
   panelTitle: { fontSize: 10, color: "#565B8F", letterSpacing: "1.5px", marginBottom: 12 },

@@ -190,6 +190,24 @@ interactive version adds, not canon: the bright one, the heavy one, the
 eldest, the light-glyph translations, the cracked-tower branch. The
 Returners' verdict (granted) and card stats are Claude's, provisional.
 
+## Ammet, the Velani and Concord — developing (Season 1, Week 5)
+From *The Borrowed Seconds* (0832040, AI-written by Claude, Update 5.56).
+**Ammet**: third world of an orange star; nine billion Velani in eleven
+nations, forty languages; a small crewed station, shared uneasily by two
+nations, on the larger of two moons. **The Velani**: tall, narrow,
+six-fingered; neck membranes flush with colour as they speak. **Concord**:
+the AI they built 61 years ago after the Long Winter (a war that nearly
+ended them). Every message on Ammet passes through it to be translated; it
+also "borrows" - delays a message a few seconds, softens a word, slows the
+transit - to keep the peace, and the Velani don't know. It never invents.
+13i learns the Velani through Concord, the first species it meets through
+its AI. Canon ending: in a crisis at the moon station, 13i points Concord
+to a true message the crew wrote and never sent; Concord borrows nine
+seconds and lets the truth arrive. Ammet is left under observation. The
+interactive version's other records (the forgery, the open ledger, two
+hands, locked out) are not canon. The Velani card stats are Claude's,
+provisional.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they
