@@ -1,51 +1,24 @@
-import Link from "next/link";
+import ModeLanding from "../../../components/ModeLanding";
 
-const artifacts = [
-  {
-    href: "/artifacts/ninefold",
-    title: "The Ninefold",
-    blurb: "Ask a question. Shake the pyramid. Nine faces, one answer.",
-  },
-  {
-    href: "/artifacts/cryptex",
-    title: "The Cryptex",
-    blurb: "Three rings, nine marks. Find the order the mechanism accepts.",
-  },
+// The Artifacts hub (Update 5.58): the mode-page look (it lives in Play),
+// one emblem per object.
+const items = [
+  { href: "/artifacts/wish-engine", emblem: "wish", title: "The Wish Engine", blurb: "A fortune cabinet found drifting, with Varrow inside. Ask a question, drop a token, get your answer.", tags: ["ask anything", "make a wish"] },
+  { href: "/artifacts/cryptex", emblem: "cryptex", title: "The Cryptex", blurb: "Three alien drums, nine marks. Find the order the mechanism accepts and something real unlocks.", tags: ["a puzzle", "sound on"] },
+  { href: "/artifacts/listening-well", emblem: "well", title: "The Listening Well", blurb: "13i's makers feel gravity. Set worlds in orbit and hear how 13i translates the pull of things.", tags: ["gravity", "music"] },
 ];
+
+export const metadata = { title: "Artifacts" };
 
 export default function ArtifactsHub() {
   return (
-    <div>
-      <div className="page-title">Artifacts</div>
-      <div className="page-subtitle">objects from inside the story</div>
-
-      <div style={styles.grid}>
-        {artifacts.map((a) => (
-          <Link key={a.href} href={a.href} style={styles.card}>
-            <div className="wordmark" style={styles.cardTitle}>{a.title}</div>
-            <p style={styles.cardBlurb}>{a.blurb}</p>
-          </Link>
-        ))}
-      </div>
-    </div>
+    <ModeLanding
+      mode="play"
+      title="Artifacts"
+      subtitle="objects recovered from inside the story"
+      line="Things 13i brought back, or found still running. Handle them carefully. Some of them answer."
+      items={items}
+      next={{ line: "Want something faster?", href: "/games", label: "Go to the Games" }}
+    />
   );
 }
-
-const styles = {
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: 20,
-  },
-  card: {
-    display: "block",
-    background: "rgba(14, 16, 38, 0.72)",
-    border: "1px solid #262A55",
-    borderRadius: 4,
-    padding: "24px 20px",
-    color: "inherit",
-    textDecoration: "none",
-  },
-  cardTitle: { fontSize: 22, color: "#DCDFFF", marginBottom: 8 },
-  cardBlurb: { fontSize: 13, color: "#8A8FBF", lineHeight: 1.6, margin: 0 },
-};

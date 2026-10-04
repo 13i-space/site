@@ -3,6 +3,32 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.58 — The arcade and the artifacts (Oct 2026)
+No SQL.
+- **Universe Quiz** rebuilt: an intro, a ring of ten signal segments that
+  light gold or rose as you answer, lettered answer tiles (keys 1-4, Enter),
+  a streak, 13i's note after each answer, the grade inside the ring.
+- **Games** is an arcade (components/GamesArcade.js): a warm-up toy in the
+  hero (click the drifting rocks), "insert coin" for a random game, and a
+  cabinet per game with its own animated attract-mode screen; story games
+  show sealed until their story is opened.
+- **Artifacts** hub in the mode-page look, with emblems for each artifact.
+- **The Cryptex** rebuilt as an alien device: a 3D cylinder with three
+  turning drums (drag, scroll, arrows, keys), alien click sounds per step,
+  held drums lock with a chord, solving splits it open and decrypts the
+  message. Same puzzle, message and /transmission link as before.
+- **The Wish Engine** replaces the Ninefold (/artifacts/ninefold now
+  redirects): Varrow, an alien in a fortune cabinet (homage to Zoltar in
+  Big). Ask, drop a token; it wakes, circles its orb, speaks in an alien
+  voice with glyph subtitles, and prints a card with 13i's translation.
+  Answers read the question's kind (lib/wishEngine.js); "I wish..." gets
+  the wish granted.
+- **The Listening Well** (new): stars bend a spacetime grid; fling notes
+  into orbit and each one rings at its closest pass, higher the closer, in
+  13i's 9-step scale. 13i translating gravity into sound for us.
+- `lib/alienSound.js`: all artifact sounds made live with Web Audio (clicks,
+  locks, the alien voice, chimes), with one shared mute.
+
 ## Update 5.57 — Rooms, doors and the eye (Oct 2026)
 No SQL. Paul's env: CLAUDE_MONTHLY_BUDGET_USD=20, CLAUDE_CREDIT_USD=20.
 - **Beta sign-ups**: no email service (Paul's call). Requests are saved to

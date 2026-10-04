@@ -1,6 +1,17 @@
 "use client";
 
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
+import { alienClick, alienLock, alienDeny, alienOpen, isMuted, setMuted } from "../lib/alienSound";
+
+// The Cryptex (Update 5.58, rebuilt as an alien device). Same puzzle as
+// before - three rings of nine marks, one order the mechanism accepts,
+// and the same message and second signal behind it - in a new body:
+//   - a 3D cylinder whose three drums really turn (CSS 3D), each face one mark
+//   - turn by dragging a drum, scrolling over it, the arrow buttons, or the
+//     keyboard (focus a drum: up / down)
+//   - every step makes an alien click (lib/alienSound.js, made live)
+//   - ENGAGE checks the order: right drums lock with a chord and stay put
+//   - solved, the cylinder splits and the message decrypts out of glyphs
 
 const GLYPHS = [
   { name: "the seed", edges: [], dots: [0] },
@@ -9,11 +20,7 @@ const GLYPHS = [
   { name: "the triad", edges: [[0, 3], [3, 6], [6, 0]], dots: [0, 3, 6] },
   { name: "the span", edges: [[0, 4]], dots: [0, 4] },
   { name: "the cross", edges: [[0, 4], [2, 6]], dots: [0, 2, 4, 6] },
-  {
-    name: "the weave",
-    edges: [[0, 3], [3, 6], [6, 0], [1, 4], [4, 7], [7, 1]],
-    dots: [0, 1, 3, 4, 6, 7],
-  },
+  { name: "the weave", edges: [[0, 3], [3, 6], [6, 0], [1, 4], [4, 7], [7, 1]], dots: [0, 1, 3, 4, 6, 7] },
   { name: "the ring", edges: "full", dots: "all" },
   { name: "the void", edges: [], dots: [] },
 ];
@@ -23,161 +30,172 @@ const HIDDEN_MESSAGE =
   "Assignment 1. Before you name what divides you, name what you share. Report back what you find.";
 
 const CX = 40, CY = 40, R = 28;
-function pt(cx, cy, angleDeg, radius) {
-  const rad = (angleDeg * Math.PI) / 180;
-  return [cx + radius * Math.cos(rad), cy + radius * Math.sin(rad)];
-}
-const ANGLES = Array.from({ length: 9 }, (_, i) => -90 + i * 40);
-const POINTS = ANGLES.map((a) => pt(CX, CY, a, R));
+const POINTS = Array.from({ length: 9 }, (_, i) => {
+  const a = ((-90 + i * 40) * Math.PI) / 180;
+  return [CX + R * Math.cos(a), CY + R * Math.sin(a)];
+});
 
-function Glyph({ def, size = 64, active = false }) {
+function Glyph({ def, size = 64, lit = false }) {
   const dotSet = def.dots === "all" ? [0, 1, 2, 3, 4, 5, 6, 7, 8] : def.dots;
-  const edgeList =
-    def.edges === "full"
-      ? Array.from({ length: 9 }, (_, i) => [i, (i + 1) % 9])
-      : def.edges;
+  const edgeList = def.edges === "full" ? Array.from({ length: 9 }, (_, i) => [i, (i + 1) % 9]) : def.edges;
+  const col = lit ? "#FFE7B0" : "#7FF0E0";
   return (
-    <svg width={size} height={size} viewBox="0 0 80 80">
+    <svg width={size} height={size} viewBox="0 0 80 80" aria-hidden="true">
       {POINTS.map((p, i) => {
-        const next = POINTS[(i + 1) % 9];
-        return (
-          <line key={`o-${i}`} x1={p[0]} y1={p[1]} x2={next[0]} y2={next[1]} stroke="#3A3E75" strokeWidth="0.5" opacity="0.3" />
-        );
+        const n = POINTS[(i + 1) % 9];
+        return <line key={`o${i}`} x1={p[0]} y1={p[1]} x2={n[0]} y2={n[1]} stroke={col} strokeWidth="0.5" opacity="0.18" />;
       })}
       {edgeList.map(([a, b], i) => (
-        <line key={`e-${i}`} x1={POINTS[a][0]} y1={POINTS[a][1]} x2={POINTS[b][0]} y2={POINTS[b][1]} stroke={active ? "#E8CFC0" : "#8B95F6"} strokeWidth="1.4" opacity="0.95" />
+        <line key={`e${i}`} x1={POINTS[a][0]} y1={POINTS[a][1]} x2={POINTS[b][0]} y2={POINTS[b][1]} stroke={col} strokeWidth="2" strokeLinecap="round" />
       ))}
-      {POINTS.map((p, i) => {
-        const isActive = dotSet.includes(i);
-        return (
-          <circle key={`d-${i}`} cx={p[0]} cy={p[1]} r={isActive ? 3 : 1.3} fill={!isActive ? "#3A3E75" : active ? "#E8CFC0" : "#B9C0FF"} />
-        );
-      })}
+      {POINTS.map((p, i) => (
+        <circle key={`d${i}`} cx={p[0]} cy={p[1]} r={dotSet.includes(i) ? 3.4 : 1.2} fill={col} opacity={dotSet.includes(i) ? 1 : 0.3} />
+      ))}
     </svg>
   );
 }
 
-function Ring({ index, onChange, disabled, locked }) {
-  const glyph = GLYPHS[index];
+const mod9 = (n) => ((n % 9) + 9) % 9;
+
+function Drum({ i, rot, locked, open, onTurn }) {
+  const drag = useRef(null);
+  const idx = mod9(rot);
+  const onPointerDown = (e) => {
+    if (locked || open) return;
+    drag.current = { y: e.clientY, acc: 0 };
+    e.currentTarget.setPointerCapture(e.pointerId);
+  };
+  const onPointerMove = (e) => {
+    if (!drag.current) return;
+    const dy = e.clientY - drag.current.y;
+    if (Math.abs(dy) >= 28) { onTurn(dy > 0 ? -1 : 1); drag.current.y = e.clientY; }
+  };
+  const end = () => { drag.current = null; };
+  const onWheel = (e) => { if (locked || open) return; e.preventDefault(); onTurn(e.deltaY > 0 ? 1 : -1); };
+  const ref = useRef(null);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  });
   return (
-    <div style={styles.ringCol}>
-      <button style={{ ...styles.ringBtn, opacity: locked ? 0.25 : 1 }} disabled={disabled || locked} onClick={() => onChange((index + 1) % 9)} aria-label="Rotate ring up">▲</button>
-      <div style={{ ...styles.ringWindow, ...(locked ? styles.ringWindowLocked : {}) }}>
-        <Glyph def={glyph} size={72} active={locked} />
+    <div className={`cx-drum-wrap ${locked ? "cx-locked" : ""}`}>
+      <button className="cx-arrow" disabled={locked || open} onClick={() => onTurn(-1)} aria-label={`Turn ring ${i + 1} up`}>&#9650;</button>
+      <div
+        ref={ref}
+        className="cx-drum-window"
+        tabIndex={locked || open ? -1 : 0}
+        role="spinbutton"
+        aria-label={`Ring ${i + 1}: ${GLYPHS[idx].name}`}
+        aria-valuenow={idx}
+        onKeyDown={(e) => { if (e.key === "ArrowUp") { e.preventDefault(); onTurn(-1); } if (e.key === "ArrowDown") { e.preventDefault(); onTurn(1); } }}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={end} onPointerCancel={end}
+      >
+        <div className="cx-drum" style={{ transform: `translateZ(-102px) rotateX(${rot * 40}deg)` }}>
+          {GLYPHS.map((g, k) => (
+            <div key={k} className={`cx-face ${k === idx ? "cx-face-on" : ""}`} style={{ transform: `rotateX(${-k * 40}deg) translateZ(102px)` }}>
+              <Glyph def={g} size={58} lit={locked && k === idx} />
+            </div>
+          ))}
+        </div>
+        <div className="cx-glass" aria-hidden="true" />
       </div>
-      <button style={{ ...styles.ringBtn, opacity: locked ? 0.25 : 1 }} disabled={disabled || locked} onClick={() => onChange((index + 8) % 9)} aria-label="Rotate ring down">▼</button>
-      <div style={{ ...styles.ringLabel, color: locked ? "#E8CFC0" : "#6E76B8" }}>
-        {glyph.name}{locked ? " ✓" : ""}
-      </div>
+      <button className="cx-arrow" disabled={locked || open} onClick={() => onTurn(1)} aria-label={`Turn ring ${i + 1} down`}>&#9660;</button>
+      <div className="mono cx-name">{GLYPHS[idx].name}{locked ? " · held" : ""}</div>
     </div>
   );
 }
 
-export default function Cryptex() {
-  const [rings, setRings] = useState([0, 0, 0]);
-  const [locked, setLocked] = useState([false, false, false]);
-  const [status, setStatus] = useState("idle");
+// the message, decrypting out of alien marks
+const NOISE = "∴∵∷⁘⁙⁛⁜⸪⸫⸬⸭◌◍◐◑⦁⦿";
+function Decrypt({ text }) {
+  const [shown, setShown] = useState("");
+  useEffect(() => {
+    let f = 0, raf = 0;
+    const tick = () => {
+      f += 1;
+      const done = Math.floor(f / 1.4);
+      setShown(text.split("").map((ch, k) => (k < done || ch === " " ? ch : NOISE[Math.floor(Math.random() * NOISE.length)])).join(""));
+      if (done < text.length) raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [text]);
+  return <span>{shown}</span>;
+}
 
-  const setRingIndex = useCallback((ringIdx, newVal) => {
-    setRings((prev) => {
+export default function Cryptex() {
+  const [rots, setRots] = useState([0, 0, 0]);
+  const [locked, setLocked] = useState([false, false, false]);
+  const [status, setStatus] = useState("idle"); // idle | shake | open
+  const [mute, setMute] = useState(false);
+  useEffect(() => { setMute(isMuted()); }, []);
+
+  const turn = useCallback((i, d) => {
+    setRots((prev) => {
       const next = [...prev];
-      next[ringIdx] = newVal;
+      next[i] = prev[i] + d;
+      alienClick(mod9(next[i]), i);
       return next;
     });
   }, []);
 
-  const attempt = () => {
-    const newLocked = rings.map((v, i) => locked[i] || v === SOLUTION[i]);
-    setLocked(newLocked);
-    if (newLocked.every(Boolean)) {
+  const engage = () => {
+    const now = rots.map((r, i) => locked[i] || mod9(r) === SOLUTION[i]);
+    const fresh = now.map((v, i) => v && !locked[i]);
+    setLocked(now);
+    if (now.every(Boolean)) {
+      setTimeout(() => alienOpen(), 200);
       setStatus("open");
-    } else if (!newLocked.some(Boolean)) {
+    } else if (fresh.some(Boolean)) {
+      fresh.forEach((v, i) => v && setTimeout(() => alienLock(i), i * 160));
+    } else {
+      alienDeny();
       setStatus("shake");
       setTimeout(() => setStatus("idle"), 500);
     }
   };
 
-  const reset = () => {
-    setStatus("idle");
-    setRings([0, 0, 0]);
-    setLocked([false, false, false]);
-  };
+  const reset = () => { setStatus("idle"); setRots([0, 0, 0]); setLocked([false, false, false]); };
+  const open = status === "open";
 
   return (
-    <div style={styles.page}>
-      <style>{`
-        @keyframes shakeX {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-6px); }
-          40% { transform: translateX(6px); }
-          60% { transform: translateX(-4px); }
-          80% { transform: translateX(4px); }
-        }
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(6px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .cryptex-shake { animation: shakeX 0.4s ease; }
-        .message-appear { animation: fadeUp 0.6s ease; }
-      `}</style>
-
-      <div style={styles.frame}>
-        <div className={status === "shake" ? "cryptex-shake" : ""} style={styles.body}>
-          <div style={styles.ringsRow}>
-            {rings.map((val, i) => (
-              <Ring key={i} index={val} disabled={status === "open"} locked={locked[i]} onChange={(newVal) => setRingIndex(i, newVal)} />
-            ))}
+    <div className="cx">
+      <div className={`cx-device ${status === "shake" ? "cx-shake" : ""} ${open ? "cx-open" : ""}`}>
+        <div className="cx-cap cx-cap-l" aria-hidden="true"><span className="cx-core" /></div>
+        <div className="cx-body">
+          <div className="cx-circuit" aria-hidden="true" />
+          <div className="cx-drums">
+            {rots.map((r, i) => <Drum key={i} i={i} rot={r} locked={locked[i]} open={open} onTurn={(d) => turn(i, d)} />)}
           </div>
+          {open && <div className="cx-beam" aria-hidden="true" />}
+        </div>
+        <div className="cx-cap cx-cap-r" aria-hidden="true"><span className="cx-core" /></div>
+      </div>
 
-          {status === "open" ? (
-            <div className="message-appear" style={styles.revealBox}>
-              <div style={styles.revealLabel}>the seal opens</div>
-              <div style={styles.revealText}>{HIDDEN_MESSAGE}</div>
-              <a href="/transmission" style={styles.secretLink}>
-                a second signal follows the first &rarr;
-              </a>
-            </div>
+      <div className="cx-readout">
+        {open ? (
+          <div className="cx-message">
+            <div className="mono cx-label">the seal opens &middot; translation follows</div>
+            <p><Decrypt text={HIDDEN_MESSAGE} /></p>
+            <a href="/transmission" className="mono cx-secret">a second signal follows the first &rarr;</a>
+          </div>
+        ) : (
+          <p className="cx-hint">
+            {locked.some(Boolean)
+              ? "Held marks stay in place. Keep turning the rest."
+              : "Turn each drum. Find the order the mechanism accepts, then engage."}
+          </p>
+        )}
+        <div className="cx-actions">
+          {open ? (
+            <button className="cx-btn" onClick={reset}>Seal it again</button>
           ) : (
-            <div style={styles.hintZone}>
-              <div style={styles.hintText}>
-                {locked.some(Boolean)
-                  ? "Correct rings hold their place. Keep turning the rest."
-                  : "Turn each ring. Find the order the mechanism accepts."}
-              </div>
-            </div>
+            <button className="cx-btn cx-engage" onClick={engage}>Engage</button>
           )}
-
-          <div style={styles.actions}>
-            {status === "open" ? (
-              <button style={styles.actionBtn} onClick={reset}>Seal it again</button>
-            ) : (
-              <button style={styles.actionBtn} onClick={attempt}>Turn</button>
-            )}
-          </div>
+          <button className="mono cx-mute" onClick={() => { setMuted(!mute); setMute(!mute); }} aria-pressed={mute}>{mute ? "sound off" : "sound on"}</button>
         </div>
       </div>
     </div>
   );
 }
-
-const styles = {
-  page: { display: "flex", justifyContent: "center" },
-  frame: { width: "100%", maxWidth: 480 },
-  body: { display: "flex", flexDirection: "column", alignItems: "center" },
-  ringsRow: { display: "flex", gap: 18, justifyContent: "center", marginBottom: 20 },
-  ringCol: { display: "flex", flexDirection: "column", alignItems: "center" },
-  ringBtn: { background: "none", border: "1px solid #3A3E75", borderRadius: 3, color: "#8B95F6", fontSize: 11, width: 28, height: 20, cursor: "pointer", lineHeight: 1 },
-  ringWindow: { background: "#0C0E28", border: "1px solid #4C5192", borderRadius: 3, padding: "10px 8px", margin: "6px 0" },
-  ringWindowLocked: { border: "1px solid #E8CFC0", boxShadow: "0 0 12px rgba(232,207,192,0.35)" },
-  ringLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#6E76B8", textAlign: "center", maxWidth: 76 },
-  hintZone: { minHeight: 40, display: "flex", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "4px 10px 16px" },
-  hintText: { fontFamily: "'Inter', sans-serif", fontSize: 13, color: "#565B8F", fontStyle: "italic" },
-  revealBox: { textAlign: "center", padding: "6px 8px 18px", maxWidth: 380 },
-  revealLabel: { fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#6E76B8", letterSpacing: "1px", marginBottom: 8 },
-  revealText: { fontFamily: "'JetBrains Mono', 'Courier New', monospace", fontSize: 15, lineHeight: 1.6, color: "#E8CFC0" },
-  secretLink: { display: "block", marginTop: 16, fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: "#4C5192", textDecoration: "none", letterSpacing: "0.5px" },
-  actions: { marginTop: 4 },
-  actionBtn: { background: "none", border: "1px solid #3A3E75", borderRadius: 3, color: "#B9C0FF", fontFamily: "'Inter', sans-serif", fontSize: 13, padding: "9px 24px", cursor: "pointer" },
-  hintLinkWrap: { marginTop: 16 },
-  hintLink: { fontSize: 10, color: "#4C5192", cursor: "pointer", letterSpacing: "0.3px" },
-};

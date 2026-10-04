@@ -167,6 +167,41 @@ export const EMBLEMS = {
       <circle cx="56" cy="27" r="2" fill={GOLD} />
     </>
   ),
+  // ─── Artifacts (Update 5.58) ───
+  cryptex: (
+    <>
+      {/* a sealed cylinder with three drums */}
+      <rect x="10" y="22" width="44" height="20" rx="4" {...wash} />
+      <rect x="10" y="22" width="44" height="20" rx="4" {...line} />
+      <path d="M4 26 Q4 22 8 22 H10 V42 H8 Q4 42 4 38 Z M60 26 Q60 22 56 22 H54 V42 H56 Q60 42 60 38 Z" {...line} />
+      <path d="M24 22 V42 M40 22 V42" {...line} strokeWidth="1" opacity="0.6" />
+      <path d="M14 32 L20 28 L20 36 Z" {...gold} strokeWidth="1.2" />
+      <circle cx="32" cy="32" r="3.5" {...gold} />
+      <path d="M44 28 H50 M44 36 H50" {...gold} strokeWidth="1.2" />
+    </>
+  ),
+  wish: (
+    <>
+      {/* the fortune cabinet: a dome, a head inside, the orb */}
+      <path d="M14 56 V24 Q14 8 32 8 Q50 8 50 24 V56 Z" {...wash} />
+      <path d="M14 56 V24 Q14 8 32 8 Q50 8 50 24 V56 Z" {...line} />
+      <path d="M32 14 C38 14 40 19 39.5 23 C39 28 36 31 32 31 C28 31 25 28 24.5 23 C24 19 26 14 32 14 Z" {...line} strokeWidth="1.2" />
+      <path d="M28 22 L30.5 23 M36 22 L33.5 23" {...line} strokeWidth="1.4" />
+      <circle cx="32" cy="40" r="5" {...gold} />
+      <circle cx="32" cy="40" r="1.6" fill={GOLD} />
+      <path d="M18 48 H46" {...line} strokeWidth="1" opacity="0.6" />
+    </>
+  ),
+  well: (
+    <>
+      {/* a star, a bent grid, and one orbit */}
+      <path d="M6 20 Q32 30 58 20 M6 32 Q32 46 58 32 M6 44 Q32 54 58 44" {...line} strokeWidth="1" opacity="0.55" />
+      <path d="M20 8 Q24 32 20 56 M32 8 Q34 34 32 56 M44 8 Q40 32 44 56" {...line} strokeWidth="1" opacity="0.55" />
+      <ellipse cx="32" cy="34" rx="20" ry="9" {...line} />
+      <circle cx="32" cy="34" r="4" fill={GOLD} />
+      <circle cx="51" cy="31" r="2.4" {...gold} />
+    </>
+  ),
   // ─── About (Update 5.57) ───
   paul: (
     <>

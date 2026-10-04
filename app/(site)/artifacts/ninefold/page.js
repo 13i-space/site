@@ -1,11 +1,6 @@
-import Ninefold from "../../../../components/Ninefold";
+import { redirect } from "next/navigation";
 
+// The Ninefold was retired in Update 5.58; the Wish Engine took its place.
 export default function NinefoldPage() {
-  return (
-    <div>
-      <div className="page-title">The Ninefold</div>
-      <div className="page-subtitle">nine faces, three readings &middot; 27 ways to answer</div>
-      <Ninefold />
-    </div>
-  );
+  redirect("/artifacts/wish-engine");
 }
