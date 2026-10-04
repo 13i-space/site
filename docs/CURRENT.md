@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.58 (no SQL): new Quiz, Games arcade, Artifacts hub, alien
+  Cryptex with sound, the Wish Engine (replaces the Ninefold), the
+  Listening Well. Artifact sounds are made live (lib/alienSound.js).
 - Update 5.57 (no SQL): beta list on Sentinel-X (no email), monthly
   video (13th) + extended version (26th), launch hero trimmed, About in the
   mode look, clickable orbit badges, WebGL Oracle eye, new Book, Write an

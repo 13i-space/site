@@ -28,7 +28,32 @@ async function saveResult(score, grade) {
   }
 }
 
+// The ring at the top: ten segments, one per question, lit as you go -
+// gold for right, rose for wrong, a pulse on the one you're on.
+function SignalRing({ picks, index, done, children }) {
+  const n = questions.length, R = 88, C = 2 * Math.PI * R, gap = 6, seg = C / n - gap;
+  return (
+    <div className="qz-ring">
+      <svg viewBox="0 0 220 220" aria-hidden="true">
+        <circle cx="110" cy="110" r="100" className="qz-ring-halo" />
+        {questions.map((q, i) => {
+          const p = picks[i];
+          const state = p === undefined || p === null ? (i === index && !done ? "now" : "off") : p === q.answer ? "hit" : "miss";
+          return (
+            <circle key={i} cx="110" cy="110" r={R} className={`qz-seg qz-seg-${state}`}
+              strokeDasharray={`${seg} ${C - seg}`} strokeDashoffset={-(i * (C / n))} />
+          );
+        })}
+      </svg>
+      <div className="qz-ring-mid">{children}</div>
+    </div>
+  );
+}
+
+const LETTERS = ["A", "B", "C", "D"];
+
 export default function UniverseQuiz() {
+  const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
   const [picks, setPicks] = useState([]); // chosen option index per question
   const [done, setDone] = useState(false);
@@ -38,6 +63,9 @@ export default function UniverseQuiz() {
   const selected = picks[index] ?? null;
   const isLast = index === questions.length - 1;
   const score = picks.filter((p, i) => p === questions[i].answer).length;
+  // the current run of right answers
+  let streak = 0;
+  for (let i = picks.length - 1; i >= 0 && picks[i] === questions[i].answer; i--) streak++;
 
   const choose = (i) => {
     if (selected !== null) return;
@@ -56,12 +84,42 @@ export default function UniverseQuiz() {
     setPicks([]);
     setDone(false);
     setSaved(null);
+    setStarted(true);
   };
 
   useEffect(() => {
     if (done) saveResult(score, gradeFor(score, questions.length)).then(setSaved);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [done]);
+
+  // keys: 1-4 or A-D to answer, Enter for the next question
+  useEffect(() => {
+    if (!started || done) return;
+    const onKey = (e) => {
+      if (e.target && /input|textarea/i.test(e.target.tagName)) return;
+      const k = e.key.toLowerCase();
+      const n = "1234".indexOf(k) >= 0 ? "1234".indexOf(k) : "abcd".indexOf(k);
+      if (n >= 0 && n < current.options.length) choose(n);
+      else if (k === "enter" && selected !== null) next();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
+  if (!started) {
+    return (
+      <div className="qz">
+        <SignalRing picks={[]} index={-1} done={false}>
+          <div className="qz-ring-big">10</div>
+          <div className="mono qz-ring-small">questions</div>
+        </SignalRing>
+        <h1 className="qz-title">Universe Quiz</h1>
+        <p className="qz-lede">Ten questions from across the cosmos. Each one is a signal: answer it right and it lights gold. A new set arrives now and then.</p>
+        <button className="qz-go" onClick={() => setStarted(true)}>Begin transmission &rarr;</button>
+        <div className="mono qz-hint">tip: keys 1&ndash;4 answer, Enter moves on</div>
+      </div>
+    );
+  }
 
   if (done) {
     const grade = gradeFor(score, questions.length);
@@ -76,33 +134,30 @@ export default function UniverseQuiz() {
     }[grade];
 
     return (
-      <div style={{ maxWidth: 560, margin: "0 auto" }}>
-        <div className="panel" style={{ textAlign: "center" }}>
-          <div className="mono" style={styles.label}>YOUR GRADE</div>
-          <div style={styles.grade}>{grade}</div>
-          <div className="mono" style={{ fontSize: 14, color: "#B9C0FF", marginTop: 4 }}>
-            {score} of {questions.length} correct
-          </div>
-          <p style={{ fontSize: 14, color: "#8A8FBF", margin: "12px 0 0" }}>{verdict}</p>
-          <div className="mono" style={{ fontSize: 11, color: "#565B8F", marginTop: 12 }}>
-            {saved === "saved" && "saved to your Node"}
-            {saved === "signed-out" && <><Link href="/login">sign in</Link> to keep your score on your Node</>}
-          </div>
-          <button onClick={restart} style={styles.button}>Take it again</button>
+      <div className="qz">
+        <SignalRing picks={picks} index={-1} done>
+          <div className="qz-ring-big qz-grade">{grade}</div>
+          <div className="mono qz-ring-small">{score} of {questions.length}</div>
+        </SignalRing>
+        <p className="qz-verdict">{verdict}</p>
+        <div className="mono qz-saved">
+          {saved === "saved" && "saved to your Node"}
+          {saved === "signed-out" && <><Link href="/login">sign in</Link> to keep your score on your Node</>}
+        </div>
+        <div className="qz-actions">
+          <button onClick={restart} className="qz-go">Take it again</button>
+          <Link href="/play" className="qz-ghost">More to play &rarr;</Link>
         </div>
 
         {missed.length > 0 && (
-          <div className="panel" style={{ marginTop: 16 }}>
-            <div className="mono" style={styles.label}>WHAT YOU MISSED</div>
+          <div className="qz-missed">
+            <div className="mono qz-label">what you missed</div>
             {missed.map((q) => (
-              <div key={q.n} style={{ padding: "12px 0", borderBottom: "1px solid #21244A" }}>
-                <p style={{ fontSize: 14, color: "#D9DCFF", margin: "0 0 6px" }}>
-                  <span className="mono" style={{ color: "#565B8F", marginRight: 8 }}>{q.n}.</span>
-                  {q.q}
-                </p>
-                <div style={{ fontSize: 13, color: "#C97B6E" }}>&#10005; You said: {q.options[q.pick]}</div>
-                <div style={{ fontSize: 13, color: "#8B95F6" }}>&#10003; Answer: {q.options[q.answer]}</div>
-                <p style={{ fontSize: 12.5, color: "#8A8FBF", margin: "6px 0 0", lineHeight: 1.6 }}>{q.fact}</p>
+              <div key={q.n} className="qz-miss">
+                <p className="qz-miss-q"><span className="mono">{String(q.n).padStart(2, "0")}</span> {q.q}</p>
+                <div className="qz-miss-row qz-miss-no">&#10005; {q.options[q.pick]}</div>
+                <div className="qz-miss-row qz-miss-yes">&#10003; {q.options[q.answer]}</div>
+                <p className="qz-miss-fact">{q.fact}</p>
               </div>
             ))}
           </div>
@@ -111,61 +166,46 @@ export default function UniverseQuiz() {
     );
   }
 
+  const right = selected !== null && selected === current.answer;
   return (
-    <div className="panel" style={{ maxWidth: 480, margin: "0 auto" }}>
-      <div className="mono" style={{ ...styles.label, textAlign: "center", marginBottom: 8 }}>
-        QUESTION {index + 1} OF {questions.length}
-      </div>
-      <div style={{ height: 3, background: "#21244A", borderRadius: 2, marginBottom: 18, overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${((index + (selected !== null ? 1 : 0)) / questions.length) * 100}%`, background: "#8B95F6", transition: "width 0.2s" }} />
+    <div className="qz">
+      <div className="qz-top">
+        <SignalRing picks={picks} index={index} done={false}>
+          <div className="qz-ring-big">{index + 1}</div>
+          <div className="mono qz-ring-small">of {questions.length}</div>
+        </SignalRing>
+        <div className="mono qz-stats">
+          <span>score <b>{score}</b></span>
+          <span className={streak >= 3 ? "qz-hot" : ""}>streak <b>{streak}</b>{streak >= 3 ? " ✦" : ""}</span>
+        </div>
       </div>
 
-      <p style={{ fontSize: 16, color: "#D9DCFF", lineHeight: 1.6, marginBottom: 18 }}>{current.q}</p>
+      <p key={index} className="qz-q">{current.q}</p>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+      <div className="qz-options">
         {current.options.map((opt, i) => {
-          const isCorrect = i === current.answer;
-          const isChosen = i === selected;
-          let borderColor = "#262A55";
-          let color = "#B9C0FF";
+          let state = "";
           if (selected !== null) {
-            if (isCorrect) { borderColor = "#8B95F6"; color = "#DCDFFF"; }
-            else if (isChosen) { borderColor = "#C97B6E"; color = "#C97B6E"; }
+            if (i === current.answer) state = "qz-opt-right";
+            else if (i === selected) state = "qz-opt-wrong";
+            else state = "qz-opt-dim";
           }
           return (
-            <button
-              key={i}
-              onClick={() => choose(i)}
-              disabled={selected !== null}
-              style={{
-                textAlign: "left", background: "transparent", border: `1px solid ${borderColor}`, borderRadius: 4,
-                color, fontFamily: "'Inter', sans-serif", fontSize: 14, padding: "10px 14px",
-                cursor: selected === null ? "pointer" : "default",
-              }}
-            >
-              {opt}
+            <button key={`${index}-${i}`} onClick={() => choose(i)} disabled={selected !== null} className={`qz-opt ${state}`} style={{ "--d": `${i * 60}ms` }}>
+              <span className="mono qz-letter">{LETTERS[i]}</span>
+              <span>{opt}</span>
             </button>
           );
         })}
       </div>
 
       {selected !== null && (
-        <div style={{ marginTop: 18, borderTop: "1px solid #21244A", paddingTop: 14 }}>
-          <p style={{ fontSize: 13, color: "#8A8FBF", lineHeight: 1.6, margin: 0 }}>{current.fact}</p>
-          <button onClick={next} style={{ ...styles.button, marginTop: 14, width: "100%" }}>
-            {isLast ? "See your grade" : "Next question"}
-          </button>
+        <div className={`qz-fact ${right ? "qz-fact-right" : "qz-fact-wrong"}`}>
+          <div className="mono qz-label">{right ? "signal received · 13i notes" : "static · 13i notes"}</div>
+          <p>{current.fact}</p>
+          <button onClick={next} className="qz-go">{isLast ? "See your grade" : "Next signal"} &rarr;</button>
         </div>
       )}
     </div>
   );
 }
-
-const styles = {
-  label: { fontSize: 11, color: "#565B8F", letterSpacing: "1px", marginBottom: 6 },
-  grade: { fontSize: 72, lineHeight: 1.1, color: "#DCDFFF", fontFamily: "'Fraunces', serif", fontStyle: "italic" },
-  button: {
-    background: "none", border: "1px solid #3A3E75", borderRadius: 4, color: "#B9C0FF",
-    fontFamily: "'JetBrains Mono', monospace", fontSize: 13, padding: "10px 20px", cursor: "pointer", marginTop: 20,
-  },
-};

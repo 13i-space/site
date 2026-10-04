@@ -208,6 +208,14 @@ interactive version's other records (the forgery, the open ledger, two
 hands, locked out) are not canon. The Velani card stats are Claude's,
 provisional.
 
+## Varrow and the Wish Engine — developing (site artifact, Update 5.58)
+A fortune cabinet 13i found drifting, still lit, with an alien inside it:
+**Varrow** (four eyes, crown ridges, mouth tendrils, three-fingered hands,
+an orb). It answers in its own marks; 13i translates, "meaning approximate".
+Not canon beyond the artifact. **The Listening Well** is presented as a
+13i translation device: gravity (its makers' native sense) rendered as
+sound - consistent with established canon, the device itself is site-side.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they
