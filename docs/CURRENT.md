@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.60 (no SQL): Lyra's welcome and the become-Kin first
+  assignment (components/LyraWelcome.js). The congratulations step needs a
+  real sign-up to see: check it on the first deploy.
 - Update 5.59 (no SQL): Alien Lab embryo/anomaly/Ixxen + Survival Trials
   CTA; Survival Trials tournament (/galaxy/aliens/trials) with Continuance
   Index on cards; Galaxy Map full screen, menus, black hole, detail, hum;
