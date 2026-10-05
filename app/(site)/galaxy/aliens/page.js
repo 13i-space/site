@@ -41,6 +41,15 @@ export default async function AliensOfTheGalaxy() {
       <div className="page-title" style={{ marginTop: 20 }}>Aliens of the Galaxy</div>
       <div className="page-subtitle">every species built in the Alien Lab &middot; tap a card to flip it</div>
 
+      {/* THE SURVIVAL TRIALS (Update 5.59): a tournament of every species */}
+      <Link href="/galaxy/aliens/trials" className="st-launch">
+        <span className="st-launch-text">
+          <span className="mono st-launch-kicker">every species &middot; one bracket &middot; 13i is watching</span>
+          <span className="st-launch-title">SURVIVAL TOURNAMENT</span>
+        </span>
+        <span className="st-launch-go">Begin &rarr;</span>
+      </Link>
+
       <Link href="/create/alien-lab" className="panel" style={styles.cta}>
         <span>
           <span className="mono" style={{ display: "block", fontSize: 10, color: "#C9B98F", letterSpacing: "1.5px" }}>THE ALIEN LAB</span>

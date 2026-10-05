@@ -45,6 +45,14 @@ Assignment numbers are Fibonacci numbers outside the human range
 (50,000-250,000). Used: 28657, 514229, 832040. Next free: 1346269,
 2178309, 3524578, 5702887, 9227465, 1597, 2584, 4181. Every built week has all six pieces.
 
+## The Survival Trials across a season (planned, Update 5.59 groundwork)
+Each week a tournament of that week's species produces a Weekly Champion
+(lib/survivalEngine.js championRecord(); table sketched in
+docs/v5.59-survival-champions.sql). Week 13: THE CHAMPIONS' CONTINUANCE,
+the 12 weekly champions. The engine already takes any entrant list, any
+trial subset, and a kind/season/week; the calendar's Smash Saturday and
+Tournament of Champions (lib/siteCalendar.js) are where these will run.
+
 ## Canon
 - **Book canon** is Paul's and drives everything; nothing contradicts it.
 - **Archive canon** comes from the Assignments. Weekly stories are

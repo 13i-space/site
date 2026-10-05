@@ -33,7 +33,7 @@ export default async function SpaceNewsPage() {
   const now = new Date();
   const start = Date.UTC(now.getUTCFullYear(), 0, 0);
   const issue = Math.floor((now - start) / 86400000);
-  const front = lead ? sections.flatMap((s) => s.articles).filter((a) => a.link !== lead.link).sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 6) : [];
+  const front = lead ? sections.flatMap((s) => s.articles).filter((a) => a.link !== lead.link).sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 9) : [];
 
   return (
     <div className="gz-wrap">
@@ -68,10 +68,14 @@ export default async function SpaceNewsPage() {
             <section className="gz-front">
               <div className="gz-front-lead">
                 <Story a={lead} size="lead" />
+                {/* more under the lead, so it never sits over empty paper */}
+                <div className="gz-front-under">
+                  {front.slice(5).map((a) => <Story key={a.link} a={a} size="brief" noImage />)}
+                </div>
               </div>
               <div className="gz-front-side">
                 <div className="gz-kicker">Also on the wire</div>
-                {front.map((a, i) => <Story key={a.link} a={a} size="brief" noImage={i > 0} />)}
+                {front.slice(0, 5).map((a, i) => <Story key={a.link} a={a} size="brief" noImage={i > 0} />)}
               </div>
             </section>
 
@@ -86,11 +90,11 @@ export default async function SpaceNewsPage() {
                   <span>{s.section}</span>
                   <small>dispatches from {s.name}</small>
                 </h2>
+                {/* the section's lead takes a 2x2 block (Update 5.59); the rest
+                    of the dispatches fill in beside and below it */}
                 <div className="gz-sec-body">
                   <div className="gz-sec-lead"><Story a={s.articles[0]} size="feature" /></div>
-                  <div className="gz-cols">
-                    {s.articles.slice(1).map((a) => <Story key={a.link} a={a} size="brief" />)}
-                  </div>
+                  {s.articles.slice(1).map((a, k) => <div key={a.link} className="gz-cell"><Story a={a} size="brief" noImage={k > 3} /></div>)}
                 </div>
               </section>
             ))}
@@ -153,6 +157,8 @@ const CSS = `
 .gz-brief .gz-photo, .gz-brief .gz-plate { aspect-ratio: 16 / 8; }
 
 .gz-front { display: grid; grid-template-columns: 2fr 1fr; gap: 26px; padding: 18px 0; border-bottom: 3px solid #241d12; }
+.gz-front-under { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; margin-top: 14px; border-top: 2px solid #241d12; }
+.gz-front-under .gz-brief { border-bottom: 1px solid rgba(36,29,18,0.4); }
 .gz-front-side { border-left: 1px solid #241d12; padding-left: 20px; }
 .gz-kicker { font-family: 'Playfair Display', serif; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; font-size: 13px; border-bottom: 2px solid #241d12; padding-bottom: 4px; }
 
@@ -164,17 +170,31 @@ const CSS = `
 .gz-sec-title { margin: 0 0 12px; text-align: center; border-top: 2px solid #241d12; border-bottom: 1px solid #241d12; padding: 6px 0; }
 .gz-sec-title span { font-family: 'Playfair Display', serif; font-weight: 900; font-size: clamp(22px, 3vw, 30px); letter-spacing: 1px; text-transform: uppercase; display: block; }
 .gz-sec-title small { font-style: italic; font-size: 12px; font-weight: 400; }
-.gz-sec-body { display: grid; grid-template-columns: 1fr 1.4fr; gap: 24px; }
-.gz-flip .gz-sec-body { grid-template-columns: 1.4fr 1fr; }
-.gz-flip .gz-sec-lead { order: 2; }
+.gz-sec-body { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); grid-auto-flow: row dense; gap: 0 22px; }
+.gz-sec-lead { grid-column: 1 / span 2; grid-row: 1 / span 2; padding-right: 22px; border-right: 1px solid rgba(36,29,18,0.5); margin-right: -11px; }
+.gz-flip .gz-sec-lead { grid-column: 3 / span 2; padding-right: 0; border-right: none; margin-right: 0; padding-left: 22px; border-left: 1px solid rgba(36,29,18,0.5); margin-left: -11px; }
+.gz-sec-lead .gz-feature .gz-head { font-size: clamp(24px, 2.8vw, 32px); font-weight: 900; }
+.gz-sec-lead .gz-feature .gz-sum { font-size: 15.5px; line-height: 1.55; }
+.gz-sec-lead .gz-feature .gz-sum::first-letter { font-family: 'Playfair Display', serif; float: left; font-size: 44px; line-height: 0.85; padding: 4px 6px 0 0; font-weight: 900; }
+.gz-sec-lead .gz-photo, .gz-sec-lead .gz-plate { aspect-ratio: 4 / 3; }
+.gz-cell { min-width: 0; border-bottom: 1px solid rgba(36,29,18,0.4); }
+.gz-cell .gz-brief { border-bottom: none; }
 .gz-cols { column-count: 2; column-gap: 22px; column-rule: 1px solid rgba(36,29,18,0.5); }
 .gz-foot { margin-top: 16px; text-align: center; font-size: 12px; font-style: italic; }
 
+@media (min-width: 761px) and (max-width: 980px) {
+  .gz-sec-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .gz-sec-lead, .gz-flip .gz-sec-lead { grid-column: 1 / span 2; grid-row: auto; padding: 0 0 12px; margin: 0; border: none; border-bottom: 1px solid rgba(36,29,18,0.5); }
+}
 @media (max-width: 760px) {
   .gz-ears, .gz-dateline { flex-direction: column; align-items: center; gap: 2px; }
-  .gz-front, .gz-sec-body, .gz-flip .gz-sec-body { grid-template-columns: 1fr; }
-  .gz-flip .gz-sec-lead { order: 0; }
-  .gz-front-side { border-left: none; padding-left: 0; border-top: 1px solid #241d12; }
+  .gz-front { grid-template-columns: 1fr; }
+  .gz-front-under { grid-template-columns: 1fr; }
+  .gz-sec-body { grid-template-columns: 1fr; }
+  .gz-sec-lead, .gz-flip .gz-sec-lead { grid-column: auto; grid-row: auto; padding: 0 0 12px; margin: 0; border: none; border-bottom: 1px solid rgba(36,29,18,0.5); }
+  .gz-front-under { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 22px; margin-top: 14px; border-top: 2px solid #241d12; }
+.gz-front-under .gz-brief { border-bottom: 1px solid rgba(36,29,18,0.4); }
+.gz-front-side { border-left: none; padding-left: 0; border-top: 1px solid #241d12; }
   .gz-cols { column-count: 1; }
   .gz-sum { text-align: left; }
 }

@@ -10,7 +10,9 @@ import AlienCard from "./AlienCard";
 // logo's eye) and the radar unveils it along with the others: each pings
 // as a contact, and each holds a different species' card.
 //
-// Clicking a star shows its card for 9 seconds; clicking again puts it away.
+// Clicking a star shows a random card for 9 seconds (Update 5.59: any of the
+// current species). Put it away with the x, Escape, a click outside it, the
+// star again, or a fifth click on the card (four turns all the way round).
 // To add another hidden star: add an entry - position is from the viewport's
 // edges, so it lands in the same spot on every screen.
 const STARS = [
@@ -29,9 +31,8 @@ async function loadSpecies() {
   // "*" so the optional portrait_svg and stats columns come along when present
   const { data } = await supabase.from("alien_species").select("*").order("created_at", { ascending: false }).limit(100);
   const list = data || [];
-  // prefer ones with a portrait, when there are any; shuffled per visit
-  const drawn = list.filter((s) => s.portrait_svg);
-  const pool = [...(drawn.length ? drawn : list)].sort(() => Math.random() - 0.5);
+  // every current card is in the draw (Update 5.59)
+  const pool = [...list];
   const ids = [...new Set(pool.map((s) => s.user_id))];
   let names = {};
   if (ids.length) {
@@ -46,6 +47,7 @@ export default function EasterStars({ radar = false }) {
   const [visible, setVisible] = useState(false);
   const timer = useRef(null);
   const species = useRef(null);
+  const clicks = useRef(0); // clicks on the card: four turns it all the way round, the fifth puts it away
 
   const close = () => {
     clearTimeout(timer.current);
@@ -59,8 +61,11 @@ export default function EasterStars({ radar = false }) {
     try {
       if (!species.current) species.current = await loadSpecies();
       const list = species.current;
-      // each star keeps its own species (different stars, different cards)
-      const pick = list.length ? list[STARS.findIndex((s) => s.id === starId) % list.length] : null;
+      // a random card each time, from all of them (never the same one twice running)
+      let k = Math.floor(Math.random() * list.length);
+      if (list.length > 1 && shown && !shown.empty && list[k].species.id === shown.species.id) k = (k + 1) % list.length;
+      const pick = list.length ? list[k] : null;
+      clicks.current = 0;
       setShown(pick ? { starId, ...pick } : { starId, empty: true });
     } catch (e) {
       setShown({ starId, empty: true });
@@ -70,6 +75,12 @@ export default function EasterStars({ radar = false }) {
   };
 
   useEffect(() => () => clearTimeout(timer.current), []);
+  useEffect(() => {
+    if (!shown) return;
+    const onKey = (e) => { if (e.key === "Escape") close(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [shown]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => { if (!radar && shown && STARS.find((s) => s.id === shown.starId)?.radarOnly) close(); }, [radar]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
@@ -131,8 +142,13 @@ export default function EasterStars({ radar = false }) {
       ))}
 
       {shown && (
+        <div onClick={close} aria-hidden="true" style={{ position: "fixed", inset: 0, zIndex: 49, background: visible ? "rgba(3,4,14,0.45)" : "transparent", transition: "background 0.4s" }} />
+      )}
+      {shown && (
         <div
           onClick={close}
+          role="dialog"
+          aria-label="A hidden card"
           style={{
             position: "fixed",
             left: "50%",
@@ -151,8 +167,20 @@ export default function EasterStars({ radar = false }) {
               </p>
             </div>
           ) : (
-            // clicking the card flips it (and gives you another 9 seconds)
-            <div onClick={(e) => { e.stopPropagation(); clearTimeout(timer.current); timer.current = setTimeout(close, SHOW_MS); }}>
+            // clicking the card turns it (and gives you another 9 seconds);
+            // after all four sides, the fifth click puts it away
+            <div style={{ position: "relative" }} onClick={(e) => {
+              e.stopPropagation();
+              clicks.current += 1;
+              if (clicks.current >= 5) { close(); return; }
+              clearTimeout(timer.current); timer.current = setTimeout(close, SHOW_MS);
+            }}>
+              <button
+                onClick={(e) => { e.stopPropagation(); close(); }}
+                aria-label="Close the card"
+                className="mono"
+                style={{ position: "absolute", top: -14, right: -14, zIndex: 2, width: 30, height: 30, borderRadius: "50%", border: "1px solid #3A3E75", background: "#0C0E28", color: "#B9C0FF", fontSize: 14, lineHeight: 1, cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.5)" }}
+              >&times;</button>
               <AlienCard species={shown.species} creator={shown.creator} width={Math.min(280, typeof window !== "undefined" ? window.innerWidth - 40 : 280)} />
             </div>
           )}

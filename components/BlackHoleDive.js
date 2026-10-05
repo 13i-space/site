@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import { startAmbient, whoosh, ping, soundOn, setSoundOn } from "../lib/spaceSound";
 
 // THE BLACK HOLE player (Update 5.55): one issue (lib/blackHole.js), a step
 // at a time. Each step has a living picture you can touch, drawn here in
@@ -535,7 +536,7 @@ function Quiz({ issue }) {
             {q.options.map((o, j) => {
               const chosen = picks[i] === j, shown = picks[i] !== undefined;
               return (
-                <button key={j} disabled={shown} onClick={() => setPicks((p) => ({ ...p, [i]: j }))}
+                <button key={j} disabled={shown} onClick={() => { setPicks((p) => ({ ...p, [i]: j })); if (soundOn()) { if (j === q.answer) { ping(660, 0.06); setTimeout(() => ping(990, 0.05), 120); } else ping(196, 0.06); } }}
                   className={`bh-opt ${shown && j === q.answer ? "bh-opt-right" : ""} ${chosen && j !== q.answer ? "bh-opt-wrong" : ""}`}>{o}</button>
               );
             })}
@@ -548,9 +549,44 @@ function Quiz({ issue }) {
   );
 }
 
+// Sound (Update 5.59): a drone that sinks lower with every step further in,
+// a rush of air between steps, a small tone when you touch a picture, and
+// chimes for the check. It starts on the first click (browsers insist).
+function useDiveSound(i, n) {
+  const [on, setOn] = useState(true);
+  const amb = useRef(null);
+  const started = useRef(false);
+  const pitchFor = (k) => 55 * Math.pow(0.5, Math.min(k, n) / (n + 2));
+  useEffect(() => { setOn(soundOn()); }, []);
+  useEffect(() => {
+    const start = () => {
+      if (started.current || !soundOn()) return;
+      started.current = true;
+      amb.current = startAmbient({ base: pitchFor(0), level: 0.55 });
+    };
+    window.addEventListener("pointerdown", start);
+    window.addEventListener("keydown", start);
+    return () => { window.removeEventListener("pointerdown", start); window.removeEventListener("keydown", start); amb.current?.stop(); };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const first = useRef(true);
+  useEffect(() => {
+    if (first.current) { first.current = false; return; }
+    amb.current?.setPitch(pitchFor(i));
+    if (on && started.current) whoosh(true);
+  }, [i]); // eslint-disable-line react-hooks/exhaustive-deps
+  const toggle = () => {
+    const next = !on; setOn(next); setSoundOn(next);
+    if (!next) { amb.current?.stop(); amb.current = null; started.current = false; }
+    else { started.current = true; amb.current = startAmbient({ base: pitchFor(i), level: 0.55 }); }
+  };
+  const tap = () => { if (on) ping(440 + Math.random() * 440, 0.04); };
+  return { on, toggle, tap };
+}
+
 export default function BlackHoleDive({ issue }) {
   const [i, setI] = useState(0);
   const n = issue.steps.length;
+  const snd = useDiveSound(i, n);
   const atQuiz = i === n;
   const go = useCallback((d) => setI((x) => Math.max(0, Math.min(n, x + d))), [n]);
   useEffect(() => {
@@ -574,14 +610,14 @@ export default function BlackHoleDive({ issue }) {
             <button key={k} className={`bh-dot ${k === i ? "bh-dot-on" : k < i ? "bh-dot-done" : ""}`} onClick={() => setI(k)} aria-label={k === n ? "Questions" : `Step ${k + 1}`} />
           ))}
         </div>
-        <div className="mono bh-issue">NO. {issue.number} &middot; {issue.title.toUpperCase()}</div>
+        <div className="mono bh-issue">NO. {issue.number} &middot; {issue.title.toUpperCase()} <button className="bh-sound" onClick={snd.toggle} aria-pressed={snd.on}>{snd.on ? "sound on" : "sound off"}</button></div>
       </div>
 
       {atQuiz ? (
         <Quiz issue={issue} />
       ) : (
         <div className="bh-step" key={step.id}>
-          <div className="bh-visual">{Visual && <Visual />}</div>
+          <div className="bh-visual" onPointerDown={snd.tap}>{Visual && <Visual />}</div>
           <div className="bh-words">
             <div className="mono bh-kicker">{step.kicker}</div>
             <h2 className="bh-step-title">{step.title}</h2>

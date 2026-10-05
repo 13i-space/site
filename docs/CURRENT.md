@@ -4,6 +4,14 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.59 (no SQL): Alien Lab embryo/anomaly/Ixxen + Survival Trials
+  CTA; Survival Trials tournament (/galaxy/aliens/trials) with Continuance
+  Index on cards; Galaxy Map full screen, menus, black hole, detail, hum;
+  Galaxy hub look; Space News layout; Black Hole sound; Cryptex levels;
+  hidden card fixes. Tournament tested on a test field shaped like real
+  rows - the cloud session can't reach Supabase: check it with the real
+  species on the first deploy. The 17 Lab questions are unchanged (Paul
+  will review them separately).
 - Update 5.58 (no SQL): new Quiz, Games arcade, Artifacts hub, alien
   Cryptex with sound, the Wish Engine (replaces the Ninefold), the
   Listening Well. Artifact sounds are made live (lib/alienSound.js).

@@ -3,6 +3,37 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.59 — The lab, the map and the Survival Trials (Oct 2026)
+No SQL needed (docs/v5.59-survival-champions.sql is for later).
+- **Alien Lab**: the vat now grows an ambiguous embryo (lib/embryo.js), not
+  the species. Answers nudge it subtly and cumulatively (light, motion,
+  membrane, cells, buds, eye-spots, what drifts in the tank), seeded from
+  every answer so no two runs grow alike. Stages: origin, development,
+  unknown; then on Generate Species an unexplained anomaly (freeze, red
+  light, a mark, a second signal from outside the tank, it turns to look at
+  you, a wrong shape), a cocoon, and only then the reveal (the portrait in
+  the tank). New silent character **Ixxen, the observer**, beside the vat:
+  watches, writes notes, adjusts dials, peers, recoils at the anomaly.
+  Completion: SEND IT INTO THE SURVIVAL TRIALS is the primary action.
+- **The Survival Trials tournament** (/galaxy/aliens/trials, button on Aliens
+  of the Galaxy): every eligible species (Archive + Kin), seeded by
+  Continuance Index, byes to top seeds, first to 3 of 5 trials, round by
+  round to a champion. Next battle, Auto play, Pause, Replay, New
+  tournament; finished battles reopen from the bracket. Engine:
+  lib/survivalEngine.js (RANDOMNESS_FACTOR 0.12, GENERAL_WEIGHT 0.35); trial
+  library as config: lib/survivalTrials.js (TOURNAMENT_TRIALS picks the 5).
+  Tested: higher index loses ~12% of matches at a 20+ gap, ~47% when close.
+- **Continuance Index** on every card (all stats total 300, so it's derived:
+  expected score across the trial library + 13i's verdict).
+- **Galaxy Map**: full screen; Places / Kin species (yours by default, any
+  other from the menu) / Characters menus on the map; Sgr A* as a real
+  black hole up close; dust lanes, globular clusters, Magellanic Clouds,
+  deep background, fine stars on zoom; ambient hum (lib/spaceSound.js).
+- **Galaxy** hub in the mode-page look; **Space News** sections lead with a
+  2x2 story; **Black Hole lessons** have sound; **Cryptex** has levels 1-3
+  (count-only hints, then none + Randomize); the homepage's hidden card
+  closes (x, Escape, outside click, fifth click) and draws randomly.
+
 ## Update 5.58 — The arcade and the artifacts (Oct 2026)
 No SQL.
 - **Universe Quiz** rebuilt: an intro, a ring of ten signal segments that
