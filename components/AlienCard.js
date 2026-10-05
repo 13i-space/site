@@ -1,5 +1,6 @@
 "use client";
 
+import { continuanceIndex } from "../lib/survivalEngine";
 import { useState, useEffect, useRef } from "react";
 import { backTraits, cardTagline, cardNumber } from "../lib/alienTraits";
 import { STAT_GROUPS, statsFor } from "../lib/alienStats";
@@ -31,6 +32,7 @@ import { assessmentFor } from "../lib/alienAssessment";
 export default function AlienCard({ species, creator, creatorAlpha, width = 280, onSelect, selected }) {
   const [turns, setTurns] = useState(0); // every click turns the card half a revolution
   const side = turns % 4; // 0..3, the side showing
+  const ci = continuanceIndex(species);
   const flipped = side % 2 === 1;
   const [playing, setPlaying] = useState(false);
   const verdict = verdictFor(species);
@@ -151,6 +153,11 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
               ) : (
                 <SpecimenStill answers={species.answers} />
               )}
+              {/* the Continuance Index (Update 5.59): its overall survival
+                  potential - an advantage in the Survival Trials, not a verdict */}
+              <span className="mono" title="Continuance Index: how well-made this species is for surviving, overall" style={{ position: "absolute", right: 4 * s, bottom: 4 * s, display: "flex", alignItems: "baseline", gap: 3 * s, padding: `${2 * s}px ${6 * s}px`, borderRadius: 3 * s, background: "rgba(10,11,28,0.85)", border: `${1 * s}px solid #C9B98F`, color: "#F5EEDB", fontSize: 12 * s, lineHeight: 1.2 }}>
+                <span style={{ fontSize: 6.5 * s, letterSpacing: "1px", color: "#C9B98F" }}>CI</span>{ci}
+              </span>
             </div>
 
             {/* flavour strip */}

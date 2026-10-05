@@ -32,6 +32,7 @@ import AlienCard from "./AlienCard";
 import StatRadar from "./StatRadar";
 import { LabVat, LabCrew, crewLine } from "./AlienLab";
 import { specimenTraits } from "../lib/specimen";
+import { embryoState } from "../lib/embryo";
 
 const OTHER = "__other__";
 
@@ -55,6 +56,11 @@ export default function AlienCreator({ loggedIn }) {
   const [crew, setCrew] = useState(["qeth", "Welcome to the bay, guest. Answer as you go. The vat does the rest."]);
   const reacted = useRef(0);
   const [review, setReview] = useState(null);
+  // the vat's phase (Update 5.59): grow -> anomaly -> cocoon -> reveal
+  const [labPhase, setLabPhase] = useState("grow");
+  const anomalySeen = useRef(false);
+  const holdUntil = useRef(0); // the anomaly and the cocoon always play out before the reveal
+  const afterHold = (fn) => setTimeout(fn, Math.max(0, holdUntil.current - Date.now()));
   const [reviewStatus, setReviewStatus] = useState("idle"); // idle | waiting | error
 
   // elapsed-time clock while a portrait is being drawn
@@ -85,7 +91,14 @@ export default function AlienCreator({ loggedIn }) {
     if (a === undefined) return undefined;
     return a === OTHER ? otherText[id] || "" : a;
   });
-  const lab = (panel, vatLabel = "SPECIMEN IN PROGRESS") => (
+  // the embryo: ambiguous until the end, nudged by every answer so far
+  const answeredCount = ALIEN_QUESTIONS.filter((q) => answers[q.id] !== undefined).length;
+  const embryo = embryoState((id) => {
+    const a = answers[id];
+    if (a === undefined) return undefined;
+    return a === OTHER ? otherText[id] || "" : a;
+  }, answeredCount / total);
+  const lab = (panel, vatLabel = labPhase === "anomaly" ? "SPECIMEN \u00b7 ?" : labPhase === "cocoon" ? "SPECIMEN \u00b7 TRANSFORMING" : labPhase === "reveal" ? "SPECIES REVEALED" : "SPECIMEN IN PROGRESS") => (
     <div className="lab">
       <div className="lab-head">
         <span className="mono">⟡ XENOGENESIS BAY 13 &middot; ALIEN-RUN &middot; GUESTS WELCOME</span>
@@ -93,7 +106,7 @@ export default function AlienCreator({ loggedIn }) {
       </div>
       <LabCrew line={crew} />
       <div className="lab-grid">
-        <LabVat traits={traits} pulse={pulse} label={vatLabel} />
+        <LabVat traits={traits} pulse={pulse} label={vatLabel} embryo={embryo} phase={labPhase} portrait={labPhase === "reveal" ? portrait : null} />
         <div className="lab-console">{panel}</div>
       </div>
     </div>
@@ -181,6 +194,14 @@ export default function AlienCreator({ loggedIn }) {
   };
 
   const generatePortrait = async () => {
+    // the first time: something happens in the tank. Then it wraps itself up.
+    if (!anomalySeen.current) {
+      anomalySeen.current = true;
+      setLabPhase("anomaly");
+      holdUntil.current = Date.now() + 6300 + 2600;
+      setCrew(["ilu", "Qeth? ...Qeth. The readings."]);
+      setTimeout(() => { setLabPhase((p) => (p === "anomaly" ? "cocoon" : p)); setCrew(["qeth", "Recording nothing. We saw nothing. Continue, guest."]); }, 6300);
+    } else { setLabPhase("cocoon"); holdUntil.current = Date.now() + 2600; }
     setPortraitStatus("drawing");
     setPortraitNote("");
     setError("");
@@ -220,12 +241,15 @@ export default function AlienCreator({ loggedIn }) {
         const svg = /xmlns=/.test(result.svg) ? result.svg : result.svg.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
         setPortrait(svg);
         setPortraitStatus("idle");
+        // let the anomaly finish, and the cocoon close, before it opens
+        afterHold(() => setLabPhase("reveal"));
       } else {
         throw new Error((result && result.error) || "That portrait didn't come out. Try again.");
       }
     } catch (e) {
       setPortraitNote(e.message);
       setPortraitStatus("error");
+      afterHold(() => setLabPhase("grow"));
     }
   };
 
@@ -258,6 +282,7 @@ export default function AlienCreator({ loggedIn }) {
       if (insertError) throw new Error(insertError.message);
       setSavedId(saved?.id || null);
       setSaveStatus("done");
+      setLabPhase("reveal");
     } catch (e) {
       setError(e.message);
       setSaveStatus("idle");
@@ -355,10 +380,13 @@ export default function AlienCreator({ loggedIn }) {
             )}
             {review && <p className="mono" style={{ fontSize: 11, color: "#6FC3A8", margin: "4px 0 10px" }}>13i&rsquo;s assessment is on the card&rsquo;s third side.</p>}
             {savedId && (
-              <div style={{ marginTop: 12 }}>
-                <a href={`/galaxy/aliens/${savedId}`} className="mono" style={{ fontSize: 12, color: "#8B95F6" }}>
-                  open its page, and send it into the Survival Trials &rarr;
-                </a>
+              <div className="lab-next">
+                <p className="lab-next-line">Your species has entered the Galaxy.<br /><em>Now we find out if it can survive.</em></p>
+                <a href={`/galaxy/aliens/trials?species=${savedId}`} className="lab-next-primary">Send it into the Survival Trials &rarr;</a>
+                <div className="lab-next-more">
+                  <a href={`/galaxy/aliens/${savedId}`} className="mono">open its page</a>
+                  <a href={`/galaxy/map?species=${savedId}`} className="mono">see it on the map</a>
+                </div>
               </div>
             )}
             {error && reviewStatus === "error" && <p className="mono" style={{ fontSize: 11, color: "#C97B6E" }}>{error}</p>}
@@ -368,7 +396,7 @@ export default function AlienCreator({ loggedIn }) {
             <button onClick={save} disabled={saveStatus === "loading"} style={btnStyle}>
               {saveStatus === "loading" ? "Saving..." : "Save this species"}
             </button>
-            <button onClick={() => { setStep(0); setPortrait(null); setPortraitStatus("idle"); setStats(evenStats()); }} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
+            <button onClick={() => { setStep(0); setPortrait(null); setPortraitStatus("idle"); setStats(evenStats()); setLabPhase("grow"); }} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
               Start over
             </button>
             {error && <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{error}</span>}

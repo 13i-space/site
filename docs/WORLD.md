@@ -216,6 +216,18 @@ Not canon beyond the artifact. **The Listening Well** is presented as a
 13i translation device: gravity (its makers' native sense) rendered as
 sound - consistent with established canon, the device itself is site-side.
 
+## The Lab anomaly and Ixxen — developing (deliberately unexplained)
+Update 5.59. When a species is generated in the Alien Lab, the first time
+in a session, the vat does something nobody explains: the embryo freezes,
+the light goes red, a mark appears (a triangle in a circle, cut by a line),
+a second signal passes through from outside the tank, every eye-spot turns
+to the viewer, and the body briefly takes a shape no body should. Qeth says
+they saw nothing. 13i says nothing. Counted per browser (13i_anomalies) for
+the larger mystery to use later. Do not explain it without Paul.
+**Ixxen** is the Lab's silent observer: small, thin, one vertical eye and
+two small ones, a slate it writes on. More interested as the specimen grows;
+steps back at the anomaly. A Lab character, not 13i canon.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they

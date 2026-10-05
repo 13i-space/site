@@ -25,9 +25,20 @@ const GLYPHS = [
   { name: "the void", edges: [], dots: [] },
 ];
 
-const SOLUTION = [3, 7, 1];
-const HIDDEN_MESSAGE =
-  "Assignment 1. Before you name what divides you, name what you share. Report back what you find.";
+// Three levels (Update 5.59). Level 1 is the original: a fixed order, and
+// right drums are held. Level 2: a new order each time, and ENGAGE only
+// says how many marks are right, not which. Level 3: a new order, no hints
+// at all - just open or not - and a RANDOMIZE button to spin all three.
+const LEVELS = {
+  1: { name: "Level 1", note: "Right marks are held in place.", solution: [3, 7, 1],
+    message: "Assignment 1. Before you name what divides you, name what you share. Report back what you find." },
+  2: { name: "Level 2", note: "The mechanism only says how many marks are right. Not which.",
+    message: "Second seal. We did not leave these for the clever. We left them for the patient. You are both." },
+  3: { name: "Level 3", note: "No hints. Open, or not. Spin it as often as you like.",
+    message: "Third seal. Seven hundred and twenty-nine ways in, one way through. Some things are found by luck. We have always counted luck as a kind of attention." },
+};
+const SOLVED_KEY = "13i_cryptex_solved";
+const randomOrder = () => [0, 1, 2].map(() => Math.floor(Math.random() * 9));
 
 const CX = 40, CY = 40, R = 28;
 const POINTS = Array.from({ length: 9 }, (_, i) => {
@@ -125,11 +136,32 @@ function Decrypt({ text }) {
 }
 
 export default function Cryptex() {
+  const [level, setLevel] = useState(1);
+  const [solution, setSolution] = useState(LEVELS[1].solution);
   const [rots, setRots] = useState([0, 0, 0]);
   const [locked, setLocked] = useState([false, false, false]);
   const [status, setStatus] = useState("idle"); // idle | shake | open
+  const [count, setCount] = useState(null); // level 2: how many were right
+  const [tries, setTries] = useState(0);
+  const [solved, setSolved] = useState({});
   const [mute, setMute] = useState(false);
-  useEffect(() => { setMute(isMuted()); }, []);
+  useEffect(() => {
+    setMute(isMuted());
+    try { setSolved(JSON.parse(localStorage.getItem(SOLVED_KEY) || "{}")); } catch (e) { /* no storage */ }
+  }, []);
+  const HIDDEN_MESSAGE = LEVELS[level].message;
+
+  const choose = (n) => {
+    setLevel(n);
+    setSolution(n === 1 ? LEVELS[1].solution : randomOrder());
+    setRots([0, 0, 0]); setLocked([false, false, false]); setStatus("idle"); setCount(null); setTries(0);
+  };
+  const randomize = () => {
+    const to = randomOrder();
+    setRots((prev) => prev.map((r, i) => r + 9 + ((to[i] - mod9(r) + 9) % 9)));
+    [0, 1, 2, 3, 4, 5, 6, 7].forEach((k) => setTimeout(() => alienClick(k, k % 3), k * 45));
+    setCount(null);
+  };
 
   const turn = useCallback((i, d) => {
     setRots((prev) => {
@@ -140,13 +172,30 @@ export default function Cryptex() {
     });
   }, []);
 
+  const win = () => {
+    setTimeout(() => alienOpen(), 200);
+    setStatus("open");
+    setSolved((s0) => { const s1 = { ...s0, [level]: true }; try { localStorage.setItem(SOLVED_KEY, JSON.stringify(s1)); } catch (e) { /* ignore */ } return s1; });
+  };
   const engage = () => {
-    const now = rots.map((r, i) => locked[i] || mod9(r) === SOLUTION[i]);
+    setTries((t) => t + 1);
+    const right = rots.map((r, i) => mod9(r) === solution[i]);
+    if (level > 1) {
+      if (right.every(Boolean)) { setLocked([true, true, true]); win(); return; }
+      if (level === 2) {
+        const n = right.filter(Boolean).length;
+        setCount(n);
+        if (n) alienLock(n - 1); else alienDeny();
+      } else alienDeny();
+      setStatus("shake");
+      setTimeout(() => setStatus("idle"), 500);
+      return;
+    }
+    const now = rots.map((r, i) => locked[i] || right[i]);
     const fresh = now.map((v, i) => v && !locked[i]);
     setLocked(now);
     if (now.every(Boolean)) {
-      setTimeout(() => alienOpen(), 200);
-      setStatus("open");
+      win();
     } else if (fresh.some(Boolean)) {
       fresh.forEach((v, i) => v && setTimeout(() => alienLock(i), i * 160));
     } else {
@@ -156,11 +205,19 @@ export default function Cryptex() {
     }
   };
 
-  const reset = () => { setStatus("idle"); setRots([0, 0, 0]); setLocked([false, false, false]); };
+  const reset = () => choose(level);
   const open = status === "open";
 
   return (
     <div className="cx">
+      <div className="cx-levels" role="radiogroup" aria-label="Difficulty">
+        {[1, 2, 3].map((n) => (
+          <button key={n} role="radio" aria-checked={level === n} className={`mono ${level === n ? "cx-level-on" : ""}`} onClick={() => choose(n)}>
+            {LEVELS[n].name}{solved[n] ? " \u2726" : ""}
+          </button>
+        ))}
+      </div>
+      <p className="mono cx-level-note">{LEVELS[level].note}</p>
       <div className={`cx-device ${status === "shake" ? "cx-shake" : ""} ${open ? "cx-open" : ""}`}>
         <div className="cx-cap cx-cap-l" aria-hidden="true"><span className="cx-core" /></div>
         <div className="cx-body">
@@ -178,20 +235,29 @@ export default function Cryptex() {
           <div className="cx-message">
             <div className="mono cx-label">the seal opens &middot; translation follows</div>
             <p><Decrypt text={HIDDEN_MESSAGE} /></p>
-            <a href="/transmission" className="mono cx-secret">a second signal follows the first &rarr;</a>
+            {level === 1 ? (
+              <a href="/transmission" className="mono cx-secret">a second signal follows the first &rarr;</a>
+            ) : (
+              <span className="mono cx-secret">opened in {tries} {tries === 1 ? "try" : "tries"}{level < 3 ? <> &middot; <button className="cx-linkbtn" onClick={() => choose(level + 1)}>try level {level + 1} &rarr;</button></> : null}</span>
+            )}
           </div>
         ) : (
           <p className="cx-hint">
-            {locked.some(Boolean)
+            {level === 1 && (locked.some(Boolean)
               ? "Held marks stay in place. Keep turning the rest."
-              : "Turn each drum. Find the order the mechanism accepts, then engage."}
+              : "Turn each drum. Find the order the mechanism accepts, then engage.")}
+            {level === 2 && (count === null ? "Set the drums, then engage. It will tell you how many marks it accepts." : `${count} of 3 marks accepted. It will not say which. (try ${tries})`)}
+            {level === 3 && (tries ? `Refused. Try ${tries}. Turn them, or let chance turn them for you.` : "No hints. Turn the drums yourself, or randomize as often as you like.")}
           </p>
         )}
         <div className="cx-actions">
           {open ? (
             <button className="cx-btn" onClick={reset}>Seal it again</button>
           ) : (
-            <button className="cx-btn cx-engage" onClick={engage}>Engage</button>
+            <>
+              {level === 3 && <button className="cx-btn cx-random" onClick={randomize}>Randomize</button>}
+              <button className="cx-btn cx-engage" onClick={engage}>Engage</button>
+            </>
           )}
           <button className="mono cx-mute" onClick={() => { setMuted(!mute); setMute(!mute); }} aria-pressed={mute}>{mute ? "sound off" : "sound on"}</button>
         </div>

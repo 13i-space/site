@@ -167,6 +167,68 @@ export const EMBLEMS = {
       <circle cx="56" cy="27" r="2" fill={GOLD} />
     </>
   ),
+  // ─── The Galaxy (Update 5.59) ───
+  blackhole: (
+    <>
+      <ellipse cx="32" cy="32" rx="27" ry="9" {...wash} />
+      <ellipse cx="32" cy="32" rx="27" ry="9" {...gold} />
+      <path d="M14 26 Q32 4 50 26" {...gold} strokeWidth="1.1" opacity="0.7" />
+      <circle cx="32" cy="32" r="10" fill="#05040F" stroke="currentColor" strokeWidth="1.6" />
+      <path d="M20 34 Q32 40 44 34" {...gold} strokeWidth="1" opacity="0.8" />
+    </>
+  ),
+  map: (
+    <>
+      <circle cx="32" cy="32" r="24" {...wash} />
+      <path d="M32 32 C38 24 50 25 52 33 C54 44 42 53 30 51 C20 49 13 42 12 34" {...line} />
+      <path d="M32 32 C26 40 14 39 12 31 C10 20 22 11 34 13 C44 15 50 22 52 29" {...line} />
+      <path d="M44 16 L50 10 L56 16" {...gold} strokeWidth="1.2" />
+      <circle cx="44" cy="40" r="3" {...gold} />
+      <circle cx="44" cy="40" r="1" fill={GOLD} />
+      <path d="M44 43 V48" {...gold} />
+    </>
+  ),
+  aliens: (
+    <>
+      <rect x="18" y="8" width="30" height="44" rx="4" {...line} opacity="0.5" transform="rotate(-10 33 30)" />
+      <rect x="20" y="12" width="30" height="44" rx="4" {...wash} />
+      <rect x="20" y="12" width="30" height="44" rx="4" {...line} />
+      <path d="M35 20 C41 20 43 25 42.5 29 C42 34 39 37 35 37 C31 37 28 34 27.5 29 C27 25 29 20 35 20 Z" {...line} strokeWidth="1.3" />
+      <path d="M31 28 L33.5 29 M39 28 L36.5 29" {...gold} strokeWidth="1.5" />
+      <path d="M25 46 H45 M25 50 H38" {...line} strokeWidth="1" opacity="0.6" />
+    </>
+  ),
+  quiz: (
+    <>
+      <circle cx="32" cy="32" r="22" {...wash} />
+      {Array.from({ length: 10 }).map((_, i) => {
+        const a0 = (i / 10) * Math.PI * 2 - Math.PI / 2, a1 = a0 + 0.48;
+        return <path key={i} d={`M${32 + Math.cos(a0) * 22} ${32 + Math.sin(a0) * 22} A22 22 0 0 1 ${32 + Math.cos(a1) * 22} ${32 + Math.sin(a1) * 22}`} {...(i < 6 ? gold : line)} strokeWidth="2.4" />;
+      })}
+      <path d="M27 26 Q27 21 32 21 Q37 21 37 26 Q37 30 32 31 V35" {...line} />
+      <circle cx="32" cy="41" r="1.6" fill="currentColor" />
+    </>
+  ),
+  facts: (
+    <>
+      <circle cx="32" cy="32" r="4" fill={GOLD} />
+      <circle cx="32" cy="32" r="11" {...line} />
+      <circle cx="32" cy="32" r="19" {...line} opacity="0.7" />
+      <circle cx="32" cy="32" r="27" {...line} strokeDasharray="2 4" opacity="0.5" />
+      <circle cx="43" cy="32" r="2.2" fill="currentColor" />
+      <circle cx="18" cy="21" r="2" {...gold} />
+    </>
+  ),
+  news: (
+    <>
+      <path d="M10 14 H48 V52 H14 Q10 52 10 48 Z" {...wash} />
+      <path d="M10 14 H48 V52 H14 Q10 52 10 48 Z" {...line} />
+      <path d="M48 22 H54 V48 Q54 52 50 52 H46" {...line} />
+      <path d="M16 21 H42" {...gold} strokeWidth="2.6" />
+      <rect x="16" y="28" width="11" height="10" {...line} strokeWidth="1" />
+      <path d="M31 29 H42 M31 34 H42 M16 43 H42 M16 47 H36" {...line} strokeWidth="1" opacity="0.6" />
+    </>
+  ),
   // ─── Artifacts (Update 5.58) ───
   cryptex: (
     <>
