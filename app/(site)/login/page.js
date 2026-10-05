@@ -35,10 +35,12 @@ export default function LoginPage() {
   const [tab, setTab] = useState("login"); // login | signup | magic | forgot
   // /login?tab=signup opens on Sign up; ?next=/games/tacet returns there after
   const [next, setNext] = useState("/account");
+  const [fromLyra, setFromLyra] = useState(false); // sent here by Lyra's welcome (components/LyraWelcome.js)
   useEffect(() => {
     try {
       const q = new URLSearchParams(window.location.search);
       if (q.get("tab") === "signup") setTab("signup");
+      if (q.get("from") === "lyra") setFromLyra(true);
       const n = q.get("next");
       if (n && n.startsWith("/") && !n.startsWith("//")) setNext(n);
     } catch (e) {
@@ -161,8 +163,14 @@ export default function LoginPage() {
   return (
     <div style={{ maxWidth: 420, margin: "0 auto", textAlign: "center" }}>
       <div className="page-title">
-        {tab === "signup" ? "Create an Account" : "Login"}
+        {tab === "signup" ? (fromLyra ? "Become Kin" : "Create an Account") : "Login"}
       </div>
+      {fromLyra && tab === "signup" && (
+        <div className="lw2-login-note">
+          <span className="mono">lyra &middot; your first assignment</span>
+          Pick a username and a password. That&rsquo;s it: it&rsquo;s free, and everything you make is yours to keep.
+        </div>
+      )}
 
       <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 20 }}>
         <TabBtn active={tab === "login"} onClick={() => { setTab("login"); setError(""); }}>Log in</TabBtn>

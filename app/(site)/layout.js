@@ -2,6 +2,7 @@ import Nav from "../../components/Nav";
 import Footer from "../../components/Footer";
 import ThemedBackground from "../../components/ThemedBackground";
 import LyraCompanion from "../../components/LyraCompanion";
+import LyraWelcome from "../../components/LyraWelcome";
 
 export default function SiteLayout({ children }) {
   return (
@@ -13,6 +14,7 @@ export default function SiteLayout({ children }) {
         <Footer />
       </div>
       <LyraCompanion />
+      <LyraWelcome />
     </div>
   );
 }

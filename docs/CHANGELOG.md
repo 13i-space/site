@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.60 — Lyra's welcome (Oct 2026)
+No SQL. After about 30 seconds on the site (counted across pages, tab
+visible), a signed-out visitor meets Lyra: she grows out of her corner to
+the middle of the screen - "Hi, I'm Lyra. Welcome to the 13i Universe. I'm
+here to help." - then gives their first assignment, become Kin: everything
+is free, membership is what saves it (an alien you can keep and send into
+the Survival Trials). "Create my username" goes straight to sign-up (titled
+Become Kin), which returns to /launch and her congratulations, even after
+a detour through Assignment 0000000 - Before. "Not now" lets them explore;
+she asks again in a week (components/LyraWelcome.js).
+
 ## Update 5.59 — The lab, the map and the Survival Trials (Oct 2026)
 No SQL needed (docs/v5.59-survival-champions.sql is for later).
 - **Alien Lab**: the vat now grows an ambiguous embryo (lib/embryo.js), not
