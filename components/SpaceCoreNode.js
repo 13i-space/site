@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { SPACECORE_ATTRS, SPACECORE_STAGES, SPACECORE_TIME_SCALE, stageProgress } from "../lib/spacecore";
+import { SPACECORE_ATTRS, SPACECORE_STAGES, SPACECORE_MAIN_STAGES, SPACECORE_TIME_SCALE, stageProgress } from "../lib/spacecore";
 
 // The SpaceCore panel on the Node (/account). Server-rendered from the
 // crew's saved summary (spacecore_players.summary, written by the game) and
@@ -93,7 +93,7 @@ export default function SpaceCoreNode({ player, colony }) {
       {st ? (
         <div style={{ marginTop: 12 }}>
           <div className="mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 10.5, color: "#8A8FBF" }}>
-            <span>{st.name.toUpperCase()} &middot; GREAT WORK {colony.stage + 1} OF {SPACECORE_STAGES.length}</span>
+            <span>{st.name.toUpperCase()} &middot; {colony.stage < SPACECORE_MAIN_STAGES ? `GREAT WORK ${colony.stage + 1} OF ${SPACECORE_MAIN_STAGES}` : `SEASON PROJECT ${colony.stage - SPACECORE_MAIN_STAGES + 1} OF ${SPACECORE_STAGES.length - SPACECORE_MAIN_STAGES}`}</span>
             <span>{Math.floor(prog * 100)}%</span>
           </div>
           <div style={{ height: 5, background: "#262A55", borderRadius: 2, marginTop: 4, overflow: "hidden" }}>
