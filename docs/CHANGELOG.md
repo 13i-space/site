@@ -3,6 +3,53 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.61 — SpaceCore: the survival update (Oct 2026)
+Needs docs/v5.61-spacecore-survival.sql (the game says "outdated" until it
+runs: that's the 5.42 safeguard). Built from a three-hour playtest by one of
+Paul's sons, plus Paul's own asks.
+- **Fixes**: Lyra stays closed when you close her (×): small talk is dropped
+  for four minutes, missions and level-ups wait behind a badge on her orb,
+  and only urgent calls (a storm, a blackout, a finished Great Work) open her
+  - after which she closes again. The cause was every new message
+  un-minimising her. "What happens when the bar is full" is now answered in
+  the Dashboard and by Lyra.
+- **Season**: the Launch Facility (Great Work 5, the ship on its pad) is the
+  season's main objective. Finishing any Great Work gives every crew +10% for
+  a day. After it come six Season projects, one at a time: ship upgrades
+  (Heat Shield, Cargo Bay, Ion Drive, drawn onto the ship) and base
+  improvements (Solar Farm, Comms Tower, Observatory). Same three places as
+  ever: the game's STAGES, lib/spacecore.js, spacecore_needs().
+- **Crew needs**: Oxygen, Food, Morale gauges. Pressurized rooms and the
+  lander refill oxygen; H eats a ration, a Galley cooks meals; a warm home
+  with comforts and other Kin nearby lift morale. Below 15% the borer slows;
+  at zero for a minute you black out, get towed to the lander, and leave 25%
+  of your ore at your wreck until you drive back to it. Nothing drains while
+  away.
+- **Abilities**: Dash (Shift), Overdrive (Space: double drill speed, no extra
+  heat). Touch pad gains DASH / DRILL+ / SCAN / EAT.
+- **Power**: Solar panel (near the surface), Geothermal tap (deep, needs
+  research), Reactor (late game, pricier), Battery, Wire (Build mode only).
+  Grids form from touching pieces and wire; energy is tracked per grid and
+  shown on hover and in the Dashboard. Chargers near the surface have a small
+  solar mast, so early crews can charge. Powered auto-drills run 50% faster.
+- **Rebalance**: more ice (+45%) and iron (+56%, much more of it deep), more
+  iron from basalt; caves and lava tubes didn't move. Equipment costs more
+  but builds faster; airlocks and lamps are instant; big machines take
+  longer (Reactor ~20 real min). Times show Mars and real time.
+- **Auto-drills** scale with how much rock surrounds them and must be
+  visited to empty (C within 16 m); greenhouse food is picked up by visiting.
+- **Building**: click-and-drag lays lines; T turns airlocks (door / floor
+  hatch) and lamps; airlocks slide open as someone walks up; 1500-piece limit
+  per Kin (also enforced in SQL); rooms show their builder's name; hover shows
+  who dug or built anything.
+- **Scanner** shows range, battery cost, what's in range, and a range ring.
+- **Research**: three projects per attribute, one at a time on Mars time.
+- **Borer paint shop** (Dashboard > Your borer): body, trim, drill head,
+  headlamp, decal. Other Kin see it (spacecore_crews now returns it).
+- **Dust storms**: one shared schedule from the clock, about one an hour; a
+  minute's warning to everyone, then ~100 s of dust on the surface.
+- Three new missions (Home comforts, Store the sun, First research).
+
 ## Update 5.60 — Lyra's welcome (Oct 2026)
 No SQL. After about 30 seconds on the site (counted across pages, tab
 visible), a signed-out visitor meets Lyra: she grows out of her corner to

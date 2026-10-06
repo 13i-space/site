@@ -4,6 +4,12 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.61 (needs docs/v5.61-spacecore-survival.sql): the SpaceCore
+  survival update - Lyra stays closed, crew needs + blackouts, power grids,
+  dust storms, research, borer paint, drag-building, Season projects after
+  the Launch Facility. Tested in a local harness (no database in the cloud
+  session): check a real save, a real dust storm and other Kin's colors on
+  the first deploy.
 - Update 5.60 (no SQL): Lyra's welcome and the become-Kin first
   assignment (components/LyraWelcome.js). The congratulations step needs a
   real sign-up to see: check it on the first deploy.

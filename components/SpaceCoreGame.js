@@ -17,10 +17,10 @@ import { SPACECORE_TIME_SCALE } from "../lib/spacecore";
 //   tiles      -> spacecore_set_tiles (dug tunnels / built blocks)
 //   sync       -> spacecore_sync (adds your mining to the Commons) -> world (colony, new tiles, crews, news, boosts)
 //   contribute -> spacecore_contribute -> contributed
-// Needs docs/v5.39-spacecore.sql.
+// Needs docs/v5.39-spacecore.sql, then the later SpaceCore SQL files up to docs/v5.61-spacecore-survival.sql.
 
 const GAME = "spacecore";
-const SCHEMA_VERSION = 542; // spacecore_version() in docs/v5.42-spacecore-saving.sql
+const SCHEMA_VERSION = 561; // spacecore_version() in docs/v5.61-spacecore-survival.sql
 const DAY = 86400000;
 const BOOST_REFRESH = 5 * 60000;
 
@@ -254,7 +254,7 @@ export default function SpaceCoreGame() {
     const copy = {
       signedout: { title: "Sign in to join the crew", body: "SpaceCore is one world that every Kin builds together, so your crew member is tied to your account.", href: "/login", cta: "Sign in or create an account" },
       nousername: { title: "Claim your username first", body: "Your crew member flies under your Kin username, so other crews know whose tunnels they're in.", href: "/account", cta: "Go to your Node" },
-      outdated: { title: "The colony database needs an update", body: "This version of SpaceCore needs the latest database step, or what you dig won't be saved. Run docs/v5.42-spacecore-saving.sql in Supabase (and docs/v5.40-spacecore-v2.sql first, if that hasn't been run), then reload this page.", href: "/create", cta: "Back to Create" },
+      outdated: { title: "The colony database needs an update", body: "This version of SpaceCore needs the latest database step, or what you dig won't be saved. Run docs/v5.61-spacecore-survival.sql in Supabase (and docs/v5.42-spacecore-saving.sql first, if that hasn't been run), then reload this page.", href: "/create", cta: "Back to Create" },
       nosetup: { title: "The colony isn't set up yet", body: "SpaceCore's database tables haven't been created. Run docs/v5.39-spacecore.sql in Supabase, then reload this page.", href: "/create", cta: "Back to Create" },
     }[status];
     return (

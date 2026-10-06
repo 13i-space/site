@@ -65,6 +65,31 @@ a{color:var(--lav)}
 #dpad button{background:rgba(17,19,48,.8);border:1px solid var(--line2);border-radius:6px;color:var(--lav);font-size:18px;touch-action:none;user-select:none;-webkit-user-select:none}
 #dpad button:active{background:rgba(139,149,246,.25)}
 @media (hover:hover) and (pointer:fine) and (min-width:760px){#dpad{display:none}}
+#dpad button.ab{font-family:var(--mono);font-size:9.5px;letter-spacing:.5px;color:var(--warm)}
+.storm{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:rgba(60,28,18,.92);border:1px solid #C97B6E;border-radius:4px;padding:7px 14px;font-family:var(--mono);font-size:12px;color:#ffd9c2;display:flex;gap:10px;align-items:baseline;z-index:3;pointer-events:none;white-space:nowrap}
+.storm b{letter-spacing:1.4px}
+.storm.on{background:rgba(120,50,26,.95);animation:stormPulse 1.2s ease-in-out infinite}
+@keyframes stormPulse{50%{border-color:#ffb38f}}
+.scancard{position:absolute;left:50%;top:54px;transform:translateX(-50%);background:rgba(10,11,28,.9);border:1px solid var(--warm);border-radius:4px;padding:7px 12px;font-family:var(--mono);font-size:11px;color:var(--text);display:flex;flex-direction:column;gap:2px;max-width:min(520px,calc(100% - 24px));pointer-events:none}
+.scancard b{color:var(--warm);letter-spacing:1.4px;font-size:10px}
+.tip{position:absolute;background:rgba(10,11,28,.9);border:1px solid var(--line2);border-radius:3px;padding:5px 8px;font-family:var(--mono);font-size:10.5px;line-height:1.5;color:var(--text);pointer-events:none;max-width:260px;z-index:2}
+.ab-row{display:flex;gap:8px}
+.ab-row span{color:var(--muted)}
+.ab-row em{font-style:normal;color:var(--ok)}
+.rtree{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.rbranch{border:1px solid var(--line);border-radius:4px;padding:8px;background:var(--panel);display:flex;flex-direction:column;gap:6px}
+.rbranch .an{font-family:var(--display);font-style:italic;font-size:15px}
+.rnode{border-left:2px solid var(--line2);padding:3px 0 3px 8px;display:flex;flex-direction:column;gap:3px;font-size:12px}
+.rnode small{font-family:var(--mono);font-size:10px;color:var(--muted);line-height:1.4}
+.rnode.done{border-color:var(--ok)}.rnode.done b{color:var(--ok)}
+.rnode.running{border-color:var(--warm)}
+.rnode.locked{opacity:.5}
+.swatches{display:flex;flex-wrap:wrap;gap:5px}
+.swatches button{width:24px;height:24px;border-radius:50%;border:2px solid var(--line2);padding:0}
+.swatches button.on{border-color:#fff}
+.swatches .txt{width:auto;border-radius:3px;padding:2px 8px;font-family:var(--mono);font-size:11px;background:var(--panel);color:var(--lav);height:auto}
+#lookPrev{width:120px;height:64px;border:1px solid var(--line);border-radius:4px;background:#170d12}
+.needs3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 
 /* the borer's instrument cluster */
 #gauges{position:absolute;left:12px;top:12px;width:228px;background:rgba(10,11,28,.86);border:1px solid var(--line2);border-radius:4px;padding:8px 10px;display:flex;flex-direction:column;gap:5px;font-family:var(--mono);font-size:10.5px;color:var(--muted);pointer-events:none}
@@ -98,6 +123,8 @@ a{color:var(--lav)}
 #lyraAsk{display:flex;gap:5px}
 #lyraAsk input{flex:1;min-width:0;background:var(--panel);border:1px solid var(--line2);border-radius:4px;color:var(--text);font:inherit;font-size:12px;padding:6px 8px}
 #lyra.min .lyra-body{display:none}
+.lyra-dot{position:absolute;left:38px;bottom:38px;min-width:17px;height:17px;padding:0 4px;border-radius:9px;background:var(--warm);color:#14163A;font-family:var(--mono);font-size:10px;font-weight:600;display:flex;align-items:center;justify-content:center;pointer-events:none!important}
+#lyra.right .lyra-dot{left:auto;right:38px}
 .lyra-x{background:none;border:none;color:var(--muted);font-size:15px;line-height:1;padding:0 2px;margin-left:4px}
 .lyra-x:hover{color:var(--text)}
 #lyra.right{left:auto;right:12px;flex-direction:row-reverse}
@@ -174,14 +201,21 @@ a{color:var(--lav)}
       <div class="g"><span class="gl">BATTERY</span><span class="gbar"><i id="gBat"></i></span><span class="gv" id="gBatV">100%</span></div>
       <div class="g"><span class="gl">DRILL</span><span class="gbar"><i id="gRpm"></i></span><span class="gv" id="gRpmV">0 rpm</span></div>
       <div class="g"><span class="gl">DRILL °C</span><span class="gbar"><i id="gTmp"></i></span><span class="gv" id="gTmpV">20°</span></div>
+      <div class="g"><span class="gl">O₂</span><span class="gbar"><i id="gO2"></i></span><span class="gv" id="gO2V">100%</span></div>
+      <div class="g"><span class="gl">FOOD</span><span class="gbar"><i id="gFood"></i></span><span class="gv" id="gFoodV">100%</span></div>
+      <div class="g"><span class="gl">MORALE</span><span class="gbar"><i id="gMood"></i></span><span class="gv" id="gMoodV">100%</span></div>
       <div class="gfoot"><span id="gOut">Outside −63°C</span><span id="gState">Surface</span></div>
+      <div class="gfoot" id="gAb"></div>
     </div>
+    <div id="storm" class="storm" hidden></div>
+    <div id="scanCard" class="scancard" hidden></div>
+    <div id="tip" class="tip" hidden></div>
     <canvas id="mini" width="512" height="200" hidden title="Map of what you've explored (M to resize)"></canvas>
     <div id="toasts"></div>
     <div id="dpad" hidden>
-      <span></span><button type="button" data-d="up" aria-label="Up">▲</button><span></span>
-      <button type="button" data-d="left" aria-label="Left">◀</button><span></span><button type="button" data-d="right" aria-label="Right">▶</button>
-      <span></span><button type="button" data-d="down" aria-label="Down">▼</button><span></span>
+      <button type="button" class="ab" data-ab="dash" aria-label="Dash">DASH</button><button type="button" data-d="up" aria-label="Up">▲</button><button type="button" class="ab" data-ab="over" aria-label="Overdrive">DRILL+</button>
+      <button type="button" data-d="left" aria-label="Left">◀</button><button type="button" class="ab" data-ab="scan" aria-label="Scan">SCAN</button><button type="button" data-d="right" aria-label="Right">▶</button>
+      <button type="button" class="ab" data-ab="eat" aria-label="Eat a ration">EAT</button><button type="button" data-d="down" aria-label="Down">▼</button><span></span>
     </div>
     <div id="lyra" hidden>
       <button id="lyraOrb" class="orb" type="button" aria-label="Show or hide Lyra">
@@ -192,13 +226,14 @@ a{color:var(--lav)}
           <circle cx="26" cy="26" r="4.5" fill="#DCDFFF"/>
         </svg>
       </button>
+      <span id="lyraDot" class="lyra-dot" hidden></span>
       <div class="lyra-body">
         <div class="lyra-name"><span>LYRA · COMMS</span><span><span id="lyraCount"></span> <button id="lyraClose" class="lyra-x" type="button" aria-label="Close Lyra's messages" title="Close">×</button></span></div>
         <div id="lyraText" class="lyra-text"></div>
         <div id="lyraMission" class="lyra-mission"></div>
         <div class="lyra-row">
           <button id="lyraNext" class="btn sm" type="button">Got it</button>
-          <button id="lyraScan" class="btn sm" type="button">Scan (Q)</button>
+          <button id="lyraScan" class="btn sm" type="button" title="Scan">Scan (Q)</button>
           <button id="lyraAskBtn" class="btn sm" type="button">Ask Lyra</button>
         </div>
         <form id="lyraAsk" hidden><input id="lyraQ" maxlength="400" placeholder="Ask about SpaceCore, Mars or 13i" autocomplete="off"><button class="btn sm" type="submit">Send</button></form>
@@ -227,7 +262,7 @@ a{color:var(--lav)}
 (() => {
 'use strict';
 const $ = s => document.querySelector(s);
-const cv = $('#cv'), ctx = cv.getContext('2d');
+const cv = $('#cv'); let ctx = cv.getContext('2d'); const ctxSwap=c=>{ ctx=c; };
 const dk = document.createElement('canvas'), dctx = dk.getContext('2d');
 const GAME = 'spacecore';
 const inFrame = window.parent && window.parent !== window;
@@ -242,8 +277,15 @@ const AIR=0, TUN=1, REG=2, BAS=3, ICE=4, MET=5, BED=6, FILL=7;
 const IRONP=10, GLASS=11, LOCK=12, O2=13, GREEN=14, LAMP=15, RIG=16;
 const BRICK=20, BASB=21, HEMA=22, OLIV=23, GYPS=24, ICEB=25, TGLASS=26, ALLOY=27;
 const HEATER=30, SCRUB=31, SENSOR=32, REACTOR=33, CHARGER=34;
-const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER]);
+// Update 5.61: power, comforts and rotated pieces
+const SOLAR=35, GEOTH=36, BATT=37, WIRE=38, GALLEY=39, BUNK=40, LOCKH=41, LAMPF=42;
+const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER,SOLAR,GEOTH,BATT,WIRE,GALLEY,BUNK,LAMPF]);
 const isEquip = t => EQUIP_T.has(t);
+const isLock = t => t===LOCK||t===LOCKH;
+const POWER_T = new Set([WIRE,SOLAR,GEOTH,REACTOR,BATT,CHARGER,RIG]);
+const ROTATE = {[LOCK]:LOCKH, [LOCKH]:LOCK, [LAMP]:LAMPF, [LAMPF]:LAMP};
+const BASE_T = {[LOCKH]:LOCK, [LAMPF]:LAMP};
+const SOLAR_DEPTH = 8, GEO_DEPTH = 40, BUILD_CAP = 1500, REACH = 6, NEAR = 8;
 const isRockT = t => (t>=REG&&t<=MET) || t===FILL;
 const RES = ['iron','silicon','ice','rare','food'];
 const RNAME = {iron:'Iron', silicon:'Silicon', ice:'Ice', rare:'Rare metals', food:'Food'};
@@ -259,6 +301,49 @@ const ATTRS = [
   {k:'fab', n:'Fabrication', e:'Building and crafting cost 6% less and crafting runs 8% faster per point.'},
   {k:'spirit', n:'Crew Spirit', e:'Your Great Work contributions count 10% more per point.'},
 ];
+// Research (Update 5.61): three projects branch from each of the six attributes. A project
+// needs that attribute trained high enough and the one before it in its branch, costs
+// resources and runs on Mars time alongside training.
+const RT=[{cost:{iron:20,silicon:20},min:60},{cost:{iron:60,silicon:60,ice:15,rare:2},min:240},{cost:{iron:150,silicon:150,ice:40,rare:8},min:600}];
+const RESEARCH=[
+  ['eng','eng1','Fast charge','Chargers fill your borer 50% faster.'],
+  ['eng','eng2','Cooled bits','Your drill heats up 30% slower.'],
+  ['eng','eng3','Long overdrive','Overdrive lasts twice as long.'],
+  ['geo','geo1','Prospecting','25% more by-products from everything you dig.'],
+  ['geo','geo2','Geothermal tap','Unlocks the Geothermal tap in the Fabricator: steady power from deep rock.'],
+  ['geo','geo3','Deep assay','Auto-drills mine 25% more.'],
+  ['end','end1','Spare tanks','Oxygen lasts 30% longer outside a pressurized room.'],
+  ['end','end2','Iron stomach','Hunger drops 30% slower.'],
+  ['end','end3','Second wind','After a blackout you leave only 10% of your ore behind, not 25%.'],
+  ['nav','nav1','Thrusters','Dash costs half the battery and lasts longer.'],
+  ['nav','nav2','Wide scan','Your scanner reaches 50% further.'],
+  ['nav','nav3','Deep sight','You see ice and metal 2 blocks further as you drive.'],
+  ['fab','fab1','Quick-fab','Everything in the Fabricator builds 25% faster.'],
+  ['fab','fab2','Lean designs','Equipment costs 15% less to craft.'],
+  ['fab','fab3','Twin line','The Fabricator queue holds 8 instead of 4.'],
+  ['spirit','spirit1','Good company','Morale from working near other Kin is doubled.'],
+  ['spirit','spirit2','Home cooking','Meals from a Galley fill you 50% more.'],
+  ['spirit','spirit3','Colony voice','Your Commons dividend rises from 10% to 12%.'],
+].map(([a,id,n,e],i)=>({a,id,n,e,tier:i%3,...RT[i%3]}));
+const hasRes=id=>!!(S.research&&S.research.done.includes(id));
+const fabMax=()=>hasRes('fab3')?8:4;
+function researchState(r){
+  if(hasRes(r.id)) return 'done';
+  if(S.research.cur&&S.research.cur.id===r.id) return 'running';
+  if(r.tier>0&&!hasRes(RESEARCH.find(x=>x.a===r.a&&x.tier===r.tier-1).id)) return 'locked';
+  if(S.attrs[r.a]<r.a2) return 'locked';
+  return 'open';
+}
+RESEARCH.forEach(r=>{ r.a2=r.tier===0?1:r.tier===1?3:5; });
+function startResearch(id){
+  const r=RESEARCH.find(x=>x.id===id); if(!r) return;
+  if(S.research.cur){ toast('One research project at a time.'); return; }
+  const st=researchState(r); if(st!=='open'){ toast(st==='done'?'Already researched.':`Needs ${ATTRS.find(a=>a.k===r.a).n} ${r.a2}${r.tier?' and the project before it':''}.`); return; }
+  if(!canPay(r.cost)){ toast(`Research ${r.n} needs ${costText(r.cost)}.`); return; }
+  pay(r.cost); S.research.cur={id, left:r.min, total:r.min};
+  chime([440,554,659]); toast(`Researching ${r.n}: ${fmtBoth(r.min)}.`); save(true);
+}
+
 // Blocks: building materials from Mars itself. Placed straight from your resources.
 const BLOCKS = [
   {id:'brick', tile:BRICK, n:'Sintered brick', cost:{iron:2}, d:'Regolith baked into brick. The classic Mars build.'},
@@ -271,29 +356,37 @@ const BLOCKS = [
   {id:'glass', tile:GLASS, n:'Glass', cost:{silicon:2}, d:'Clear glass. Seals a room and lets light through.'},
   {id:'tglass', tile:TGLASS, n:'Tinted glass', cost:{silicon:2, iron:1}, d:'Amber glass.'},
   {id:'alloy', tile:ALLOY, n:'Alloy panel', cost:{iron:2, rare:1}, d:'Rare-metal alloy. Gold, and it shows.'},
+  {id:'wire', tile:WIRE, n:'Wire', cost:{iron:1}, d:'Carries power between solar panels, batteries, chargers and drills. Only shows in Build mode.'},
   {id:'fill', tile:FILL, n:'Backfill', cost:{}, d:'Pack rock back into a tunnel you dug. Free.'},
   {id:'remove', tile:-1, n:'Remove', cost:{}, d:'Take back a block (half refund) or equipment (back to your kit).'},
 ];
-// Equipment: crafted in the Fabricator first (takes Mars time), then placed from your kit.
+// Equipment: crafted in the Fabricator, then placed from your kit. Basic pieces are instant;
+// the bigger the machine, the longer it takes (min is Mars minutes; Mars runs 6x real time).
 const EQUIPS = [
-  {id:'lock', tile:LOCK, n:'Airlock', cost:{iron:3, silicon:2}, min:10, d:'Seals a room but lets you pass through.'},
-  {id:'lamp', tile:LAMP, n:'Lamp', cost:{iron:1, silicon:1}, min:10, d:'Lights the dark.'},
-  {id:'o2', tile:O2, n:'O₂ pump', cost:{iron:5, silicon:3, ice:3}, min:30, d:'Pressurizes a fully sealed room.'},
-  {id:'heater', tile:HEATER, n:'Heater', cost:{iron:4, silicon:2, rare:1}, min:30, d:'Mars sits around −60°C. Warms a sealed room.'},
-  {id:'scrub', tile:SCRUB, n:'CO₂ scrubber', cost:{iron:3, silicon:4, ice:2}, min:40, d:'Keeps a sealed room’s air breathable.'},
-  {id:'green', tile:GREEN, n:'Greenhouse', cost:{iron:3, silicon:5, ice:4}, min:40, d:'Grows food in a pressurized room, twice as fast in a habitable one.'},
-  {id:'sensor', tile:SENSOR, n:'Radiation sensor', cost:{silicon:2, rare:1}, min:20, d:'Reads the radiation. Rooms deeper than 24 m are shielded.'},
-  {id:'rig', tile:RIG, n:'Auto-drill', cost:{iron:8, silicon:4}, min:60, d:'Must touch rock. Mines while you are away.'},
-  {id:'charger', tile:CHARGER, n:'Charger', cost:{iron:6, silicon:4, rare:1}, min:40, d:'Charges your borer. Needs a reactor within 10 blocks.'},
-  {id:'reactor', tile:REACTOR, n:'Reactor', cost:{iron:10, silicon:6, ice:2, rare:3}, min:120, d:'A small fission reactor. Powers chargers within 10 blocks.'},
+  {id:'lock', tile:LOCK, n:'Airlock', cost:{iron:5, silicon:3}, min:0, rot:true, d:'Seals a room and opens when someone walks up to it. Rotate (T) for a floor hatch.'},
+  {id:'lamp', tile:LAMP, n:'Lamp', cost:{iron:2, silicon:1}, min:0, rot:true, d:'Lights the dark. Rotate (T) for a standing lamp. Counts as a comfort at home.'},
+  {id:'solar', tile:SOLAR, n:'Solar panel', cost:{iron:6, silicon:8}, min:5, d:`Power for early crews. Works within ${SOLAR_DEPTH*2} m of the surface, where light still reaches down the shaft. Dust storms cut it.`},
+  {id:'charger', tile:CHARGER, n:'Charger', cost:{iron:8, silicon:6}, min:10, d:'Charges your borer. Needs power: a solar panel, battery or reactor touching it or wired to it. Near the surface it has a small solar mast of its own.'},
+  {id:'o2', tile:O2, n:'O₂ pump', cost:{iron:8, silicon:5, ice:5}, min:10, d:'Pressurizes a fully sealed room, and refills your oxygen inside it.'},
+  {id:'galley', tile:GALLEY, n:'Galley', cost:{iron:8, silicon:6, ice:3}, min:10, d:'A kitchen. In a pressurized room it cooks your Food into proper meals while you are there. A comfort.'},
+  {id:'bunk', tile:BUNK, n:'Bunk', cost:{iron:6, silicon:4}, min:8, d:'Somewhere to sleep. A comfort: lifts morale in a pressurized room.'},
+  {id:'heater', tile:HEATER, n:'Heater', cost:{iron:8, silicon:4, rare:1}, min:10, d:'Mars sits around −60°C. Warms a sealed room. Home needs heat before it feels like home.'},
+  {id:'scrub', tile:SCRUB, n:'CO₂ scrubber', cost:{iron:6, silicon:8, ice:4}, min:12, d:'Keeps a sealed room’s air breathable.'},
+  {id:'green', tile:GREEN, n:'Greenhouse', cost:{iron:6, silicon:10, ice:8}, min:15, d:'Grows food in a pressurized room, twice as fast in a habitable one. Pick it up by visiting.'},
+  {id:'sensor', tile:SENSOR, n:'Radiation sensor', cost:{silicon:4, rare:1}, min:8, d:'Reads the radiation. Rooms deeper than 24 m are shielded.'},
+  {id:'rig', tile:RIG, n:'Auto-drill', cost:{iron:14, silicon:8}, min:20, d:'Must touch rock. The more rock around it, the faster it mines. Powered, it runs 50% faster.'},
+  {id:'battery', tile:BATT, n:'Battery', cost:{iron:8, silicon:10, rare:1}, min:15, d:'Stores 300 kWh for its grid, so chargers keep working through a dust storm.'},
+  {id:'geoth', tile:GEOTH, n:'Geothermal tap', cost:{iron:20, silicon:12, rare:3}, min:45, res:'geo2', d:`Mid-game power from the planet's heat. Only works ${GEO_DEPTH*2} m down or deeper. Never stops.`},
+  {id:'reactor', tile:REACTOR, n:'Reactor', cost:{iron:30, silicon:20, ice:6, rare:8}, min:120, d:'Late-game power: a small fission reactor. Big output, and it powers chargers within 10 blocks even without wire.'},
 ];
 const MOVE = {id:'move', tile:-2, n:'Move', cost:{}, d:'Pick up one of your pieces of equipment, then tap where it should go.'};
+const TURN = {id:'rotate', tile:-3, n:'Turn', cost:{}, d:'Tap one of your airlocks or lamps to turn it.'};
 const REMOVE = BLOCKS.find(b=>b.id==='remove');
-const EQUIP_PALETTE = EQUIPS.concat([MOVE, REMOVE]);
-const ITEMS = BLOCKS.concat(EQUIPS,[MOVE]);
+const EQUIP_PALETTE = EQUIPS.concat([MOVE, TURN, REMOVE]);
+const ITEMS = BLOCKS.concat(EQUIPS,[MOVE,TURN]);
 const isKit = b => !!b && EQUIPS.includes(b);
 const itemById = id => ITEMS.find(i=>i.id===id);
-const itemByTile = t => ITEMS.find(i=>i.tile===t);
+const itemByTile = t => ITEMS.find(i=>i.tile===(BASE_T[t]||t));
 // Must match lib/spacecore.js and spacecore_needs() in docs/v5.39-spacecore.sql
 const STAGES = [
   {n:'Landing Base', x:258, need:{iron:800, silicon:500, ice:200, rare:0}, pat:[
@@ -310,7 +403,28 @@ const STAGES = [
     "......r.....",".....###....",".....#w#..p.",".....###..p.",".....###..p.",".....###..p.",
     "....#####.p.","....#####.p.","....##w##.p.","....#####.p.","....#####.p.","...#######p.",
     "...##...##p.","############","#ww######ww#","############"]},
+  // Season projects (Update 5.61): once the Launch Facility stands, the colony keeps
+  // improving the ship it built and the base around it. Same rules as a Great Work.
+  {n:'Ship: Heat Shield', proj:'ship', x:285, need:{iron:1500, silicon:1200, ice:0, rare:60}, pat:[
+    "............","............","............","............","............","............",
+    "............","............","............","....h...h...","....h...h...","....hh.hh...",
+    "............","............","............","............"]},
+  {n:'Base: Solar Farm', proj:'base', x:226, need:{iron:1200, silicon:2500, ice:300, rare:20}, pat:[
+    "sss.sss.sss.sss.sss.","sss.sss.sss.sss.sss.",".|...|...|...|...|..",".|...|...|...|...|..","####################"]},
+  {n:'Ship: Cargo Bay', proj:'ship', x:285, need:{iron:2500, silicon:1500, ice:500, rare:80}, pat:[
+    "............","............","............","............","............","...c.....c..",
+    "...c.....c..","...c.....c..","...c.....c..","...c.....c..","............","............",
+    "............","............","............","............"]},
+  {n:'Base: Comms Tower', proj:'base', x:300, need:{iron:1800, silicon:1800, ice:200, rare:120}, pat:[
+    "..rr..","..||..","..||..",".r||r.","..||..","..||..",".|..|.",".|..|.","|....|","|....|","######","#w##w#"]},
+  {n:'Ship: Ion Drive', proj:'ship', x:285, need:{iron:3000, silicon:2500, ice:1500, rare:200}, pat:[
+    "............","............","............","............","............","............",
+    "............","............","............","............","............",".....iii....",
+    ".....iii....","............","............","............"]},
+  {n:'Base: Observatory', proj:'base', x:305, need:{iron:2000, silicon:3000, ice:800, rare:150}, pat:[
+    "....dddd.p..","..dddddddd..",".dddddddddd.",".dddddddddd.","############","#ww######ww#","############"]},
 ];
+const MAIN_STAGES = 5;                       // Great Works 1-5 are the season's main objective
 STAGES.forEach(st => {
   st.cells = [];
   for (let r = st.pat.length - 1; r >= 0; r--) for (let c = 0; c < st.pat[r].length; c++)
@@ -380,10 +494,26 @@ function genWorld(){
       x+=dir; if(r()<.18) y+=r()<.5?-1:1; y=clamp(y,GY+10,H-8);
     }
   }
+  // Update 5.61 rebalance, from a three-hour playtest: more ice, and iron that isn't only
+  // near the surface. These run after everything above (so caves and tubes don't move)
+  // and only turn plain rock into ore, never open space.
+  const r2 = mulberry32(SEED+561);
+  function vein(type,n,dmin,dmax,smin,smax,on){
+    for(let i=0;i<n;i++){
+      let x=2+Math.floor(r2()*(W-4)), y=GY+dmin+Math.floor(r2()*(dmax-dmin));
+      const len=smin+Math.floor(r2()*(smax-smin));
+      for(let k=0;k<len;k++){
+        if(inside(x,y)&&on.includes(w[idx(x,y)])) w[idx(x,y)]=type;
+        const d=Math.floor(r2()*4); x+=[1,-1,0,0][d]; y+=[0,0,1,-1][d];
+      }
+    }
+  }
+  vein(ICE,120,4,90,4,12,[REG,BAS]);        // ice: about a third more, mostly in reach
+  vein(REG,650,14,186,6,16,[BAS]);          // iron-rich regolith pockets all the way down
   return w;
 }
 world = genWorld();
-const passable=(x,y)=>{const t=tile(x,y); if(t===AIR) return y===GY-1; return t===TUN||t===LOCK||isEquip(t);};
+const passable=(x,y)=>{const t=tile(x,y); if(t===AIR) return y===GY-1; return t===TUN||isLock(t)||isEquip(t);};
 const diggable=isRockT;
 const interior=t=>t===TUN||isEquip(t);
 function applyTiles(list, skipMine){
@@ -415,29 +545,100 @@ function recomputePressure(){
       }
     }
     if(!sealed) continue;
-    const room={id:rooms.length, size:cells.length, heat:0, scrub:0, sensor:0, minY:H, mine:0};
-    for(const c of cells){ press[c]=1; regionOf[c]=room.id; const t=world[c]; if(t===HEATER) room.heat++; else if(t===SCRUB) room.scrub++; else if(t===SENSOR) room.sensor++; room.minY=Math.min(room.minY,(c/W)|0); if(own[c]===1) room.mine++; }
+    const room={id:rooms.length, size:cells.length, heat:0, scrub:0, sensor:0, galley:0, bunk:0, lamp:0, green:0, minY:H, mine:0, sx:0, owners:{}};
+    for(const c of cells){ press[c]=1; regionOf[c]=room.id; const t=world[c]; if(t===HEATER) room.heat++; else if(t===SCRUB) room.scrub++; else if(t===SENSOR) room.sensor++; else if(t===GALLEY) room.galley++; else if(t===BUNK) room.bunk++; else if(t===LAMP||t===LAMPF) room.lamp++; else if(t===GREEN) room.green++;
+      const cy=(c/W)|0; if(cy<room.minY){ room.minY=cy; } room.sx+=c%W; if(own[c]===1) room.mine++; if(own[c]) room.owners[own[c]]=(room.owners[own[c]]||0)+1; }
     room.habitable=room.heat>0&&room.scrub>0; room.shielded=depthOf(room.minY)>=12;
+    room.cx=room.sx/cells.length;
+    // whose home is it? whoever built and dug most of it
+    let bo=0, bn=0; for(const [o,n] of Object.entries(room.owners)) if(n>bn){ bn=n; bo=+o; } room.owner=bo;
+    // comforts make a home: heat first, then a bunk, a galley, light and something green
+    room.comfort=room.heat?Math.min(4,(room.bunk?1:0)+(room.galley?1:0)+(room.lamp?1:0)+(room.green?1:0)):0;
     rooms.push(room);
   }
   // what's yours, cached so nothing scans the whole world every frame
-  const s={press:0, green:0, greenHab:0, heatRoom:0, habitable:0, sensorDeep:0, reactors:[], chargers:[], powered:[]};
+  const s={press:0, green:0, greenHab:0, heatRoom:0, habitable:0, sensorDeep:0, amenity:0, built:0, reactors:[], chargers:[], powered:[], greens:[], grids:[], gridOf:new Map(), battOnGrid:0};
   const habRooms=new Set();
   for(let i=0;i<W*H;i++){
-    const t=world[i]; if(t<O2||own[i]!==1) continue;
+    const t=world[i]; if(own[i]!==1) continue;
+    if(t>=10) s.built++;
+    if(t<O2) continue;
     const rm=press[i]?rooms[regionOf[i]]:null;
     if(t===O2&&rm) s.press++;
-    else if(t===GREEN&&rm){ s.green++; if(rm.habitable) s.greenHab++; }
+    else if(t===GREEN){ s.greens.push(i); if(rm){ s.green++; if(rm.habitable) s.greenHab++; } }
     else if(t===HEATER&&rm) s.heatRoom++;
     else if(t===SENSOR&&rm&&rm.shielded) s.sensorDeep++;
     else if(t===REACTOR) s.reactors.push(i);
     else if(t===CHARGER) s.chargers.push(i);
+    else if((t===BUNK||t===GALLEY)&&rm&&rm.habitable) s.amenity++;
     if(rm&&rm.habitable) habRooms.add(rm.id);
   }
   s.habitable=habRooms.size;
-  for(const c of s.chargers){ const cx=c%W, cy=(c/W)|0; if(s.reactors.some(rr=>Math.max(Math.abs(rr%W-cx),Math.abs(((rr/W)|0)-cy))<=10)) s.powered.push(c); }
   my=s;
+  buildGrids();
 }
+// ---------- power ----------
+// A grid is your power pieces joined by touching each other or by wire. Solar works near
+// the surface, geothermal deep down, reactors anywhere (and still reach chargers within
+// 10 blocks without wire, as they always have). Batteries hold what isn't used.
+const GEN={[SOLAR]:1.5, [GEOTH]:4, [REACTOR]:9};          // kWh per real second
+const BATT_CAP=300, CHARGE_RATE=6, MAST_RATE=2, RIG_DRAW=.15;
+function genOf(t,y){
+  if(t===SOLAR) return depthOf(y)<=SOLAR_DEPTH ? GEN[SOLAR]*(stormNow().active?.1:1) : 0;
+  if(t===GEOTH) return depthOf(y)>=GEO_DEPTH ? GEN[GEOTH] : 0;
+  return GEN[t]||0;
+}
+function buildGrids(){
+  const s=my, seenG=new Map(); s.grids=[]; s.gridOf=new Map(); s.powered=[]; s.battOnGrid=0;
+  const isP=i=>own[i]===1&&POWER_T.has(world[i]);
+  for(let i=0;i<W*H;i++){
+    if(seenG.has(i)||!isP(i)) continue;
+    const g={id:s.grids.length, cells:[], gens:[], batts:[], chargers:[], rigs:[]};
+    const q=[i]; seenG.set(i,g.id);
+    while(q.length){
+      const c=q.pop(); g.cells.push(c); const t=world[c];
+      if(GEN[t]) g.gens.push(c); else if(t===BATT) g.batts.push(c); else if(t===CHARGER) g.chargers.push(c); else if(t===RIG) g.rigs.push(c);
+      const x=c%W, y=(c/W)|0;
+      for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+dx, ny=y+dy; if(nx<0||ny<0||nx>=W||ny>=H) continue; const n=idx(nx,ny); if(!seenG.has(n)&&isP(n)){ seenG.set(n,g.id); q.push(n); } }
+    }
+    s.grids.push(g);
+  }
+  // reactors reach chargers within 10 blocks without wire (how 5.40 crews built their bases)
+  for(const g of s.grids) for(const c of g.chargers){
+    const cx=c%W, cy=(c/W)|0;
+    if(!g.gens.some(r=>world[r]===REACTOR)) for(const r of s.reactors){ if(Math.max(Math.abs(r%W-cx),Math.abs(((r/W)|0)-cy))<=10){ g.linked=(g.linked||[]); if(!g.linked.includes(r)) g.linked.push(r); } }
+  }
+  for(const g of s.grids){ for(const c of g.cells) s.gridOf.set(c,g); }
+  if(S&&S.cells) for(const k of Object.keys(S.cells)){ if(world[k]!==BATT||own[k]!==1) delete S.cells[k]; }
+  refreshGrids();
+}
+function gridGen(g){ let n=0; for(const c of g.gens) n+=genOf(world[c],(c/W)|0); if(g.linked) n+=g.linked.length*GEN[REACTOR]; return n; }
+function gridStored(g){ let n=0; for(const b of g.batts) n+=+(S.cells&&S.cells[b])||0; return n; }
+function gridCap(g){ return g.batts.length*BATT_CAP; }
+function rigPowered(g){ return !!g&&(gridGen(g)>=g.rigs.length*RIG_DRAW-1e-9&&gridGen(g)>0); }
+// which chargers have power right now (a grid with output or charge, or a surface mast)
+function refreshGrids(){
+  const s=my; s.powered=[]; s.battOnGrid=0;
+  for(const g of s.grids){ g.gen=gridGen(g); g.store=gridStored(g); if(g.batts.length&&g.gen>0) s.battOnGrid++; }
+  for(const c of s.chargers){ const g=s.gridOf.get(c); if((g&&(g.gen>0||g.store>1))||mastOK(c)) s.powered.push(c); }
+}
+const mastOK=c=>depthOf((c/W)|0)<=SOLAR_DEPTH&&!stormNow().active;
+// move energy around a grid: generation fills batteries, chargers draw from both
+function addEnergy(g,amt){
+  if(!g.batts.length||!amt) return 0;
+  S.cells=S.cells||{}; let left=amt;
+  if(amt>0){ for(const b of g.batts){ const room=BATT_CAP-(+S.cells[b]||0); const put=Math.min(room,left/1); S.cells[b]=(+S.cells[b]||0)+put; left-=put; if(left<=0) break; } return amt-left; }
+  left=-amt; for(const b of g.batts){ const take=Math.min(+S.cells[b]||0,left); S.cells[b]=(+S.cells[b]||0)-take; left-=take; if(left<=0) break; } return -(-amt-left);
+}
+function tickGrids(dt,drawAt){
+  for(const g of my.grids){
+    let net=g.gen*dt;
+    if(drawAt&&g===drawAt.g) net-=drawAt.want;
+    if(net>0) addEnergy(g,net); else if(net<0) addEnergy(g,net);
+    g.store=gridStored(g);
+  }
+}
+function gridInfo(g){ if(!g) return ''; const st=gridStored(g), cap=gridCap(g); return `Grid · ${gridGen(g).toFixed(1)} kW in${g.rigs.length?` · drills use ${(g.rigs.length*RIG_DRAW).toFixed(2)}`:''}${cap?` · stored ${Math.round(st)}/${cap} kWh`:''}`; }
 const pending = new Map();                  // tile changes waiting to be saved
 function setTile(x,y,t){ const i=idx(x,y); world[i]=t; if(own[i]===0) own[i]=1; pending.set(i,t); }
 function ownerName(i){ const o=own[i]; return o===1 ? ME.username : o>=2 ? (ownerNames[o-2]||'another Kin') : null; }
@@ -447,12 +648,33 @@ const roomAt=(x,y)=>{ const i=idx(x,y); return press[i]?rooms[regionOf[i]]:null;
 function batCap(){ return 100+15*(S.attrs.end-1); }
 function fresh(){
   return {v:3, name:'', attrs:{eng:1,geo:1,end:1,nav:1,fab:1,spirit:1}, unspent:0, xp:0, level:1,
-    res:{iron:10,silicon:6,ice:3,rare:0,food:0}, mined:{iron:0,silicon:0,ice:0,rare:0,food:0}, given:0, shared:0,
+    res:{iron:10,silicon:6,ice:3,rare:0,food:6}, mined:{iron:0,silicon:0,ice:0,rare:0,food:0}, given:0, shared:0,
     dug:0, sealBlocks:0, collected:0, maxDepth:0, charged:0,
     px:SPAWN_X, py:GY-1, rigs:[], training:{attr:'eng',min:0}, boosts:[], mission:0, daily:null, gifts:{day:'',n:0},
     inv:{o2:1, lamp:1, lock:2}, lockGift:true, craft:[], bat:100,
-    gameMin:0, lastReal:Date.now(), introDone:false, foodFrac:0, cSnap:null, commonsFrac:{}, unsynced:{}, lastLogId:0, seen:''};
+    gameMin:0, lastReal:Date.now(), introDone:false, foodFrac:0, cSnap:null, commonsFrac:{}, unsynced:{}, lastLogId:0, seen:'',
+    // Update 5.61
+    needs:{o2:100, food:100, mood:100}, look:{...LOOK_DEFAULT}, research:{done:[], cur:null}, larder:0, wreck:null, cells:{}, lastStage:null, deaths:0, upd:561};
 }
+// crews from before 5.61 get the new parts of the save (and a little food to start with)
+function upgrade(st){
+  const f=fresh();
+  for(const k of ['needs','look','research','cells']) if(!st[k]||typeof st[k]!=='object') st[k]=f[k];
+  st.look={...LOOK_DEFAULT,...st.look};
+  if(!Array.isArray(st.research.done)) st.research={done:[],cur:null};
+  if(st.larder==null) st.larder=0;
+  if(st.upd!==561){ st.upd=561; st.whatsNew=true; st.res.food=Math.max(st.res.food||0,6); }
+  return st;
+}
+// what your borer looks like (Dashboard › Your borer); other Kin see it too
+const LOOK_DEFAULT={body:'#E8CFC0', trim:'#2b2e5c', drill:'#8a90cc', lamp:'#ffe2b8', decal:'none'};
+const LOOK_OPTS={
+  body:['#E8CFC0','#C97B6E','#E2C27A','#9CCB98','#A7CFE0','#B9C0FF','#D9A7E0','#F2F2F2','#5f6678'],
+  trim:['#2b2e5c','#14163A','#5a2a20','#2f4a2c','#3a3e68','#4a3d3a','#1d3a4a','#6a6f9c'],
+  drill:['#8a90cc','#c8ccd8','#E2C27A','#C97B6E','#9CCB98','#f0f0f0'],
+  lamp:['#ffe2b8','#bfe6ff','#ffd27a','#c9ffcf','#ffb6c8'],
+  decal:['none','stripe','chevron','star','13i','flame'],
+};
 let S = fresh();
 let C = {stage:0, have:{iron:0,silicon:0,ice:0,rare:0}, mined:{}};   // the colony
 let crews = [], colonyLog = [], siteBoosts = [], ME = {username:'', sentinel:false};
@@ -477,35 +699,52 @@ function toast(msg, cls=''){ const el=document.createElement('div'); el.classNam
 // ---------- Lyra on comms ----------
 const lyraEl=$('#lyra'), lyraText=$('#lyraText');
 let lyraQ=[], lyraCur=null, lyraLeft=0, lyraType=0, lyraCool={}, lyraChat=[], lyraBusy=false, missionBriefing=null;
+// When you close Lyra she stays closed (Update 5.61). Small talk is dropped for a few
+// minutes; anything that matters waits behind the orb's badge until you open her again.
+// Only urgent calls (a dust storm, a blackout, a finished Great Work) open her by themselves.
+let lyraClosed=false, lyraQuietUntil=0;
+const LYRA_URGENT=6;
 function lyra(text,{prio=1,hold=false,celebrate=false,key=null,cool=0}={}){
   if(!text) return;
   if(key){ const t=lyraCool[key]; if(t&&Date.now()-t<cool*1000) return; lyraCool[key]=Date.now(); }
   if(lyraQ.some(m=>m.text===text)||(lyraCur&&lyraCur.text===text)) return;
+  if(prio<=2&&Date.now()<lyraQuietUntil) return;   // you asked for quiet
   if(prio<=1&&lyraQ.length>=2) return;              // small talk waits for a quieter moment
-  lyraQ.push({text,prio,hold,celebrate}); lyraQ.sort((a,b)=>b.prio-a.prio);
+  lyraQ.push({text,prio,hold,celebrate,wasClosed:lyraClosed}); lyraQ.sort((a,b)=>b.prio-a.prio);
   if(lyraQ.length>4) lyraQ=lyraQ.slice(0,4);
+  if(lyraClosed&&prio<LYRA_URGENT){ updateLyraCount(); return; }
   if(!lyraCur||(!lyraCur.hold&&!lyraCur.asked&&prio>lyraCur.prio+1)) nextLyra();
   updateLyraCount();
 }
 function nextLyra(){
+  // an urgent call that opened her while you had her closed: when it's done, she closes again
+  if(lyraCur&&lyraCur.wasClosed&&!(lyraQ[0]&&lyraQ[0].wasClosed&&lyraQ[0].prio>=LYRA_URGENT)){ closeLyra(true); return; }
   lyraCur=lyraQ.shift()||null; lyraType=0;
   lyraEl.classList.toggle('speaking',!!lyraCur); lyraEl.classList.toggle('celebrate',!!(lyraCur&&lyraCur.celebrate));
-  if(lyraCur){ lyraEl.classList.remove('min'); lyraLeft=lyraCur.hold?Infinity:(lyraQ.length?2.5:4.5)+lyraCur.text.length/(lyraQ.length?28:18); beep(880,.07,'sine',.025,1320); if(lyraCur.celebrate) chime([659,784,988]); }
+  if(lyraCur){ lyraClosed=false; lyraEl.classList.remove('min'); lyraLeft=lyraCur.hold?Infinity:(lyraQ.length?2.5:4.5)+lyraCur.text.length/(lyraQ.length?28:18); beep(880,.07,'sine',.025,1320); if(lyraCur.celebrate) chime([659,784,988]); }
   else lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`;
   $('#lyraNext').textContent = lyraQ.length ? `Next (${lyraQ.length})` : 'Got it';
   updateLyraCount();
 }
-function updateLyraCount(){ $('#lyraCount').textContent = lyraQ.length ? `+${lyraQ.length}` : ''; }
+function updateLyraCount(){ $('#lyraCount').textContent = lyraQ.length ? `+${lyraQ.length}` : ''; const d=$('#lyraDot'); d.hidden=!(lyraClosed&&lyraQ.length); d.textContent=lyraQ.length; }
 function tickLyra(dt){
   if(!lyraCur) return;
   const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(lyraType<lyraCur.text.length){ lyraType = reduce ? lyraCur.text.length : Math.min(lyraCur.text.length, lyraType+dt*70); lyraText.innerHTML = lyraType>=lyraCur.text.length ? mdLinks(lyraCur.text) : esc(lyraCur.text.slice(0,Math.floor(lyraType))); }
   lyraLeft-=dt; if(lyraLeft<=0) nextLyra();
 }
-function closeLyra(){ lyraQ=[]; lyraCur=null; lyraEl.classList.remove('speaking','celebrate'); lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`; lyraEl.classList.add('min'); updateLyraCount(); }
-$('#lyraNext').onclick=()=>{ if(lyraQ.length) nextLyra(); else closeLyra(); };
-$('#lyraClose').onclick=closeLyra;
-$('#lyraOrb').onclick=()=>{ lyraEl.classList.toggle('min'); };
+// × (or the orb) closes her properly: only urgent calls open her again until you do.
+// "Got it" on the last message just tucks her away and quiets the small talk for a while.
+function closeLyra(hard=true){
+  // keep what still matters (missions, level-ups) for when you open her again; drop the chatter
+  lyraQ=lyraQ.filter(m=>m.prio>=4);
+  lyraCur=null; lyraClosed=hard; lyraQuietUntil=Date.now()+4*60000;
+  lyraEl.classList.remove('speaking','celebrate'); lyraText.innerHTML=`<span class="small">${esc(missionLine())}</span>`; lyraEl.classList.add('min'); updateLyraCount();
+}
+function openLyra(){ lyraClosed=false; lyraEl.classList.remove('min'); if(!lyraCur&&lyraQ.length) nextLyra(); updateLyraCount(); }
+$('#lyraNext').onclick=()=>{ if(lyraQ.length) nextLyra(); else closeLyra(false); };
+$('#lyraClose').onclick=()=>closeLyra(true);
+$('#lyraOrb').onclick=()=>{ if(lyraEl.classList.contains('min')) openLyra(); else closeLyra(); };
 $('#lyraAskBtn').onclick=()=>{ const f=$('#lyraAsk'); f.hidden=!f.hidden; if(!f.hidden) $('#lyraQ').focus(); };
 $('#lyraAsk').addEventListener('submit',async e=>{
   e.preventDefault(); const q=$('#lyraQ').value.trim(); if(!q||lyraBusy) return;
@@ -523,7 +762,7 @@ $('#lyraAsk').addEventListener('submit',async e=>{
 });
 function gameContext(){
   const st=STAGES[C.stage], rm=roomAt(S.px,S.py);
-  return `Crew ${ME.username}, level ${S.level}. ${S.py>=GY?`${depthOf(S.py)*2} m underground`:'on the surface'}${rm?` inside a pressurized room${rm.habitable?' (habitable)':''}`:''}. Borer battery ${Math.round(S.bat/batCap()*100)}%. Resources: ${RES.map(r=>`${RNAME[r]} ${Math.floor(S.res[r])}`).join(', ')}. Kit: ${EQUIPS.filter(e=>S.inv[e.id]).map(e=>`${S.inv[e.id]} ${e.n}`).join(', ')||'empty'}. Crafting: ${S.craft.map(c=>itemById(c.id).n).join(', ')||'nothing'}. Attributes: ${ATTRS.map(a=>`${a.n} ${S.attrs[a.k]}`).join(', ')}${S.unspent?` (${S.unspent} unspent)`:''}. Current mission: ${MISSIONS[S.mission]?MISSIONS[S.mission].n+' - '+MISSIONS[S.mission].d:'tutorial done'}. Auto-drills: ${S.rigs.length}. Pressurized rooms: ${my.press}, habitable: ${my.habitable}, powered chargers: ${my.powered.length}. Colony: ${st?`${st.n} ${Math.floor(stageProgress()*100)}%`:'all Season 1 Great Works complete'}. Kin on Mars: ${crews.length+1}.`.slice(0,1400);
+  return `Crew ${ME.username}, level ${S.level}. ${S.py>=GY?`${depthOf(S.py)*2} m underground`:'on the surface'}${rm?` inside a pressurized room${rm.habitable?' (habitable)':''}`:''}. Borer battery ${Math.round(S.bat/batCap()*100)}%. Resources: ${RES.map(r=>`${RNAME[r]} ${Math.floor(S.res[r])}`).join(', ')}. Kit: ${EQUIPS.filter(e=>S.inv[e.id]).map(e=>`${S.inv[e.id]} ${e.n}`).join(', ')||'empty'}. Crafting: ${S.craft.map(c=>itemById(c.id).n).join(', ')||'nothing'}. Attributes: ${ATTRS.map(a=>`${a.n} ${S.attrs[a.k]}`).join(', ')}${S.unspent?` (${S.unspent} unspent)`:''}. Current mission: ${MISSIONS[S.mission]?MISSIONS[S.mission].n+' - '+MISSIONS[S.mission].d:'tutorial done'}. Auto-drills: ${S.rigs.length}. Pressurized rooms: ${my.press}, habitable: ${my.habitable}, powered chargers: ${my.powered.length}. Oxygen ${Math.round(S.needs.o2)}%, food ${Math.round(S.needs.food)}%, morale ${Math.round(S.needs.mood)}%. Research done: ${S.research.done.map(id=>RESEARCH.find(r=>r.id===id).n).join(', ')||'none'}. Colony: ${st?`${st.n} ${Math.floor(stageProgress()*100)}%${C.stage>=MAIN_STAGES?' (a Season project; the Launch Facility is finished)':''}`:'every Season 1 Great Work and project complete'}.${stormNow().active?' A dust storm is blowing on the surface right now.':''} Kin on Mars: ${crews.length+1}.`.slice(0,1400);
 }
 
 // ---------- Lyra's missions (the tutorial, then daily calls) ----------
@@ -545,16 +784,16 @@ const MISSIONS = [
    brief:"SpaceCore packed an O₂ pump in your kit. Press B, switch to Equipment (E), and place it inside the sealed room. If every gap is closed, the room fills with air and glows. If it leaks, I'll tell you.",
    done:'Air. Your first room on Mars. Every crew remembers this one.'},
   {n:'Set up an auto-drill', d:'Craft an Auto-drill and place it touching rock.', test:()=>S.rigs.length>0, reward:{iron:8,silicon:4},
-   brief:"Time to use the Fabricator. Open the Dashboard (Tab) and craft an Auto-drill. It takes a while to build, so keep digging. When it's ready: Build, Equipment, and tap a tunnel spot right next to rock.",
-   done:"It's running. Come back later and it will have filled up."},
+   brief:"Time to use the Fabricator. Open the Dashboard (Tab) and craft an Auto-drill. It takes a few minutes, so keep digging. When it's ready: Build, Equipment, and tap a tunnel spot right next to rock. The more rock around it, the faster it mines.",
+   done:"It's running. Come back to it later and it will have filled up."},
   {n:'Grow something', d:'Place a Greenhouse in a pressurized room.', test:()=>my.green>0, reward:{ice:4},
-   brief:'A colony has to eat. Craft a Greenhouse in the Fabricator and place it inside your pressurized room. It grows Food while you are away.',
+   brief:'A colony has to eat, and so do you: watch the FOOD gauge. Craft a Greenhouse in the Fabricator and place it inside your pressurized room. It grows Food while you are away; drive past it to pick it up.',
    done:"Green, underground, on Mars. That's new."},
   {n:'For the colony', d:'Send resources to the Great Work.', test:()=>S.given>0, reward:{rare:1},
    brief:"Open the Dashboard and send something to the colony's Great Work. The robots on the surface build with whatever Kin send. Nobody finishes one alone.",
    done:'The robots are already using it. Look up at the surface sometime.'},
   {n:'Collect your haul', d:'Collect from an auto-drill.', test:()=>S.collected>0, reward:{iron:10},
-   brief:'When your auto-drill has filled a bit, press C or tap it to collect. Mars time runs six times faster than ours during Alpha.',
+   brief:'When your auto-drill has filled a bit, drive back to it and press C (or tap it) to empty it. You have to be within 16 m. Mars time runs six times faster than ours during Alpha.',
    done:"That's the loop: dig, build, let the drills run, send to the colony."},
   {n:'Keep warm', d:'Place a Heater in a pressurized room.', test:()=>my.heatRoom>0, reward:{silicon:6},
    brief:"Mars sits around −60°C, even down here. Craft a Heater (it takes a Rare metal, so dig deep for the gold-flecked veins) and place it in a pressurized room.",
@@ -562,8 +801,8 @@ const MISSIONS = [
   {n:'Clean air', d:'Make a room habitable: O₂ pump, Heater and CO₂ scrubber together.', test:()=>my.habitable>0, reward:{rare:1},
    brief:'Air needs scrubbing or it turns bad. Craft a CO₂ scrubber and put it in the same room as your pump and heater. That makes the room habitable: greenhouses grow twice as fast, and you train faster parked there.',
    done:'Habitable. People could live here. You could live here.'},
-  {n:'Power up', d:'Place a Reactor and a Charger within 10 blocks of it.', test:()=>my.powered.length>0, reward:{iron:12},
-   brief:"Your borer runs on its battery. The lander and the surface sun can top it up slowly, but a home base needs real power. Craft a Reactor (three Rare metals, and it takes a while) and a Charger, then place the charger within 10 blocks of the reactor.",
+  {n:'Power up', d:'Place a powered Charger: a Solar panel touching it, or wired to it.', test:()=>my.powered.length>0, reward:{iron:12},
+   brief:`Your borer runs on its battery. A home base needs its own power. Craft a Solar panel and a Charger, and put them side by side within ${SOLAR_DEPTH*2} m of the surface (or join them with Wire, from Blocks). Deeper down you'll want Geothermal taps or a Reactor later.`,
    done:'Power on. Park next to that charger and your borer fills up fast, even while you are away.'},
   {n:'Recharge', d:'Charge your borer at a powered Charger.', test:()=>S.charged>0, reward:{silicon:8},
    brief:'Drive your borer right up to the charger. Charging starts on its own.',
@@ -571,7 +810,18 @@ const MISSIONS = [
   {n:'Read the rock', d:'Place a Radiation sensor in a sealed room deeper than 24 m.', test:()=>my.sensorDeep>0, reward:{rare:2},
    brief:"Mars has no magnetic field to stop radiation, so the surface is dangerous. Rock is the shield. Craft a Radiation sensor and put it in a sealed room deeper than 24 m to confirm the room is safe.",
    done:"Reading low. Twenty-odd meters of Mars between you and the sky. That's the shelter."},
+  // Update 5.61
+  {n:'Home comforts', d:'Put a Bunk or a Galley in a habitable room.', test:()=>my.amenity>0, reward:{iron:10,silicon:6},
+   brief:"Keep an eye on your three crew gauges: oxygen, food and morale. A home fixes all three. Craft a Bunk or a Galley and put it in a habitable room (pump, heater and scrubber). Comforts lift morale, and a Galley cooks your Food into proper meals.",
+   done:"Now it's a home. Rest here when morale dips."},
+  {n:'Store the sun', d:'Put a Battery on a powered grid.', test:()=>my.battOnGrid>0, reward:{ice:6,rare:1},
+   brief:'Dust storms knock solar power down to almost nothing. Craft a Battery (it takes a Rare metal) and connect it to your solar panel, side by side or with Wire. It keeps your charger going through the storm.',
+   done:"Stored power. Let the dust blow."},
+  {n:'First research', d:'Finish a research project.', test:()=>S.research.done.length>0, reward:{silicon:10,rare:1},
+   brief:'Every attribute has its own research branch: three projects each. Open the Dashboard, pick one under Research, and it runs on Mars time alongside your training.',
+   done:"First project done. There's a lot more up that tree."},
 ];
+const WHATS_NEW="SpaceCore update 5.61, from a crew member's three-hour test run. New: oxygen, food and morale gauges (eat with H; homes refill you), Dash (Shift) and Overdrive (Space), solar panels, batteries, wire and geothermal power, dust storms (get underground when I call it), research for every attribute, homes with names on them, and a paint shop for your borer in the Dashboard. Auto-drills love being buried in rock now, but you have to visit them to empty them. Basic pieces craft instantly; big machines take longer. Questions? Ask me.";
 function missionLine(){
   const m=MISSIONS[S.mission];
   if(m) return `Mission ${S.mission+1} of ${MISSIONS.length} · ${m.n}: ${m.d}${m.prog?` (${m.prog()})`:''}`;
@@ -592,7 +842,7 @@ function checkMissions(){
 }
 function briefMission(){
   const m=MISSIONS[S.mission];
-  if(m){ missionBriefing={text:m.brief,prio:4,hold:false}; lyraQ.push(missionBriefing); lyraQ.sort((a,b)=>b.prio-a.prio); if(!lyraCur) nextLyra(); }
+  if(m){ missionBriefing={text:m.brief,prio:4,hold:false}; lyraQ.push(missionBriefing); lyraQ.sort((a,b)=>b.prio-a.prio); if(!lyraCur&&!lyraClosed) nextLyra(); else updateLyraCount(); }
   else dailyCall(true);
 }
 function dailyCall(announce){
@@ -620,25 +870,30 @@ function grant(res, base, noBoost){
 }
 function flushGained(prefix=''){ const parts=Object.entries(gained).map(([r,n])=>`+${n} ${RNAME[r]}`); gained={}; if(parts.length) toast(prefix+parts.join(' · ')); }
 function addXP(n){ S.xp+=n; let need=30+S.level*20; while(S.xp>=need){ S.xp-=need; S.level++; S.unspent+=1; lyra(`Level ${S.level}. You've earned an attribute point. Spend it on your crew card in the Dashboard. Points are permanent, so choose the crew member you want to be.`,{prio:4,celebrate:true}); need=30+S.level*20; } }
-function costOf(b){ const f=1-.06*(S.attrs.fab-1); const c={}; for(const [r,v] of Object.entries(b.cost)) c[r]=Math.max(1,Math.round(v*f)); return c; }
+function costOf(b){ const f=(1-.06*(S.attrs.fab-1))*(isKit(b)&&hasRes('fab2')?.85:1); const c={}; for(const [r,v] of Object.entries(b.cost)) c[r]=Math.max(1,Math.round(v*f)); return c; }
 const canPay=c=>Object.entries(c).every(([r,v])=>S.res[r]>=v);
 const pay=c=>{for(const [r,v] of Object.entries(c)) S.res[r]-=v;};
-const craftMinutes=e=>Math.max(5,Math.round(e.min*Math.max(.4,1-.08*(S.attrs.fab-1))));
+const craftMinutes=e=>e.min<=0?0:Math.max(2,Math.round(e.min*Math.max(.4,1-.08*(S.attrs.fab-1))*(hasRes('fab1')?.75:1)));
 
+// Auto-drills (reworked in 5.61): every block of ore or soil in the 5x5 around the drill
+// feeds it, and the more of them there are the more efficient it runs (60% when it barely
+// touches rock, 140% buried in it). Power on its grid adds 50%.
+const RIG_PER={iron:.45, silicon:.45, ice:.4, rare:.12};
 function rigRates(rg){
-  const cnt={};
-  for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){ const r=ROCKRES[tile(rg.x+dx,rg.y+dy)]; if(r) cnt[r]=(cnt[r]||0)+1; }
-  const keys=Object.keys(cnt); if(!keys.length) return {};
-  const prim=keys.reduce((a,b)=>cnt[b]>cnt[a]?b:a);
-  const out={}; const geo=1+.1*(S.attrs.geo-1);
-  for(const k of keys) out[k]= k===prim ? 5 : 1*geo;
-  if(prim==='rare') out.rare=1.5;
+  const cnt={}; let n=0;
+  for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){ if(!dx&&!dy) continue; const r=ROCKRES[tile(rg.x+dx,rg.y+dy)]; if(r){ cnt[r]=(cnt[r]||0)+1; n++; } }
+  if(!n) return {};
+  const eff=.6+.8*(n/24), geo=1+.1*(S.attrs.geo-1)+(hasRes('geo3')?.25:0), pw=rigPowered(my.gridOf.get(idx(rg.x,rg.y)))?1.5:1;
+  const out={}; for(const [k,c] of Object.entries(cnt)) out[k]=Math.round(c*RIG_PER[k]*eff*geo*pw*100)/100;
   return out;
 }
+function rigDensity(rg){ let n=0; for(let dy=-2;dy<=2;dy++) for(let dx=-2;dx<=2;dx++){ if((dx||dy)&&ROCKRES[tile(rg.x+dx,rg.y+dy)]) n++; } return n; }
 const rigCapHours=()=>12+3*(S.attrs.end-1);
 function rigFill(rg){ const rt=rigRates(rg); const cap=sum(rt)*rigCapHours(); return cap?Math.min(1,sum(rg.st)/cap):0; }
 function validateRigs(){ S.rigs=S.rigs.filter(rg=>tile(rg.x,rg.y)===RIG&&own[idx(rg.x,rg.y)]===1); }
-function nearCharger(){ for(const c of my.powered){ if(Math.max(Math.abs(c%W-S.px),Math.abs(((c/W)|0)-S.py))<=1) return true; } return false; }
+const cheb=(i,x=S.px,y=S.py)=>Math.max(Math.abs(i%W-x),Math.abs(((i/W)|0)-y));
+function chargerNear(){ for(const c of my.powered){ if(cheb(c)<=1) return c; } return -1; }
+function nearCharger(){ return chargerNear()>=0; }
 const atLander=()=>S.py===GY-1&&Math.abs(S.px-(LANDER_X+1))<=2;
 
 function advance(min, live){
@@ -651,11 +906,18 @@ function advance(min, live){
     for(const [r,v] of Object.entries(rt)) rg.st[r]=(rg.st[r]||0)+v*h*f;
     if(live&&!rg.full&&rigFill(rg)>=.995){ rg.full=true; lyra(`Your auto-drill at ${depthOf(rg.y)*2} m is full. Press C or tap it to collect.`,{prio:2,key:'rigfull',cool:300}); }
   }
+  // greenhouses fill their trays; you pick the food up by visiting (5.61)
   const g=my.green+my.greenHab;
-  if(g){ S.foodFrac+=g*h; const n=Math.floor(S.foodFrac); if(n>0){ S.foodFrac-=n; S.res.food+=n; S.mined.food+=n; S.unsynced.food=(S.unsynced.food||0)+n; } }
+  if(g){ const cap=my.green*LARDER_PER; S.larder=Math.min(cap,(S.larder||0)+g*h); }
+  if(!live){ const realSec=min/TIME_SCALE*60; for(const gr of my.grids) if(gr.batts.length) addEnergy(gr,gr.gen*realSec); }
   const rm=roomAt(S.px,S.py);
   S.training.min+=min*(rm&&rm.habitable?1.5:1);
   while(S.training.min>=480){ S.training.min-=480; const a=ATTRS.find(x=>x.k===S.training.attr); S.attrs[a.k]++; lyra(`Training complete: ${a.n} is now ${S.attrs[a.k]}. It keeps training unless you pick something else.`,{prio:3,celebrate:true}); }
+  // research runs alongside training, one project at a time
+  if(S.research&&S.research.cur){
+    const c=S.research.cur; c.left-=min;
+    if(c.left<=0){ S.research.done.push(c.id); S.research.cur=null; const r=RESEARCH.find(x=>x.id===c.id); if(live) lyra(`Research complete: ${r.n}. ${r.e}`,{prio:4,celebrate:true}); else S.readyWhileAway=(S.readyWhileAway||[]).concat(r.n+' (research)'); checkMissions(); }
+  }
   // the Fabricator works through its queue, one item at a time
   let left=min;
   while(left>0&&S.craft.length){
@@ -663,17 +925,36 @@ function advance(min, live){
     if(c.left<=0){ S.craft.shift(); S.inv[c.id]=(S.inv[c.id]||0)+1; const e=itemById(c.id); if(live) lyra(`Your ${e.n} is ready. It's in your kit: Build, then Equipment.`,{prio:3,celebrate:true}); else S.readyWhileAway=(S.readyWhileAway||[]).concat(e.n); }
   }
 }
-function collectRigs(){
+// You have to go to an auto-drill to empty it (5.61). C empties every drill within 8 blocks.
+function collectRigs(only){
+  const near=S.rigs.filter(rg=>only?rg===only:cheb(idx(rg.x,rg.y))<=NEAR);
+  if(!near.length){
+    if(!S.rigs.length) return;
+    const n=S.rigs.reduce((a,b)=>cheb(idx(a.x,a.y))<=cheb(idx(b.x,b.y))?a:b), d=cheb(idx(n.x,n.y));
+    toast(`Drive to an auto-drill to empty it. Nearest: ${dirText(n.x-S.px,n.y-S.py)}, ${Math.round(rigFill(n)*100)}% full.`); return;
+  }
   let any=false;
-  for(const rg of S.rigs){ for(const [r,v] of Object.entries(rg.st)){ if(v>=.5){ grant(r,v); any=true; } } rg.st={}; rg.full=false; }
-  if(any){ S.collected++; addXP(3); chime([523,659,784]); flushGained('Auto-drills: '); checkMissions(); } else toast('Your auto-drills are still filling. Give them some time.');
+  for(const rg of near){ for(const [r,v] of Object.entries(rg.st)){ if(v>=.5){ grant(r,v); any=true; } } rg.st={}; rg.full=false; }
+  if(any){ S.collected++; addXP(3); chime([523,659,784]); flushGained('Auto-drill: '); checkMissions(); } else toast('Still filling. Give it some time.');
 }
+const LARDER_PER=30;
+function pickupFood(){
+  if(!(S.larder>=1)||!my.greens.some(i=>cheb(i)<=NEAR)) return;
+  const n=Math.floor(S.larder); S.larder-=n; S.res.food+=n; S.mined.food+=n; S.unsynced.food=(S.unsynced.food||0)+n; bump('food');
+  toast(`Picked ${n} Food from your greenhouse.`); beep(700,.08,'triangle',.04,900);
+}
+const dirText=(dx,dy)=>[dx<0?`${-dx*2} m left`:dx>0?`${dx*2} m right`:'',dy<0?`${-dy*2} m up`:dy>0?`${dy*2} m down`:''].filter(Boolean).join(' and ')||'right here';
+// Mars minutes, with the real time next to it so nobody has to do the 6x sum
+const fmtBoth = min => min<=0 ? 'instant' : `${fmtH(min)} Mars · ${fmtReal(min/TIME_SCALE*60000)} real`;
 function craft(id){
   const e=itemById(id); if(!e) return;
-  if(S.craft.length>=4){ toast('The Fabricator queue is full (4).'); return; }
+  if(e.res&&!hasRes(e.res)){ const r=RESEARCH.find(x=>x.id===e.res); toast(`Research ${r.n} first (Dashboard › Research).`); return; }
   const c=costOf(e); if(!canPay(c)){ toast(`Not enough resources for a ${e.n}: needs ${costText(c)}.`); return; }
-  pay(c); S.craft.push({id, left:craftMinutes(e), total:craftMinutes(e)});
-  beep(440,.12,'square',.03,660); toast(`Crafting ${e.n}: ${fmtH(craftMinutes(e))} Mars time (${fmtReal(craftMinutes(e)/TIME_SCALE*60000)} real).`);
+  const m=craftMinutes(e);
+  if(m<=0){ pay(c); S.inv[e.id]=(S.inv[e.id]||0)+1; beep(660,.08,'square',.03,990); toast(`${e.n} made. It's in your kit.`); renderPalette(true); save(true); return; }
+  if(S.craft.length>=fabMax()){ toast(`The Fabricator queue is full (${fabMax()}).`); return; }
+  pay(c); S.craft.push({id, left:m, total:m});
+  beep(440,.12,'square',.03,660); toast(`Crafting ${e.n}: ${fmtBoth(m)}.`);
   save(true);
 }
 
@@ -700,17 +981,27 @@ function onContributed(m){
   if(m.colony) setColony(m.colony);
   checkMissions(); renderDash(); save(true);
 }
+// What happens when a Great Work's bars are all full: the robots finish it on the surface,
+// every crew gets +10% for a day, and the next one starts. After the Launch Facility (the
+// season's main objective) the colony moves on to Season projects: ship upgrades and base
+// improvements, one at a time.
 function setColony(col, myDelta){
   if(!col) return;
-  const prev=C.stage;
   C={stage:col.stage|0, have:col.have||{}, mined:col.mined||{}};
-  if(C.stage>prev){ const done=STAGES[prev]; if(done) post({type:'lyraReact',react:'celebrate'}); lyra(done?`The ${done.n} is complete. Every crew on Mars helped build it.${STAGES[C.stage]?` Next: the ${STAGES[C.stage].n}.`:' The Launch Facility is ready. Season 2 opens the solar system.'}`:'',{prio:6,celebrate:true,hold:true}); }
+  if(S.introDone&&S.lastStage!=null&&C.stage>S.lastStage){
+    const done=STAGES[C.stage-1], next=STAGES[C.stage];
+    post({type:'lyraReact',react:'celebrate'});
+    S.boosts=S.boosts.filter(b=>!/ complete$/.test(b.label)); S.boosts.push({label:`${done?done.n:'Great Work'} complete`,pct:.10,until:Date.now()+86400000,mode:'Colony'});
+    const lead=C.stage===MAIN_STAGES?`The Launch Facility is finished: Season 1's main objective is done, and the ship is on the pad. Now we make it better. Season projects start: ship upgrades and base improvements, one at a time.`:`The ${done?done.n:'Great Work'} is complete. Every crew on Mars helped build it.`;
+    lyra(`${lead}${next?` Next: ${next.n}.`:' Every Season project is done. Season 2 opens the solar system.'} Everyone gets +10% for a day.`,{prio:LYRA_URGENT,celebrate:true,hold:true});
+  }
+  if(S.introDone) S.lastStage=C.stage;
   if(S.cSnap){
     const got={};
     for(const r of RES){
       const others=((+C.mined[r]||0)-(+S.cSnap[r]||0))-((myDelta&&myDelta[r])||0);
       if(others<=0) continue;
-      S.commonsFrac[r]=(S.commonsFrac[r]||0)+others*.1;
+      S.commonsFrac[r]=(S.commonsFrac[r]||0)+others*(hasRes('spirit3')?.12:.1);
       const n=Math.floor(S.commonsFrac[r]); if(n>0){ S.commonsFrac[r]-=n; S.res[r]+=n; got[r]=n; bump(r); }
     }
     const parts=Object.entries(got).map(([r,n])=>`${n} ${RNAME[r]}`);
@@ -738,7 +1029,7 @@ const DV={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
 function setHeld(d,on){ held[d]=on; if(on){ const i=order.indexOf(d); if(i>=0) order.splice(i,1); order.push(d);} }
 let lastVeinNote=0;
 function reveal(){
-  const R=2+S.attrs.nav;
+  const R=2+S.attrs.nav+(hasRes('nav3')?2:0);
   for(let dy=-R;dy<=R;dy++) for(let dx=-R;dx<=R;dx++){
     if(dx*dx+dy*dy>R*R+1) continue;
     const x=S.px+dx,y=S.py+dy; if(x<0||y<0||x>=W||y>=H) continue;
@@ -760,9 +1051,9 @@ function onArrive(){
 }
 function dig(x,y){
   const t=tile(x,y); setTile(x,y,TUN); S.dug++;
-  const geo=S.attrs.geo, by=.3*(1+.12*(geo-1)), deep=1+depthOf(y)/220;
+  const geo=S.attrs.geo, by=.3*(1+.12*(geo-1))*(hasRes('geo1')?1.25:1), deep=1+depthOf(y)/220;
   if(t===REG){ grant('iron',1*deep); if(Math.random()<by) grant('silicon',1); }
-  else if(t===BAS){ grant('silicon',1*deep); if(Math.random()<by) grant('iron',1); }
+  else if(t===BAS){ grant('silicon',1*deep); if(Math.random()<by*1.5) grant('iron',1); }
   else if(t===ICE){ grant('ice',2); if(Math.random()<by*.6) grant('silicon',1); }
   else if(t===MET){ grant('rare',1); grant('iron',1); if(Math.random()<.04*geo*deep) grant('rare',1); }
   flushGained(); addXP(t===FILL?0:1); recomputePressure();
@@ -772,20 +1063,29 @@ function dig(x,y){
 function updateBorer(dt){
   const cap=batCap();
   // charging: a powered charger (fast), the lander (steady), the surface sun (slow)
-  P.charging='';
-  if(nearCharger()){ P.charging='Charger'; S.bat=Math.min(cap,S.bat+dt*6); if(!P.chargedNow){ P.chargedNow=true; S.charged++; checkMissions(); } }
+  P.charging=''; let drawAt=null;
+  const ch=chargerNear();
+  if(ch>=0){
+    const g=my.gridOf.get(ch), boost=hasRes('eng1')?1.5:1;
+    if(g&&(g.gen>0||g.store>1)){
+      const rate=Math.min(CHARGE_RATE*boost, g.gen+(g.store>1?CHARGE_RATE*boost:0)); P.charging='Charger';
+      if(S.bat<cap){ S.bat=Math.min(cap,S.bat+rate*dt); drawAt={g,want:rate*dt}; }
+    } else { P.charging='Solar mast'; S.bat=Math.min(cap,S.bat+MAST_RATE*boost*dt); }
+    if(!P.chargedNow){ P.chargedNow=true; S.charged++; checkMissions(); }
+  }
   else if(atLander()){ P.charging='Lander'; S.bat=Math.min(cap,S.bat+dt*2.5); }
-  else if(S.py===GY-1){ P.charging='Solar'; S.bat=Math.min(cap,S.bat+dt*.25); }
+  else if(S.py===GY-1&&!stormNow().active){ P.charging='Solar'; S.bat=Math.min(cap,S.bat+dt*.5); }
   if(!P.charging) P.chargedNow=false;
+  tickGrids(dt,drawAt);
   if(S.bat/cap>.3) P.lowWarned=false;
   if(S.bat>1) P.emptyWarned=false;
   // drill temperature: rises while drilling (faster deep down), falls when idle
   const depth=depthOf(S.py);
-  if(P.drill){ P.temp+=dt*(5+depth*.05); } else P.temp-=dt*(P.move?6:12);
+  if(P.drill&&!AB.over.t){ P.temp+=dt*(5+depth*.05)*(hasRes('eng2')?.7:1); } else P.temp-=dt*(P.move?6:12);
   P.temp=clamp(P.temp,15,120);
   if(P.temp>=100&&!P.over){ P.over=true; post({type:'lyraReact',react:'flinch'}); lyra('Drill head is overheating. It will run at half speed until it cools below 70°C. Give it a moment.',{prio:3,key:'heat',cool:60}); }
   if(P.over&&P.temp<70) P.over=false;
-  const targetRpm = P.drill ? 1450/(1+depth/110)*(P.over?.5:1) : P.move ? 260 : 0;
+  const targetRpm = P.drill ? 1450/(1+depth/110)*(P.over?.5:1)*(AB.over.t?2:1) : P.move ? 260 : 0;
   P.rpm += (targetRpm-P.rpm)*Math.min(1,dt*5);
   updatePlayer(dt);
 }
@@ -805,7 +1105,7 @@ function updatePlayer(dt){
   if(P.drill && (P.drill.x!==tx||P.drill.y!==ty)) P.drill=null;
   if(passable(tx,ty)){
     const surface=ty===GY-1&&S.py===GY-1, empty=S.bat<=0;
-    const dur=empty?.4:surface?.055:.11;
+    const dur=(empty?.4:surface?.055:.11)/needSlow()*(AB.dash.t&&!empty?.45:1);
     S.bat=Math.max(0,S.bat-(surface?.004:.02));
     P.move={fx:S.px,fy:S.py,tx,ty,t:0,dur}; return;
   }
@@ -815,7 +1115,7 @@ function updatePlayer(dt){
     if(own[idx(tx,ty)]>=2&&t===FILL){ lyra(`${ownerName(idx(tx,ty))} packed that rock back in. It's theirs to dig.`,{prio:1,key:'fillown',cool:60}); return; }
     const depth=depthOf(ty);
     if(!P.drill) P.drill={x:tx,y:ty,t:0,need:HARD[t]*(1+depth*.012)/(1+.12*(S.attrs.eng-1))};
-    const speed=P.over?.5:1;
+    const speed=(P.over?.5:1)*(AB.over.t?2:1)*needSlow();
     P.drill.t+=dt*speed; P.dsnd-=dt; P.strain-=dt;
     S.bat=Math.max(0,S.bat-dt*speed*(DRAIN[t]/HARD[t])*(1+depth/120)*.9);
     if(S.bat/cap<=.2&&!P.lowWarned){ P.lowWarned=true; post({type:'lyraReact',react:'droop'}); lyra(`Battery at ${Math.round(S.bat/cap*100)}%. Start thinking about a charge: a charger, the lander, or the surface sun.`,{prio:3}); }
@@ -827,40 +1127,193 @@ function updatePlayer(dt){
   } else if(t>=10&&own[idx(tx,ty)]>=2){ lyra(`That's ${ownerName(idx(tx,ty))}'s build. You can't drill through another Kin's blocks.`,{prio:1,key:'blocked',cool:60}); }
 }
 
+// ---------- crew needs (Update 5.61) ----------
+// Oxygen refills inside any pressurized room (and at the lander). Hunger is fed with Food:
+// press H for a ration anywhere, or a Galley cooks proper meals at home. Morale rises at a
+// warm home with comforts and near other Kin. All three drain slowly while you play (never
+// while you're away). Below 15% the borer slows; at zero for a minute you black out.
+const NEEDS=[{k:'o2',n:'O₂'},{k:'food',n:'FOOD'},{k:'mood',n:'MORALE'}];
+const LOW=15, BLACKOUT_S=60;
+let eatT=0;
+function nearKin(){ const now=Date.now(); return crews.some(c=>c.px!=null&&now-new Date(c.updated_at)<15*60000&&Math.max(Math.abs(c.px-S.px),Math.abs(c.py-S.py))<=20); }
+function needRates(){
+  const rm=roomAt(S.px,S.py), lander=atLander(), st=stormNow(), exposed=st.active&&S.py<GY+2&&!lander;
+  const r={o2:-100/(30*60)*(hasRes('end1')?.7:1), food:-100/(60*60)*(hasRes('end2')?.7:1), mood:-100/(50*60)};
+  if(rm) r.o2=4; else if(lander) r.o2=2;
+  let up=0;
+  if(rm&&rm.heat) up+=.05+rm.comfort*.06;
+  if(lander) up+=.04;
+  if(nearKin()) up+=.15*(hasRes('spirit1')?2:1);
+  if(up>0) r.mood=up;
+  if(exposed){ const k=S.py>=GY?.5:1; r.o2-=1.2*k; r.mood-=.6*k; }
+  return r;
+}
+function eat(meal){
+  if(S.res.food<1){ if(!meal) toast('No Food. Greenhouses grow it; pick it up when you visit them.'); return false; }
+  if(S.needs.food>=97){ if(!meal) toast("You're not hungry."); return false; }
+  S.res.food-=1; S.needs.food=Math.min(100,S.needs.food+(meal?35*(hasRes('spirit2')?1.5:1):20)); bump('food');
+  if(!meal){ toast('Ration eaten. +20 hunger.'); beep(520,.08,'triangle',.04,700); }
+  return true;
+}
+function updateNeeds(dt){
+  if(!S.introDone) return;
+  const n=S.needs, r=needRates();
+  for(const k of ['o2','food','mood']) n[k]=clamp(n[k]+r[k]*dt,0,100);
+  // a galley at home cooks for you when you're hungry
+  const rm=roomAt(S.px,S.py); eatT-=dt;
+  if(rm&&rm.galley&&n.food<75&&eatT<=0&&S.res.food>=1){ eatT=3; if(eat(true)) toast('A hot meal from the galley. +'+Math.round(35*(hasRes('spirit2')?1.5:1))+' hunger.'); }
+  const lowest=NEEDS.reduce((a,b)=>n[b.k]<n[a.k]?b:a);
+  if(n[lowest.k]<LOW){ if(!P.needWarned){ P.needWarned=true; post({type:'lyraReact',react:'droop'}); lyra(needAdvice(lowest.k,true),{prio:5,key:'need-'+lowest.k,cool:120}); } }
+  else if(n[lowest.k]>LOW+10) P.needWarned=false;
+  if(n[lowest.k]<=0){
+    if(!P.zeroT){ P.zeroT=0.001; lyra(`${needAdvice(lowest.k,false)} You have about a minute before you black out.`,{prio:LYRA_URGENT+1,hold:false}); }
+    else P.zeroT+=dt;
+    if(P.zeroT>=BLACKOUT_S) blackout(lowest.k);
+  } else P.zeroT=0;
+  // your wreck: drive back to it to recover what you dropped
+  if(S.wreck&&Math.max(Math.abs(S.wreck.x-S.px),Math.abs(S.wreck.y-S.py))<=1) recoverWreck();
+}
+function needAdvice(k,low){
+  if(k==='o2') return low?"Oxygen's getting low. Get inside a pressurized room, or back to the lander.":"Oxygen's gone.";
+  if(k==='food') return low?`You're running on empty. Press H to eat a ration (you have ${Math.floor(S.res.food)} Food), or get home to a Galley.`:'You need to eat, now. Press H.';
+  return low?"Morale is low. A warm home with comforts helps, and so does company: work near other Kin for a bit.":'Morale has hit bottom.';
+}
+const needSlow=()=>NEEDS.some(x=>S.needs[x.k]<LOW)?.6:1;
+let blackT=0;
+function blackout(k){
+  const keep=hasRes('end3')?.1:.25, lost={};
+  for(const r of ['iron','silicon','ice','rare']){ const v=Math.floor(S.res[r]*keep); if(v>0){ lost[r]=v; S.res[r]-=v; } }
+  const w=S.wreck||{res:{}}; for(const [r,v] of Object.entries(lost)) w.res[r]=(w.res[r]||0)+v;
+  S.wreck={x:S.px,y:S.py,res:w.res,at:Date.now()};
+  S.deaths=(S.deaths||0)+1;
+  S.px=SPAWN_X; S.py=GY-1; P.rx=S.px; P.ry=S.py; P.move=null; P.drill=null; P.zeroT=0; P.needWarned=false;
+  S.needs={o2:70, food:Math.max(S.needs.food,50), mood:50}; S.bat=Math.max(S.bat,batCap()*.5);
+  blackT=3; noise(1.2,.2,200,'lowpass',60); beep(200,1,'sawtooth',.05,40);
+  post({type:'lyraReact',react:'flinch'});
+  const what=Object.entries(lost).map(([r,v])=>`${v} ${RNAME[r]}`).join(', ');
+  lyra(`Blackout${k==='o2'?' (no oxygen)':k==='food'?' (starving)':' (morale gave out)'}. The colony robots towed you back to the lander. ${what?`Your borer dropped ${what} where you went down, ${dirText(S.wreck.x-S.px,S.wreck.y-S.py)} from here. Get back to the wreck to recover it.`:''}`,{prio:LYRA_URGENT+1,hold:true});
+  save(true);
+}
+function recoverWreck(){
+  const w=S.wreck; S.wreck=null;
+  for(const [r,v] of Object.entries(w.res)) grant(r,v,true);
+  flushGained('Recovered: '); chime([523,659,784,1047]); lyra("You found your wreck and got everything back. Let's not do that again.",{prio:4,celebrate:true}); save(true);
+}
+
+// ---------- abilities (Update 5.61) ----------
+// Dash (Shift): a burst of speed. Overdrive (Space): double drill speed without the heat.
+// Both cost battery and need a moment to recharge.
+const AB={dash:{cd:0,t:0}, over:{cd:0,t:0}};
+function dashCost(){ return batCap()*(hasRes('nav1')?.02:.04); }
+const OVER_COST=.08;
+function useDash(){
+  if(phase!=='play') return;
+  if(AB.dash.cd>0){ toast(`Dash recharging: ${Math.ceil(AB.dash.cd)}s`); return; }
+  if(S.bat<dashCost()){ toast('Not enough battery to dash.'); return; }
+  S.bat-=dashCost(); AB.dash.t=hasRes('nav1')?3.5:2.5; AB.dash.cd=8; noise(.4,.08,1400,'bandpass',300); beep(300,.25,'sawtooth',.03,900);
+}
+function useOverdrive(){
+  if(phase!=='play') return;
+  if(AB.over.cd>0){ toast(`Overdrive recharging: ${Math.ceil(AB.over.cd)}s`); return; }
+  if(S.bat<batCap()*OVER_COST){ toast('Not enough battery for Overdrive.'); return; }
+  S.bat-=batCap()*OVER_COST; AB.over.t=hasRes('eng3')?10:5; AB.over.cd=20; beep(180,.5,'square',.04,520); noise(.5,.08,900,'bandpass',2400);
+  lyra('Overdrive: double drill speed, no extra heat, for a few seconds.',{prio:1,key:'over',cool:600});
+}
+function tickAbilities(dt){ for(const a of Object.values(AB)){ a.t=Math.max(0,a.t-dt); a.cd=Math.max(0,a.cd-dt); } }
+
+// ---------- dust storms (Update 5.61) ----------
+// Storms run on one schedule worked out from the clock, so every Kin on Mars sees the same
+// storm at the same moment with no server involved. Roughly one every hour or so: a
+// minute's warning, then about a minute and a half of dust. Underground (4 m+) you're safe;
+// on the surface it eats your battery, oxygen and morale, and solar power drops to a trickle.
+const STORM_EVERY=45*60000, STORM_WARN=60000, STORM_LEN=100000;
+let stormTest=null, stormMemo={t:-1,v:null};
+function stormNow(){
+  const t=Date.now(), q=Math.floor(t/500); if(stormMemo.t===q) return stormMemo.v;
+  let start=null;
+  if(stormTest&&t<stormTest.end) start=stormTest.start;
+  else for(const slot of [Math.floor(t/STORM_EVERY)-1,Math.floor(t/STORM_EVERY)]){
+    const h=hash(slot,7331); if(h%100>=62) continue;
+    const st=slot*STORM_EVERY+8*60000+(h>>>8)%(STORM_EVERY-10*60000-STORM_LEN);
+    if(t<st+STORM_LEN){ start=st; break; }
+  }
+  const v=start==null?{active:false,warning:false}:{active:t>=start&&t<start+STORM_LEN, warning:t>=start-STORM_WARN&&t<start, in:Math.ceil((start-t)/1000), left:Math.ceil((start+STORM_LEN-t)/1000), start};
+  stormMemo={t:q,v}; return v;
+}
+let stormSeen={warn:0,on:0,off:0}, windT=0;
+function updateStorm(dt){
+  const st=stormNow(), el=$('#storm');
+  if(st.warning||st.active){
+    el.hidden=false; el.classList.toggle('on',st.active);
+    el.innerHTML=st.active?`<b>DUST STORM</b> <span>${st.left}s · ${S.py<GY+2&&!atLander()?'get underground!':'you are sheltered'}</span>`:`<b>DUST STORM IN ${st.in}s</b> <span>get below the surface</span>`;
+  } else el.hidden=true;
+  if(st.warning&&stormSeen.warn!==st.start){ stormSeen.warn=st.start; post({type:'lyraReact',react:'flinch'}); lyra(`Dust storm coming in about ${st.in} seconds, all crews. Get below the surface, at least 4 m down, or shelter in the lander. Solar power will drop to almost nothing.`,{prio:LYRA_URGENT+1}); beep(440,.3,'square',.04,330); setTimeout(()=>beep(440,.3,'square',.04,330),450); }
+  if(st.active&&stormSeen.on!==st.start){ stormSeen.on=st.start; refreshGrids(); }
+  if(!st.active&&!st.warning&&stormSeen.on&&stormSeen.off!==stormSeen.on){ stormSeen.off=stormSeen.on; refreshGrids(); lyra("The storm's passed. Solar is back up.",{prio:2}); }
+  if(st.active){
+    const exposed=S.py<GY+2&&!atLander();
+    if(exposed) S.bat=Math.max(0,S.bat-batCap()*.012*(S.py>=GY?.5:1)*dt);
+    windT-=dt; const near=clamp(1-depthOf(S.py)/14,0,1);
+    if(windT<=0&&near>0){ windT=1.4; noise(1.8,.05+near*.12,280+Math.random()*300,'bandpass',120+Math.random()*200); }
+  }
+}
+
 // ---------- scanning ----------
-let scanPulse=null, scanCool=0;
+let scanPulse=null, scanCool=0, scanRing=null;
+// The scanner (5.61): shows its range, what it costs, and everything it found.
+const scanRange=()=>Math.round((30+5*S.attrs.nav)*(hasRes('nav2')?1.5:1));
+const SCAN_COST=.03, SCAN_CD=12;
+function scanInfo(){ return `Scan (Q) · range ${scanRange()*2} m · ${Math.round(SCAN_COST*100)}% battery · ${SCAN_CD}s recharge`; }
 function scan(){
   if(phase!=='play') return;
   if(scanCool>0){ toast(`Scanner recharging: ${Math.ceil(scanCool)}s`); return; }
-  scanCool=15;
-  const want = MISSIONS[S.mission]&&MISSIONS[S.mission].n==='Find water' ? [ICE] : (MISSIONS[S.mission]&&/Heater|Reactor|Charger|sensor/.test(MISSIONS[S.mission].brief)&&S.res.rare<3) ? [MET] : [ICE,MET];
-  let best=null, bd=1e9; const R=45;
-  for(let y=Math.max(GY,S.py-R);y<Math.min(H,S.py+R);y++) for(let x=Math.max(0,S.px-R);x<Math.min(W,S.px+R);x++){ const t=world[idx(x,y)]; if(!want.includes(t)) continue; const d=(x-S.px)**2+(y-S.py)**2; if(d<bd){bd=d;best={x,y,t};} }
+  if(S.bat<batCap()*SCAN_COST){ toast(`The scanner needs ${Math.round(SCAN_COST*100)}% battery.`); return; }
+  scanCool=SCAN_CD; S.bat-=batCap()*SCAN_COST;
+  const want = MISSIONS[S.mission]&&MISSIONS[S.mission].n==='Find water' ? [ICE] : (MISSIONS[S.mission]&&/Heater|Reactor|sensor/.test(MISSIONS[S.mission].brief)&&S.res.rare<3) ? [MET] : [ICE,MET];
+  const R=scanRange(); let best=null, bd=1e9; const found={[ICE]:0,[MET]:0}; let fresh=0;
+  for(let y=Math.max(GY,S.py-R);y<Math.min(H,S.py+R);y++) for(let x=Math.max(0,S.px-R);x<Math.min(W,S.px+R);x++){
+    const i=idx(x,y), t=world[i]; if(t!==ICE&&t!==MET) continue;
+    const d=(x-S.px)**2+(y-S.py)**2; if(d>R*R) continue;
+    found[t]++;
+    // the scan maps veins close by for good; further out it only points the way
+    if(d<=144&&!seen[i]){ seen[i]=1; fresh++; }
+    if(want.includes(t)&&d<bd){bd=d;best={x,y,t};}
+  }
   noise(.6,.06,2400,'bandpass',600); beep(1200,.4,'sine',.03,400);
-  if(!best){ lyra('Nothing on the scanner within range. Try another direction.',{prio:2}); return; }
+  scanRing={t:0,R};
+  const tally=`Range ${R*2} m · used ${Math.round(SCAN_COST*100)}% battery · in range: ${found[ICE]} ice, ${found[MET]} metal${fresh?` · ${fresh} mapped nearby`:''}`;
+  showScanCard(tally,best);
+  if(!best){ lyra(`Nothing on the scanner within ${R*2} m. Try another direction.`,{prio:2}); return; }
   for(let dy=-1;dy<=1;dy++) for(let dx=-1;dx<=1;dx++){ const x=best.x+dx,y=best.y+dy; if(x>=0&&y>=0&&x<W&&y<H) seen[idx(x,y)]=1; }
   scanPulse={x:best.x,y:best.y,t:6};
-  const dx=best.x-S.px, dy=best.y-S.py;
-  const dirs=[dx<0?`${-dx*2} m left`:dx>0?`${dx*2} m right`:'',dy<0?`${-dy*2} m up`:dy>0?`${dy*2} m down`:''].filter(Boolean).join(' and ');
-  lyra(`Nearest ${best.t===ICE?'ice':'metal'}: ${dirs||'right next to you'}. I've marked it.`,{prio:3});
+  lyra(`Nearest ${best.t===ICE?'ice':'metal'}: ${dirText(best.x-S.px,best.y-S.py)}. I've marked it.`,{prio:3});
+}
+function showScanCard(tally,best){
+  const el=$('#scanCard'); el.hidden=false;
+  el.innerHTML=`<b>SCAN</b><span>${esc(tally)}</span>${best?`<span>Nearest ${best.t===ICE?'ice':'metal'}: ${esc(dirText(best.x-S.px,best.y-S.py))}</span>`:''}`;
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.hidden=true; },7000);
 }
 $('#lyraScan').onclick=scan;
 
 // ---------- building ----------
-let mode='dig', group='blocks', sel='brick', hover=null;
-function inReach(x,y){ return Math.max(Math.abs(x-S.px),Math.abs(y-S.py))<=6; }
+let mode='dig', group='blocks', sel='brick', hover=null, rot=false;
+function inReach(x,y){ return Math.max(Math.abs(x-S.px),Math.abs(y-S.py))<=REACH; }
+// the tile a piece goes down as: rotatable pieces have a second tile (door/hatch, hanging/standing)
+const placeTile=b=>rot&&ROTATE[b.tile]?ROTATE[b.tile]:b.tile;
 function touchesRock(x,y){ for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]]) if(diggable(tile(x+dx,y+dy))) return true; return false; }
 function buildCheck(x,y){
   if(x<0||y<0||x>=W||y>=H) return 'Out of bounds.';
   const b=itemById(sel), i=idx(x,y), t=tile(x,y);
   if(!inReach(x,y)) return 'Too far away. Move your borer closer.';
   if(b.id==='remove'){ if(t<10) return 'Pick something you built to remove it.'; if(own[i]!==1) return `That's ${ownerName(i)}'s build. Only they can remove it.`; return null; }
+  if(b.id==='rotate'){ if(!ROTATE[t]) return 'Only airlocks and lamps turn.'; if(own[i]!==1) return `That's ${ownerName(i)}'s.`; return null; }
   if(b.id==='move'){ if(!isKit(itemByTile(t))) return 'Pick a piece of your equipment to move.'; if(own[i]!==1) return `That's ${ownerName(i)}'s. Only they can move it.`; return null; }
   if(t===AIR) return 'The surface belongs to the colony. Build underground.';
   if(t!==TUN) return 'You can only build in open tunnel.';
   if(own[i]>=2) return `${ownerName(i)} dug that tunnel. Build in your own tunnels or in unclaimed caves.`;
   if(x===S.px&&y===S.py) return 'Your borer is in that spot. Move first.';
   if(b.id==='fill'){ if(own[i]!==1) return 'Backfill only works in tunnels you dug.'; return null; }
+  if(my.built>=BUILD_CAP) return `You've reached the build limit for one Kin (${BUILD_CAP} pieces). Remove something to build more.`;
   if(isKit(b)){
     if(!(S.inv[b.id]>0)) return `No ${b.n} in your kit. Craft one in the Fabricator (Dashboard).`;
     if(b.tile===RIG&&!touchesRock(x,y)) return 'An Auto-drill has to touch rock. Pick a tunnel spot right next to the rock wall.';
@@ -872,6 +1325,7 @@ function buildCheck(x,y){
 function tryBuild(x,y){
   const err=buildCheck(x,y); if(err){ toast(err); return; }
   const b=itemById(sel), t=tile(x,y);
+  if(b.id==='rotate'){ setTile(x,y,ROTATE[t]); recomputePressure(); beep(420,.06,'sine',.04,560); return; }
   if(b.id==='remove'||b.id==='move'){
     const src=itemByTile(t);
     if(isKit(src)){
@@ -880,20 +1334,27 @@ function tryBuild(x,y){
       if(b.id==='remove') toast(`${src.n} back in your kit.`);
     } else if(src){ for(const [r,v] of Object.entries(costOf(src))) S.res[r]+=Math.floor(v/2); }
     setTile(x,y,TUN); recomputePressure(); beep(300,.08,'sine',.04,200);
-    if(b.id==='move'&&isKit(src)){ sel=src.id; group='equip'; renderPalette(true); toast(`Picked up the ${src.n}. Tap where it should go.`); return; }
+    if(t===BATT&&S.cells){ delete S.cells[idx(x,y)]; }
+    if(b.id==='move'&&isKit(src)){ sel=src.id; group='equip'; rot=!!BASE_T[t]; renderPalette(true); toast(`Picked up the ${src.n}. Tap where it should go.`); return; }
     renderPalette(true); return;
   }
   if(b.id==='fill'){ setTile(x,y,FILL); recomputePressure(); noise(.25,.06,300,'lowpass'); return; }
-  if(isKit(b)){ S.inv[b.id]--; if(b.tile===LOCK) S.sealBlocks++; } else { pay(costOf(b)); if(b.tile!==FILL) S.sealBlocks++; }
-  setTile(x,y,b.tile);
+  if(isKit(b)){ S.inv[b.id]--; if(b.tile===LOCK) S.sealBlocks++; } else { pay(costOf(b)); if(b.tile!==FILL&&b.tile!==WIRE) S.sealBlocks++; }
+  setTile(x,y,placeTile(b));
   if(b.tile===RIG){ const rg={x,y,st:{}}; S.rigs.push(rg); const rt=rigRates(rg); lyra(`Auto-drill online, mining ${Object.keys(rt).sort((a,c)=>rt[c]-rt[a]).map(k=>RNAME[k]).join(' and ')}. It keeps going while you're away.`,{prio:2}); }
   recomputePressure();
   const rm=roomAt(x,y);
   if(b.tile===O2){ if(rm) lyra('Room sealed and pressurized. You can breathe in here.',{prio:3,celebrate:true}); else lyra("The O₂ pump is leaking. Somewhere around the room there's still an opening. Close it with any block or an airlock and the room will fill.",{prio:3}); }
   if((b.tile===GREEN||b.tile===HEATER||b.tile===SCRUB)&&!rm) lyra(`The ${b.n} needs a pressurized room to do anything.`,{prio:2,key:'needpress',cool:60});
   if(rm&&rm.habitable&&(b.tile===HEATER||b.tile===SCRUB)) lyra('Pump, heat and clean air together: this room is habitable now.',{prio:3,celebrate:true,key:'hab',cool:300});
-  if(b.tile===CHARGER) lyra(my.powered.includes(idx(x,y))?'Charger powered. Drive up to it to charge.':'This charger has no power. Place a Reactor within 10 blocks of it.',{prio:2});
-  if(b.tile===REACTOR&&my.powered.length) lyra('Reactor online. Chargers within 10 blocks are powered.',{prio:2});
+  const gi=gridInfo(my.gridOf.get(idx(x,y)));
+  if(b.tile===CHARGER) lyra(my.powered.includes(idx(x,y))?(my.gridOf.get(idx(x,y))&&my.gridOf.get(idx(x,y)).gen>0?'Charger powered. Drive up to it to charge.':'Charger running on its own little solar mast. Slow, but free. Wire a solar panel to it for full speed.'):`This charger has no power. Put a Solar panel next to it (within ${SOLAR_DEPTH*2} m of the surface), or run Wire to one.`,{prio:2});
+  if(b.tile===SOLAR) lyra(depthOf(y)<=SOLAR_DEPTH?`Solar panel online: ${GEN[SOLAR]} kW. Anything touching it, or wired to it, shares the power.`:`Too deep for solar: light doesn't reach past ${SOLAR_DEPTH*2} m. Move it up, or research a Geothermal tap for deep power.`,{prio:2});
+  if(b.tile===GEOTH) lyra(depthOf(y)>=GEO_DEPTH?`Geothermal tap online: ${GEN[GEOTH]} kW, day and night, storm or not.`:`Not enough heat this high up. A geothermal tap needs ${GEO_DEPTH*2} m of rock above it.`,{prio:2});
+  if(b.tile===REACTOR) lyra(`Reactor online: ${GEN[REACTOR]} kW. It reaches chargers within 10 blocks even without wire.`,{prio:2});
+  if(b.tile===BATT) lyra(gi&&my.gridOf.get(idx(x,y)).gen>0?`Battery on the grid. It stores ${BATT_CAP} kWh, so your chargers keep going through storms.`:'A battery on its own stores nothing. Connect it to a power source with Wire, or put them side by side.',{prio:2});
+  if((b.tile===BUNK||b.tile===GALLEY)&&!rm) lyra(`The ${b.n} only counts in a pressurized room.`,{prio:2,key:'needpress',cool:60});
+  if((b.tile===BUNK||b.tile===GALLEY)&&rm&&!rm.heat) lyra("Nice. It'll feel like home once the room has a Heater.",{prio:2,key:'needheat',cool:120});
   addXP(2); beep(520,.06,'sine',.05,780);
   renderPalette(true); checkMissions();
 }
@@ -934,7 +1395,7 @@ function drawRock(t,sx,sy,x,y){
   }
   if(tile(x,y-1)===AIR){ ctx.fillStyle='#b8684a'; ctx.fillRect(sx,sy,T+.5,T*.16); }
   ctx.fillStyle='rgba(10,4,6,.45)';
-  const open=t2=>t2===TUN||t2===LOCK||isEquip(t2);
+  const open=t2=>t2===TUN||isLock(t2)||isEquip(t2);
   if(open(tile(x-1,y))) ctx.fillRect(sx,sy,2,T);
   if(open(tile(x+1,y))) ctx.fillRect(sx+T-2,sy,2,T);
   if(open(tile(x,y+1))) ctx.fillRect(sx,sy+T-2,T,2);
@@ -969,7 +1430,14 @@ function drawMaterial(c,t,sx,sy,T,h){
       c.beginPath(); c.moveTo(sx+.5,sy+.5); c.lineTo(sx+4*p,sy+2*p); c.moveTo(sx+T-.5,sy+.5); c.lineTo(sx+T-2*p,sy+2*p); c.moveTo(sx+.5,sy+T-.5); c.lineTo(sx+4*p,sy+T-4*p); c.stroke();
       c.strokeStyle='rgba(255,255,255,.55)'; c.beginPath(); c.moveTo(sx+2*p,sy+6*p); c.lineTo(sx+6*p,sy+2*p); c.stroke(); break; }
     case ALLOY: { const g=c.createLinearGradient(sx,sy,sx,sy+T); g.addColorStop(0,'#d8bd72'); g.addColorStop(1,'#9c7e3e'); c.fillStyle=g; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='rgba(255,240,200,.35)'; for(let k=0;k<4;k++) c.fillRect(sx+p,sy+(2+k*4)*p,T-2*p,p*.5); c.strokeStyle='#7a6230'; c.lineWidth=1; c.strokeRect(sx+.5,sy+.5,T-1,T-1); break; }
-    case LOCK: c.fillStyle='#363a68'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#454a82'; c.fillRect(sx+p,sy+p,T-2*p,T-2*p); c.fillStyle='#1b1d3d'; c.fillRect(sx+5*p,sy+2*p,6*p,12*p); c.fillStyle='#E8CFC0'; c.fillRect(sx+5*p,sy+2*p,6*p,p); c.fillRect(sx+5*p,sy+13*p,6*p,p); break;
+    case LOCK: case LOCKH: {
+      // frame, then two door leaves that slide apart as someone walks up (h = how open, 0..1)
+      const o=(h>1?0:h)||0, vert=t===LOCK;
+      c.fillStyle='#363a68'; c.fillRect(sx,sy,T+.5,T+.5); c.fillStyle='#1b1d3d'; c.fillRect(sx+p,sy+p,T-2*p,T-2*p);
+      c.fillStyle='#454a82';
+      if(vert){ const lw=(7*p)*(1-o); c.fillRect(sx+p,sy+p,lw,T-2*p); c.fillRect(sx+T-p-lw,sy+p,lw,T-2*p); c.fillStyle='#E8CFC0'; c.fillRect(sx+p+lw-p*.6,sy+3*p,p*.6,T-6*p); c.fillRect(sx+T-p-lw,sy+3*p,p*.6,T-6*p); }
+      else { const lh=(7*p)*(1-o); c.fillRect(sx+p,sy+p,T-2*p,lh); c.fillRect(sx+p,sy+T-p-lh,T-2*p,lh); c.fillStyle='#E8CFC0'; c.fillRect(sx+3*p,sy+p+lh-p*.6,T-6*p,p*.6); c.fillRect(sx+3*p,sy+T-p-lh,T-6*p,p*.6); }
+      break; }
   }
 }
 const SEETHRU=new Set([GLASS,TGLASS,ICEB]);
@@ -978,33 +1446,65 @@ function drawEquip(c,t,sx,sy,T,time,lit,extra){
   if(t===O2){ c.fillStyle='#8B95F6'; rr(c,sx+4*p,sy+3*p,8*p,12*p,3*p); c.fill(); c.fillStyle='#14163A'; c.beginPath(); c.arc(sx+8*p,sy+8*p,2.2*p,0,7); c.fill(); c.strokeStyle=lit?'#9CCB98':'#C97B6E'; c.lineWidth=1.5; c.beginPath(); const a=time*3; c.moveTo(sx+8*p,sy+8*p); c.lineTo(sx+8*p+Math.cos(a)*2*p,sy+8*p+Math.sin(a)*2*p); c.stroke(); }
   else if(t===GREEN){ c.fillStyle='rgba(170,190,255,.14)'; c.fillRect(sx+p,sy+3*p,14*p,12*p); c.strokeStyle='rgba(185,192,255,.5)'; c.lineWidth=1; c.strokeRect(sx+p+.5,sy+3*p+.5,14*p-1,12*p-1); c.fillStyle='#5a3a2c'; c.fillRect(sx+2*p,sy+12*p,12*p,2*p); c.fillStyle=lit?'#7fbf7a':'#6b4a3a'; for(let k=0;k<3;k++){ const bx=sx+(4+k*4)*p, sway=lit?Math.sin(time*1.5+k)*p*.6:0; c.fillRect(bx+sway,sy+(lit?6:9)*p,1.5*p,(lit?6:3)*p); c.fillRect(bx-1.2*p+sway,sy+(lit?7:10)*p,4*p,1.5*p); } }
   else if(t===LAMP){ c.fillStyle='#565B8F'; c.fillRect(sx+7*p,sy,2*p,5*p); c.fillStyle='#ffe2b8'; c.beginPath(); c.arc(sx+8*p,sy+6.5*p,2.5*p,0,7); c.fill(); }
+  else if(t===LAMPF){ c.fillStyle='#565B8F'; c.fillRect(sx+5*p,sy+14.5*p,6*p,1.5*p); c.fillRect(sx+7.4*p,sy+7*p,1.2*p,8*p); c.fillStyle='#ffe2b8'; c.beginPath(); c.moveTo(sx+4.5*p,sy+7.5*p); c.lineTo(sx+11.5*p,sy+7.5*p); c.lineTo(sx+10*p,sy+3*p); c.lineTo(sx+6*p,sy+3*p); c.closePath(); c.fill(); }
+  else if(t===SOLAR){ c.fillStyle='#565B8F'; c.fillRect(sx+7.3*p,sy+9*p,1.4*p,6*p); c.fillRect(sx+4*p,sy+14.6*p,8*p,1.4*p); c.save(); c.translate(sx+8*p,sy+7*p); c.rotate(-.35); c.fillStyle=lit?'#2f4fa8':'#2a2f55'; c.fillRect(-6.5*p,-3*p,13*p,6*p); c.strokeStyle='rgba(185,200,255,.55)'; c.lineWidth=.8; for(let k=1;k<4;k++){ c.beginPath(); c.moveTo(-6.5*p+k*3.25*p,-3*p); c.lineTo(-6.5*p+k*3.25*p,3*p); c.stroke(); } c.beginPath(); c.moveTo(-6.5*p,0); c.lineTo(6.5*p,0); c.stroke(); if(lit){ c.fillStyle=`rgba(255,240,200,${.25+Math.sin(time*2)*.1})`; c.fillRect(-6.5*p,-3*p,4*p,1.5*p); } c.restore(); }
+  else if(t===GEOTH){ c.fillStyle='#4a3d3a'; rr(c,sx+3*p,sy+3*p,10*p,12*p,1.5*p); c.fill(); c.fillStyle='#2a1f1d'; c.fillRect(sx+6*p,sy+11*p,4*p,4*p); const gl=lit?.55+Math.sin(time*3)*.25:.15; c.fillStyle=`rgba(255,120,60,${gl})`; c.fillRect(sx+6.6*p,sy+11.6*p,2.8*p,3.4*p); c.strokeStyle='#8a90cc'; c.lineWidth=1.2; c.beginPath(); c.moveTo(sx+5*p,sy+3*p); c.lineTo(sx+5*p,sy); c.moveTo(sx+11*p,sy+3*p); c.lineTo(sx+11*p,sy); c.stroke(); if(lit){ c.fillStyle='rgba(220,220,240,.25)'; for(let k=0;k<2;k++){ const ph=(time*.8+k*.5)%1; c.beginPath(); c.arc(sx+(5+k*6)*p,sy-ph*4*p,(1+ph*1.5)*p,0,7); c.fill(); } } }
+  else if(t===BATT){ c.fillStyle='#3a3e68'; rr(c,sx+3*p,sy+3*p,10*p,12*p,1.5*p); c.fill(); c.fillStyle='#8a90cc'; c.fillRect(sx+6*p,sy+1.5*p,4*p,1.6*p); const f=extra==null?.6:extra; c.fillStyle='#14163A'; c.fillRect(sx+5*p,sy+5*p,6*p,8*p); c.fillStyle=f>.25?'#9CCB98':'#E2C27A'; c.fillRect(sx+5*p,sy+5*p+8*p*(1-f),6*p,8*p*f); }
+  else if(t===GALLEY){ c.fillStyle='#4f5566'; c.fillRect(sx+2*p,sy+8*p,12*p,7*p); c.fillStyle='#2b2e5c'; c.fillRect(sx+3.5*p,sy+10*p,9*p,4*p); c.fillStyle='#c8ccd8'; c.fillRect(sx+3*p,sy+6.5*p,5*p,1.5*p); c.fillStyle='#8a90cc'; rr(c,sx+9*p,sy+4*p,4*p,4*p,1*p); c.fill(); if(lit){ c.strokeStyle='rgba(230,230,240,.4)'; c.lineWidth=1; c.beginPath(); const w=Math.sin(time*2)*p; c.moveTo(sx+11*p,sy+3.5*p); c.quadraticCurveTo(sx+11*p+w,sy+2*p,sx+11*p,sy+.5*p); c.stroke(); } }
+  else if(t===BUNK){ c.fillStyle='#565B8F'; c.fillRect(sx+2*p,sy+3*p,1.4*p,12*p); c.fillRect(sx+12.6*p,sy+3*p,1.4*p,12*p); c.fillStyle='#454a82'; c.fillRect(sx+2*p,sy+6*p,12*p,1.6*p); c.fillRect(sx+2*p,sy+12.5*p,12*p,1.6*p); c.fillStyle='#B9C0FF'; c.fillRect(sx+3.4*p,sy+4.6*p,3*p,1.4*p); c.fillRect(sx+3.4*p,sy+11.1*p,3*p,1.4*p); c.fillStyle='#C97B6E'; c.fillRect(sx+6.6*p,sy+4.8*p,6*p,1.2*p); c.fillRect(sx+6.6*p,sy+11.3*p,6*p,1.2*p); }
+  else if(t===WIRE){ c.strokeStyle='#E2C27A'; c.lineWidth=Math.max(1.5,T*.08); c.beginPath(); c.moveTo(sx+4*p,sy+8*p); c.lineTo(sx+12*p,sy+8*p); c.moveTo(sx+8*p,sy+4*p); c.lineTo(sx+8*p,sy+12*p); c.stroke(); }
   else if(t===RIG){ const f=extra==null?.4:extra; c.strokeStyle='#8a90cc'; c.lineWidth=1.5; c.beginPath(); c.moveTo(sx+4*p,sy+15*p); c.lineTo(sx+8*p,sy+2*p); c.lineTo(sx+12*p,sy+15*p); c.moveTo(sx+5*p,sy+11*p); c.lineTo(sx+11*p,sy+11*p); c.stroke(); c.fillStyle='#E8CFC0'; c.save(); c.translate(sx+8*p,sy+8*p); c.rotate(time*4); c.fillRect(-2*p,-.6*p,4*p,1.2*p); c.restore(); if(extra!=null){ c.fillStyle='#1b1d3d'; c.fillRect(sx+13.5*p,sy+3*p,1.8*p,11*p); c.fillStyle=f>=.99?'#E8CFC0':'#9CCB98'; c.fillRect(sx+13.5*p,sy+3*p+11*p*(1-f),1.8*p,11*p*f);} }
   else if(t===HEATER){ c.fillStyle='#3a3e68'; rr(c,sx+2*p,sy+5*p,12*p,9*p,1.5*p); c.fill(); const glow=lit?.6+Math.sin(time*2)*.25:.25; c.strokeStyle=`rgba(255,140,80,${glow})`; c.lineWidth=1.4; c.beginPath(); for(let k=0;k<4;k++){ c.moveTo(sx+4*p,sy+(7+k*2)*p); c.lineTo(sx+12*p,sy+(7+k*2)*p); } c.stroke(); c.fillStyle='#565B8F'; c.fillRect(sx+3*p,sy+14*p,2*p,2*p); c.fillRect(sx+11*p,sy+14*p,2*p,2*p); }
   else if(t===SCRUB){ c.fillStyle='#4a5a6a'; rr(c,sx+3*p,sy+2*p,10*p,13*p,2*p); c.fill(); c.strokeStyle='#9fb6c8'; c.lineWidth=1; c.save(); c.translate(sx+8*p,sy+7*p); c.rotate(lit?time*6:0); c.beginPath(); for(let k=0;k<3;k++){ const a=k*2.094; c.moveTo(0,0); c.lineTo(Math.cos(a)*3.2*p,Math.sin(a)*3.2*p); } c.stroke(); c.restore(); c.fillStyle=lit?'#9CCB98':'#C97B6E'; c.fillRect(sx+7*p,sy+12*p,2*p,1.4*p); }
   else if(t===SENSOR){ c.strokeStyle='#8a90cc'; c.lineWidth=1.3; c.beginPath(); c.moveTo(sx+8*p,sy+15*p); c.lineTo(sx+8*p,sy+7*p); c.stroke(); c.fillStyle='#B9C0FF'; c.beginPath(); c.arc(sx+8*p,sy+6*p,4*p,Math.PI,0); c.fill(); c.fillStyle=(Math.sin(time*4)>0)?(lit?'#9CCB98':'#E8CFC0'):'#14163A'; c.beginPath(); c.arc(sx+8*p,sy+5*p,1.2*p,0,7); c.fill(); }
   else if(t===REACTOR){ c.fillStyle='#2d3058'; rr(c,sx+4*p,sy+2*p,8*p,13*p,3*p); c.fill(); c.fillStyle='#6f77c8'; for(let k=0;k<4;k++){ c.fillRect(sx+p,sy+(4+k*3)*p,3*p,p); c.fillRect(sx+12*p,sy+(4+k*3)*p,3*p,p); } const core=.55+Math.sin(time*2.2)*.25; c.fillStyle=`rgba(185,192,255,${core})`; c.fillRect(sx+6.5*p,sy+5*p,3*p,7*p); }
-  else if(t===CHARGER){ c.fillStyle='#3a3e68'; c.fillRect(sx+5*p,sy+3*p,6*p,12*p); c.fillStyle='#14163A'; c.fillRect(sx+6*p,sy+5*p,4*p,3*p); c.fillStyle=lit?'#9CCB98':'#C97B6E'; c.fillRect(sx+6.5*p,sy+5.5*p,3*p*(lit?(.4+.6*((time*.7)%1)):1),2*p); c.strokeStyle='#8a90cc'; c.lineWidth=1.2; c.beginPath(); c.moveTo(sx+11*p,sy+10*p); c.quadraticCurveTo(sx+15*p,sy+11*p,sx+14*p,sy+15*p); c.stroke(); }
+  if(extra!=null&&(t===SOLAR||t===GEOTH||t===REACTOR)){ c.fillStyle='#14163A'; c.fillRect(sx+p,sy+T-2.4*p,T-2*p,1.6*p); c.fillStyle=extra>0?'#9CCB98':'#C97B6E'; c.fillRect(sx+p,sy+T-2.4*p,(T-2*p)*Math.max(.06,extra),1.6*p); }
+  if(t===CHARGER){ c.fillStyle='#3a3e68'; c.fillRect(sx+5*p,sy+3*p,6*p,12*p); c.fillStyle='#14163A'; c.fillRect(sx+6*p,sy+5*p,4*p,3*p); c.fillStyle=lit?'#9CCB98':'#C97B6E'; c.fillRect(sx+6.5*p,sy+5.5*p,3*p*(lit?(.4+.6*((time*.7)%1)):1),2*p); c.strokeStyle='#8a90cc'; c.lineWidth=1.2; c.beginPath(); c.moveTo(sx+11*p,sy+10*p); c.quadraticCurveTo(sx+15*p,sy+11*p,sx+14*p,sy+15*p); c.stroke(); }
 }
-function drawBuilt(t,sx,sy,x,y,time){
+// wire joins up with whatever power pieces sit next to it (Build mode only)
+function drawWire(sx,sy,x,y){
+  const p=T/16, cx=sx+8*p, cy=sy+8*p, o=own[idx(x,y)];
+  ctx.strokeStyle='#E2C27A'; ctx.lineWidth=Math.max(1.5,T*.08); ctx.beginPath(); let n=0;
+  for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){ const nx=x+dx, ny=y+dy; if(POWER_T.has(tile(nx,ny))&&own[idx(nx,ny)]===o){ ctx.moveTo(cx,cy); ctx.lineTo(cx+dx*8*p,cy+dy*8*p); n++; } }
+  if(!n){ ctx.moveTo(cx-4*p,cy); ctx.lineTo(cx+4*p,cy); ctx.moveTo(cx,cy-4*p); ctx.lineTo(cx,cy+4*p); }
+  ctx.stroke(); ctx.fillStyle='#E2C27A'; ctx.beginPath(); ctx.arc(cx,cy,1.6*p,0,7); ctx.fill();
+}
+// airlocks slide open when a borer is right next to them, and hiss doing it
+const lockOpen=new Map();
+function lockTarget(x,y){
+  if(Math.max(Math.abs(P.rx-x),Math.abs(P.ry-y))<=1.2) return 1;
+  for(const c of crews){ if(c.px!=null&&Date.now()-new Date(c.updated_at)<15*60000&&Math.max(Math.abs(c.px-x),Math.abs(c.py-y))<=1) return 1; }
+  return 0;
+}
+function drawBuilt(t,sx,sy,x,y,time,dt){
   const i=idx(x,y);
-  if(SEETHRU.has(t)||isEquip(t)) drawTunnel(sx,sy,x,y);
+  if(SEETHRU.has(t)||isEquip(t)||isLock(t)) drawTunnel(sx,sy,x,y);
+  if(t===WIRE){ if(mode==='build') drawWire(sx,sy,x,y); return; }
   if(isEquip(t)){
     const rm=press[i]?rooms[regionOf[i]]:null;
     let lit=!!rm, extra=null;
-    if(t===CHARGER) lit=my.powered.includes(i);
+    if(t===CHARGER) lit=own[i]===1?my.powered.includes(i):true;
     if(t===REACTOR) lit=true;
     if(t===SENSOR) lit=!!(rm&&rm.shielded);
+    if(t===SOLAR||t===GEOTH||t===REACTOR){ const g=genOf(t,y); lit=g>0; if(own[i]===1) extra=g/(GEN[t]||1); }
+    if(t===BATT&&own[i]===1){ extra=(+(S.cells&&S.cells[i])||0)/BATT_CAP; }
+    if(t===GALLEY) lit=!!rm;
     if(t===RIG){ const rg=S.rigs.find(r=>r.x===x&&r.y===y); extra=rg?rigFill(rg):null; }
     drawEquip(ctx,t,sx,sy,T,time,lit,extra);
+  } else if(isLock(t)){
+    const cur=lockOpen.get(i)||0, tg=lockTarget(x,y), nv=cur+(tg-cur)*Math.min(1,dt*9);
+    if(tg&&cur<.05&&Math.max(Math.abs(S.px-x),Math.abs(S.py-y))<=1){ noise(.35,.05,2600,'highpass',900); }
+    if(nv<.01) lockOpen.delete(i); else lockOpen.set(i,nv);
+    drawMaterial(ctx,t,sx,sy,T,nv||0);
+    const p=T/16; ctx.fillStyle=press[i]||roomAt(x-1,y)||roomAt(x+1,y)||roomAt(x,y-1)||roomAt(x,y+1)?'#9CCB98':'#C97B6E'; ctx.fillRect(sx+T-2.6*p,sy+1.6*p,p,p);
   } else drawMaterial(ctx,t,sx,sy,T,hash(x,y));
-  if(t===LOCK){ const p=T/16; ctx.fillStyle=press[i]||roomAt(x-1,y)||roomAt(x+1,y)||roomAt(x,y-1)||roomAt(x,y+1)?'#9CCB98':'#C97B6E'; ctx.fillRect(sx+7.5*p,sy+7*p,p,p*2); }
 }
 function drawStructure(st,prog,done,time){
   const s=T/2, ox=st.x*T-cam.x, base=GY*T-cam.y, h=st.pat.length, n=done?st.cells.length:Math.floor(prog*st.cells.length);
   if(ox>vw+T*8||ox+st.pat[0].length*s<-T) return null;
   st.cells.forEach((c,i)=>{
     const x=ox+c.c*s, y=base-(h-c.r)*s;
-    if(i<n){ let col; switch(c.ch){ case 'w': col=done?'#ffd9a8':'#2a2d55'; break; case 'd': col='rgba(167,207,224,.38)'; break; case 'g': col='rgba(156,203,152,.45)'; break; case 'p': col='#7a80bf'; break; case 'r': col=(done&&Math.sin(time*3)>0)?'#ff8f7a':'#C97B6E'; break; default: col=(c.r+c.c)%2?'#454a80':'#4d5290'; }
+    if(i<n){ let col; switch(c.ch){ case 'w': col=done?'#ffd9a8':'#2a2d55'; break; case 'd': col='rgba(167,207,224,.38)'; break; case 'g': col='rgba(156,203,152,.45)'; break; case 'p': col='#7a80bf'; break; case 'r': col=(done&&Math.sin(time*3)>0)?'#ff8f7a':'#C97B6E'; break; case 's': col=done?'#5a6fc4':'#3c4f8f'; break; case 'h': col='#d07a52'; break; case 'c': col='#8c93b8'; break; case 'i': col=done?`rgba(143,208,255,${.6+Math.sin(time*4)*.3})`:'#5a78a0'; break; case '|': col='#6a6f9c'; break; default: col=(c.r+c.c)%2?'#454a80':'#4d5290'; }
       ctx.fillStyle=col; ctx.fillRect(x,y,s+.5,s+.5); }
     else { ctx.strokeStyle='rgba(185,192,255,.16)'; ctx.lineWidth=1; ctx.strokeRect(x+.5,y+.5,s-1,s-1); }
   });
@@ -1020,19 +1520,34 @@ function drawLander(){
   ctx.strokeStyle='#DCDFFF'; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(ox+27*u,b); ctx.lineTo(ox+27*u,b-22*u); ctx.stroke(); ctx.fillStyle='#E8CFC0'; ctx.fillRect(ox+27*u,b-22*u,8*u,5*u);
   ctx.fillStyle='rgba(156,203,152,.8)'; ctx.fillRect(ox+11*u,b-4*u,3*u,2*u);
 }
-function drawBorer(sx,sy,time,fx,fy,ghost,drilling,moving){
-  const u=T/16; ctx.save(); ctx.globalAlpha=ghost||1; ctx.translate(sx+T/2,sy+T/2);
+function cleanLook(l){ const o={...LOOK_DEFAULT}; if(l&&typeof l==='object') for(const k in LOOK_OPTS) if(LOOK_OPTS[k].includes(l[k])) o[k]=l[k]; return o; }
+function drawBorer(sx,sy,time,fx,fy,ghost,drilling,moving,look){
+  const u=T/16, L=cleanLook(look); ctx.save(); ctx.globalAlpha=ghost||1; ctx.translate(sx+T/2,sy+T/2);
   ctx.rotate(Math.atan2(fy,fx));
   if(!ghost&&P.over){ ctx.fillStyle=`rgba(255,120,60,${.25+Math.sin(time*10)*.1})`; ctx.beginPath(); ctx.arc(7*u,0,6*u,0,7); ctx.fill(); }
-  ctx.fillStyle='#2b2e5c'; rr(ctx,-7*u,-6.5*u,12*u,13*u,2*u); ctx.fill();
-  ctx.fillStyle=ghost?'#B9C0FF':'#E8CFC0'; rr(ctx,-6.5*u,-5.5*u,11*u,11*u,2*u); ctx.fill();
-  ctx.fillStyle='#14163A'; ctx.fillRect(-4.5*u,-5.5*u,3*u,11*u);
+  if(!ghost&&AB.over.t){ ctx.fillStyle=`rgba(185,192,255,${.3+Math.sin(time*14)*.12})`; ctx.beginPath(); ctx.arc(8*u,0,6.5*u,0,7); ctx.fill(); }
+  // headlamp beam
+  const lg=ctx.createRadialGradient(10*u,0,0,10*u,0,9*u); lg.addColorStop(0,L.lamp+'66'); lg.addColorStop(1,L.lamp+'00'); ctx.fillStyle=lg; ctx.beginPath(); ctx.moveTo(4*u,-2*u); ctx.lineTo(18*u,-7*u); ctx.lineTo(18*u,7*u); ctx.lineTo(4*u,2*u); ctx.fill();
+  ctx.fillStyle=L.trim; rr(ctx,-7*u,-6.5*u,12*u,13*u,2*u); ctx.fill();
+  ctx.fillStyle=L.body; rr(ctx,-6.5*u,-5.5*u,11*u,11*u,2*u); ctx.fill();
+  ctx.fillStyle=L.trim; ctx.fillRect(-4.5*u,-5.5*u,3*u,11*u);
+  drawDecal(L.decal,u,L);
   for(let k=0;k<4;k++){ const o=((k*3+time*(moving?20:0))%12)*u*.9; ctx.fillStyle='#565B8F'; ctx.fillRect(-6.5*u+o,-7*u,1.4*u,1.4*u); ctx.fillRect(-6.5*u+o,5.6*u,1.4*u,1.4*u); }
-  ctx.fillStyle='#B9C0FF'; rr(ctx,-.5*u,-3.5*u,3.5*u,3*u,1*u); ctx.fill();
-  ctx.fillStyle=P.over&&!ghost?'#c98a6e':'#8a90cc'; ctx.beginPath(); ctx.moveTo(4.5*u,-4.5*u); ctx.lineTo(10*u,0); ctx.lineTo(4.5*u,4.5*u); ctx.closePath(); ctx.fill();
+  ctx.fillStyle=L.lamp; rr(ctx,-.5*u,-3.5*u,3.5*u,3*u,1*u); ctx.fill();
+  ctx.fillStyle=P.over&&!ghost?'#c98a6e':L.drill; ctx.beginPath(); ctx.moveTo(4.5*u,-4.5*u); ctx.lineTo(10*u,0); ctx.lineTo(4.5*u,4.5*u); ctx.closePath(); ctx.fill();
   ctx.strokeStyle='#14163A'; ctx.lineWidth=1; const sp=drilling?time*(ghost?30:P.rpm/45):0;
   for(let k=0;k<3;k++){ const o=((k*1.8+sp)%5.4); ctx.beginPath(); ctx.moveTo(4.5*u+o*u,-4.5*u+o*.82*u); ctx.lineTo(4.5*u+o*u,4.5*u-o*.82*u); ctx.stroke(); }
   if(!ghost){ const bf=S.bat/batCap(); ctx.fillStyle=bf>.3?'#9CCB98':bf>.1?'#E2C27A':'#C97B6E'; ctx.fillRect(-6*u,-1*u,1.6*u,2*u); }
+  ctx.restore();
+}
+function drawDecal(d,u,L){
+  if(!d||d==='none') return;
+  ctx.save(); ctx.fillStyle=L.trim; ctx.strokeStyle=L.trim;
+  if(d==='stripe'){ ctx.fillRect(-1*u,-5.5*u,1.6*u,11*u); ctx.fillRect(2*u,-5.5*u,.8*u,11*u); }
+  else if(d==='chevron'){ ctx.lineWidth=1.3*u; ctx.beginPath(); ctx.moveTo(-1*u,-4*u); ctx.lineTo(2*u,0); ctx.lineTo(-1*u,4*u); ctx.stroke(); }
+  else if(d==='star'){ ctx.beginPath(); for(let k=0;k<10;k++){ const r=k%2?1.2*u:3*u, a=k*Math.PI/5-Math.PI/2; ctx.lineTo(1.2*u+Math.cos(a)*r,Math.sin(a)*r); } ctx.closePath(); ctx.fill(); }
+  else if(d==='13i'){ ctx.font=`700 ${4.2*u}px 'JetBrains Mono', monospace`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('13i',1.2*u,.3*u); }
+  else if(d==='flame'){ ctx.fillStyle='#C97B6E'; ctx.beginPath(); ctx.moveTo(-1.5*u,-4*u); ctx.quadraticCurveTo(3.5*u,-2*u,4*u,0); ctx.quadraticCurveTo(3.5*u,2*u,-1.5*u,4*u); ctx.quadraticCurveTo(1*u,0,-1.5*u,-4*u); ctx.fill(); ctx.fillStyle='#E2C27A'; ctx.beginPath(); ctx.moveTo(-.5*u,-2*u); ctx.quadraticCurveTo(2.5*u,-1*u,3*u,0); ctx.quadraticCurveTo(2.5*u,1*u,-.5*u,2*u); ctx.quadraticCurveTo(1*u,0,-.5*u,-2*u); ctx.fill(); }
   ctx.restore();
 }
 function light(x,y,r,a=1){ const g=dctx.createRadialGradient(x,y,0,x,y,r); g.addColorStop(0,`rgba(0,0,0,${a})`); g.addColorStop(1,'rgba(0,0,0,0)'); dctx.fillStyle=g; dctx.fillRect(x-r,y-r,r*2,r*2); }
@@ -1050,8 +1565,8 @@ function drawGame(time,dt){
   for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
     const i=idx(x,y), t=world[i], sx=x*T-cam.x, sy=y*T-cam.y;
     if(t===TUN){ if(own[i]===0&&!seen[i]) drawRock(y-GY<14?REG:BAS,sx,sy,x,y); else drawTunnel(sx,sy,x,y); }
-    else if(t>=10){ drawBuilt(t,sx,sy,x,y,time);
-      if(t===LAMP) lights.push([sx+T/2,sy+T*.4,T*4.6,1]); else if(t===O2&&press[i]) lights.push([sx+T/2,sy+T/2,T*3.4,.9]); else if(t===GREEN) lights.push([sx+T/2,sy+T/2,T*1.8,.7]); else if(t===RIG) lights.push([sx+T/2,sy+T/2,T*1.4,.6]);
+    else if(t>=10){ drawBuilt(t,sx,sy,x,y,time,dt);
+      if(t===LAMP||t===LAMPF) lights.push([sx+T/2,sy+T*.4,T*4.6,1]); else if(t===GEOTH||t===GALLEY) lights.push([sx+T/2,sy+T*.7,T*1.6,.6]); else if(t===SOLAR) lights.push([sx+T/2,sy+T/2,T*1.2,.45]); else if(t===O2&&press[i]) lights.push([sx+T/2,sy+T/2,T*3.4,.9]); else if(t===GREEN) lights.push([sx+T/2,sy+T/2,T*1.8,.7]); else if(t===RIG) lights.push([sx+T/2,sy+T/2,T*1.4,.6]);
       else if(t===HEATER&&press[i]) lights.push([sx+T/2,sy+T/2,T*2.6,.8]); else if(t===REACTOR) lights.push([sx+T/2,sy+T/2,T*3,.85]); else if(t===CHARGER) lights.push([sx+T/2,sy+T/2,T*1.4,.6]); else if(SEETHRU.has(t)&&press[i]) lights.push([sx+T/2,sy+T/2,T*1.1,.4]); }
     else if(t!==AIR) drawRock(t,sx,sy,x,y);
     if(t===TUN&&own[i]===0&&!seen[i]) continue;
@@ -1076,11 +1591,14 @@ function drawGame(time,dt){
     const age=Date.now()-new Date(c.updated_at).getTime(); if(age>7*86400000) continue;
     const sx=c.px*T-cam.x, sy=c.py*T-cam.y; if(sx<-T||sy<-T||sx>vw||sy>vh) continue;
     const active=age<15*60000;
-    drawBorer(sx,sy,time,1,0,active?.75:.35,false,false); ghosts.push({sx,sy,c,active});
+    drawBorer(sx,sy,time,1,0,active?.8:.4,false,false,c.look); ghosts.push({sx,sy,c,active});
     if(c.py>=GY) lights.push([sx+T/2,sy+T/2,T*2.2,active?.7:.35]);
   }
+  // your wreck, if you blacked out: a blinking beacon until you get back to it
+  if(S.wreck){ const wx=S.wreck.x*T-cam.x, wy=S.wreck.y*T-cam.y; drawBorer(wx,wy,time,1,.4,.45,false,false,{...S.look,body:'#5f6678'}); if(Math.sin(time*5)>0){ ctx.fillStyle='#C97B6E'; ctx.beginPath(); ctx.arc(wx+T/2,wy-T*.15,T*.12,0,7); ctx.fill(); } lights.push([wx+T/2,wy+T/2,T*1.6,.6]); }
   const psx=P.rx*T-cam.x, psy=P.ry*T-cam.y;
-  drawBorer(psx,psy,time,P.fx,P.fy,0,!!P.drill,!!P.move);
+  if(AB.dash.t&&P.move){ ctx.fillStyle='rgba(185,192,255,.18)'; ctx.fillRect(psx-P.fx*T*.6,psy-P.fy*T*.6,T,T); }
+  drawBorer(psx,psy,time,P.fx,P.fy,0,!!P.drill,!!P.move,S.look);
   for(let i=parts.length-1;i>=0;i--){ const q=parts[i]; q.life-=dt; if(q.life<=0){parts.splice(i,1);continue;} q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=260*dt; ctx.fillStyle=q.c; ctx.fillRect(q.x-cam.x,q.y-cam.y,2.5,2.5); }
   if(gy<vh){
     dctx.setTransform(1,0,0,1,0,0); dctx.clearRect(0,0,dk.width,dk.height); dctx.setTransform(dpr,0,0,dpr,0,0);
@@ -1094,14 +1612,63 @@ function drawGame(time,dt){
   }
   ctx.font=`500 ${Math.max(9,T*.38)}px 'JetBrains Mono', monospace`; ctx.textAlign='center';
   for(const g of ghosts){ ctx.fillStyle=g.active?'rgba(185,192,255,.95)':'rgba(138,143,191,.6)'; ctx.fillText(g.c.username+(g.active?'':' · parked'), g.sx+T/2, g.sy-4); }
-  if(P.charging==='Charger'||P.charging==='Lander'){ ctx.fillStyle='#9CCB98'; ctx.fillText('charging', psx+T/2, psy-4); }
+  if(P.charging&&P.charging!=='Solar'){ ctx.fillStyle='#9CCB98'; ctx.fillText('charging', psx+T/2, psy-4); }
+  if(S.wreck){ ctx.fillStyle='#E8CFC0'; ctx.fillText('your wreck', S.wreck.x*T-cam.x+T/2, S.wreck.y*T-cam.y-6); }
+  // homes: every pressurized room carries the name of whoever built it
+  ctx.font=`600 ${Math.max(9,T*.36)}px 'JetBrains Mono', monospace`;
+  for(const rm of rooms){
+    if(!rm.owner||rm.size<2) continue;
+    const lx=(rm.cx+.5)*T-cam.x, ly=rm.minY*T-cam.y+T*.32; if(lx<-80||lx>vw+80||ly<-20||ly>vh+20) continue;
+    const nm=rm.owner===1?ME.username:(ownerNames[rm.owner-2]||'another Kin');
+    const label=`${nm}'s ${rm.habitable?'home':'room'}`;
+    const w=ctx.measureText(label).width+10;
+    ctx.fillStyle='rgba(10,11,28,.62)'; ctx.fillRect(lx-w/2,ly-T*.3,w,T*.42);
+    ctx.fillStyle=rm.owner===1?'#E8CFC0':'#B9C0FF'; ctx.fillText(label,lx,ly);
+  }
   ctx.textAlign='left';
+  if(scanRing){ scanRing.t+=dt; const k=Math.min(1,scanRing.t/1.4), rad=scanRing.R*T*k; ctx.strokeStyle=`rgba(232,207,192,${.55*(1-k)+.1})`; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(psx+T/2,psy+T/2,rad,0,7); ctx.stroke(); ctx.setLineDash([4,6]); ctx.strokeStyle='rgba(232,207,192,.25)'; ctx.beginPath(); ctx.arc(psx+T/2,psy+T/2,scanRing.R*T,0,7); ctx.stroke(); ctx.setLineDash([]); if(scanRing.t>4) scanRing=null; }
+  drawStorm(time,dt,gy);
   if(scanPulse){ scanPulse.t-=dt; const sx=(scanPulse.x+.5)*T-cam.x, sy=(scanPulse.y+.5)*T-cam.y; const k=(time*1.2)%1; ctx.strokeStyle=`rgba(232,207,192,${.9-k*.8})`; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(sx,sy,T*(.6+k*1.6),0,7); ctx.stroke(); if(sx<0||sy<0||sx>vw||sy>vh){ const ang=Math.atan2(sy-vh/2,sx-vw/2), ex=clamp(sx,24,vw-24), ey=clamp(sy,24,vh-24); ctx.save(); ctx.translate(ex,ey); ctx.rotate(ang); ctx.fillStyle='#E8CFC0'; ctx.beginPath(); ctx.moveTo(12,0); ctx.lineTo(-8,-8); ctx.lineTo(-8,8); ctx.fill(); ctx.restore(); } if(scanPulse.t<=0) scanPulse=null; }
   if(mode==='build'&&hover){
-    const ok=!buildCheck(hover.x,hover.y), hx=hover.x*T-cam.x, hy=hover.y*T-cam.y, b=itemById(sel);
-    if(ok&&b.tile>=10&&b.id!=='remove'){ ctx.globalAlpha=.55; if(isEquip(b.tile)) drawEquip(ctx,b.tile,hx,hy,T,time,true,null); else drawMaterial(ctx,b.tile,hx,hy,T,hash(hover.x,hover.y)); ctx.globalAlpha=1; }
+    const ok=!buildCheck(hover.x,hover.y), hx=hover.x*T-cam.x, hy=hover.y*T-cam.y, b=itemById(sel), pt=b.tile>=10?placeTile(b):b.tile;
+    if(ok&&pt>=10&&b.id!=='remove'){ ctx.globalAlpha=.55; if(isEquip(pt)) drawEquip(ctx,pt,hx,hy,T,time,true,null); else drawMaterial(ctx,pt,hx,hy,T,hash(hover.x,hover.y)); ctx.globalAlpha=1; }
     ctx.strokeStyle=ok?'#9CCB98':'#C97B6E'; ctx.lineWidth=2; ctx.strokeRect(hx+1,hy+1,T-2,T-2);
+    // build mode shows your reach
+    ctx.strokeStyle='rgba(185,192,255,.18)'; ctx.setLineDash([3,5]); ctx.strokeRect((S.px-REACH)*T-cam.x,(S.py-REACH)*T-cam.y,(REACH*2+1)*T,(REACH*2+1)*T); ctx.setLineDash([]);
   }
+  updateTip();
+  if(blackT>0){ blackT-=dt; ctx.fillStyle=`rgba(0,0,0,${Math.min(1,blackT/1.2)})`; ctx.fillRect(0,0,vw,vh); if(blackT>1){ ctx.fillStyle='#C97B6E'; ctx.textAlign='center'; ctx.font=`600 ${Math.max(16,T*.8)}px 'JetBrains Mono', monospace`; ctx.fillText('BLACKOUT',vw/2,vh/2); ctx.textAlign='left'; } }
+}
+// what's under the cursor: who dug or built it, and for your power pieces, the grid
+function updateTip(){
+  const el=$('#tip');
+  if(!hover||phase!=='play'||drag){ if(!el.hidden) el.hidden=true; return; }
+  const {x,y}=hover; if(x<0||y<0||x>=W||y>=H){ el.hidden=true; return; }
+  const i=idx(x,y), t=world[i]; let txt='';
+  const nm=ownerName(i), it=t>=10?itemByTile(t):null;
+  if(t>=10&&it) txt=`${it.n}${nm?` · ${own[i]===1?'yours':nm+"'s"}`:''}`;
+  else if(t===TUN&&(own[i]!==0||seen[i])) txt=own[i]===0?'Natural cave · unclaimed':`Tunnel · dug by ${own[i]===1?'you':nm}`;
+  else if(t===TUN) txt='';
+  if(own[i]===1&&POWER_T.has(t)){ const g=my.gridOf.get(i); if(g) txt+=`<br>${gridInfo(g)}`; if(t===RIG){ const rg=S.rigs.find(r=>r.x===x&&r.y===y); if(rg){ const rt=rigRates(rg); txt+=`<br>${rigDensity(rg)}/24 rock around it · ${Object.entries(rt).map(([k,v])=>`${RNAME[k]} ${v}/h`).join(', ')}`; } } }
+  if(t===SOLAR||t===GEOTH||t===REACTOR) txt+=`<br>Output ${genOf(t,y).toFixed(1)} of ${GEN[t]} kW`;
+  const rm=press[i]?rooms[regionOf[i]]:null; if(rm&&rm.owner) txt+=`<br>${rm.habitable?'Habitable home':'Pressurized room'} · comfort ${rm.comfort}/4`;
+  if(!txt){ el.hidden=true; return; }
+  if(el._h!==txt){ el._h=txt; el.innerHTML=txt; }
+  el.hidden=false;
+  const sx=(x+1)*T-cam.x+8, sy=y*T-cam.y; el.style.left=Math.min(vw-el.offsetWidth-8,sx)+'px'; el.style.top=Math.max(8,Math.min(vh-el.offsetHeight-8,sy))+'px';
+}
+// dust: a brown haze and streaks on the surface, a faint tint underground near the top
+const dust=Array.from({length:140},()=>({x:Math.random(),y:Math.random(),s:.5+Math.random(),l:4+Math.random()*16}));
+function drawStorm(time,dt,gy){
+  const st=stormNow(); if(!st.active&&!st.warning) return;
+  const ramp=st.active?Math.min(1,(Date.now()-st.start)/6000,st.left/6):Math.max(0,.25-st.in/240);
+  if(gy>0){ ctx.fillStyle=`rgba(150,82,48,${.55*ramp})`; ctx.fillRect(0,0,vw,Math.min(vh,gy+T*2)); }
+  const depthK=clamp(1-depthOf(S.py)/10,0,1);
+  if(st.active&&depthK>0){ ctx.fillStyle=`rgba(120,64,40,${.18*ramp*depthK})`; ctx.fillRect(0,0,vw,vh); }
+  if(!st.active||gy<=0) return;
+  ctx.strokeStyle=`rgba(220,160,120,${.5*ramp})`; ctx.lineWidth=1.2; ctx.beginPath();
+  for(const d of dust){ d.x-=dt*(.6+d.s*.9); if(d.x<-.1){ d.x=1.1; d.y=Math.random(); } const px=d.x*vw, py=d.y*Math.min(vh,gy+T*2); ctx.moveTo(px,py); ctx.lineTo(px+d.l*d.s,py+1.5); }
+  ctx.stroke();
 }
 
 // ---------- minimap ----------
@@ -1129,7 +1696,7 @@ function drawMini(){
 mini.onclick=()=>mini.classList.toggle('small');
 
 // ---------- the borer's gauges ----------
-const gEls={bat:$('#gBat'),batV:$('#gBatV'),rpm:$('#gRpm'),rpmV:$('#gRpmV'),tmp:$('#gTmp'),tmpV:$('#gTmpV'),out:$('#gOut'),st:$('#gState')};
+const gEls={ab:$('#gAb'),bat:$('#gBat'),batV:$('#gBatV'),rpm:$('#gRpm'),rpmV:$('#gRpmV'),tmp:$('#gTmp'),tmpV:$('#gTmpV'),out:$('#gOut'),st:$('#gState')};
 function outsideTemp(){ const rm=roomAt(S.px,S.py); if(rm) return rm.heat?18:-22; return Math.round(-63+depthOf(S.py)*.22); }
 function updateGauges(){
   const bf=S.bat/batCap();
@@ -1139,7 +1706,12 @@ function updateGauges(){
   gEls.tmp.style.width=`${clamp(P.temp,0,110)/1.1}%`; gEls.tmp.style.background=P.temp>=85?'#C97B6E':P.temp>=60?'#E2C27A':'#8B95F6';
   gEls.tmpV.textContent=`${Math.round(P.temp)}°C`;
   const ot=outsideTemp(); gEls.out.textContent=`Outside ${ot<0?'−':''}${Math.abs(ot)}°C · ${S.py>=GY?depthOf(S.py)*2+' m':'surface'}`;
-  gEls.st.innerHTML = P.charging ? `<em>Charging · ${P.charging}</em>` : P.over ? '<em>Overheated</em>' : S.bat<=0 ? '<em>Empty · crawl</em>' : P.drill ? 'Drilling' : P.move ? 'Moving' : 'Idle';
+  gEls.st.innerHTML = P.charging ? `<em>Charging · ${P.charging}</em>` : P.over ? '<em>Overheated</em>' : S.bat<=0 ? '<em>Empty · crawl</em>' : AB.over.t ? '<em>Overdrive</em>' : P.drill ? 'Drilling' : P.move ? 'Moving' : 'Idle';
+  const nc=v=>v>40?'#9CCB98':v>LOW?'#E2C27A':'#C97B6E';
+  for(const [k,b,v] of [['o2','gO2','gO2V'],['food','gFood','gFoodV'],['mood','gMood','gMoodV']]){ const n=S.needs[k]; const e=$('#'+b); e.style.width=n+'%'; e.style.background=nc(n); $('#'+v).textContent=Math.round(n)+'%'; }
+  const ab=a=>AB[a].t?'<em>on</em>':AB[a].cd?`${Math.ceil(AB[a].cd)}s`:'<em>ready</em>';
+  const h=`<span class="ab-row"><span>DASH ⇧ ${ab('dash')}</span><span>DRILL+ ␣ ${ab('over')}</span></span><span>${scanCool>0?`SCAN ${Math.ceil(scanCool)}s`:'SCAN <em style="font-style:normal;color:var(--ok)">Q</em>'}</span>`;
+  if(gEls.ab._h!==h){ gEls.ab._h=h; gEls.ab.innerHTML=h; }
 }
 
 // ---------- intro scenes ----------
@@ -1414,12 +1986,13 @@ function showLandingMsg(){
   const div=document.createElement('div'); div.className='card'; div.id='landMsg';
   div.innerHTML=`<p class="eyebrow mono">Mars · Landing Site Alpha</p>
     <h2>${started?'Welcome to the colony':'You are the first crew'}</h2>
-    <p>${started?`${crews.length?`${crews.length} ${crews.length===1?'Kin has':'Kin have'} landed before you, and t`:'T'}he colony is already taking shape. Mars is big: find your own patch of ground, or head out to the caves and lava tubes for some distance.`:'Nothing has been built here yet. Whatever stands on this ground later, you were here first.'} SpaceCore packed your kit: 10 Iron, 6 Silicon, 3 Ice, an O₂ pump and a lamp.</p>
+    <p>${started?`${crews.length?`${crews.length} ${crews.length===1?'Kin has':'Kin have'} landed before you, and t`:'T'}he colony is already taking shape. Mars is big: find your own patch of ground, or head out to the caves and lava tubes for some distance.`:'Nothing has been built here yet. Whatever stands on this ground later, you were here first.'} SpaceCore packed your kit: 10 Iron, 6 Silicon, 3 Ice, 6 Food rations, an O₂ pump, a lamp and two airlocks.</p>
+    <p class="small">Watch your three crew gauges: oxygen, food and morale. The lander refills your oxygen for now; press H to eat a ration.</p>
     <p class="fine">Move and drill with the arrow keys or WASD (or the on-screen pad). Lyra is on your comms.</p>
     <div class="row"><button class="btn primary" type="button" id="bBegin">Climb into the borer</button></div>`;
   intro.appendChild(div);
   $('#bBegin').onclick=()=>{
-    S.introDone=true; S.px=SPAWN_X; S.py=GY-1; P.rx=S.px; P.ry=S.py; S.cSnap={...C.mined}; S.lastReal=Date.now(); S.bat=batCap();
+    S.introDone=true; S.lastStage=C.stage; S.px=SPAWN_X; S.py=GY-1; P.rx=S.px; P.ry=S.py; S.cSnap={...C.mined}; S.lastReal=Date.now(); S.bat=batCap();
     setPhase('play'); save(true); reveal();
     lyra(`${ME.username}, this is Lyra. I'm on your comms for the whole mission. I'll walk you through the first few jobs.`,{prio:6});
     briefMission();
@@ -1432,7 +2005,7 @@ function resume(){
   advance(awayMars,false);
   // the borer recharged if it was parked at a charger, the lander, or in the sun
   const before=S.bat;
-  if(nearCharger()) S.bat=batCap(); else if(atLander()) S.bat=Math.min(batCap(),S.bat+awayReal/1000*2.5); else if(S.py===GY-1) S.bat=Math.min(batCap(),S.bat+awayReal/1000*.25);
+  if(nearCharger()) S.bat=batCap(); else if(atLander()) S.bat=Math.min(batCap(),S.bat+awayReal/1000*2.5); else if(S.py===GY-1) S.bat=Math.min(batCap(),S.bat+awayReal/1000*.5);
   P.rx=S.px; P.ry=S.py; cam.x=S.px*T-vw/2; cam.y=S.py*T-vh/2;
   setPhase('play'); reveal();
   if(relocated){
@@ -1443,10 +2016,12 @@ function resume(){
   const bits=[`Welcome back, ${ME.username}. You were away ${fmtReal(awayReal)}, about ${fmtH(awayMars)} on Mars.`];
   if(S.bat>before+1) bits.push(`Your borer charged to ${Math.round(S.bat/batCap()*100)}%.`);
   if(fill!==null) bits.push(`Your auto-drills are ${fill}% full.`);
-  if(S.readyWhileAway.length) bits.push(`The Fabricator finished: ${S.readyWhileAway.join(', ')}.`);
+  if(S.readyWhileAway.length) bits.push(`Finished while you were away: ${S.readyWhileAway.join(', ')}.`);
+  if(S.larder>=1) bits.push(`Your greenhouses have ${Math.floor(S.larder)} Food waiting. Go and pick it up.`);
   if(active.length) bits.push(`${active.slice(0,3).join(', ')}${active.length>3?` and ${active.length-3} more`:''} ${active.length===1?'was':'were'} down here while you were gone.`);
   const st=stage(); if(st) bits.push(`The ${st.n} is ${Math.floor(stageProgress()*100)}% built.`);
   lyra(bits.join(' '),{prio:6});
+  if(S.whatsNew){ S.whatsNew=false; lyra(WHATS_NEW,{prio:6,hold:true}); }
   if(MISSIONS[S.mission]) briefMission(); else dailyCall(true);
   S.lastReal=Date.now(); save(true);
 }
@@ -1463,6 +2038,7 @@ function swatch(it){
   if(it.id==='move'){ x.strokeStyle='#B9C0FF'; x.lineWidth=3; x.beginPath(); x.moveTo(22,8); x.lineTo(22,36); x.moveTo(8,22); x.lineTo(36,22); x.stroke(); x.fillStyle='#B9C0FF'; for(const [a,b2,c,d] of [[22,4,17,10],[22,40,17,34],[4,22,10,17],[40,22,34,17]]){ x.beginPath(); x.moveTo(a,b2); x.lineTo(c,d); x.lineTo(a===22?27:c,a===22?d:27); x.fill(); } }
   else if(it.id==='remove'){ x.strokeStyle='#C97B6E'; x.lineWidth=3; x.beginPath(); x.moveTo(12,12); x.lineTo(32,32); x.moveTo(32,12); x.lineTo(12,32); x.stroke(); }
   else if(it.id==='fill'){ x.fillStyle='#7a4434'; x.fillRect(0,0,44,44); x.fillStyle='#8c5240'; for(let k=0;k<6;k++) x.fillRect((k*13)%38,(k*17)%38,8,6); }
+  else if(it.id==='rotate'){ x.strokeStyle='#B9C0FF'; x.lineWidth=3; x.beginPath(); x.arc(22,22,11,.3,5.2); x.stroke(); x.fillStyle='#B9C0FF'; x.beginPath(); x.moveTo(33,16); x.lineTo(36,26); x.lineTo(27,23); x.fill(); }
   else if(isEquip(it.tile)) drawEquip(x,it.tile,0,0,44,0,true,null);
   else drawMaterial(x,it.tile,0,0,44,12345);
   return c;
@@ -1470,7 +2046,7 @@ function swatch(it){
 let palSig='';
 function renderPalette(force){
   const list=group==='blocks'?BLOCKS:EQUIP_PALETTE;
-  const sig=group+'|'+sel+'|'+list.map(b=>isKit(b)?(S.inv[b.id]||0):canPay(costOf(b))?1:0).join(',')+'|'+S.attrs.fab;
+  const sig=group+'|'+sel+'|'+rot+'|'+list.map(b=>isKit(b)?(S.inv[b.id]||0):canPay(costOf(b))?1:0).join(',')+'|'+S.attrs.fab;
   if(!force&&sig===palSig) return; palSig=sig;
   const pal=$('#palette'); pal.innerHTML='';
   list.forEach((b,i)=>{
@@ -1479,9 +2055,9 @@ function renderPalette(force){
     const key=group==='blocks'&&i<10?`${(i+1)%10}. `:'';
     btn.className=`pitem ${sel===b.id?'sel':''} ${!eq&&!canPay(costOf(b))?'poor':''} ${eq&&!have?'none':''}`;
     btn.title=b.d;
-    btn.appendChild(swatch(b));
+    btn.appendChild(swatch(ROTATE[b.tile]&&sel===b.id?{...b,tile:placeTile(b)}:b));
     const span=document.createElement('span');
-    span.innerHTML=`<b>${key}${b.n}</b><small>${eq?(have?`${have} in kit`:'craft in Fabricator'):(costText(costOf(b))||(b.id==='fill'?'free':b.id==='move'?'pick up, place again':'refund'))}</small>`;
+    span.innerHTML=`<b>${key}${b.n}</b><small>${eq?(have?`${have} in kit${b.rot?' · T turns':''}`:'craft in Fabricator'):(costText(costOf(b))||(b.id==='fill'?'free':b.id==='move'?'pick up, place again':b.id==='rotate'?'door ↔ hatch':'refund'))}</small>`;
     btn.appendChild(span);
     btn.onclick=()=>selectBuild(b.id);
     pal.appendChild(btn);
@@ -1503,8 +2079,8 @@ function updateStatus(){
   const sc=scarce(); const st=stage();
   const fill=S.rigs.length?Math.round(S.rigs.reduce((a,r)=>a+rigFill(r),0)/S.rigs.length*100):null;
   const cr=S.craft[0]?`<span>Fabricator: ${itemById(S.craft[0].id).n} ${fmtH(S.craft[0].left)}</span>`:'';
-  const html=`${room}${st?`<span>${st.n}: ${Math.floor(stageProgress()*100)}%</span>`:'<span><em>Season 2 unlocked</em></span>'}${sc?`<span>Colony needs ${RNAME[sc]}: +25%</span>`:''}${boostPct()?`<span><em>Boosts +${Math.round(boostPct()*100)}%</em></span>`:''}${cr}${fill!==null?`<span>Auto-drills ${fill}% <button type="button" class="btn sm" id="bCollect">Collect (C)</button></span>`:''}${!connected?'<span style="color:var(--rust)">Offline</span>':saveInfo.ok===false?`<span style="color:var(--rust)">Not saving: ${esc(saveInfo.err)}</span>`:saveInfo.at?`<span>Saved ${Math.max(0,Math.round((Date.now()-saveInfo.at)/1000))}s ago</span>`:''}`;
-  const s=$('#status'); if(s._h!==html){ s._h=html; s.innerHTML=html; const b=$('#bCollect'); if(b) b.onclick=collectRigs; }
+  const html=`${room}${mode==='build'&&ROTATE[(itemById(sel)||{}).tile]?`<span>Turn (T): <em>${rot?((itemById(sel).tile===LOCK)?'floor hatch':'standing'):((itemById(sel).tile===LOCK)?'door':'hanging')}</em></span>`:''}${mode==='build'?`<span>Built ${my.built}/${BUILD_CAP} · drag to lay a line</span>`:''}${st?`<span>${st.n}: ${Math.floor(stageProgress()*100)}%</span>`:'<span><em>Season 2 unlocked</em></span>'}${sc?`<span>Colony needs ${RNAME[sc]}: +25%</span>`:''}${boostPct()?`<span><em>Boosts +${Math.round(boostPct()*100)}%</em></span>`:''}${cr}${fill!==null?`<span>Auto-drills ${fill}% ${S.rigs.some(rg=>cheb(idx(rg.x,rg.y))<=NEAR)?'<button type="button" class="btn sm" id="bCollect">Collect (C)</button>':''}</span>`:''}${!connected?'<span style="color:var(--rust)">Offline</span>':saveInfo.ok===false?`<span style="color:var(--rust)">Not saving: ${esc(saveInfo.err)}</span>`:saveInfo.at?`<span>Saved ${Math.max(0,Math.round((Date.now()-saveInfo.at)/1000))}s ago</span>`:''}`;
+  const s=$('#status'); if(s._h!==html){ s._h=html; s.innerHTML=html; const b=$('#bCollect'); if(b) b.onclick=()=>collectRigs(); }
 }
 
 // ---------- dashboard ----------
@@ -1520,17 +2096,33 @@ const BOOST_WAYS=[
 function renderDash(){
   if(dash.hidden) return;
   const st=stage(), tr=ATTRS.find(a=>a.k===S.training.attr), xpNeed=30+S.level*20;
-  const rigs=S.rigs.map((rg,i)=>{ const rt=rigRates(rg); const ks=Object.keys(rt).sort((a,b)=>rt[b]-rt[a]); const f=rigFill(rg); return `<div><div class="kv"><span class="lbl">Drill ${i+1} · ${depthOf(rg.y)*2} m</span><span>${ks.length?ks.map(k=>`${RNAME[k]} ${rt[k].toFixed(1)}/h`).join(', '):'No rock nearby'}</span><span>${Math.round(f*100)}%</span></div><div class="meter ${f>=.99?'warm':''}"><i style="width:${f*100}%"></i></div></div>`; }).join('');
+  const rigs=S.rigs.map((rg,i)=>{ const rt=rigRates(rg); const ks=Object.keys(rt).sort((a,b)=>rt[b]-rt[a]); const f=rigFill(rg), d=cheb(idx(rg.x,rg.y)), pw=rigPowered(my.gridOf.get(idx(rg.x,rg.y))); return `<div><div class="kv"><span class="lbl">Drill ${i+1} · ${depthOf(rg.y)*2} m${pw?' · powered':''}</span><span>${ks.length?ks.map(k=>`${RNAME[k]} ${rt[k].toFixed(1)}/h`).join(', '):'No rock nearby'}</span><span>${Math.round(f*100)}%</span></div><div class="meter ${f>=.99?'warm':''}"><i style="width:${f*100}%"></i></div><p class="fine">${rigDensity(rg)}/24 rock around it · ${d<=NEAR?'in reach: press C':`${d*2} m away`}</p></div>`; }).join('');
   const boosts=allBoosts();
   const activeCrews=crews.filter(c=>Date.now()-new Date(c.updated_at)<15*60000);
-  const queue=S.craft.map((c,i)=>{ const e=itemById(c.id); return `<div><div class="kv"><span class="lbl">${i===0?'Building':'Queued'}</span><span>${e.n} · ${i===0?fmtH(c.left)+' left':fmtH(c.left)}</span><button type="button" class="btn sm" data-act="cancel" data-i="${i}" aria-label="Cancel ${e.n} and get its materials back" title="Cancel and refund">×</button></div>${i===0?`<div class="meter warm"><i style="width:${(1-c.left/c.total)*100}%"></i></div>`:''}</div>`; }).join('');
+  const queue=S.craft.map((c,i)=>{ const e=itemById(c.id); return `<div><div class="kv"><span class="lbl">${i===0?'Building':'Queued'}</span><span>${e.n} · ${i===0?fmtBoth(c.left)+' left':fmtBoth(c.left)}</span><button type="button" class="btn sm" data-act="cancel" data-i="${i}" aria-label="Cancel ${e.n} and get its materials back" title="Cancel and refund">×</button></div>${i===0?`<div class="meter warm"><i style="width:${(1-c.left/c.total)*100}%"></i></div>`:''}</div>`; }).join('');
+  const nbar=(k,n)=>{ const v=S.needs[k]; return `<div><div class="kv"><span class="lbl">${n}</span><span></span><span>${Math.round(v)}%</span></div><div class="meter"><i style="width:${v}%;background:${v>40?'#9CCB98':v>LOW?'#E2C27A':'#C97B6E'}"></i></div></div>`; };
+  const rc=S.research.cur, rcr=rc&&RESEARCH.find(r=>r.id===rc.id);
+  const branches=ATTRS.map(a=>`<div class="rbranch"><div class="an">${a.n} <span class="fine">${S.attrs[a.k]}</span></div>${RESEARCH.filter(r=>r.a===a.k).map(r=>{ const stt=researchState(r); return `<div class="rnode ${stt}"><b>${r.n}${stt==='done'?' ✓':''}</b><small>${esc(r.e)}</small>${stt==='open'?`<small>${costText(r.cost)} · ${fmtBoth(r.min)}</small><button type="button" class="btn sm" data-act="research" data-id="${r.id}" ${rc||!canPay(r.cost)?'disabled':''}>Research</button>`:stt==='locked'?`<small>Needs ${a.n} ${r.a2}${r.tier?' and the one above':''}</small>`:stt==='running'?`<small>Running · ${fmtBoth(rc.left)} left</small>`:''}</div>`; }).join('')}</div>`).join('');
+  const sw=(k,v)=>k==='decal'?`<button type="button" class="txt ${S.look[k]===v?'on':''}" data-act="look" data-k="${k}" data-v="${v}">${v}</button>`:`<button type="button" class="${S.look[k]===v?'on':''}" style="background:${v}" data-act="look" data-k="${k}" data-v="${v}" aria-label="${k} ${v}"></button>`;
+  const grids=my.grids.filter(g=>g.gens.length||g.batts.length||g.linked).map((g,i)=>`<div class="kv"><span class="lbl">Grid ${i+1}</span><span>${g.gens.length} source${g.gens.length===1?'':'s'}${g.batts.length?` · ${g.batts.length} batter${g.batts.length===1?'y':'ies'}`:''}${g.chargers.length?` · ${g.chargers.length} charger${g.chargers.length===1?'':'s'}`:''}${g.rigs.length?` · ${g.rigs.length} drill${g.rigs.length===1?'':'s'}`:''}</span><span>${gridGen(g).toFixed(1)} kW</span></div>${gridCap(g)?`<div class="meter"><i style="width:${gridStored(g)/gridCap(g)*100}%;background:#9CCB98"></i></div>`:''}`).join('');
+  const storm=stormNow();
   dash.innerHTML=`
   <div class="dhead"><div><p class="eyebrow mono">SpaceCore crew · Level ${S.level}</p><h2>${esc(ME.username)}</h2></div><button class="btn" type="button" data-act="close">Close</button></div>
   <section><div class="kv"><span class="lbl">Experience</span><span></span><span>${S.xp} / ${xpNeed}</span></div><div class="meter"><i style="width:${S.xp/xpNeed*100}%"></i></div></section>
+  <section id="d-needs"><h3>Your crew member</h3>
+    ${nbar('o2','Oxygen')}${nbar('food','Food')}${nbar('mood','Morale')}
+    <p class="small">Oxygen refills inside any pressurized room and at the lander. Food: press H for a ration (${Math.floor(S.res.food)} Food left), or a Galley at home cooks you a proper meal. Morale rises at a warm home with comforts (bunk, galley, lamp, greenhouse) and near other Kin. Below ${LOW}% the borer slows. At zero for a minute you black out: the robots tow you to the lander and you leave a quarter of your ore at the wreck until you go back for it. Nothing drains while you're away.</p>
+    <div class="row"><button class="btn sm" type="button" data-act="eat" ${S.res.food>=1?'':'disabled'}>Eat a ration (H)</button>${S.wreck?`<span class="small" style="color:var(--warm)">Your wreck: ${esc(dirText(S.wreck.x-S.px,S.wreck.y-S.py))}</span>`:''}</div>
+  </section>
   <section id="d-fab"><h3>Fabricator</h3>
-    <p class="small">Equipment is crafted here, then placed from Build › Equipment. It keeps working while you're away${S.attrs.fab>1?`, and Fabrication makes it ${Math.round((1-Math.max(.4,1-.08*(S.attrs.fab-1)))*100)}% faster`:''}. Up to 4 in the queue.</p>
+    <p class="small">Equipment is made here, then placed from Build › Equipment. Airlocks and lamps are instant; bigger machines take longer and keep building while you're away${S.attrs.fab>1?`. Fabrication makes it ${Math.round((1-Math.max(.4,1-.08*(S.attrs.fab-1)))*100)}% faster`:''}. Times show Mars time and real time (Mars runs ${TIME_SCALE}× faster). Up to ${fabMax()} in the queue.</p>
     ${queue||'<p class="small">Nothing in the queue.</p>'}
-    ${EQUIPS.map(e=>{ const c=costOf(e), ok=canPay(c); return `<div class="fab"><b>${e.n}</b><span class="act">${S.inv[e.id]?`<span class="have">${S.inv[e.id]} in kit</span>`:''}<button type="button" class="btn sm" data-act="craft" data-id="${e.id}" ${ok&&S.craft.length<4?'':'disabled'}>Craft</button></span><small>${costText(c)} · ${fmtH(craftMinutes(e))} · ${esc(e.d)}</small></div>`; }).join('')}
+    ${EQUIPS.map(e=>{ const c=costOf(e), ok=canPay(c), locked=e.res&&!hasRes(e.res); const m=craftMinutes(e); return `<div class="fab"><b>${e.n}</b><span class="act">${S.inv[e.id]?`<span class="have">${S.inv[e.id]} in kit</span>`:''}<button type="button" class="btn sm" data-act="craft" data-id="${e.id}" ${ok&&!locked&&(m<=0||S.craft.length<fabMax())?'':'disabled'}>${locked?'Research':m<=0?'Make':'Craft'}</button></span><small>${costText(c)} · ${fmtBoth(m)} · ${esc(e.d)}${locked?` · needs research: ${RESEARCH.find(r=>r.id===e.res).n}`:''}</small></div>`; }).join('')}
+  </section>
+  <section id="d-research"><h3>Research</h3>
+    <p class="small">Three projects branch from each attribute. Each needs that attribute high enough and the project above it. One runs at a time, on Mars time, even while you're away.${rcr?` Now: <b style="color:var(--warm)">${rcr.n}</b>, ${fmtBoth(rc.left)} left.`:''}</p>
+    ${rcr?`<div class="meter warm"><i style="width:${(1-rc.left/rc.total)*100}%"></i></div>`:''}
+    <div class="rtree">${branches}</div>
   </section>
   <section><h3>Crew card</h3>
     <p class="small">${S.unspent?`You have <b style="color:var(--warm)">${S.unspent-pendTotal()}</b> ${S.unspent-pendTotal()===1?'point':'points'} to spend. Once you lock them in, they're permanent.`:'You earn one point each level. Training adds points over time too.'}</p>
@@ -1541,26 +2133,43 @@ function renderDash(){
     <div class="mlist">${MISSIONS.map((m,i)=>`<div class="mitem ${i<S.mission?'done':i===S.mission?'cur':''}"><span class="ck">${i<S.mission?'✓':i===S.mission?'›':'·'}</span><span>${m.n}: ${m.d}${i===S.mission&&m.prog?` (${m.prog()})`:''}</span></div>`).join('')}</div>
     ${!MISSIONS[S.mission]&&S.daily?`<p class="small">Today's colony call: send ${S.daily.target} ${RNAME[S.daily.res]} (${Math.min(S.daily.given,S.daily.target)}/${S.daily.target})${S.daily.done?' · done':''}</p>`:''}
   </section>
-  <section><h3>Borer</h3>
+  <section id="d-look"><h3>Your borer</h3>
+    <div class="row" style="align-items:flex-start"><canvas id="lookPrev" width="240" height="128"></canvas><p class="small" style="flex:1;min-width:160px">Paint it however you like. Every Kin on Mars sees your borer in your colors.</p></div>
+    <p class="fine">BODY</p><div class="swatches">${LOOK_OPTS.body.map(v=>sw('body',v)).join('')}</div>
+    <p class="fine">TRIM</p><div class="swatches">${LOOK_OPTS.trim.map(v=>sw('trim',v)).join('')}</div>
+    <p class="fine">DRILL HEAD</p><div class="swatches">${LOOK_OPTS.drill.map(v=>sw('drill',v)).join('')}</div>
+    <p class="fine">HEADLAMP</p><div class="swatches">${LOOK_OPTS.lamp.map(v=>sw('lamp',v)).join('')}</div>
+    <p class="fine">DECAL</p><div class="swatches">${LOOK_OPTS.decal.map(v=>sw('decal',v)).join('')}</div>
     <div class="kv"><span class="lbl">Battery</span><span>${Math.round(S.bat)} / ${batCap()} kWh</span><span>${Math.round(S.bat/batCap()*100)}%</span></div><div class="meter"><i style="width:${S.bat/batCap()*100}%;background:${S.bat/batCap()>.3?'#9CCB98':'#C97B6E'}"></i></div>
-    <p class="small">Drilling drains the battery, more so deep down. It charges fast at a powered Charger (full while you're away if you park beside one), steadily at the lander, and slowly anywhere on the surface. Empty, it can crawl but not drill. Endurance makes it bigger. Chargers: ${my.chargers.length} (${my.powered.length} powered) · Reactors: ${my.reactors.length}.</p>
+    <p class="small">Drilling drains the battery, more so deep down. It charges fast at a powered Charger (full while you're away if you park beside one), steadily at the lander, and slowly on the surface in the sun. Empty, it can crawl but not drill. Endurance makes it bigger. Abilities: Dash (Shift) and Overdrive (Space, double drill speed with no extra heat) cost battery. The scanner (Q) reaches ${scanRange()*2} m for ${Math.round(SCAN_COST*100)}% battery.</p>
+  </section>
+  <section id="d-power"><h3>Power</h3>
+    ${grids||'<p class="small">No power yet. A Solar panel next to a Charger (or joined with Wire) is the place to start.</p>'}
+    <p class="small">Power pieces share a grid when they touch or are joined by Wire (Build › Blocks; wire only shows in Build mode). Solar panel ${GEN[SOLAR]} kW within ${SOLAR_DEPTH*2} m of the surface, a tenth of that in a dust storm. Geothermal tap ${GEN[GEOTH]} kW at ${GEO_DEPTH*2} m or deeper. Reactor ${GEN[REACTOR]} kW anywhere. Batteries hold ${BATT_CAP} kWh each. Powered auto-drills run 50% faster. A charger near the surface has a little solar mast of its own.</p>
+    ${storm.active?'<p class="small" style="color:var(--rust)">A dust storm is blowing: solar is down to a trickle.</p>':''}
   </section>
   <section><h3>Training</h3>
-    <p class="small">One skill trains at a time, even while you're away. Every 8 hours on Mars it gains a permanent point. Parked in a habitable room, it trains 50% faster.</p>
+    <p class="small">One skill trains at a time, even while you're away. Every 8 hours on Mars (${fmtReal(480/TIME_SCALE*60000)} real) it gains a permanent point. Parked in a habitable room, it trains 50% faster.</p>
     <div class="chips">${ATTRS.map(a=>`<button type="button" class="btn sm ${a.k===S.training.attr?'on':''}" data-act="train" data-a="${a.k}">${a.n}</button>`).join('')}</div>
     <div class="kv"><span class="lbl">${tr.n}</span><span></span><span>${fmtH(S.training.min)} of 8h</span></div><div class="meter warm"><i style="width:${S.training.min/480*100}%"></i></div>
   </section>
   <section><h3>Auto-drills</h3>
     ${S.rigs.length?rigs:'<p class="small">No auto-drills yet. Craft one in the Fabricator, then place it touching rock.</p>'}
-    <p class="small">Each holds ${rigCapHours()} Mars hours of mining (Endurance raises that).</p>
-    <div class="row"><button class="btn primary" type="button" data-act="collect" ${S.rigs.length?'':'disabled'}>Collect all</button>${ME.sentinel?'<button class="btn" type="button" data-act="overnight">Skip my crew ahead 8 Mars hours</button>':''}</div>
+    <p class="small">Every block of rock in the 5×5 around a drill feeds it, and a drill buried in rock runs more than twice as efficiently as one that barely touches it. Each holds ${rigCapHours()} Mars hours of mining (Endurance raises that). You have to drive within ${NEAR*2} m to empty one.${S.larder>=1?` Your greenhouses have ${Math.floor(S.larder)} Food waiting: drive past them to pick it up.`:''}</p>
+    <div class="row"><button class="btn primary" type="button" data-act="collect" ${S.rigs.some(rg=>cheb(idx(rg.x,rg.y))<=NEAR)?'':'disabled'}>Collect nearby (C)</button>${ME.sentinel?'<button class="btn" type="button" data-act="overnight">Skip my crew ahead 8 Mars hours</button>':''}</div>
   </section>
   <section><h3>Colony</h3>
-    ${st?`<p><b>${st.n}</b> <span class="tag">Great Work ${C.stage+1} of ${STAGES.length}</span></p>
+    ${st?`<p><b>${st.n}</b> <span class="tag">${C.stage<MAIN_STAGES?`Great Work ${C.stage+1} of ${MAIN_STAGES}`:`Season project ${C.stage-MAIN_STAGES+1} of ${STAGES.length-MAIN_STAGES}`}</span></p>
     ${['iron','silicon','ice','rare'].filter(r=>st.need[r]).map(r=>{ const h=Math.floor(+C.have[r]||0), n=st.need[r]; return `<div><div class="kv"><span class="lbl">${RNAME[r]}</span><span>${h} / ${n}</span><span class="row" style="gap:4px"><button type="button" class="btn sm" data-act="give" data-half="1" data-r="${r}" ${h>=n||S.res[r]<2||giving?'disabled':''}>Half</button><button type="button" class="btn sm" data-act="give" data-r="${r}" ${h>=n||S.res[r]<1||giving?'disabled':''}>All</button></span></div><div class="meter"><i style="width:${h/n*100}%;background:${RCOL[r]}"></i></div></div>`; }).join('')}
-    ${scarce()?`<p class="small">The colony is shortest on ${RNAME[scarce()]}, so mining it pays 25% more right now.</p>`:''}`:'<p>All five Great Works are complete. Season 2 opens the solar system.</p>'}
+    ${scarce()?`<p class="small">The colony is shortest on ${RNAME[scarce()]}, so mining it pays 25% more right now.</p>`:''}`:'<p>Every Great Work and Season project is complete. Season 2 opens the solar system.</p>'}
+    <p class="small"><b>When every bar is full:</b> the robots finish it on the surface (watch them work), every crew on Mars gets +10% on everything for a day, and the next one starts. A bar that's full stops taking that resource, so send what's still short. The season's main objective is the Launch Facility and the ship on its pad (Great Works 1 to 5). After that come Season projects, one at a time: ship upgrades (heat shield, cargo bay, ion drive) and base improvements (solar farm, comms tower, observatory).</p>
+    <div class="list">${STAGES.map((g,i)=>`<span>${i<C.stage?'✓':i===C.stage?'›':'·'} ${g.n}${i===MAIN_STAGES-1?' · main objective':''}</span>`).join('')}</div>
     <p class="small">${crews.length+1} Kin on Mars${activeCrews.length?` · here now: ${activeCrews.map(c=>esc(c.username)).join(', ')}`:''}</p>
     <div class="list">${colonyLog.slice(0,8).map(l=>`<span>${esc(l.text)}</span>`).join('')||'<span>No colony news yet.</span>'}</div>
+  </section>
+  <section><h3>Weather</h3>
+    <p class="small">Dust storms sweep the surface about once an hour, at the same moment for every crew. I'll call a minute ahead: get at least 4 m underground or into the lander. On the surface a storm eats battery, oxygen and morale.${storm.warning?` <b style="color:var(--rust)">One is coming in ${storm.in}s.</b>`:storm.active?` <b style="color:var(--rust)">One is blowing now (${storm.left}s left).</b>`:''}</p>
+    ${ME.sentinel?'<div class="row"><button class="btn" type="button" data-act="storm">Test a dust storm (just me)</button></div>':''}
   </section>
   <section><h3>Boosts</h3>
     ${boosts.length?`<div class="list">${boosts.map(b=>`<span>${esc(b.label)} · +${Math.round(b.pct*100)}% · ${fmtReal(b.until-Date.now())} left</span>`).join('')}</div>`:'<p class="small">No active boosts.</p>'}
@@ -1570,16 +2179,25 @@ function renderDash(){
   <section><h3>Voyage</h3>
     <p class="small">Watch the launch, the trip, the orbit and the landing again. Your progress isn't touched.</p>
     <div class="row"><button class="btn" type="button" data-act="replay">Replay launch and landing</button>${ME.sentinel?`<button class="btn" type="button" data-act="reset">${dash.dataset.reset?`Erase ${esc(ME.username)}'s crew? Confirm`:'Start my crew over'}</button>`:''}</div>
-    ${ME.sentinel?`<p class="fine">Sentinel testing tools, only on your accounts. They only touch this account's crew (${esc(ME.username)}): never other Kin, the shared world or the colony. Skip ahead runs your own drills, training, Fabricator and greenhouses forward 8 Mars hours. Start over resets this crew to brand new, so you can play the first-time experience; your tunnels stay in the world.</p>`:''}
+    ${ME.sentinel?`<p class="fine">Sentinel testing tools, only on your accounts. They only touch this account's crew (${esc(ME.username)}): never other Kin, the shared world or the colony. Skip ahead runs your own drills, training, Fabricator and greenhouses forward 8 Mars hours. Start over resets this crew to brand new, so you can play the first-time experience; your tunnels stay in the world. The storm test only shows on your screen.</p>`:''}
   </section>
   <section><h3>Ledger</h3>
     <div class="kv">${RES.map(r=>`<span class="lbl">${RNAME[r]} mined</span><span></span><span>${S.mined[r]}</span>`).join('')}
     <span class="lbl">Sent to Great Works</span><span></span><span>${S.given}</span>
     <span class="lbl">Shared with all Kin</span><span></span><span>${Math.floor(S.shared)}</span>
-    <span class="lbl">Deepest</span><span></span><span>${S.maxDepth*2} m</span></div>
+    <span class="lbl">Deepest</span><span></span><span>${S.maxDepth*2} m</span>
+    <span class="lbl">Pieces built</span><span></span><span>${my.built} / ${BUILD_CAP}</span>
+    <span class="lbl">Blackouts</span><span></span><span>${S.deaths||0}</span></div>
     <p class="fine">10% of everything each Kin mines reaches every other Kin as the Commons dividend. It never comes out of anyone's share.</p>
   </section>`;
+  drawLookPreview();
   if(dashFocus){ const el=$('#d-'+dashFocus); if(el) el.scrollIntoView({block:'start'}); dashFocus=null; }
+}
+function drawLookPreview(){
+  const c=$('#lookPrev'); if(!c) return;
+  const x=c.getContext('2d'); x.setTransform(1,0,0,1,0,0); x.fillStyle='#170d12'; x.fillRect(0,0,c.width,c.height);
+  // borrow the game's own borer drawing at a bigger size
+  const keepCtx=ctx, keepT=T; try{ ctxSwap(x); T=100; drawBorer(c.width/2-50-14,c.height/2-50,time,1,0,0,false,false,S.look); } finally { ctxSwap(keepCtx); T=keepT; }
 }
 dash.addEventListener('pointerdown',()=>{dashBusy=true;});
 dash.addEventListener('click',e=>{
@@ -1595,6 +2213,10 @@ dash.addEventListener('click',e=>{
   if(a==='overnight'){ advance(480,true); toast('Skipped ahead 8 hours on Mars.'); }
   if(a==='give') contribute(b.dataset.r, !!b.dataset.half);
   if(a==='craft') craft(b.dataset.id);
+  if(a==='research') startResearch(b.dataset.id);
+  if(a==='eat') eat(false);
+  if(a==='look'){ S.look[b.dataset.k]=b.dataset.v; beep(700,.05,'sine',.03,900); save(true); }
+  if(a==='storm'){ const t=Date.now(); stormTest={start:t+20000,end:t+20000+STORM_LEN}; stormMemo.t=-1; toast('Test storm in 20 seconds, on your screen only.'); }
   if(a==='cancel'){ const c=S.craft.splice(+b.dataset.i,1)[0]; if(c){ const e=itemById(c.id); for(const [r,v] of Object.entries(costOf(e))) S.res[r]+=v; toast(`Cancelled the ${e.n}. Materials refunded.`); save(true); } }
   if(a==='replay'){ startReplay(); return; }
   if(a==='reset'){ if(!dash.dataset.reset){ dash.dataset.reset='1'; } else { delete dash.dataset.reset; resetCrew(); return; } }
@@ -1630,6 +2252,10 @@ addEventListener('keydown',e=>{
   else if(e.code==='KeyV') selectBuild('move');
   else if(e.code==='KeyC'&&S.rigs.length) collectRigs();
   else if(e.code==='KeyQ') scan();
+  else if(e.code==='ShiftLeft'||e.code==='ShiftRight'){ if(!e.repeat) useDash(); }
+  else if(e.code==='Space'){ e.preventDefault(); if(!e.repeat) useOverdrive(); }
+  else if(e.code==='KeyH') eat(false);
+  else if(e.code==='KeyT'){ rot=!rot; if(mode!=='build') setMode('build'); renderPalette(true); const b=itemById(sel); toast(ROTATE[b&&b.tile]?`${b.n}: ${rot?(b.tile===LOCK?'floor hatch':'standing'):(b.tile===LOCK?'door':'hanging')}`:'Turned. Airlocks become floor hatches, lamps stand up.'); }
   else if(e.code==='KeyF') toggleFull();
   else if(e.code==='KeyM') mini.classList.toggle('small');
   else if(e.code==='Tab'){ e.preventDefault(); toggleDash(); }
@@ -1638,15 +2264,40 @@ addEventListener('keydown',e=>{
 });
 addEventListener('keyup',e=>{ const d=KMAP[e.code]; if(d) setHeld(d,false); });
 addEventListener('blur',()=>{ for(const k in held) held[k]=false; });
-document.querySelectorAll('#dpad button').forEach(b=>{
+document.querySelectorAll('#dpad button.ab').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); ac(); ({dash:useDash,over:useOverdrive,scan,eat:()=>eat(false)})[b.dataset.ab](); }));
+document.querySelectorAll('#dpad button[data-d]').forEach(b=>{
   const d=b.dataset.d;
   b.addEventListener('pointerdown',e=>{ e.preventDefault(); ac(); setHeld(d,true); try{b.setPointerCapture(e.pointerId);}catch(err){} });
   for(const ev of ['pointerup','pointercancel','lostpointercapture']) b.addEventListener(ev,()=>setHeld(d,false));
 });
 function cellAt(e){ const r=cv.getBoundingClientRect(); return {x:Math.floor((e.clientX-r.left+cam.x)/T), y:Math.floor((e.clientY-r.top+cam.y)/T)}; }
-cv.addEventListener('pointermove',e=>{ hover=cellAt(e); });
+// click and drag to build (5.61): hold and sweep across tunnel to lay a line of blocks
+let drag=null;
+function dragTo(c){
+  if(!drag) return;
+  // fill every cell between the last one and this one, so fast sweeps don't skip
+  let {x,y}=drag.last; const steps=Math.max(Math.abs(c.x-x),Math.abs(c.y-y));
+  for(let k=1;k<=steps;k++){
+    const cx=Math.round(x+(c.x-x)*k/steps), cy=Math.round(y+(c.y-y)*k/steps), key=cx+','+cy;
+    if(drag.done.has(key)) continue; drag.done.add(key);
+    const err=buildCheck(cx,cy); if(err){ if(!drag.err&&!/open tunnel|Pick|Your borer/.test(err)) drag.err=err; continue; }
+    tryBuild(cx,cy); drag.n++;
+  }
+  drag.last=c;
+}
+cv.addEventListener('pointermove',e=>{ hover=cellAt(e); if(drag&&mode==='build') dragTo(hover); });
 cv.addEventListener('pointerleave',()=>{ hover=null; });
-cv.addEventListener('pointerdown',e=>{ if(phase!=='play') return; ac(); const c=cellAt(e); hover=c; if(mode==='build') tryBuild(c.x,c.y); else if(tile(c.x,c.y)===RIG&&own[idx(c.x,c.y)]===1) collectRigs(); });
+cv.addEventListener('pointerdown',e=>{
+  if(phase!=='play') return; ac(); const c=cellAt(e); hover=c;
+  if(mode==='build'){
+    const b=itemById(sel), err=buildCheck(c.x,c.y);
+    if(err){ toast(err); return; }
+    tryBuild(c.x,c.y);
+    if(b.id!=='move'){ drag={last:c, done:new Set([c.x+','+c.y]), n:1, err:null}; try{ cv.setPointerCapture(e.pointerId); }catch(er){} }
+  }
+  else if(tile(c.x,c.y)===RIG&&own[idx(c.x,c.y)]===1){ const rg=S.rigs.find(r=>r.x===c.x&&r.y===c.y); if(rg&&cheb(idx(c.x,c.y))<=NEAR) collectRigs(rg); else toast('Drive closer to that auto-drill to empty it.'); }
+});
+for(const ev of ['pointerup','pointercancel']) cv.addEventListener(ev,()=>{ if(drag&&drag.err&&drag.n>1) toast(drag.err); drag=null; });
 
 // ---------- saving and syncing (through the 13i.space page around this one) ----------
 function seenEnc(){ const b=new Uint8Array(Math.ceil(seen.length/8)); for(let i=0;i<seen.length;i++) if(seen[i]) b[i>>3]|=1<<(i&7); let s=''; for(let i=0;i<b.length;i+=4096) s+=String.fromCharCode.apply(null,b.subarray(i,i+4096)); return btoa(s); }
@@ -1657,7 +2308,8 @@ function summary(){
     training:{attr:S.training.attr, min:S.training.min}, mission:{i:S.mission, total:MISSIONS.length, name:MISSIONS[S.mission]?MISSIONS[S.mission].n:null},
     given:S.given, mined:S.mined, maxDepth:S.maxDepth*2, rooms:my.press, habitable:my.habitable,
     battery:Math.round(S.bat/batCap()*100), atCharger:nearCharger(), craft:S.craft.map(c=>({n:itemById(c.id).n, left:c.left})),
-    kit:EQUIPS.filter(e=>S.inv[e.id]).map(e=>({n:e.n, count:S.inv[e.id]})), lastReal:Date.now(), timeScale:TIME_SCALE};
+    kit:EQUIPS.filter(e=>S.inv[e.id]).map(e=>({n:e.n, count:S.inv[e.id]})), lastReal:Date.now(), timeScale:TIME_SCALE,
+    look:cleanLook(S.look), needs:{o2:Math.round(S.needs.o2), food:Math.round(S.needs.food), mood:Math.round(S.needs.mood)}, research:S.research.done.length, built:my.built};
 }
 let lastSave=0;
 function save(now){
@@ -1676,13 +2328,13 @@ function flushTiles(){
 function requestSync(){ if(!connected) return; const mined=S.unsynced; S.unsynced={}; post({type:'sync', mined}); }
 document.addEventListener('visibilitychange',()=>{
   if(document.hidden){ hiddenAt=Date.now(); flushTiles(); save(true); }
-  else if(hiddenAt&&phase==='play'){ const real=Date.now()-hiddenAt; if(real>5000){ advance(real/60000*TIME_SCALE,true); if(nearCharger()) S.bat=batCap(); toast(`${fmtH(real/60000*TIME_SCALE)} passed on Mars while you were away.`); requestSync(); } hiddenAt=0; }
+  else if(hiddenAt&&phase==='play'){ const real=Date.now()-hiddenAt; if(real>5000){ advance(real/60000*TIME_SCALE,true); for(const g of my.grids) if(g.batts.length) addEnergy(g,g.gen*real/1000); if(nearCharger()) S.bat=batCap(); toast(`${fmtH(real/60000*TIME_SCALE)} passed on Mars while you were away.`); requestSync(); } hiddenAt=0; }
 });
 addEventListener('pagehide',()=>{ flushTiles(); save(true); });
 
 // older crews (v1/v2 world) move to the new, bigger site
 function migrate(st){
-  if(st.v===3) return st;
+  if(st.v===3) return Object.assign(fresh(),{upd:0},st);
   const s=Object.assign(fresh(),st);
   s.v=3; s.rigs=[]; s.px=SPAWN_X; s.py=GY-1; s.seen=''; s.craft=[];
   s.inv={o2:1, green:1, rig:1, lamp:2};
@@ -1697,7 +2349,7 @@ window.addEventListener('message',e=>{
     ME={username:m.user.username, sentinel:!!m.user.sentinel};
     ownerNames=m.owners||[];
     applyTiles(m.tiles||[], false);
-    if(m.state&&m.state.v>=2){ S=migrate(m.state); if(S.seen) seenDec(S.seen); }
+    if(m.state&&m.state.v>=2){ S=upgrade(migrate(m.state)); if(S.seen) seenDec(S.seen); }
     S.name=ME.username; S.inv=S.inv||{}; S.craft=S.craft||[];
     if(!S.lockGift){ S.lockGift=true; S.inv.lock=(S.inv.lock||0)+2; } if(S.bat==null) S.bat=batCap();
     recomputePressure(); validateRigs();
@@ -1734,14 +2386,14 @@ function hidePlayUI(){ ['#tools','#dpad','#lyra','#gauges','#mini'].forEach(s=>$
 function startReplay(){ flushTiles(); save(true); hidePlayUI(); replay=true; lyraQ=[]; lyraCur=null; ac(); setPhase('launch'); }
 function resetCrew(){
   flushTiles(); hidePlayUI();
-  const keepName=ME.username; S=fresh(); S.name=keepName; relocated=false; replay=false;
+  const keepName=ME.username; S=fresh(); S.name=keepName; relocated=false; replay=false; recomputePressure();
   post({type:'save', state:S, summary:summary(), px:null, py:null});
   P.rx=S.px; P.ry=S.py; lyraQ=[]; lyraCur=null;
   setPhase('title');
 }
 
 // ---------- loop ----------
-let lastT=performance.now(), time=0, saveAcc=0, slowAcc=0, tileAcc=0, syncAcc=0, giftAcc=0, miniAcc=0, gaugeAcc=0, hiddenAt=0;
+let foodAcc=0, lastT=performance.now(), time=0, saveAcc=0, slowAcc=0, tileAcc=0, syncAcc=0, giftAcc=0, miniAcc=0, gaugeAcc=0, hiddenAt=0;
 function lyraGift(){
   if(S.gifts.day!==today()) S.gifts={day:today(),n:0};
   if(S.gifts.n>=3||Math.random()>.35) return;
@@ -1753,7 +2405,8 @@ function lyraGift(){
 function frame(now){
   const dt=Math.min(.1,(now-lastT)/1000); lastT=now; time+=dt; phaseT+=dt;
   if(phase==='play'){
-    updateBorer(dt); advance(dt/60*TIME_SCALE,true); tickLyra(dt);
+    updateBorer(dt); advance(dt/60*TIME_SCALE,true); tickLyra(dt); tickAbilities(dt); updateNeeds(dt); updateStorm(dt);
+    foodAcc+=dt; if(foodAcc>1){ foodAcc=0; pickupFood(); refreshGrids(); }
     if(scanCool>0) scanCool-=dt;
     saveAcc+=dt; if(saveAcc>10){ saveAcc=0; save(true); }
     tileAcc+=dt; if(tileAcc>2){ tileAcc=0; flushTiles(); }
@@ -1773,6 +2426,8 @@ function frame(now){
 if(inFrame){ showWait('Contacting the colony…'); post({type:'ready'}); setTimeout(()=>{ if(!connected) showWait('Still waiting for 13i.space to answer. If this stays, reload the page.'); },8000); }
 else { phase='offline'; showWait('SpaceCore runs inside 13i.space. Open it from <a href="/create/spacecore">Create › SpaceCore</a> while signed in.'); }
 requestAnimationFrame(frame);
+// test hook for local harnesses only (the site never adds ?debug)
+if(/[?&]debug\b/.test(location.search)) window.__sc={get S(){return S;}, P, cam, my:()=>my, tile, own:(x,y)=>own[idx(x,y)], T:()=>T, stormNow, blackout, setNeeds:(o)=>Object.assign(S.needs,o)};
 })();
 </script>
 </body>

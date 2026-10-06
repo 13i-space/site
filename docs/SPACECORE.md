@@ -44,7 +44,7 @@ Signed-in Kin only: it is one world every Kin builds together.
   (`have`), and everyone's total mining (`mined`). Changed only through
   `spacecore_contribute` and `spacecore_sync`.
 - `spacecore_log`: colony news.
-- `spacecore_crews()`: names, levels and parked positions for everyone.
+- `spacecore_crews()`: names, levels, parked positions and (5.61) borer colors for everyone.
 
 ## Rules worth knowing
 - Mars time runs 6× real time during Alpha (`TIME_SCALE` in the game,
@@ -131,6 +131,48 @@ Signed-in Kin only: it is one world every Kin builds together.
   placed from the kit". `isEquip()` is still tile-level (interior and
   passable for pressure), and the Airlock tile stays a seal.
 - **Move tool (V):** picks equipment up into the kit and selects it to place again.
+
+## Update 5.61: the survival update
+From a three-hour playtest by one of Paul's sons, plus Paul's asks. SQL:
+docs/v5.61-spacecore-survival.sql (schema version 561).
+- **New tiles** (allowed by `spacecore_set_tiles`, 30-42): SOLAR 35, GEOTH 36,
+  BATT 37, WIRE 38, GALLEY 39, BUNK 40, LOCKH 41 (floor-hatch airlock), LAMPF
+  42 (standing lamp). `ROTATE`/`BASE_T` map the turned tiles back to their
+  item; `isLock()` covers both airlocks (a seal, passable). Wire is a Block
+  (bought from resources) but tile-level it's equipment (passable, interior).
+- **Build limit**: 1500 built tiles (t >= 10) per Kin, in the game
+  (`BUILD_CAP`, `my.built`) and in SQL (counted once per call).
+- **Lyra**: `closeLyra(hard)`. × and the orb close her hard (`lyraClosed`):
+  prio < 6 waits behind `#lyraDot`; prio >= 6 opens her, and when that message
+  ends she closes again (`wasClosed`). "Got it" closes soft. Either way prio
+  <= 2 is dropped for 4 minutes. `briefMission` respects it too.
+- **Needs** (`S.needs` o2/food/mood, 0-100, `updateNeeds`): rates in
+  `needRates()`, per real second, only while playing. `blackout()` moves 25%
+  (10% with Second wind) of iron/silicon/ice/rare into `S.wreck`;
+  `recoverWreck()` within 1 block.
+- **Power** (`buildGrids`, `refreshGrids`, `tickGrids`): flood fill over your
+  `POWER_T` tiles. `GEN` kWh per real second; solar only at depth <= 8 blocks
+  and x0.1 in a storm; geothermal at depth >= 40. Battery charge is stored per
+  tile in `S.cells`. Reactors still reach chargers within 10 blocks
+  (`g.linked`). A charger with no grid power but within 8 blocks of the surface
+  runs on its mast (2/s).
+- **Auto-drills**: `rigRates` = per-block rate x efficiency (0.6 + 0.8 x
+  rock/24) x Geology x power. Collecting needs `cheb() <= NEAR` (8).
+  Greenhouses fill `S.larder` (30 per greenhouse), picked up within 8.
+- **Storms**: `stormNow()` is pure clock maths (45-minute slots, ~62% hold a
+  storm, 60 s warning, 100 s long), so all players agree without a server.
+  Sentinel accounts can run a local test storm from the Dashboard.
+- **Research** (`RESEARCH`, `S.research`): 18 projects, tiers need the
+  attribute at 1/3/5. Effects are `hasRes()` checks where they apply.
+- **Looks** (`S.look`, `LOOK_OPTS`, `cleanLook`): saved in `summary.look`,
+  returned by `spacecore_crews()` so ghosts are drawn in their colors.
+- **World**: extra ice and iron veins run after everything else in `genWorld`
+  with their own RNG and only replace rock, so caves and tubes didn't move.
+- **Season**: `MAIN_STAGES = 5`; stages 5-10 are Season projects (`proj`).
+  `S.lastStage` catches completions that happened while you were away, and
+  each completion gives a +10% day-long boost.
+- Test hook: `?debug` on the game URL exposes `window.__sc` (local harnesses
+  only; the site never adds it).
 
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player
