@@ -1273,10 +1273,35 @@ main {
 @keyframes hab-walk { 0%, 100% { transform: translate(-50%, -50%) scaleX(-1); } 25% { transform: translate(-50%, -51.5%) scaleX(-1) rotate(0.6deg); } 75% { transform: translate(-50%, -51.5%) scaleX(-1) rotate(-0.6deg); } }
 @keyframes hab-slither { 0%, 100% { transform: translate(-52%, -50%) scaleX(-1) skewX(2deg); } 50% { transform: translate(-48%, -50%) scaleX(-1) skewX(-2deg); } }
 @keyframes hab-rooted { 0%, 100% { transform: translate(-50%, -50%) scaleX(-1) rotate(-1.2deg); } 50% { transform: translate(-50%, -50%) scaleX(-1) rotate(1.2deg); } }
+/* Update 5.64: just the creature (no scenery of its own) - it moves through its world */
+.hab-solo { width: 78%; top: 54%; -webkit-mask-image: none; mask-image: none; }
+.hab-solo.hab-walk { animation: hab-roam 14s ease-in-out infinite; }
+.hab-solo.hab-slither { animation: hab-roam-low 18s ease-in-out infinite; }
+.hab-solo.hab-fly { animation: hab-soar 11s ease-in-out infinite; }
+.hab-solo.hab-float { animation: hab-drift 16s ease-in-out infinite; }
+.hab-solo.hab-swim { animation: hab-glide 13s ease-in-out infinite; }
+.hab-solo.hab-rooted { animation: hab-rooted 6s ease-in-out infinite; }
+@keyframes hab-roam {
+  0% { transform: translate(-72%, -50%) scaleX(-1); } 8% { transform: translate(-70%, -51.5%) scaleX(-1); }
+  45% { transform: translate(-28%, -50%) scaleX(-1); } 50% { transform: translate(-28%, -50%) scaleX(1); }
+  58% { transform: translate(-30%, -51.5%) scaleX(1); } 95% { transform: translate(-72%, -50%) scaleX(1); } 100% { transform: translate(-72%, -50%) scaleX(-1); } }
+@keyframes hab-roam-low {
+  0% { transform: translate(-75%, -46%) scaleX(-1) skewX(3deg); } 25% { transform: translate(-50%, -46%) scaleX(-1) skewX(-3deg); }
+  48% { transform: translate(-25%, -46%) scaleX(-1) skewX(3deg); } 52% { transform: translate(-25%, -46%) scaleX(1) skewX(3deg); }
+  75% { transform: translate(-50%, -46%) scaleX(1) skewX(-3deg); } 98% { transform: translate(-75%, -46%) scaleX(1) skewX(3deg); } 100% { transform: translate(-75%, -46%) scaleX(-1); } }
+@keyframes hab-soar {
+  0% { transform: translate(-75%, -68%) scaleX(-1) rotate(-6deg); } 25% { transform: translate(-50%, -58%) scaleX(-1) rotate(4deg); }
+  48% { transform: translate(-25%, -72%) scaleX(-1) rotate(-4deg); } 52% { transform: translate(-25%, -72%) scaleX(1) rotate(-4deg); }
+  75% { transform: translate(-50%, -60%) scaleX(1) rotate(5deg); } 98% { transform: translate(-75%, -68%) scaleX(1) rotate(-6deg); } 100% { transform: translate(-75%, -68%) scaleX(-1) rotate(-6deg); } }
+@keyframes hab-drift { 0%, 100% { transform: translate(-62%, -62%) scaleX(-1); } 33% { transform: translate(-40%, -55%) scaleX(-1) rotate(4deg); } 66% { transform: translate(-50%, -68%) scaleX(-1) rotate(-3deg); } }
+@keyframes hab-glide {
+  0% { transform: translate(-75%, -50%) scaleX(-1) rotate(3deg); } 25% { transform: translate(-50%, -44%) scaleX(-1) rotate(-3deg); }
+  48% { transform: translate(-25%, -52%) scaleX(-1); } 52% { transform: translate(-25%, -52%) scaleX(1); }
+  75% { transform: translate(-50%, -46%) scaleX(1) rotate(3deg); } 98% { transform: translate(-75%, -50%) scaleX(1); } 100% { transform: translate(-75%, -50%) scaleX(-1) rotate(3deg); } }
 @media (prefers-reduced-motion: reduce) { .hab-portrait { animation: none !important; } }
 
 /* ───────── the Alien Lab's room (Update 5.55, components/AlienLab.js) ───────── */
-.lab { max-width: 1060px; margin: 0 auto; border-radius: 18px; overflow: hidden; position: relative;
+.lab { max-width: 1060px; margin: 0 auto; border-radius: 18px; overflow: hidden; overflow: clip; position: relative;
   background:
     repeating-linear-gradient(90deg, rgba(111,195,168,0.035) 0 1px, transparent 1px 46px),
     repeating-linear-gradient(0deg, rgba(111,195,168,0.035) 0 1px, transparent 1px 46px),
@@ -1351,10 +1376,13 @@ main {
   .lab-grid { grid-template-columns: 1fr; }
   .lab-vat { position: relative; top: 0; max-width: 300px; margin: 0 auto; width: 100%; }
   .lab-scene { max-width: 520px; }
-  .lab-crew { grid-template-columns: 70px 1fr 70px; gap: 8px; padding: 12px 10px 4px; }
+  .lab-crew { grid-template-columns: 70px 1fr 70px; gap: 8px; padding: 12px 10px 4px; align-items: center; }
+  /* a steady screen while the lines change (Update 5.64) */
+  .lab-bubble { height: 132px; min-height: 0; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 10px 12px; box-sizing: border-box; }
+  .lab-vat-read { min-height: 2.9em; }
   .lab-alien { width: 70px; height: 88px; }
   .lab-name { display: none; }
-  .lab-bubble-text { font-size: 15px; }
+  .lab-bubble-text { font-size: 14px; line-height: 1.4; }
   .lab-head-glyphs { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .lab-alien *, .lab-head-glyphs { animation: none !important; } }
@@ -1748,7 +1776,7 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 .ga-cab-locked .ga-cab-title { color: #6E76B8; letter-spacing: 6px; }
 .ga-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .ga-lock span { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--c); padding: 6px 12px; border: 1px solid var(--c); border-radius: 4px; background: rgba(5,6,26,.75); }
-.ga-more { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 46px; }
+.ga-more { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 46px; }
 .ga-more-card { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border-radius: 14px; border: 1px solid #262A55; background: rgba(14,16,38,.72); text-decoration: none; transition: border-color .2s; }
 .ga-more-card:hover { border-color: #8B95F6; }
 .ga-more-title { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 20px; color: #DCDFFF; }
@@ -1776,7 +1804,7 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 @keyframes gs-dash { to { stroke-dashoffset: -28; } }
 .gs-msg { animation: gs-msg 3.2s linear infinite; }
 @keyframes gs-msg { from { transform: translate(-40px, var(--y)); } 45% { transform: translate(62px, var(--y)); } 60% { transform: translate(62px, var(--y)); } to { transform: translate(170px, var(--y)); } }
-@media (max-width: 720px) { .ga-hero-text { padding: 28px 22px; } .ga-more { grid-template-columns: 1fr; } }
+@media (max-width: 720px) { .ga-hero-text { padding: 28px 22px; } .ga-more { grid-template-columns: 1fr 1fr; } }
 @media (prefers-reduced-motion: reduce) { .ga-cab, .gs-sweep, .gs-spin, .gs-blip, .gs-rock, .gs-ship, .gs-shot, .gs-fall, .gs-ripple, .gs-wave, .gs-limb, .gs-beam, .gs-msg { animation: none; } }
 
 /* ── Artifact pages (Update 5.58) ── */
@@ -1985,6 +2013,17 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 .lab-next-second:hover { border-color: #E9D29A; color: #F5EEDB; text-decoration: none; }
 .lab-submit { display: inline-block; padding: 13px 22px; border-radius: 10px; border: none; cursor: pointer; background: linear-gradient(135deg, #6FC3A8, #B9C0FF); color: #0A0B1C; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 0 22px rgba(111,195,168,.3); transition: transform .2s, box-shadow .2s; }
 .lab-submit:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 30px rgba(111,195,168,.5); }
+.lab-submit-unnamed { opacity: .55; }
+.look-q { margin-bottom: 16px; }
+.look-q-label { font-size: 14px; color: #DCDFFF; margin-bottom: 8px; }
+.look-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.look-chip { background: none; border: 1px solid #262A55; border-radius: 16px; color: #C9CCF0; font-size: 12.5px; padding: 6px 12px; cursor: pointer; text-align: left; transition: all .15s; }
+.look-chip:hover { border-color: #6FC3A8; }
+.look-chip.on { background: rgba(233,210,154,0.14); border-color: #E9D29A; color: #F5EEDB; }
+.look-chip-other { font-style: italic; color: #8A8FBF; }
+.look-other, .look-text { width: 100%; box-sizing: border-box; margin-top: 8px; background: rgba(5,6,16,0.5); border: 1px solid #262A55; border-radius: 6px; color: #E4E4EF; font-size: 13.5px; padding: 9px 11px; outline: none; font-family: inherit; }
+.look-text { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 15px; line-height: 1.5; resize: vertical; margin-top: 0; }
+.look-other:focus, .look-text:focus { border-color: #6FC3A8; }
 .lab-submit[disabled] { opacity: .5; cursor: default; }
 .lab-sent { margin: 4px auto 10px; max-width: 460px; padding: 14px 16px; border-radius: 12px; background: rgba(8,20,22,.7); border: 1px solid rgba(111,195,168,.4); }
 .lab-sent-kicker { font-size: 10px; letter-spacing: 2.5px; color: #6FC3A8; }

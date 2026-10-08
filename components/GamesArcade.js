@@ -261,6 +261,7 @@ export default function GamesArcade() {
         <Link href="/create/spacecore" className="ga-more-card"><span className="ga-more-title">SpaceCore</span><span className="mono">dig into Mars with everyone &rarr;</span></Link>
         <Link href="/assignments/interactive" className="ga-more-card"><span className="ga-more-title">Interactive Stories</span><span className="mono">make 13i&rsquo;s choices &rarr;</span></Link>
         <Link href="/quiz" className="ga-more-card"><span className="ga-more-title">Universe Quiz</span><span className="mono">ten signals &rarr;</span></Link>
+        <Link href="/galaxy/aliens" className="ga-more-card"><span className="ga-more-title">Aliens of the Galaxy</span><span className="mono">survival tournament &amp; trials &rarr;</span></Link>
       </div>
     </div>
   );

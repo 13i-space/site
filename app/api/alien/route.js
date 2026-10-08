@@ -48,6 +48,7 @@ Style (Update 5.63 - solid colour):
 - the creature in a group <g id="creature">, PAINTED IN SOLID, OPAQUE COLOUR: every part of its body has an opaque fill (no fill-opacity or opacity below 1 on the creature's body), in a coherent palette that comes from its traits - its skin, shell, fur or membrane, its light, its world - with shading from opaque gradients (darker and lighter tones of the same colours), crisp outlines and a few bright highlights. Glows and light effects may be translucent; the body may not
 - it must read clearly as a solid creature against the dark background and against a bright sky
 - follow the traits literally: body plan, symmetry, number and kind of limbs, size (show scale against its surroundings), senses, and how it moves
+- if the creator describes its look in their own words, that description comes first: follow it closely (colours, features, markings, shape), within the traits
 - elegant and specific rather than cartoonish; no text, labels or captions anywhere
 
 Technical rules:
@@ -199,8 +200,10 @@ function drawPortrait(apiKey, answers, name) {
 }
 
 // Sentinel-X only: repaint one saved species' portrait in solid colour and
-// save it, keeping the original in portrait_line_svg so the two can be
-// compared (docs/v5.63-solid-portraits.sql adds that column).
+// save it. Update 5.64: no SQL needed - if the portrait_line_svg column
+// exists (docs/v5.63-solid-portraits.sql) the original is kept there for
+// the Solid / line art switch; if not, the repaint is saved anyway. A
+// repainted portrait carries data-solid="1" so it's never repainted twice.
 async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
   if (!isSentinelUser(profile?.username)) return Response.json({ error: "Only Sentinel-X can repaint portraits." }, { status: 403 });
@@ -210,7 +213,7 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   const rows = res.ok ? await res.json() : [];
   const sp = rows[0];
   if (!sp || !sp.portrait_svg) return Response.json({ error: "That species has no portrait to repaint." }, { status: 404 });
-  if (!("portrait_line_svg" in sp)) return Response.json({ error: "Run docs/v5.63-solid-portraits.sql in Supabase first (it keeps the original portraits)." }, { status: 409 });
+  const keeps = "portrait_line_svg" in sp;
   const original = sp.portrait_line_svg || sp.portrait_svg; // never lose the first drawing
   return streamSvg(apiKey, {
     system: REPAINT_SYSTEM,
@@ -220,7 +223,7 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
       const up = await admin.query(`alien_species?id=eq.${encodeURIComponent(speciesId)}`, {
         method: "PATCH",
         headers: { Prefer: "return=minimal" },
-        body: JSON.stringify({ portrait_svg: svg, portrait_line_svg: original }),
+        body: JSON.stringify(keeps ? { portrait_svg: svg, portrait_line_svg: original } : { portrait_svg: svg }),
       });
       return up.ok;
     },
@@ -277,7 +280,9 @@ function streamSvg(apiKey, { system, content, feature, onSvg }) {
           }
         }
         await recordClaudeUsage({ feature, model: served, usage });
-        const svg = stopReason === "refusal" || stopReason === "error" ? null : cleanSvg(text);
+        const clean = stopReason === "refusal" || stopReason === "error" ? null : cleanSvg(text);
+        // every portrait drawn from now on is solid colour: say so on it
+        const svg = clean && !/data-solid=/.test(clean) ? clean.replace(/<svg/i, '<svg data-solid="1"') : clean;
         if (svg && onSvg) {
           const saved = await onSvg(svg);
           send(saved ? { svg, saved: true } : { error: "Repainted, but it couldn't be saved. Try again." });

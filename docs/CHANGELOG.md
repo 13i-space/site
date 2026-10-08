@@ -3,6 +3,34 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.64 — The Lab, round two (Oct 2026)
+No SQL.
+- **New order**: the world, senses, personality and technology questions
+  first (11), then the points, then **Its look** - size, symmetry, limbs,
+  movement, hands, covering, all on one screen as chips - and a free
+  description of its look (saved as "Physical Form / Describe what it looks
+  like"; the portrait prompt follows it closely). Then name it and generate.
+- **Points**: Randomize (a random split of every pool) and All to zero
+  (build up from nothing) beside Even split. The sliders work Ixxen's dials.
+- **A name is required** to submit (no more "Unnamed species").
+- **The page starts at the top of the lab** on every new screen and when
+  you press Generate; the lab stays pinned beside the console on desktop
+  (.lab overflow: clip, so position: sticky works).
+- **Sound**: an alarm at the anomaly, a hum that rises through the
+  transformation with zaps from the coils, and a fanfare when the species
+  is revealed (lib/alienSound.js labHum / labZap / labReveal).
+- **Phone**: the crew's speech bubble has a fixed height, so the screen
+  doesn't jump as the lines change.
+- **Side 4**: portraits now keep the creature in <g id="creature">; where it
+  is, only the creature is laid over its world and it roams it (walks
+  across and turns, soars, glides, drifts) instead of the whole picture
+  moving (lib/portraitArt.js creatureAlone).
+- **Solid colour, for real**: the repaint no longer needs the SQL column
+  (that's why it stopped) and starts by itself when Sentinel-X opens Aliens
+  of the Galaxy; repainted portraits carry data-solid="1".
+- **Games**: Aliens of the Galaxy joins SpaceCore, Interactive Stories and
+  the Universe Quiz at the bottom of the Games page.
+
 ## Update 5.63 — The Alien Lab comes alive (Oct 2026)
 Optional SQL: docs/v5.63-solid-portraits.sql (only needed to repaint the
 existing Kin portraits; everything else works without it).
