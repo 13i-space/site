@@ -3,6 +3,46 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.65 — Signal Composer v2: the Alien DJ Controller (Oct 2026)
+No SQL. /create/signal-composer is now a two-deck DJ controller in the
+spirit of a DDJ-FLX4, a small DAW and an alien crowd. Everything is still
+synthesized live in the browser (no samples, no service).
+- **Engine** (lib/deck/engine.js): two decks with their own clocks (SYNC
+  locks tempo and phase; without it you beatmatch by ear with the tempo
+  fader); per channel TRIM, 3-band EQ (full left kills), a one-knob filter
+  (low-pass left, high-pass right), fader, an fx strip, crossfader (power
+  curve), master fx, limiter + soft ceiling. Loops (4 beats, halve/double),
+  bar jumps, beat rolls with slip, nudge, scratch, brake, the sampler, a
+  set recorder (MediaRecorder) and an offline WAV render of any track.
+- **Sounds** (lib/deck/sounds.js): 4 kicks, 4 snares/claps, 4 hats, 4 percs,
+  5 basses (Sub, Saw, Acid, Wobble, Reese), 5 leads (Pluck, Saw, FM Bell,
+  Chip, Flute), 5 pads (Super, Glass, Choir, Dark, Halo), transmission
+  bleeps, 8 one-shots (Horn, Laser, Riser, Impact, "13i", Chatter, Siren,
+  Ping), a crowd chant, a scratch voice.
+- **Tracks** (lib/deck/tracks.js): 4 bars x 16 steps; seven styles (Signal
+  House, Nebula Techno, Orbit Trance, Gravity Bass, Xeno Breaks, Drift, 13i
+  Signal); **13i tuning** (Bohlen-Pierce: 13 steps to the tritave - the same
+  13th root of 3 as the Lab's sounds); any species from Aliens of the
+  Galaxy as a track (its world picks the style, its body and mind the rest);
+  "describe it" still uses /api/music, converted to a track.
+- **The decks** (components/AlienDeck.js, components/deck/Controls.js):
+  jog platters, tempo faders, SYNC/MASTER, play/cue, loops, an overview
+  strip, 8 pads in four modes - HOT CUE (bars 1-4, rolls), PAD FX (echoes,
+  sweeps, Transmit, flanger, wash, Gravity brake), SAMPLER, ALIEN (Mutate,
+  Xeno tune, Lift, Half-time, Hats x2, Drop - a bar of build then the drop -
+  Chant, Summon). BEAT FX: Echo, Reverb, Flanger, Transmit, Spiral on A, B or
+  master, with a beat length and level.
+- **The floor** (components/deck/Stage.js): a crowd of five body plans
+  dances to the master; energy comes from the music and from what you do
+  (drops, clean transitions, a brake slammed back, chants, Summon). Lasers
+  in each deck's colour, the 13i eye pulsing with the kick. MC Ilu calls it.
+- **The Studio** (components/deck/Studio.js): styles, species, describe;
+  name, key, scale, tuning, BPM, swing, chords; drum step grid and bass/lead
+  piano rolls bar by bar; sound, level, mute, tone per part; WAV export.
+- Tracks are kept in the browser between visits. Lyra hears the master.
+- v1 (components/MusicLab.js) is retired; lib/musicEngine.js stays (species
+  and story signals use it).
+
 ## Update 5.64 — The Lab, round two (Oct 2026)
 No SQL.
 - **New order**: the world, senses, personality and technology questions

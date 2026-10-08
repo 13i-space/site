@@ -3,7 +3,7 @@ import ModeLanding from "../../../components/ModeLanding";
 const items = [
   { href: "/create/alien-lab", emblem: "alienlab", title: "The Alien Lab", blurb: "Build a species, question by question — the environment, the body, the mind. Then watch it face the Survival Trials.", tags: ["species cards", "13i's assessment"] },
   { href: "/create/spacecore", emblem: "spacecore", title: "SpaceCore", blurb: "Mission One: Mars. Dig in, build your own rooms underground, and help every Kin raise the colony. One world, always growing.", tags: ["shared world"] },
-  { href: "/create/signal-composer", emblem: "composer", title: "Signal Composer", blurb: "A prototype: generate a loop in the 13i sound, shape it, or describe a feeling and let 13i compose it.", tags: ["prototype"] },
+  { href: "/create/signal-composer", emblem: "composer", title: "Signal Composer", blurb: "The alien DJ controller: two decks, a mixer, pads and effects, a studio to build tracks - and a crowd from every world to play to.", tags: ["v2", "DJ"] },
   { href: "/assignments/write", emblem: "write", title: "Write an Assignment", blurb: "You are 13i. You have been sent somewhere. Tell us what happens.", tags: ["the archive"] },
 ];
 
