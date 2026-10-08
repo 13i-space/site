@@ -11,14 +11,27 @@ const REVEAL_MS = 900;
 
 // The Aliens of the Galaxy grid. Cards flip on click; in compare mode a
 // click picks a card instead, and picking two runs the Survival Trials.
-export default function AlienGallery({ species }) {
+export default function AlienGallery({ species: initial, highlight = null, canRepaint = false }) {
+  const [species, setSpecies] = useState(initial);
+  // Update 5.63: solid colour, or the original line art where a species has both
+  const [look, setLook] = useState("solid");
+  useEffect(() => { try { const v = localStorage.getItem("13i_alien_look"); if (v === "line") setLook("line"); } catch (e) { /* ignore */ } }, []);
+  const chooseLook = (v) => { setLook(v); try { localStorage.setItem("13i_alien_look", v); } catch (e) { /* ignore */ } };
+  const hasBoth = species.some((sp) => sp.portrait_line_svg);
+  const shown = look === "line" ? species.map((sp) => (sp.portrait_line_svg ? { ...sp, portrait_svg: sp.portrait_line_svg } : sp)) : species;
   const [comparing, setComparing] = useState(false);
   const [picked, setPicked] = useState([]);
 
   const toggle = (id) => {
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : p.length < 2 ? [...p, id] : p));
   };
-  const pair = picked.length === 2 ? picked.map((id) => species.find((s) => s.id === id)) : null;
+  // the species you just made: scroll to it (it's first) and say so
+  useEffect(() => {
+    if (!highlight) return;
+    const el = document.getElementById(`species-${highlight}`);
+    if (el) setTimeout(() => el.scrollIntoView({ behavior: "smooth", block: "center" }), 300);
+  }, [highlight]);
+  const pair = picked.length === 2 ? picked.map((id) => shown.find((s) => s.id === id)) : null;
 
   return (
     <div>
@@ -44,10 +57,22 @@ export default function AlienGallery({ species }) {
         </div>
       )}
 
+      {canRepaint && <RepaintPanel species={species} onPainted={(id, svg, line) => setSpecies((list) => list.map((sp) => (sp.id === id ? { ...sp, portrait_svg: svg, portrait_line_svg: line } : sp)))} />}
+
+      {hasBoth && (
+        <div className="look-switch" role="group" aria-label="How the portraits are shown">
+          <span className="mono">PORTRAITS</span>
+          <button className={look === "solid" ? "on" : ""} onClick={() => chooseLook("solid")}>Solid colour</button>
+          <button className={look === "line" ? "on" : ""} onClick={() => chooseLook("line")}>Original line art</button>
+        </div>
+      )}
+
       <div style={styles.grid}>
-        {species.map((sp) => (
-          <div key={sp.id} style={{ display: "flex", justifyContent: "center" }}>
+        {shown.map((sp) => (
+          <div key={sp.id} id={`species-${sp.id}`} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+            {highlight === sp.id && <div className="mono gallery-new-tag">JUST ARRIVED &middot; YOURS</div>}
             <AlienCard
+              highlight={highlight === sp.id}
               species={sp}
               creator={sp.creator}
               creatorAlpha={sp.creatorAlpha}
@@ -60,6 +85,62 @@ export default function AlienGallery({ species }) {
       </div>
 
       {pair && <Trials a={pair[0]} b={pair[1]} onClose={() => setPicked([])} onDone={() => { setPicked([]); setComparing(false); }} />}
+    </div>
+  );
+}
+
+// Sentinel-X only (Update 5.63): repaint every Kin portrait in solid colour,
+// two at a time. Each repaint keeps the original (portrait_line_svg).
+function RepaintPanel({ species, onPainted }) {
+  const todo = species.filter((sp) => !sp.archive && sp.portrait_svg && !sp.portrait_line_svg);
+  const [status, setStatus] = useState("idle"); // idle | running | done
+  const [log, setLog] = useState([]);
+  const note = (line) => setLog((l) => [...l.slice(-12), line]);
+
+  const repaintOne = async (sp) => {
+    note(`${sp.name} - repainting...`);
+    try {
+      const res = await fetch("/api/alien", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "repaint", speciesId: sp.id }) });
+      if ((res.headers.get("content-type") || "").includes("application/json")) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || "couldn't start");
+      }
+      const text = await res.text();
+      const msg = text.split("\n").filter(Boolean).map((l) => { try { return JSON.parse(l); } catch (e) { return {}; } }).find((m) => m.svg || m.error);
+      if (!msg || msg.error || !msg.saved) throw new Error(msg?.error || "nothing came back");
+      onPainted(sp.id, msg.svg, sp.portrait_svg);
+      note(`${sp.name} - done`);
+      return true;
+    } catch (e) {
+      note(`${sp.name} - ${e.message}`);
+      return !/Run docs|Only Sentinel|SERVICE_ROLE/.test(e.message);
+    }
+  };
+  const run = async () => {
+    setStatus("running");
+    const queue = [...todo];
+    let ok = true;
+    const worker = async () => { while (ok && queue.length) { const sp = queue.shift(); ok = (await repaintOne(sp)) && ok; } };
+    await Promise.all([worker(), worker()]);
+    setStatus("done");
+  };
+
+  return (
+    <div className="panel repaint-panel">
+      <div>
+        <div className="mono" style={{ fontSize: 10, color: "#E8B4C8", letterSpacing: "1.5px" }}>SENTINEL-X &middot; SOLID COLOUR</div>
+        <div style={{ fontSize: 13, color: "#8A8FBF", marginTop: 4 }}>
+          {todo.length
+            ? `${todo.length} Kin portrait${todo.length === 1 ? "" : "s"} still in line art. Repaint them in solid colour - same drawings, new paint. The originals are kept for the switch below. About a minute each.`
+            : "Every Kin portrait has a solid version. New species are drawn in solid colour from the start."}
+        </div>
+        {log.length > 0 && <div className="mono repaint-log">{log.map((l, i) => <div key={i}>{l}</div>)}</div>}
+      </div>
+      {todo.length > 0 && (
+        <button onClick={run} disabled={status === "running"} className="mono" style={{ ...styles.btn, borderColor: "#E8B4C8", color: "#F5DCE6" }}>
+          {status === "running" ? "Repainting..." : `Repaint ${todo.length} in solid colour`}
+        </button>
+      )}
     </div>
   );
 }

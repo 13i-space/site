@@ -3,6 +3,7 @@
 import { useEffect, useRef, useMemo } from "react";
 import { keyFor } from "../lib/alienTraits";
 import { specimenTraits, drawSpecimen } from "../lib/specimen";
+import { creatureOnly, portraitSrc } from "../lib/portraitArt";
 
 // The fourth side of an Alien Lab card (Update 5.55): the species in its
 // own world, animated, filling the whole card. A different view from the
@@ -24,7 +25,11 @@ export default function AlienHabitat({ species, active = true }) {
   const canvasRef = useRef(null);
   const tr = useMemo(() => specimenTraits((id) => (species?.answers || {})[keyFor(id)]), [species]);
   const portrait = species?.portrait_svg;
-  const imgSrc = useMemo(() => (portrait ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(portrait)}` : null), [portrait]);
+  // Update 5.63: the creature without the portrait's own dark backdrop, laid
+  // over its world as it is. (It used to be screen-blended with the backdrop
+  // still in it, which washed faint portraits out against a bright sky -
+  // the Novaucians appeared for a moment, then vanished once the sky drew.)
+  const imgSrc = useMemo(() => (portrait ? portraitSrc(creatureOnly(portrait)) : null), [portrait]);
   const seed = useMemo(() => { let h = 7; String(species?.id || species?.name || "x").split("").forEach((c) => { h = (h * 31 + c.charCodeAt(0)) >>> 0; }); return (h % 1000) / 100; }, [species]);
 
   useEffect(() => {

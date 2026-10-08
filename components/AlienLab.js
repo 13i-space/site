@@ -1,246 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { drawSpecimen, specimenReadout } from "../lib/specimen";
-import { drawEmbryo, STAGE_NAMES } from "../lib/embryo";
+import { useEffect, useState } from "react";
 
-// The Alien Lab's room (Update 5.55). The Lab isn't a human lab: it's run by
-// aliens, and you're a guest at their bench. Two parts:
-//   <LabVat>  - the containment vat; the specimen takes shape inside it as
-//               questions are answered, with a scan sweeping it each time
-//   <LabCrew> - the two technicians who run the bay, talking (in their own
-//               glyphs, translated as you watch) about what you're making
+// The Alien Lab's crew (Update 5.55). The Lab isn't a human lab: it's run by
+// aliens, and you're a guest at their bench. The room itself - the tank,
+// the machinery and Ixxen at work - is components/LabScene.js (5.63).
+//   <LabCrew> - the two who run the bay, talking (in their own glyphs,
+//               translated as you watch) about what you're making
 // The crew are the Lab's own characters, a bit of fun for the tool - not
 // 13i canon (see docs/WORLD.md, "The Alien Lab").
-
-const TINT = { yellow: "rgba(242,217,160,", binary: "rgba(246,200,144,", red: "rgba(224,106,80,", blue: "rgba(185,212,255,", dark: "rgba(143,230,255," };
-
-// The vat (Update 5.59): what grows here is an ambiguous embryo
-// (lib/embryo.js), not the species. phase:
-//   "grow"    - the embryo, nudged by every answer
-//   "anomaly" - something happens in the tank that nobody explains (~6 s)
-//   "cocoon"  - it wraps itself up while the species is generated
-//   "reveal"  - the cocoon opens: the portrait, or the drawn specimen
-// The anomaly is never explained, on purpose; each one is counted in this
-// browser (13i_anomalies) for whatever the larger mystery does with it later.
-const ANOMALY_MS = 6200;
-const SIGIL = [[0, -1], [0.87, 0.5], [-0.87, 0.5], [0, -1]]; // a mark, drawn as if by something else
-
-export function LabVat({ traits, pulse = 0, label = "SPECIMEN", embryo = null, phase = "grow", portrait = null }) {
-  const ref = useRef(null);
-  const trRef = useRef(traits); trRef.current = traits;
-  const emRef = useRef(embryo); emRef.current = embryo;
-  const phaseRef = useRef({ phase, at: 0 });
-  if (phase !== phaseRef.current.phase) phaseRef.current = { phase, at: typeof performance !== "undefined" ? performance.now() : 0 };
-  const pulseRef = useRef({ n: pulse, at: 0 });
-  if (pulse !== pulseRef.current.n) pulseRef.current = { n: pulse, at: typeof performance !== "undefined" ? performance.now() : 0 };
-  const imgRef = useRef(null);
-  const lookRef = useRef(null);
-  const [readout, setReadout] = useState("");
-  const [alarm, setAlarm] = useState(false);
-
-  useEffect(() => {
-    if (!portrait) { imgRef.current = null; return; }
-    const im = new Image();
-    im.onload = () => { imgRef.current = im; };
-    im.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(portrait)}`;
-  }, [portrait]);
-
-  useEffect(() => {
-    if (phase !== "anomaly") return;
-    try { localStorage.setItem("13i_anomalies", String(Number(localStorage.getItem("13i_anomalies") || 0) + 1)); } catch (e) { /* ignore */ }
-    const on = setTimeout(() => setAlarm(true), ANOMALY_MS * 0.2);
-    const off = setTimeout(() => setAlarm(false), ANOMALY_MS * 0.9);
-    return () => { clearTimeout(on); clearTimeout(off); };
-  }, [phase]);
-
-  useEffect(() => {
-    const c = ref.current;
-    const ctx = c.getContext("2d");
-    let raf = 0, frozenAt = 0, lastRead = 0;
-    const bubbles = Array.from({ length: 34 }, (_, i) => ({ x: Math.random(), y: Math.random(), s: 1 + Math.random() * 3, v: 0.03 + Math.random() * 0.06, p: i }));
-    const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const onMove = (e) => { const r = c.getBoundingClientRect(); lookRef.current = { x: e.clientX - r.left, y: e.clientY - r.top }; };
-    window.addEventListener("pointermove", onMove);
-    const draw = (now) => {
-      const t = now / 1000;
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const W = c.clientWidth, H = c.clientHeight;
-      if (c.width !== Math.round(W * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, W, H);
-      const tr = trRef.current;
-      const em = emRef.current;
-      const ph = phaseRef.current;
-      const since = (now - ph.at) / 1000;
-      const k = ph.phase === "anomaly" ? Math.min(1, (now - ph.at) / ANOMALY_MS) : 0; // 0..1 through the anomaly
-      let tint = TINT[tr.known.body || tr.sky !== "yellow" ? tr.sky : "dark"] || TINT.dark;
-      if (em) tint = `hsla(${em.hue},65%,72%,`;
-      // the anomaly: the tank's light goes wrong
-      if (k > 0.2 && k < 0.9) tint = "rgba(200,60,90,";
-      const vx = W * 0.14, vw = W * 0.72, vy = H * 0.1, vh = H * 0.74;
-      ctx.fillStyle = "#14163A"; ctx.strokeStyle = "#3A3E75"; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.ellipse(W / 2, vy + vh, vw / 2 + 10, 16, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillRect(vx - 10, vy + vh, vw + 20, H * 0.08); ctx.strokeRect(vx - 10, vy + vh, vw + 20, H * 0.08);
-      const flicker = k > 0.05 && k < 0.25 ? (Math.random() < 0.3 ? 0.3 : 1) : 1;
-      const g = ctx.createLinearGradient(0, vy, 0, vy + vh);
-      g.addColorStop(0, tint + (0.10 * flicker) + ")"); g.addColorStop(1, tint + (0.32 * flicker) + ")");
-      ctx.fillStyle = g;
-      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(vx, vy, vw, vh, 30) : ctx.rect(vx, vy, vw, vh); ctx.fill();
-      const frozen = k > 0 && k < 0.45;
-      if (!frozen) frozenAt = t;
-      const tt = reduced ? 1 : frozen ? frozenAt : t;
-      // what drifts in the liquid
-      const env = em ? em.env : "bubbles";
-      bubbles.forEach((b) => {
-        const y = (((b.y - tt * b.v * (env === "dark" ? 0.3 : 1)) % 1) + 1) % 1;
-        const bx = vx + 12 + b.x * (vw - 24) + Math.sin(tt * 2 + b.p) * 3, by = vy + 10 + y * (vh - 20);
-        ctx.globalAlpha = env === "dark" ? 0.2 : 0.5;
-        ctx.strokeStyle = tint + "0.9)"; ctx.fillStyle = tint + "0.7)";
-        if (env === "grains") ctx.fillRect(bx, vy + 10 + (1 - y) * (vh - 20), 1.5, 1.5);
-        else if (env === "crystals") { ctx.save(); ctx.translate(bx, by); ctx.rotate(b.p + tt * 0.2); ctx.strokeRect(-b.s, -b.s, b.s * 2, b.s * 2); ctx.restore(); }
-        else if (env === "spores") { ctx.beginPath(); ctx.arc(bx, by, b.s * 0.6, 0, Math.PI * 2); ctx.fill(); }
-        else { ctx.beginPath(); ctx.arc(bx, by, b.s, 0, Math.PI * 2); ctx.stroke(); }
-      });
-      ctx.globalAlpha = 1;
-      ctx.save();
-      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(vx, vy, vw, vh, 30) : ctx.rect(vx, vy, vw, vh); ctx.clip();
-      const S = Math.min(vw, vh) * 0.95, cx = W / 2, cy = vy + vh * 0.48;
-      if (ph.phase === "reveal") {
-        // the cocoon opens
-        const open = Math.min(1, since / 1.6);
-        if (open < 1) { ctx.fillStyle = `rgba(255,240,215,${(1 - open) * 0.9})`; ctx.fillRect(vx, vy, vw, vh); }
-        ctx.globalAlpha = open;
-        const im = imgRef.current;
-        if (im) {
-          const s = Math.min(vw, vh) * 0.86, bob = reduced ? 0 : Math.sin(t * 0.8) * 4;
-          ctx.drawImage(im, cx - s / 2, cy - s / 2 + bob, s, s);
-        } else {
-          drawSpecimen(ctx, cx, cy, S, reduced ? 1 : t, tr, { seed: 3 });
-        }
-        ctx.globalAlpha = 1;
-      } else if (em) {
-        // the anomaly's beats: freeze, the light goes wrong, a mark, a second
-        // signal from outside the tank, it turns toward you, the wrong shape
-        if (k > 0.4 && k < 0.62) {
-          const a = Math.sin(((k - 0.4) / 0.22) * Math.PI);
-          ctx.strokeStyle = `rgba(233,210,154,${a * 0.85})`; ctx.lineWidth = 2;
-          ctx.beginPath(); SIGIL.forEach(([x, y], i) => { const px = cx + x * S * 0.36, py = cy + y * S * 0.36; i ? ctx.lineTo(px, py) : ctx.moveTo(px, py); }); ctx.stroke();
-          ctx.beginPath(); ctx.arc(cx, cy, S * 0.18, 0, Math.PI * 2); ctx.stroke();
-          ctx.beginPath(); ctx.moveTo(cx, cy - S * 0.5); ctx.lineTo(cx, cy + S * 0.5); ctx.stroke();
-        }
-        if (k > 0.45 && k < 0.8) {
-          const rr = ((k - 0.45) / 0.35) * vw * 1.6;
-          ctx.strokeStyle = `rgba(185,192,255,${0.6 * (1 - (k - 0.45) / 0.35)})`; ctx.lineWidth = 2;
-          ctx.beginPath(); ctx.arc(vx - vw * 0.3, cy, rr, 0, Math.PI * 2); ctx.stroke();
-        }
-        const stare = k > 0.6 && k < 0.88 ? Math.min(1, (k - 0.6) / 0.06) : 0;
-        const wrong = k > 0.7 && k < 0.8 ? Math.sin(((k - 0.7) / 0.1) * Math.PI) : 0;
-        const cocoon = ph.phase === "cocoon" ? Math.min(1, since / 2.5) : k > 0.88 ? (k - 0.88) / 0.12 * 0.4 : 0;
-        drawEmbryo(ctx, cx, cy, S, reduced ? 1 : t, em, { look: lookRef.current, freeze: frozen, frozenAt, stare, wrong, cocoon });
-      } else {
-        drawSpecimen(ctx, cx, cy, S, reduced ? 1 : t, tr, { seed: 3 });
-      }
-      const ps = (now - pulseRef.current.at) / 1000;
-      if (pulseRef.current.at && ps < 1.4 && ph.phase === "grow") {
-        const y = vy + vh * (ps / 1.4);
-        const sg = ctx.createLinearGradient(0, y - 30, 0, y + 4);
-        sg.addColorStop(0, "rgba(139,149,246,0)"); sg.addColorStop(1, "rgba(185,192,255,0.6)");
-        ctx.fillStyle = sg; ctx.fillRect(vx, y - 30, vw, 34);
-        ctx.fillStyle = "#E9D29A"; ctx.fillRect(vx, y, vw, 1.5);
-      }
-      ctx.restore();
-      ctx.strokeStyle = k > 0.2 && k < 0.9 ? "rgba(224,106,120,0.7)" : "rgba(185,192,255,0.55)"; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.roundRect ? ctx.roundRect(vx, vy, vw, vh, 30) : ctx.rect(vx, vy, vw, vh); ctx.stroke();
-      const hl = ctx.createLinearGradient(vx, 0, vx + vw, 0);
-      hl.addColorStop(0, "rgba(255,255,255,0.10)"); hl.addColorStop(0.12, "rgba(255,255,255,0.02)"); hl.addColorStop(0.85, "rgba(255,255,255,0)"); hl.addColorStop(0.95, "rgba(255,255,255,0.08)");
-      ctx.fillStyle = hl; ctx.fillRect(vx, vy, vw, vh);
-      ctx.fillStyle = "#14163A"; ctx.strokeStyle = "#3A3E75";
-      ctx.fillRect(vx - 6, vy - 12, vw + 12, 16); ctx.strokeRect(vx - 6, vy - 12, vw + 12, 16);
-      for (let i = 0; i < 5; i++) { ctx.fillStyle = k > 0.2 && k < 0.9 ? (Math.random() < 0.5 ? "#E06A78" : "#3A3E75") : Math.sin(t * 3 + i) > 0.3 ? "#E9D29A" : "#3A3E75"; ctx.fillRect(vx + 8 + i * 14, vy - 7, 6, 4); }
-      // the instruments, a few times a second
-      if (em && now - lastRead > 350) {
-        lastRead = now;
-        const stg = ph.phase === "reveal" ? 4 : ph.phase === "grow" ? em.stage : 3;
-        const cells = em.cells + (ph.phase === "grow" ? 0 : Math.floor(Math.random() * 40));
-        const act = ph.phase === "anomaly" && k < 0.45 ? 0 : em.activity + (Math.random() - 0.5) * 0.08;
-        setReadout(`STAGE ${STAGE_NAMES[stg]} · CELLS ${cells} · ACTIVITY ${act.toFixed(2)} · ${Math.round(300 + em.growth * 40 + (k > 0.2 && k < 0.9 ? 60 : 0))}K`);
-      }
-      raf = requestAnimationFrame(draw);
-    };
-    raf = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("pointermove", onMove); };
-  }, []);
-  const interest = embryo ? Math.min(1, embryo.progress) : 0;
-  const mood = phase === "anomaly" ? "alarmed" : phase === "cocoon" ? "intent" : phase === "reveal" ? "satisfied" : "watch";
-  return (
-    <div className={`lab-vat ${alarm ? "lab-vat-alarm" : ""}`} data-phase={phase}>
-      <canvas ref={ref} className="lab-vat-canvas" aria-hidden="true" />
-      <LabScientist mood={mood} interest={interest} pulse={pulse} />
-      <div className="mono lab-vat-label">{label}</div>
-      <div className="mono lab-vat-read">{embryo ? (alarm ? "\u25B2 UNCLASSIFIED EVENT \u00b7 NO MATCHING RECORD" : readout) : specimenReadout(traits)}</div>
-    </div>
-  );
-}
-
-// ─────────── the observer ───────────
-// Lab Scientist Ixxen (Update 5.59): small, thin, a little too still. It
-// doesn't talk. It watches the vat, makes notes, adjusts the dials, leans
-// closer as the thing in the tank grows - and when something happens that
-// shouldn't, it steps back. Not a mascot. Original to 13i.
-const ACTIONS = ["note", "adjust", "peer", "note", "tilt"];
-export function LabScientist({ mood = "watch", interest = 0, pulse = 0 }) {
-  const [action, setAction] = useState("watch");
-  useEffect(() => {
-    if (!pulse) return;
-    const a = ACTIONS[pulse % ACTIONS.length];
-    setAction(a);
-    const id = setTimeout(() => setAction("watch"), 1900);
-    return () => clearTimeout(id);
-  }, [pulse]);
-  const lean = mood === "alarmed" ? -10 : mood === "intent" ? 9 : 2 + interest * 8;
-  return (
-    <div className={`lab-sci lab-sci-${mood} lab-sci-do-${action}`} style={{ "--lean": `${lean}deg` }} aria-hidden="true">
-      <svg viewBox="0 0 80 140">
-        <defs>
-          <linearGradient id="ixx-skin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#9AA3C8" /><stop offset="1" stopColor="#3B3F66" /></linearGradient>
-        </defs>
-        {/* legs: too many joints */}
-        <path d="M34 104 L30 118 L34 138 M46 104 L50 118 L46 138" fill="none" stroke="#2A2D55" strokeWidth="3" strokeLinecap="round" />
-        <g className="lab-sci-body">
-          {/* the coat: long, narrow, with instruments clipped on */}
-          <path d="M28 56 Q24 84 26 108 L54 108 Q56 84 52 56 Q40 50 28 56 Z" fill="#14163A" stroke="#4A4F80" strokeWidth="1" />
-          <path d="M40 56 V106" stroke="#4A4F80" strokeWidth="0.8" />
-          <rect x="44" y="66" width="6" height="9" rx="1" fill="#0A0B1C" stroke="#6FC3A8" strokeWidth="0.6" />
-          <circle cx="47" cy="70" r="1.2" fill="#6FC3A8" className="lab-sci-led" />
-          {/* the near arm, holding the slate */}
-          <g className="lab-sci-arm-slate">
-            <path d="M30 60 Q22 76 30 86" fill="none" stroke="url(#ixx-skin)" strokeWidth="3" strokeLinecap="round" />
-            <rect x="26" y="82" width="14" height="10" rx="1.5" fill="#0C0E28" stroke="#8B95F6" strokeWidth="0.8" transform="rotate(-12 33 87)" />
-            <path className="lab-sci-writing" d="M29 86 h7 M29 89 h5" stroke="#8B95F6" strokeWidth="0.7" transform="rotate(-12 33 87)" />
-          </g>
-          {/* the far arm, long fingers reaching for the tank */}
-          <g className="lab-sci-arm-reach">
-            <path d="M50 60 Q64 66 70 78" fill="none" stroke="url(#ixx-skin)" strokeWidth="3" strokeLinecap="round" />
-            <path d="M70 78 l6 2 M70 78 l5 5 M70 78 l2 6" stroke="#9AA3C8" strokeWidth="1.3" strokeLinecap="round" />
-          </g>
-          {/* the head: long, tilted, one vertical eye and two small ones */}
-          <g className="lab-sci-head">
-            <path d="M40 10 C52 10 56 26 54 38 C52 48 46 54 40 54 C34 54 28 48 26 38 C24 26 28 10 40 10 Z" fill="url(#ixx-skin)" />
-            <path d="M33 16 Q40 6 47 16" fill="none" stroke="#2A2D55" strokeWidth="1" />
-            <ellipse className="lab-sci-eye" cx="42" cy="32" rx="3" ry="8" fill="#05040F" />
-            <ellipse className="lab-sci-iris" cx="42.6" cy="31" rx="1.1" ry="3.5" fill="#E9D29A" />
-            <circle cx="34" cy="26" r="1.6" fill="#05040F" /><circle cx="50" cy="26" r="1.3" fill="#05040F" />
-            <path d="M36 46 Q41 48 46 46" fill="none" stroke="#2A2D55" strokeWidth="1" />
-            {/* a loupe over the eye when it peers */}
-            <circle className="lab-sci-loupe" cx="42" cy="32" r="7" fill="none" stroke="#C9B98F" strokeWidth="1.4" />
-          </g>
-        </g>
-      </svg>
-      <div className="mono lab-sci-name">IXXEN &middot; OBSERVER</div>
-    </div>
-  );
-}
 
 // ─────────── the crew ───────────
 const GLYPHS = "⟡⌬⏃⍜⟁◬⋔⏚⌖⟟⍙⏁⎎";
@@ -276,46 +44,159 @@ const WOW = [["ilu", "Oh. OH. Qeth, come and look at this one."], ["qeth", "...U
 
 export function crewLine(stage, { questionId, answered, big, n = 0 }) {
   if (stage === "points") return ["qeth", "The allotment. Every specimen gets the same budget. The Continuance Rule does not grade on effort."];
-  if (stage === "sheet") return ["ilu", "It's done! It's alive! Well. It's a record. Records are a kind of alive. Now give it a name."];
-  if (stage === "saved") return ["qeth", "Filed. Send it to 13i for review, guest. 13i always has an opinion."];
+  if (stage === "sheet") return ["ilu", "It's ready! Name it, then press Generate - Ixxen will bring it all the way to life. Then we send it to 13i."];
+  if (stage === "saved") return ["qeth", "Filed and transmitted. 13i always has an opinion. Wait for it."];
   if (answered) return big ? WOW[n % WOW.length] : REACT[n % REACT.length];
   return INTRO[questionId] || ["qeth", "Continue."];
 }
 
-// the two of them, drawn in code
+// the two of them, drawn in code (Update 5.63: much more of them)
+// Qeth: the Overseer - tall, robed, four thin arms, three eyes, a crown of
+// lit filaments. Ilu: the Technician - a floating orb with one great eye,
+// two antennae and seven tentacles, one of which is always holding a tool.
 function Qeth({ talking }) {
   return (
-    <svg viewBox="0 0 90 120" className={`lab-alien ${talking ? "lab-alien-talk" : ""}`} aria-hidden="true">
-      <defs><radialGradient id="qeth-g" cx="0.4" cy="0.3"><stop offset="0" stopColor="#6FC3A8" /><stop offset="1" stopColor="#1e4a40" /></radialGradient></defs>
-      <path d="M30 118 Q28 80 34 62 L56 62 Q62 80 60 118 Z" fill="#14163A" stroke="#3A3E75" />
-      <path d="M38 70 L52 70 M36 82 L54 82 M35 94 L55 94" stroke="#6FC3A8" strokeWidth="1" opacity="0.5" />
-      <ellipse cx="45" cy="38" rx="20" ry="26" fill="url(#qeth-g)" stroke="#6FC3A8" strokeWidth="1.2" />
-      <path d="M30 18 Q45 -4 60 18" fill="none" stroke="#E9D29A" strokeWidth="2" />
-      <path d="M36 14 L33 4 M45 11 L45 0 M54 14 L57 4" stroke="#E9D29A" strokeWidth="1.5" strokeLinecap="round" />
-      <g className="lab-blink">
-        <ellipse cx="37" cy="34" rx="4.5" ry="5.5" fill="#0A0B1C" /><circle cx="38" cy="33" r="1.8" fill="#FFF4DC" />
-        <ellipse cx="53" cy="34" rx="4.5" ry="5.5" fill="#0A0B1C" /><circle cx="54" cy="33" r="1.8" fill="#FFF4DC" />
-        <ellipse cx="45" cy="24" rx="3" ry="3.6" fill="#0A0B1C" /><circle cx="45.5" cy="23.5" r="1.2" fill="#E9D29A" />
+    <svg viewBox="0 -10 120 160" className={`lab-alien lab-qeth ${talking ? "lab-alien-talk" : ""}`} aria-hidden="true">
+      <defs>
+        <radialGradient id="qeth-aura" cx="0.5" cy="0.4" r="0.55"><stop offset="0" stopColor="#6FC3A8" stopOpacity="0.45" /><stop offset="1" stopColor="#6FC3A8" stopOpacity="0" /></radialGradient>
+        <radialGradient id="qeth-skin" cx="0.38" cy="0.3" r="0.8"><stop offset="0" stopColor="#9BF0D2" /><stop offset="0.45" stopColor="#3E9C82" /><stop offset="1" stopColor="#123A33" /></radialGradient>
+        <linearGradient id="qeth-robe" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#24305E" /><stop offset="0.6" stopColor="#141A3E" /><stop offset="1" stopColor="#0A0D24" /></linearGradient>
+        <radialGradient id="qeth-iris" cx="0.4" cy="0.35"><stop offset="0" stopColor="#FFF4DC" /><stop offset="0.5" stopColor="#E9D29A" /><stop offset="1" stopColor="#8A5A1C" /></radialGradient>
+        <radialGradient id="qeth-orb" cx="0.35" cy="0.3"><stop offset="0" stopColor="#FFFFFF" /><stop offset="0.4" stopColor="#8FE6FF" /><stop offset="1" stopColor="#1F4A7A" /></radialGradient>
+        <filter id="qeth-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.6" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+      </defs>
+      <ellipse className="lab-aura" cx="60" cy="62" rx="56" ry="62" fill="url(#qeth-aura)" />
+      <g className="lab-breathe">
+        {/* robe, with gold trim and embroidery */}
+        <path d="M34 150 Q30 104 40 82 Q60 74 80 82 Q90 104 86 150 Z" fill="url(#qeth-robe)" stroke="#3E4890" strokeWidth="1" />
+        <path d="M60 80 L60 150" stroke="#C9B98F" strokeWidth="1.2" opacity="0.8" />
+        <path d="M40 84 Q60 92 80 84" fill="none" stroke="#C9B98F" strokeWidth="1.6" />
+        <g stroke="#6FC3A8" strokeWidth="0.8" fill="none" opacity="0.7" className="lab-glyphs">
+          <path d="M48 104 l4 -4 l4 4 l-4 4 Z M64 104 l4 -4 l4 4 l-4 4 Z" />
+          <path d="M47 120 h10 M63 120 h10 M52 116 v8 M68 116 v8" />
+          <circle cx="52" cy="136" r="3" /><circle cx="68" cy="136" r="3" />
+        </g>
+        {/* pauldrons with crystals */}
+        <path d="M34 90 Q36 78 48 78 L50 86 Q40 86 34 90 Z M86 90 Q84 78 72 78 L70 86 Q80 86 86 90 Z" fill="#2A3470" stroke="#C9B98F" strokeWidth="0.8" />
+        <path d="M40 80 l2 -7 l2 7 Z M78 80 l2 -7 l2 7 Z" fill="#8FE6FF" filter="url(#qeth-glow)" className="lab-twinkle" />
+        {/* the lower arms, folded, holding a lit orb */}
+        <path d="M44 92 Q40 104 52 108 M76 92 Q80 104 68 108" fill="none" stroke="#3E9C82" strokeWidth="3" strokeLinecap="round" />
+        <path d="M52 108 l3 -1 M52 108 l3 1.5 M68 108 l-3 -1 M68 108 l-3 1.5" stroke="#9BF0D2" strokeWidth="1.2" strokeLinecap="round" />
+        <circle cx="60" cy="106" r="6" fill="url(#qeth-orb)" filter="url(#qeth-glow)" className="lab-orb" />
+        {/* the upper arms: one gestures when it speaks */}
+        <g className="lab-qeth-gesture">
+          <path d="M38 86 Q22 92 20 110" fill="none" stroke="#3E9C82" strokeWidth="2.6" strokeLinecap="round" />
+          <path d="M20 110 l-3 5 M20 110 l0 6 M20 110 l3 5" stroke="#9BF0D2" strokeWidth="1.2" strokeLinecap="round" />
+        </g>
+        <path d="M82 86 Q98 92 100 110" fill="none" stroke="#3E9C82" strokeWidth="2.6" strokeLinecap="round" />
+        <path d="M100 110 l-3 5 M100 110 l0 6 M100 110 l3 5" stroke="#9BF0D2" strokeWidth="1.2" strokeLinecap="round" />
+        {/* the collar ring and its gem */}
+        <ellipse cx="60" cy="78" rx="13" ry="4" fill="#1A2048" stroke="#C9B98F" strokeWidth="1.2" />
+        <circle cx="60" cy="80" r="2.4" fill="#E8B4C8" filter="url(#qeth-glow)" className="lab-twinkle" />
+        {/* the head */}
+        <g className="lab-head-sway">
+          <path d="M60 6 C76 6 84 22 82 40 C80 58 70 72 60 72 C50 72 40 58 38 40 C36 22 44 6 60 6 Z" fill="url(#qeth-skin)" stroke="#6FC3A8" strokeWidth="1" />
+          {/* veins and cheek lights */}
+          <path d="M46 30 Q50 44 47 56 M74 30 Q70 44 73 56 M60 12 L60 24" fill="none" stroke="#123A33" strokeWidth="0.8" opacity="0.6" />
+          {[[44, 48], [45, 53], [47, 58], [76, 48], [75, 53], [73, 58]].map(([x, y], i) => (
+            <circle key={i} cx={x} cy={y} r="1.1" fill="#8FE6FF" className="lab-freckle" style={{ animationDelay: `${i * 0.25}s` }} />
+          ))}
+          {/* crown of filaments with lit tips */}
+          <g className="lab-crown">
+            {[[-18, 18], [-10, 9], [0, 4], [10, 9], [18, 18]].map(([dx, top], i) => (
+              <g key={i} className="lab-filament" style={{ animationDelay: `${i * 0.3}s`, transformOrigin: `${60 + dx * 0.5}px 14px` }}>
+                <path d={`M${60 + dx * 0.5} 14 Q${60 + dx * 0.9} ${top + 4} ${60 + dx} ${top - 8}`} fill="none" stroke="#E9D29A" strokeWidth="1.4" strokeLinecap="round" />
+                <circle cx={60 + dx} cy={top - 8} r="2" fill="#FFF4DC" filter="url(#qeth-glow)" />
+              </g>
+            ))}
+          </g>
+          {/* three eyes */}
+          <g className="lab-blink">
+            <path d="M43 38 Q50 31 56 38 Q50 45 43 38 Z" fill="#05040F" />
+            <path d="M64 38 Q70 31 77 38 Q70 45 64 38 Z" fill="#05040F" />
+            <g className="lab-look">
+              <circle cx="50" cy="38" r="3.2" fill="url(#qeth-iris)" /><ellipse cx="50" cy="38" rx="0.9" ry="2.4" fill="#05040F" />
+              <circle cx="70" cy="38" r="3.2" fill="url(#qeth-iris)" /><ellipse cx="70" cy="38" rx="0.9" ry="2.4" fill="#05040F" />
+            </g>
+            <circle cx="48.8" cy="36.6" r="0.9" fill="#fff" /><circle cx="68.8" cy="36.6" r="0.9" fill="#fff" />
+            <ellipse cx="60" cy="25" rx="3" ry="4" fill="#05040F" />
+            <ellipse cx="60" cy="25.4" rx="1.8" ry="2.6" fill="url(#qeth-iris)" />
+            <circle cx="59.4" cy="24.2" r="0.6" fill="#fff" />
+          </g>
+          {/* nostrils and mouth */}
+          <path d="M57.5 50 l0.8 2.4 M62.5 50 l-0.8 2.4" stroke="#123A33" strokeWidth="0.9" strokeLinecap="round" />
+          <path className="lab-mouth" d="M53 60 Q60 64 67 60" fill="#0A1A18" stroke="#0A1A18" strokeWidth="1.4" strokeLinecap="round" />
+          {/* light from above */}
+          <ellipse cx="52" cy="16" rx="9" ry="4" fill="#ffffff" opacity="0.18" />
+        </g>
       </g>
-      <path className="lab-mouth" d="M39 50 Q45 54 51 50" fill="none" stroke="#0A0B1C" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M34 66 Q20 74 22 92 M56 66 Q70 74 68 92" fill="none" stroke="#6FC3A8" strokeWidth="2.5" strokeLinecap="round" />
     </svg>
   );
 }
 function Ilu({ talking }) {
   return (
-    <svg viewBox="0 0 90 120" className={`lab-alien lab-alien-ilu ${talking ? "lab-alien-talk" : ""}`} aria-hidden="true">
-      <defs><radialGradient id="ilu-g" cx="0.4" cy="0.35"><stop offset="0" stopColor="#E8B4C8" /><stop offset="1" stopColor="#6a3a5a" /></radialGradient></defs>
-      {[0, 1, 2, 3, 4].map((i) => (
-        <path key={i} className="lab-tentacle" style={{ animationDelay: `${i * 0.2}s` }} d={`M${32 + i * 6.5} 96 Q${28 + i * 8} 108 ${30 + i * 7} 118`} fill="none" stroke="#E8B4C8" strokeWidth="3" strokeLinecap="round" />
-      ))}
-      <circle cx="45" cy="74" r="25" fill="url(#ilu-g)" stroke="#E8B4C8" strokeWidth="1.2" />
-      <g className="lab-blink">
-        <circle cx="45" cy="70" r="10" fill="#0A0B1C" stroke="#E8B4C8" />
-        <circle cx="47" cy="68" r="4" fill="#FFF4DC" />
+    <svg viewBox="0 0 120 150" className={`lab-alien lab-ilu ${talking ? "lab-alien-talk" : ""}`} aria-hidden="true">
+      <defs>
+        <radialGradient id="ilu-body" cx="0.36" cy="0.3" r="0.8"><stop offset="0" stopColor="#FFD8E8" /><stop offset="0.35" stopColor="#E89AC0" /><stop offset="0.75" stopColor="#8A3E6E" /><stop offset="1" stopColor="#3A1430" /></radialGradient>
+        <radialGradient id="ilu-iris" cx="0.5" cy="0.5"><stop offset="0" stopColor="#0A0B1C" /><stop offset="0.28" stopColor="#0A0B1C" /><stop offset="0.32" stopColor="#8FE6FF" /><stop offset="0.7" stopColor="#4A6AE8" /><stop offset="1" stopColor="#2A1A6A" /></radialGradient>
+        <radialGradient id="ilu-hover" cx="0.5" cy="0.5"><stop offset="0" stopColor="#8FE6FF" stopOpacity="0.7" /><stop offset="1" stopColor="#8FE6FF" stopOpacity="0" /></radialGradient>
+        <filter id="ilu-glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="1.5" result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>
+      </defs>
+      <ellipse className="lab-hover" cx="60" cy="140" rx="30" ry="6" fill="url(#ilu-hover)" />
+      <g className="lab-bob">
+        {/* seven tentacles, the middle one holding a tool */}
+        {[0, 1, 2, 3, 4, 5, 6].map((i) => {
+          const x = 36 + i * 8;
+          const d = `M${x} 92 Q${x - 6 + i * 2} 112 ${x - 2 + i} 128 Q${x + 2} 136 ${x - 4 + i * 1.5} 140`;
+          return (
+            <g key={i} className="lab-tentacle" style={{ animationDelay: `${i * 0.18}s`, transformOrigin: `${x}px 92px` }}>
+              <path d={d} fill="none" stroke="#B85A8E" strokeWidth={5 - Math.abs(i - 3) * 0.6} strokeLinecap="round" />
+              <path d={d} fill="none" stroke="#F5C2DA" strokeWidth="1.2" strokeLinecap="round" strokeDasharray="1.5 4" opacity="0.8" />
+              <circle cx={x - 4 + i * 1.5} cy="140" r="1.6" fill="#8FE6FF" filter="url(#ilu-glow)" className="lab-twinkle" style={{ animationDelay: `${i * 0.3}s` }} />
+            </g>
+          );
+        })}
+        <g className="lab-tool">
+          <path d="M88 108 Q102 104 104 94" fill="none" stroke="#B85A8E" strokeWidth="3.4" strokeLinecap="round" />
+          <path d="M104 94 l3 -6 M101 92 l6 3" stroke="#C9B98F" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="106" cy="89" r="2.2" fill="none" stroke="#C9B98F" strokeWidth="1.4" />
+        </g>
+        {/* the orb */}
+        <circle cx="60" cy="70" r="32" fill="url(#ilu-body)" stroke="#F5C2DA" strokeWidth="1" />
+        {/* spots */}
+        {[[36, 60, 2.2], [40, 82, 1.6], [82, 58, 2], [84, 80, 2.4], [48, 94, 1.4], [74, 94, 1.6], [60, 42, 1.4]].map(([x, y, r], i) => (
+          <circle key={i} cx={x} cy={y} r={r} fill="#5A1E48" opacity="0.6" />
+        ))}
+        {[[34, 70], [86, 70], [60, 100]].map(([x, y], i) => (
+          <circle key={i} cx={x} cy={y} r="1.3" fill="#8FE6FF" filter="url(#ilu-glow)" className="lab-freckle" style={{ animationDelay: `${i * 0.4}s` }} />
+        ))}
+        {/* the great eye */}
+        <g className="lab-blink" style={{ transformOrigin: "60px 66px" }}>
+          <circle cx="60" cy="66" r="15" fill="#FFF4F8" stroke="#5A1E48" strokeWidth="1.6" />
+          <g className="lab-look">
+            <circle cx="61" cy="66" r="10" fill="url(#ilu-iris)" />
+            {Array.from({ length: 12 }, (_, k) => {
+              const a = (k / 12) * Math.PI * 2;
+              return <path key={k} d={`M${61 + Math.cos(a) * 4} ${66 + Math.sin(a) * 4} L${61 + Math.cos(a) * 9} ${66 + Math.sin(a) * 9}`} stroke="#B9F0FF" strokeWidth="0.5" opacity="0.6" />;
+            })}
+            <circle cx="61" cy="66" r="3.4" fill="#05040F" className="lab-pupil" />
+          </g>
+          <circle cx="57" cy="62" r="2.4" fill="#fff" /><circle cx="64" cy="70" r="1" fill="#fff" opacity="0.8" />
+        </g>
+        {/* two small eyes */}
+        <circle cx="42" cy="54" r="2.6" fill="#05040F" /><circle cx="42.6" cy="53.4" r="0.9" fill="#E9D29A" />
+        <circle cx="79" cy="52" r="2.2" fill="#05040F" /><circle cx="79.5" cy="51.4" r="0.8" fill="#E9D29A" />
+        {/* mouth */}
+        <path className="lab-mouth" d="M52 88 Q60 93 68 88" fill="#2A0A20" stroke="#2A0A20" strokeWidth="1.6" strokeLinecap="round" />
+        {/* antennae */}
+        <path d="M54 39 Q50 24 40 18" fill="none" stroke="#E89AC0" strokeWidth="1.6" strokeLinecap="round" />
+        <circle cx="40" cy="18" r="3" fill="#8FE6FF" filter="url(#ilu-glow)" className="lab-antenna" />
+        <path d="M66 39 Q72 26 84 22" fill="none" stroke="#E89AC0" strokeWidth="1.4" strokeLinecap="round" />
+        <circle cx="84" cy="22" r="2.4" fill="#E9D29A" filter="url(#ilu-glow)" className="lab-antenna" style={{ animationDelay: "0.7s" }} />
+        {/* gloss */}
+        <ellipse cx="46" cy="50" rx="10" ry="6" fill="#ffffff" opacity="0.32" transform="rotate(-30 46 50)" />
+        <path d="M86 84 Q90 70 86 56" fill="none" stroke="#8FE6FF" strokeWidth="1.2" opacity="0.5" />
       </g>
-      <path className="lab-mouth" d="M38 88 Q45 92 52 88" fill="none" stroke="#0A0B1C" strokeWidth="1.8" strokeLinecap="round" />
-      <path d="M45 49 Q48 38 56 36" fill="none" stroke="#E8B4C8" strokeWidth="1.5" /><circle cx="57" cy="35.5" r="2.6" fill="#8FE6FF" className="lab-antenna" />
     </svg>
   );
 }

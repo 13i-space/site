@@ -4,6 +4,15 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.63 (optional SQL docs/v5.63-solid-portraits.sql, for repainting
+  old portraits): the Alien Lab rebuilt - live lab scene with a six-armed
+  Ixxen (components/LabScene.js), a visible transformation while the
+  species is drawn, detailed Qeth and Ilu, the card preview as a live feed
+  of the tank, Submit to 13i = save + assessment, gallery newest-first with
+  ?new=<id> leading, side-4 vanishing fix, solid-colour portraits with a
+  line-art switch and a Sentinel-only repaint. Tested locally with a stand-in
+  portrait (no API in the cloud session): check one real generation and one
+  real repaint on the first deploy.
 - Update 5.62 (no SQL): songs fixed and the first extended remix. All 36
   songs and the album covers were on the old Tempo Goat WordPress site and
   vanished when the new tempogoatstudios.com replaced it (Oct 7). They now
