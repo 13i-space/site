@@ -4,6 +4,12 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.65 (no SQL): Signal Composer v2, the Alien DJ Controller
+  (components/AlienDeck.js + components/deck/*, lib/deck/*). Tested in a
+  cloud browser: playback, sync, transitions, pads in all four modes, drops,
+  brake, beat FX, studio edits, every style rendered to WAV in both
+  tunings (no clipping). Listen on real speakers on the first deploy - the
+  mix balance is tuned by measurement, not by ear.
 - Update 5.64 (no SQL): Lab order (questions -> points -> its look + free
   description -> name -> generate), Randomize / All to zero, name required,
   scroll to the lab, lab sounds, steady phone bubble, side-4 roaming
