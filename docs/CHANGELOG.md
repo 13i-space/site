@@ -3,6 +3,48 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.63 — The Alien Lab comes alive (Oct 2026)
+Optional SQL: docs/v5.63-solid-portraits.sql (only needed to repaint the
+existing Kin portraits; everything else works without it).
+- **The lab** (components/LabScene.js): one live canvas replaces the plain
+  tank and the small Ixxen. Shelves of older specimens, ceiling pipes, a
+  beacon, a genome screen, the tank with its cap, base, charge coils, a
+  ceiling injector and a feed pipe from a reservoir; a console with three
+  levers, two dials, six buttons, a valve wheel, a vial rack and a holo
+  screen. **Ixxen**, full size with six arms, works it: every answer runs a
+  routine (lever 1 = feed pump, lever 2 = injector into the tank, lever 3
+  = scan; dials move the reservoir gauges; tap the glass = ripples; pour a
+  vial = drops into the tank), big answers run everything, the attribute
+  sliders turn the dials, and between answers the arms keep busy. Optional
+  sounds use lib/alienSound.js (answers only, never the idle work).
+- **The transformation**: while a portrait is drawn (1-2 min) the embryo
+  swells, splits and dissolves, other bodies it could have been flicker
+  through, the new form grows in glitching, the coils arc into the tank and
+  Ixxen works flat out. Then a flash, shards, and the species - out of its
+  backdrop - in the tank. The anomaly is unchanged in what it shows.
+- **Qeth and Ilu**: redrawn in detail (Qeth: robe, four arms, a lit orb,
+  three eyes, a crown of lit filaments; Ilu: glossy orb, great eye, two
+  antennae, seven tentacles, a tool), animated.
+- **The card preview matches the tank**: until the reveal it shows a live
+  feed of the tank (lib/labMirror.js, components/LabFeed.js).
+- **One step fewer**: "Submit to 13i" saves the species and asks 13i for
+  its assessment at once; then "See it in Aliens of the Galaxy"
+  (/galaxy/aliens?new=<id>: it's first, lit, scrolled to) or test it in the
+  Survival Trials.
+- **Aliens of the Galaxy**: every species - Archive and Kin - in one order,
+  newest first.
+- **Side 4 fix**: the creature was screen-blended over its world with its
+  own dark backdrop still in it, so faint portraits (the Novaucians)
+  appeared for a moment and vanished once the bright sky drew. Now the
+  backdrop comes out (lib/portraitArt.js creatureOnly) and the creature sits
+  on its world as it is.
+- **Solid colour**: new portraits are painted in solid, opaque colour (the
+  prompt in app/api/alien). The Archive species have solid versions, with
+  the originals kept. Sentinel-X sees a "Repaint in solid colour" panel on
+  Aliens of the Galaxy: Claude repaints each Kin portrait (same drawing,
+  new paint) and keeps the original in portrait_line_svg. A
+  "Solid colour / Original line art" switch on the gallery compares them.
+
 ## Update 5.62 — The songs come home, and the first extended remix (Oct 2026)
 No SQL.
 - **Why every song stopped**: the 36 songs and three album covers were

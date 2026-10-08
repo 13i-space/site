@@ -30,7 +30,8 @@ const BIG_ANSWERS = new Set([
 import { STAT_GROUPS, evenStats, groupTotal } from "../lib/alienStats";
 import AlienCard from "./AlienCard";
 import StatRadar from "./StatRadar";
-import { LabVat, LabCrew, crewLine } from "./AlienLab";
+import { LabCrew, crewLine } from "./AlienLab";
+import LabScene from "./LabScene";
 import { specimenTraits } from "../lib/specimen";
 import { embryoState } from "../lib/embryo";
 
@@ -53,6 +54,8 @@ export default function AlienCreator({ loggedIn }) {
   const [savedId, setSavedId] = useState(null);
   // the lab (Update 5.55): the vat scans on every answer, the crew talk
   const [pulse, setPulse] = useState(0);
+  const [nudge, setNudge] = useState(0); // small jobs for Ixxen (the sliders)
+  const [bigAnswer, setBigAnswer] = useState(false);
   const [crew, setCrew] = useState(["qeth", "Welcome to the bay, guest. Answer as you go. The vat does the rest."]);
   const reacted = useRef(0);
   const [review, setReview] = useState(null);
@@ -106,18 +109,18 @@ export default function AlienCreator({ loggedIn }) {
       </div>
       <LabCrew line={crew} />
       <div className="lab-grid">
-        <LabVat traits={traits} pulse={pulse} label={vatLabel} embryo={embryo} phase={labPhase} portrait={labPhase === "reveal" ? portrait : null} />
+        <LabScene traits={traits} pulse={pulse} nudge={nudge} big={bigAnswer} label={vatLabel} embryo={embryo} phase={labPhase} portrait={labPhase === "reveal" ? portrait : null} />
         <div className="lab-console">{panel}</div>
       </div>
     </div>
   );
 
   // 13i's full assessment of the saved species (shows on the card's third side)
-  const askReview = async () => {
-    if (!savedId) return;
+  const askReview = async (id = savedId) => {
+    if (!id) return;
     setReviewStatus("waiting");
     try {
-      const res = await fetch("/api/alien", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "review", speciesId: savedId }) });
+      const res = await fetch("/api/alien", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "review", speciesId: id }) });
       const data = await res.json();
       if (!data.review) throw new Error(data.error || "No assessment came back. Try again.");
       setReview(data.review);
@@ -138,6 +141,7 @@ export default function AlienCreator({ loggedIn }) {
       lyraLookAt(r.left + r.width / 2, r.top + r.height / 2, 1100);
     }
     lyraReact(BIG_ANSWERS.has(option) ? "wow" : "notice");
+    setBigAnswer(BIG_ANSWERS.has(option));
     setPulse((n) => n + 1);
     reacted.current += 1;
     setCrew(crewLine("question", { answered: true, big: BIG_ANSWERS.has(option), n: reacted.current }));
@@ -151,6 +155,7 @@ export default function AlienCreator({ loggedIn }) {
 
   const submitOther = () => {
     if (!otherText[current.id]?.trim()) return;
+    setBigAnswer(true);
     setPulse((n) => n + 1);
     setCrew(["ilu", "A write-in! The vat will improvise."]);
     setStep((s) => s + 1);
@@ -283,6 +288,9 @@ export default function AlienCreator({ loggedIn }) {
       setSavedId(saved?.id || null);
       setSaveStatus("done");
       setLabPhase("reveal");
+      // Update 5.63: saving IS submitting - 13i's assessment follows at once
+      setCrew(["qeth", "Transmitted. 13i is reading it now. Nobody speak."]);
+      if (saved?.id) askReview(saved.id);
     } catch (e) {
       setError(e.message);
       setSaveStatus("idle");
@@ -347,9 +355,10 @@ export default function AlienCreator({ loggedIn }) {
           <div style={{ textAlign: "center" }}>
             <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>YOUR CARD &middot; FOUR SIDES &middot; TAP TO TURN</div>
             <AlienCard
-              species={{ id: null, name: speciesName.trim() || "Unnamed species", answers: sheetAnswers(), portrait_svg: portraitStatus === "drawing" ? null : portrait, stats, review, created_at: new Date().toISOString() }}
+              species={{ id: null, name: speciesName.trim() || "Unnamed species", answers: sheetAnswers(), portrait_svg: labPhase === "reveal" ? portrait : null, stats, review, created_at: new Date().toISOString() }}
               creator="you"
               width={230}
+              live
             />
           </div>
           {saveStatus !== "done" && (
@@ -370,32 +379,44 @@ export default function AlienCreator({ loggedIn }) {
 
         {saveStatus === "done" ? (
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#8B95F6", margin: "0 0 14px" }}>
-              Saved to your Node and added to <a href="/galaxy/aliens">Aliens of the Galaxy</a>.
-            </p>
-            {savedId && !review && (
-              <button onClick={askReview} disabled={reviewStatus === "waiting"} className="mono" style={{ ...btnStyle, borderColor: "#6B5E3E", color: "#E8CFC0" }}>
-                {reviewStatus === "waiting" ? "13i is assessing it..." : "Ask 13i for its assessment"}
-              </button>
-            )}
-            {review && <p className="mono" style={{ fontSize: 11, color: "#6FC3A8", margin: "4px 0 10px" }}>13i&rsquo;s assessment is on the card&rsquo;s third side.</p>}
+            <div className="lab-sent">
+              <div className="mono lab-sent-kicker">{reviewStatus === "waiting" ? "TRANSMITTED \u00b7 13i IS ASSESSING" : review ? "13i HAS SPOKEN" : "TRANSMITTED TO 13i"}</div>
+              {reviewStatus === "waiting" && <div className="lab-sent-wait"><span /><span /><span /></div>}
+              {review && (
+                <p className="lab-sent-review">
+                  <span className="mono" style={{ color: { granted: "#6FC3A8", observation: "#E9D29A", not_yet: "#C97B6E" }[review.verdict] || "#B9C0FF" }}>
+                    {{ granted: "CONTINUANCE GRANTED", observation: "UNDER OBSERVATION", not_yet: "NOT YET" }[review.verdict] || "REVIEWED"}
+                  </span>
+                  <br />{review.learned || "Its full assessment is on the card's third side."}
+                </p>
+              )}
+              {error && reviewStatus === "error" && (
+                <p className="mono" style={{ fontSize: 11, color: "#C97B6E", margin: "6px 0" }}>
+                  {error} <button onClick={() => askReview()} className="mono" style={{ background: "none", border: "none", color: "#B9C0FF", cursor: "pointer", textDecoration: "underline" }}>try again</button>
+                </p>
+              )}
+            </div>
             {savedId && (
               <div className="lab-next">
-                <p className="lab-next-line">Your species has entered the Galaxy.<br /><em>Now we find out if it can survive.</em></p>
-                <a href={`/galaxy/aliens/trials?species=${savedId}`} className="lab-next-primary">Send it into the Survival Trials &rarr;</a>
+                <p className="lab-next-line">Your species has entered the Galaxy.<br /><em>Go and meet it - then see if it can survive.</em></p>
+                <a href={`/galaxy/aliens?new=${savedId}`} className="lab-next-primary">See it in Aliens of the Galaxy &rarr;</a>
+                <a href={`/galaxy/aliens/trials?species=${savedId}`} className="lab-next-second">Test it in the Survival Trials</a>
                 <div className="lab-next-more">
                   <a href={`/galaxy/aliens/${savedId}`} className="mono">open its page</a>
                   <a href={`/galaxy/map?species=${savedId}`} className="mono">see it on the map</a>
                 </div>
               </div>
             )}
-            {error && reviewStatus === "error" && <p className="mono" style={{ fontSize: 11, color: "#C97B6E" }}>{error}</p>}
           </div>
         ) : (
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-            <button onClick={save} disabled={saveStatus === "loading"} style={btnStyle}>
-              {saveStatus === "loading" ? "Saving..." : "Save this species"}
-            </button>
+            {loggedIn ? (
+              <button onClick={save} disabled={saveStatus === "loading" || portraitStatus === "drawing"} className="lab-submit">
+                {saveStatus === "loading" ? "Transmitting..." : "Submit to 13i \u2192"}
+              </button>
+            ) : (
+              <a href="/login?next=/create/alien-lab" className="lab-submit" style={{ textDecoration: "none" }}>Sign in to submit to 13i</a>
+            )}
             <button onClick={() => { setStep(0); setPortrait(null); setPortraitStatus("idle"); setStats(evenStats()); setLabPhase("grow"); }} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
               Start over
             </button>
@@ -415,6 +436,7 @@ export default function AlienCreator({ loggedIn }) {
   if (onPoints) {
     // Raising a stat can only spend what's left in its group.
     const setStat = (group, id, value) => {
+      setNudge((n) => n + 1);
       setStats((st) => {
         const others = groupTotal(st, group) - st[id];
         return { ...st, [id]: Math.max(0, Math.min(Math.round(value), group.pool - others)) };

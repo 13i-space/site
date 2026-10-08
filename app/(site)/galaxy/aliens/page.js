@@ -3,19 +3,33 @@ import { createClient } from "../../../../lib/supabaseServer";
 import AlienGallery from "../../../../components/AlienGallery";
 import { isAlpha } from "../../../../lib/alpha";
 import { ARCHIVE_SPECIES } from "../../../../lib/archiveSpecies";
+import { isSentinelUser } from "../../../../lib/sentinel";
 
 // Aliens of the Galaxy: every species built in the Alien Lab, newest first,
 // as collectible cards. Species are public (RLS "viewable by everyone").
+// Update 5.63: one order for everything - the Archive's species and every
+// Kin species together, by when they were made, newest first - and
+// ?new=<id> (where the Lab sends you after you submit) puts that species
+// first, lit, so you meet it straight away.
 export const dynamic = "force-dynamic";
 
 const LIMIT = 60;
 
-export default async function AliensOfTheGalaxy() {
+export default async function AliensOfTheGalaxy({ searchParams }) {
+  const fresh = typeof searchParams?.new === "string" ? searchParams.new : null;
   let species = [];
   let names = {};
   let alphas = {};
+  let sentinel = false;
   try {
     const supabase = await createClient();
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: me } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
+        sentinel = isSentinelUser(me?.username);
+      }
+    } catch (e) { sentinel = false; }
     // "*" so the optional portrait_svg and stats columns come along when present
     const { data } = await supabase
       .from("alien_species")
@@ -31,6 +45,17 @@ export default async function AliensOfTheGalaxy() {
     }
   } catch (e) {
     species = [];
+  }
+
+  // everything by when it was made, newest first; the one just made leads
+  const when = (sp) => new Date(sp.created_at || 0).getTime() || 0;
+  const ordered = [
+    ...Object.values(ARCHIVE_SPECIES).map((sp) => ({ ...sp, creator: "13i" })),
+    ...species.map((sp) => ({ ...sp, creator: names[sp.user_id], creatorAlpha: alphas[sp.user_id] })),
+  ].sort((a, b) => when(b) - when(a));
+  if (fresh) {
+    const i = ordered.findIndex((sp) => sp.id === fresh);
+    if (i > 0) ordered.unshift(ordered.splice(i, 1)[0]);
   }
 
   return (
@@ -63,12 +88,7 @@ export default async function AliensOfTheGalaxy() {
       </Link>
 
       {/* species 13i recorded in the Archive's stories come first, then every Kin species */}
-      <AlienGallery
-        species={[
-          ...Object.values(ARCHIVE_SPECIES).map((sp) => ({ ...sp, creator: "13i" })),
-          ...species.map((sp) => ({ ...sp, creator: names[sp.user_id], creatorAlpha: alphas[sp.user_id] })),
-        ]}
-      />
+      <AlienGallery species={ordered} highlight={fresh} canRepaint={sentinel} />
     </div>
   );
 }

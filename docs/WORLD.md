@@ -224,9 +224,14 @@ a second signal passes through from outside the tank, every eye-spot turns
 to the viewer, and the body briefly takes a shape no body should. Qeth says
 they saw nothing. 13i says nothing. Counted per browser (13i_anomalies) for
 the larger mystery to use later. Do not explain it without Paul.
-**Ixxen** is the Lab's silent observer: small, thin, one vertical eye and
-two small ones, a slate it writes on. More interested as the specimen grows;
-steps back at the anomaly. A Lab character, not 13i canon.
+**Ixxen** is the Lab's master (Update 5.63; before that a small, silent
+observer). It doesn't talk. A long swept-back head with lit frills, one
+vertical eye and two small ones, a loupe it swings over the big eye, a
+mantle full of instruments, and six arms - two with fingers, four
+tentacles - that never stop working the bay: levers, dials, buttons, the
+injector, the intake, the valve, the slate it writes everything on. Pulls
+back at the anomaly; works flat out while a species takes shape. A Lab
+character, not 13i canon.
 
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions

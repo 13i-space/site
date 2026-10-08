@@ -10,6 +10,8 @@ import { playFlip } from "../lib/cardSound";
 import StatRadar from "./StatRadar";
 import AlienHabitat from "./AlienHabitat";
 import SpecimenStill from "./SpecimenStill";
+import LabFeed from "./LabFeed";
+import { portraitSrc } from "../lib/portraitArt";
 import { assessmentFor } from "../lib/alienAssessment";
 
 // Update 5.55: the card has four sides now, and keeps turning the same way:
@@ -29,7 +31,7 @@ import { assessmentFor } from "../lib/alienAssessment";
 // onSelect: when given, a click selects the card (the gallery's compare
 // mode) instead of flipping it; `selected` highlights it.
 // creatorAlpha: the creator is an Alpha User (lib/alpha.js) - an α by their name.
-export default function AlienCard({ species, creator, creatorAlpha, width = 280, onSelect, selected }) {
+export default function AlienCard({ species, creator, creatorAlpha, width = 280, onSelect, selected, live = false, highlight = false }) {
   const [turns, setTurns] = useState(0); // every click turns the card half a revolution
   const side = turns % 4; // 0..3, the side showing
   const ci = continuanceIndex(species);
@@ -75,7 +77,7 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
   const frame = {
     padding: 7 * s,
     borderRadius: 14 * s,
-    boxShadow: selected ? "0 0 0 3px #E8CFC0, 0 10px 30px rgba(0,0,0,0.45)" : "0 10px 30px rgba(0,0,0,0.45)",
+    boxShadow: selected ? "0 0 0 3px #E8CFC0, 0 10px 30px rgba(0,0,0,0.45)" : highlight ? "0 0 0 2px #E9D29A, 0 0 34px rgba(233,210,154,0.45), 0 10px 30px rgba(0,0,0,0.45)" : "0 10px 30px rgba(0,0,0,0.45)",
     boxSizing: "border-box",
   };
   const inner = {
@@ -146,10 +148,12 @@ export default function AlienCard({ species, creator, creatorAlpha, width = 280,
             >
               {species.portrait_svg ? (
                 <img
-                  src={`data:image/svg+xml;charset=utf-8,${encodeURIComponent(species.portrait_svg)}`}
+                  src={portraitSrc(species.portrait_svg)}
                   alt={`Portrait of ${species.name}`}
                   style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", display: "block" }}
                 />
+              ) : live ? (
+                <LabFeed />
               ) : (
                 <SpecimenStill answers={species.answers} />
               )}

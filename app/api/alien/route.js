@@ -1,5 +1,7 @@
 import { recordClaudeUsage, foldStreamUsage } from "../../../lib/apiUsage";
 import { createClient } from "../../../lib/supabaseServer";
+import { getSupabaseAdmin } from "../../../lib/supabaseAdmin";
+import { isSentinelUser } from "../../../lib/sentinel";
 
 // The Alien Lab's Claude calls: suggest a name, draw a portrait, and write
 // 13i's Continuance Review of a saved species.
@@ -40,10 +42,11 @@ Given a species' traits, reply with one name for it and nothing else: one to thr
 const PORTRAIT_SYSTEM = `You are the illustrator for the Alien Lab on 13i.space, a science-fiction universe with a restrained, sophisticated look.
 Draw the species described by the user as a single SVG portrait.
 
-Style:
+Style (Update 5.63 - solid colour):
 - viewBox="0 0 400 400", no width/height attributes
-- background: a full rect filled #0A0B1C (deep navy), with a hint of the creature's world behind it (its sun or suns, horizon, water, cave, sky - whatever the traits imply), kept dim
-- the creature itself as refined line art: strokes in #B9C0FF and #8B95F6, warm accents in #E8CFC0, sparing #C97B6E for anything dangerous or vivid, fills only as low-opacity washes
+- background: a full rect filled #0A0B1C (deep navy) first, then the creature's world behind it (its sun or suns, horizon, water, cave, sky - whatever the traits imply), in a group <g id="world">
+- the creature in a group <g id="creature">, PAINTED IN SOLID, OPAQUE COLOUR: every part of its body has an opaque fill (no fill-opacity or opacity below 1 on the creature's body), in a coherent palette that comes from its traits - its skin, shell, fur or membrane, its light, its world - with shading from opaque gradients (darker and lighter tones of the same colours), crisp outlines and a few bright highlights. Glows and light effects may be translucent; the body may not
+- it must read clearly as a solid creature against the dark background and against a bright sky
 - follow the traits literally: body plan, symmetry, number and kind of limbs, size (show scale against its surroundings), senses, and how it moves
 - elegant and specific rather than cartoonish; no text, labels or captions anywhere
 
@@ -51,6 +54,19 @@ Technical rules:
 - output only the SVG markup, starting with <svg and ending with </svg>, no markdown fences
 - use only basic shapes, paths, gradients and groups; no <script>, <foreignObject>, <image>, <style>, event attributes, or external references
 - keep it under 9000 characters`;
+
+// Repainting an existing portrait in solid colour (Update 5.63), keeping
+// the drawing itself: same shapes, same composition, new paint.
+const REPAINT_SYSTEM = `You repaint SVG portraits of alien species for 13i.space.
+You are given a finished SVG. Return the same picture repainted so the creature is in SOLID, OPAQUE COLOUR.
+
+Rules:
+- keep every shape, path, position, size and the composition exactly as they are; do not add, remove or redraw parts of the creature
+- the creature's body parts get opaque fills (remove fill-opacity/opacity below 1 on them) in a coherent palette suited to the creature - shaded with opaque gradients (darker and lighter tones), outlines kept crisp; parts that were only outlines become filled shapes where they are closed
+- wrap the creature's elements in <g id="creature"> if they aren't already; leave the background, sky, suns and other scenery as they are
+- glows and light effects may stay translucent; the body may not
+- same technical rules as before: viewBox="0 0 400 400" (or the original viewBox), only basic shapes, paths, gradients and groups; no <script>, <foreignObject>, <image>, <style>, event attributes or external references; under 16000 characters
+- output only the SVG markup, starting with <svg and ending with </svg>, no markdown fences`;
 
 // The Continuance Rule (docs/WORLD.md): a species' survival is conditional on
 // demonstrated internal cooperation. Continuance is earned, not owed.
@@ -179,6 +195,39 @@ async function suggestName(apiKey, answers) {
 // Streams newline-delimited JSON: {"progress":n} while drawing, then
 // {"svg":"..."} or {"error":"..."}.
 function drawPortrait(apiKey, answers, name) {
+  return streamSvg(apiKey, { system: PORTRAIT_SYSTEM, content: `Draw this species.\n\n${describe(answers, name)}`, feature: "alien-portrait" });
+}
+
+// Sentinel-X only: repaint one saved species' portrait in solid colour and
+// save it, keeping the original in portrait_line_svg so the two can be
+// compared (docs/v5.63-solid-portraits.sql adds that column).
+async function repaintPortrait(apiKey, supabase, userId, speciesId) {
+  const { data: profile } = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
+  if (!isSentinelUser(profile?.username)) return Response.json({ error: "Only Sentinel-X can repaint portraits." }, { status: 403 });
+  const admin = getSupabaseAdmin();
+  if (!admin) return Response.json({ error: "Repainting needs SUPABASE_SERVICE_ROLE_KEY on the server." }, { status: 500 });
+  const res = await admin.query(`alien_species?id=eq.${encodeURIComponent(speciesId)}&select=*`);
+  const rows = res.ok ? await res.json() : [];
+  const sp = rows[0];
+  if (!sp || !sp.portrait_svg) return Response.json({ error: "That species has no portrait to repaint." }, { status: 404 });
+  if (!("portrait_line_svg" in sp)) return Response.json({ error: "Run docs/v5.63-solid-portraits.sql in Supabase first (it keeps the original portraits)." }, { status: 409 });
+  const original = sp.portrait_line_svg || sp.portrait_svg; // never lose the first drawing
+  return streamSvg(apiKey, {
+    system: REPAINT_SYSTEM,
+    content: `Repaint this portrait of "${String(sp.name || "a species").slice(0, 60)}" in solid colour.\n\n${original}`,
+    feature: "alien-repaint",
+    onSvg: async (svg) => {
+      const up = await admin.query(`alien_species?id=eq.${encodeURIComponent(speciesId)}`, {
+        method: "PATCH",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify({ portrait_svg: svg, portrait_line_svg: original }),
+      });
+      return up.ok;
+    },
+  });
+}
+
+function streamSvg(apiKey, { system, content, feature, onSvg }) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -196,8 +245,8 @@ function drawPortrait(apiKey, answers, name) {
             stream: true,
             output_config: { effort: "medium" },
             fallbacks: "default",
-            system: PORTRAIT_SYSTEM,
-            messages: [{ role: "user", content: `Draw this species.\n\n${describe(answers, name)}` }],
+            system,
+            messages: [{ role: "user", content }],
           }),
         });
         if (!res.ok || !res.body) {
@@ -227,9 +276,12 @@ function drawPortrait(apiKey, answers, name) {
             usage = foldStreamUsage(usage, evt);
           }
         }
-        await recordClaudeUsage({ feature: "alien-portrait", model: served, usage });
+        await recordClaudeUsage({ feature, model: served, usage });
         const svg = stopReason === "refusal" || stopReason === "error" ? null : cleanSvg(text);
-        send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
+        if (svg && onSvg) {
+          const saved = await onSvg(svg);
+          send(saved ? { svg, saved: true } : { error: "Repainted, but it couldn't be saved. Try again." });
+        } else send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
       } catch (e) {
         send({ error: "The connection dropped while drawing. Try again." });
       } finally {
@@ -260,6 +312,10 @@ export async function POST(request) {
   let body;
   try { body = await request.json(); } catch { body = {}; }
   const { action, answers, name, speciesId } = body || {};
+  if (action === "repaint") {
+    if (typeof speciesId !== "string") return Response.json({ error: "Expected { action: 'repaint', speciesId }" }, { status: 400 });
+    return repaintPortrait(apiKey, supabase, user.id, speciesId);
+  }
   if (action === "review") {
     if (typeof speciesId !== "string") return Response.json({ error: "Expected { action: 'review', speciesId }" }, { status: 400 });
     return writeReview(apiKey, supabase, user.id, speciesId);
