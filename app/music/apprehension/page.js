@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { BASE } from "../../../lib/musicReleases";
+import { songSrc } from "../../../lib/musicReleases";
 
 // APPREHENSION - the first 13i music video (Update 5.55). Paul's track,
 // with a film drawn live in the browser and driven by the song itself: the
@@ -16,9 +16,9 @@ import { BASE } from "../../../lib/musicReleases";
 //   VI   translated      - "a signal, translated"
 // Standalone page (no nav) so it can go full screen. "Save as a video file"
 // records the canvas and the sound in real time into a .webm to post.
-// The song streams through 13i.space's own address (/api/track) so it can
-// be measured; if that fails it plays from its original address and the
-// film follows the clock instead of the sound.
+// The song lives on 13i.space itself (public/audio/signal, Update 5.62), so
+// the film can always measure it. (If the browser can't measure sound at
+// all, the film follows the clock instead.)
 
 const TRACK = "Apprehension";
 const SECTIONS = [
@@ -413,15 +413,8 @@ export default function ApprehensionVideo() {
       <canvas ref={canvasRef} className="av-canvas" onClick={() => (state === "playing" ? pause() : play())} />
       <audio
         ref={audioRef}
-        src={`/api/track/${TRACK}.mp3?v=2`}
+        src={songSrc(TRACK)}
         preload="auto"
-        onError={(e) => {
-          if (direct.current) return;
-          direct.current = true;
-          const el = e.currentTarget;
-          el.src = BASE + TRACK + ".mp3";
-          el.load();
-        }}
       />
       {state !== "playing" && state !== "preview" && (
         <div className="av-overlay">

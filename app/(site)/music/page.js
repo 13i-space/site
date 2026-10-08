@@ -3,7 +3,7 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { listenToElement, primeAudio, onMusic } from "../../../lib/lyraMusic";
-import { BASE, albums, parseTrack, releaseDateFor } from "../../../lib/musicReleases";
+import { albums, parseTrack, releaseDateFor, remixes, songSrc } from "../../../lib/musicReleases";
 
 // The Music (Update 5.55): one deck instead of 36 separate players.
 //   - Play an album, Play all three albums (36 signals in order), or Shuffle
@@ -11,13 +11,19 @@ import { BASE, albums, parseTrack, releaseDateFor } from "../../../lib/musicRele
 //   - a spinning record with the album's cover, a live ring that moves with
 //     the song (the same Web Audio analyser Lyra dances to), a seek bar
 //   - lock-screen / headphone controls on phones (Media Session)
-//   - a link to Apprehension, the first music video
-// Songs still come through 13i.space's own address (/api/track) so they can
-// be measured; if that fails a song falls back to its original address and
-// plays without the ring or Lyra hearing it.
+//   - a link to Apprehension, the first music video, with its extended remix
+//     (Apprehension (Megan Halloween Remix)) right beside it (Update 5.62)
+// Songs live on 13i.space itself (public/audio/signal, Update 5.62), so the
+// ring and Lyra can always hear them.
 
 const ALL = albums.flatMap((a, ai) => a.tracks.map((entry, ti) => ({ ai, ti, ...parseTrack(entry), g: ai * 12 + ti })));
 const LAST_KEY = "13i_music_last";
+// the extended remixes, as tracks the deck can play (Update 5.62)
+const REMIXES = remixes.map((r) => {
+  const orig = ALL.find((x) => x.file === r.of);
+  return { ...r, ai: orig ? orig.ai : 0, ti: orig ? orig.ti : 0, g: `remix:${r.file}`, remix: true, ofLabel: orig ? orig.label : r.of };
+});
+const APPREHENSION_REMIX = REMIXES.find((r) => r.of === "Apprehension");
 
 function shuffled(list) {
   const out = [...list];
@@ -102,9 +108,8 @@ export default function MusicPage() {
 
   // Lyra hears it (same plumbing as before, one element now)
   const release = useRef(null);
-  const fellBack = useRef(false);
+  const [err, setErr] = useState(null);
   const hear = (el) => {
-    if (fellBack.current) return;
     if (release.current) release.current();
     release.current = listenToElement(el, (r) => { release.current = r; });
   };
@@ -121,8 +126,8 @@ export default function MusicPage() {
   const load = useCallback((track, { at = 0, autoplay = true } = {}) => {
     const el = audioRef.current;
     if (!el || !track) return;
-    fellBack.current = false;
-    el.src = `/api/track/${encodeURIComponent(track.file)}.mp3?v=2`;
+    setErr(null);
+    el.src = track.src || songSrc(track.file);
     el.load();
     if (at) { const seek = () => { el.currentTime = at; el.removeEventListener("loadedmetadata", seek); }; el.addEventListener("loadedmetadata", seek); }
     if (autoplay) { primeAudio(); el.play().catch(() => {}); }
@@ -160,7 +165,7 @@ export default function MusicPage() {
 
   // remember where we were
   useEffect(() => {
-    if (!current) return;
+    if (!current || current.remix) return;
     try { localStorage.setItem(LAST_KEY, JSON.stringify({ ai: current.ai, ti: current.ti, at: Math.floor(time.now) })); } catch (e) { /* ignore */ }
   }, [current, Math.floor(time.now / 5)]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -169,7 +174,7 @@ export default function MusicPage() {
     if (!current || typeof navigator === "undefined" || !navigator.mediaSession) return;
     const album = albums[current.ai];
     try {
-      navigator.mediaSession.metadata = new window.MediaMetadata({ title: current.label, artist: "13i", album: album.title, artwork: [{ src: album.cover, sizes: "1024x1024", type: "image/png" }] });
+      navigator.mediaSession.metadata = new window.MediaMetadata({ title: current.label, artist: "13i", album: album.title, artwork: [{ src: current.cover || album.cover, sizes: "900x900", type: "image/webp" }] });
       navigator.mediaSession.setActionHandler("play", () => audioRef.current?.play());
       navigator.mediaSession.setActionHandler("pause", () => audioRef.current?.pause());
       navigator.mediaSession.setActionHandler("nexttrack", () => next(1));
@@ -189,7 +194,7 @@ export default function MusicPage() {
   });
 
   const album = current ? albums[current.ai] : albums[0];
-  const modeLabel = !mode ? "" : mode.kind === "album" ? `album · ${albums[mode.ai].title}` : mode.kind === "all" ? "all three albums" : mode.kind === "shuffle" ? "shuffle everything" : "";
+  const modeLabel = !mode ? "" : mode.kind === "album" ? `album · ${albums[mode.ai].title}` : mode.kind === "all" ? "all three albums" : mode.kind === "shuffle" ? "shuffle everything" : mode.kind === "remix" ? "extended remix" : "";
   const upNext = queue.slice(pos + 1, pos + 4);
 
   return (
@@ -203,14 +208,7 @@ export default function MusicPage() {
         onEnded={() => { unhear(); if (repeatOne) { const el = audioRef.current; el.currentTime = 0; el.play().catch(() => {}); } else next(1); }}
         onTimeUpdate={(e) => setTime({ now: e.currentTarget.currentTime, dur: e.currentTarget.duration })}
         onLoadedMetadata={(e) => setTime({ now: e.currentTarget.currentTime, dur: e.currentTarget.duration })}
-        onError={(e) => {
-          if (fellBack.current || !current) return;
-          fellBack.current = true;
-          const el = e.currentTarget;
-          el.src = BASE + current.file + ".mp3";
-          el.load();
-          el.play().catch(() => {});
-        }}
+        onError={() => { if (current) { setErr(`${current.label} couldn't be loaded just now.`); setPlaying(false); } }}
       />
 
       <section className="mx-hero">
@@ -257,14 +255,15 @@ export default function MusicPage() {
         <div className="mx-record-wrap">
           <Ring playing={playing} color="#8B95F6" />
           <div className="mx-record" style={{ animationPlayState: playing ? "running" : "paused" }}>
-            <img src={album.cover} alt="" className="mx-label" onError={(e) => { e.currentTarget.style.opacity = 0; }} />
+            <img src={current?.cover || album.cover} alt="" className="mx-label" onError={(e) => { e.currentTarget.style.opacity = 0; }} />
             <span className="mx-spindle" />
           </div>
         </div>
         <div className="mx-now">
           <div className="mono mx-now-kicker">{current ? (playing ? "NOW PLAYING" : "PAUSED") : "READY"}{modeLabel && <> &middot; {modeLabel.toUpperCase()}</>}</div>
           <div className="wordmark mx-now-title">{current ? current.label : "Choose a way to listen"}</div>
-          <div className="mx-now-album">{current ? `${album.title} · track ${current.ti + 1} · ${releaseDateFor(current.g)}` : "Thirty-six signals, three albums. Start anywhere."}</div>
+          <div className="mx-now-album">{!current ? "Thirty-six signals, three albums. Start anywhere." : current.remix ? `Extended remix · from ${album.title}, track ${current.ti + 1} (${current.ofLabel})` : `${album.title} · track ${current.ti + 1} · ${releaseDateFor(current.g)}`}</div>
+          {err && <div className="mono mx-err" role="status">{err}</div>}
           <div className="mx-seek">
             <span className="mono">{fmt(time.now)}</span>
             <input
@@ -289,7 +288,7 @@ export default function MusicPage() {
       </section>
 
       {/* ways to listen */}
-      <section className="mx-ways">
+      <section className={`mx-ways ${resume ? "" : "mx-ways-3"}`}>
         <button className={`mx-way ${mode?.kind === "all" ? "mx-way-on" : ""}`} onClick={playAllThree}>
           <span className="mx-way-icon">▶▶▶</span>
           <span className="mx-way-title">Play all three albums</span>
@@ -305,25 +304,40 @@ export default function MusicPage() {
           <span className="mx-way-title">Today&rsquo;s signal</span>
           <span className="mx-way-sub mono">{today.current.label}</span>
         </button>
-        {resume ? (
+        {resume && (
           <button className="mx-way" onClick={() => { const list = ALL.filter((x) => x.ai === resume.track.ai); start(list, { kind: "album", ai: resume.track.ai }, resume.track.ti, resume.at); setResume(null); }}>
             <span className="mx-way-icon">↺</span>
             <span className="mx-way-title">Pick up where you left off</span>
             <span className="mx-way-sub mono">{resume.track.label} &middot; {fmt(resume.at)}</span>
           </button>
-        ) : (
-          <Link href="/music/apprehension" className="mx-way mx-way-video">
-            <span className="mx-way-icon">◉</span>
-            <span className="mx-way-title">Watch: Apprehension</span>
-            <span className="mx-way-sub mono">the first music video</span>
-          </Link>
         )}
       </section>
-      {resume && (
-        <Link href="/music/apprehension" className="mx-video-band">
-          <span className="mono">NEW</span> Apprehension &mdash; the first 13i music video. Watch it full screen, with the sound up. &rarr;
+
+      {/* Apprehension: the video, and its extended remix right beside it (Update 5.62) */}
+      <section className="mx-pair">
+        <Link href="/music/apprehension" className="mx-feature mx-feature-video">
+          <span className="mono mx-feature-kicker">NEW &middot; MUSIC VIDEO</span>
+          <span className="mx-feature-title">Watch: Apprehension</span>
+          <span className="mx-feature-sub">The first 13i music video. Watch it full screen, with the sound up. &rarr;</span>
         </Link>
-      )}
+        {APPREHENSION_REMIX && (() => {
+          const on = current?.g === APPREHENSION_REMIX.g;
+          return (
+            <button
+              className={`mx-feature mx-feature-remix ${on ? "mx-feature-on" : ""}`}
+              onClick={() => (on ? toggle() : start([APPREHENSION_REMIX], { kind: "remix" }))}
+              aria-label={on && playing ? `Pause ${APPREHENSION_REMIX.label}` : `Play ${APPREHENSION_REMIX.label}`}
+            >
+              <img src={APPREHENSION_REMIX.cover} alt="" className="mx-feature-cover" onError={(e) => { e.currentTarget.style.opacity = 0; }} />
+              <span className="mx-feature-text">
+                <span className="mono mx-feature-kicker">NEW &middot; EXTENDED REMIX</span>
+                <span className="mx-feature-title">Apprehension (Megan Halloween Remix)</span>
+                <span className="mx-feature-sub">{on && playing ? "❚❚ playing now · tap to pause" : "▶ play the remix"}</span>
+              </span>
+            </button>
+          );
+        })()}
+      </section>
 
       {/* the albums */}
       <section className="mx-albums">
