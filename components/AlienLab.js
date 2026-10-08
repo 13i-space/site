@@ -43,6 +43,7 @@ const REACT = [
 const WOW = [["ilu", "Oh. OH. Qeth, come and look at this one."], ["qeth", "...Unusual. Ilu, fetch the bigger tank."]];
 
 export function crewLine(stage, { questionId, answered, big, n = 0 }) {
+  if (stage === "looks") return ["ilu", "The fun part! Give it a body. Then tell us how it looks in your own words - Ixxen reads every word."];
   if (stage === "points") return ["qeth", "The allotment. Every specimen gets the same budget. The Continuance Rule does not grade on effort."];
   if (stage === "sheet") return ["ilu", "It's ready! Name it, then press Generate - Ixxen will bring it all the way to life. Then we send it to 13i."];
   if (stage === "saved") return ["qeth", "Filed and transmitted. 13i always has an opinion. Wait for it."];

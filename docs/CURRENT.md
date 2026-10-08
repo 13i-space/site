@@ -4,6 +4,10 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.64 (no SQL): Lab order (questions -> points -> its look + free
+  description -> name -> generate), Randomize / All to zero, name required,
+  scroll to the lab, lab sounds, steady phone bubble, side-4 roaming
+  creature, auto solid repaint for Sentinel-X, Aliens of the Galaxy in Games.
 - Update 5.63 (optional SQL docs/v5.63-solid-portraits.sql, for repainting
   old portraits): the Alien Lab rebuilt - live lab scene with a six-armed
   Ixxen (components/LabScene.js), a visible transformation while the

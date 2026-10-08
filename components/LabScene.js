@@ -5,7 +5,7 @@ import { drawEmbryo, STAGE_NAMES } from "../lib/embryo";
 import { drawSpecimen, specimenReadout } from "../lib/specimen";
 import { creatureOnly, portraitSrc } from "../lib/portraitArt";
 import { setLabMirror } from "../lib/labMirror";
-import { alienClick, alienLock, alienOpen, chime } from "../lib/alienSound";
+import { alienClick, alienLock, alienOpen, alienDeny, chime, labZap, labHum, labReveal } from "../lib/alienSound";
 
 // ─────────────────────────────────────────────────────────────────────────
 // The Alien Lab, the room itself (Update 5.63). Replaces the plain tank and
@@ -126,6 +126,10 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
     setLabMirror(feed);
     const off = document.createElement("canvas"); // the new form, for the glitch
     let raf = 0, last = performance.now(), lastRead = 0, frozenAt = 0, visible = true, nextIdle = 0;
+    // sound (Update 5.64): the hum and zaps of the transformation, an alarm at
+    // the anomaly, a fanfare when the species is revealed
+    let heardPhase = phaseRef.current.phase, nextZap = 0, nextHum = 0;
+    const play = (fn) => { try { fn(); } catch (e) { /* no audio */ } };
     const io = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver(([e]) => { visible = e.isIntersecting; }) : null;
     io && io.observe(c);
 
@@ -206,6 +210,17 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
       const morph = ph.phase === "cocoon" ? Math.min(0.97, 1 - Math.exp(-since / 26)) : 0;
       const frantic = ph.phase === "cocoon" ? 1 : 0;
       const revealK = ph.phase === "reveal" ? since : -1;
+      if (ph.phase !== heardPhase) {
+        if (ph.phase === "anomaly") play(() => alienDeny());
+        if (ph.phase === "cocoon") play(() => labHum(0.15));
+        if (ph.phase === "reveal" && heardPhase === "cocoon") { play(() => labHum(0)); play(() => labReveal()); }
+        if (ph.phase === "grow" && heardPhase === "cocoon") play(() => labHum(0));
+        heardPhase = ph.phase;
+      }
+      if (ph.phase === "cocoon" && !reduced) {
+        if (now > nextHum) { nextHum = now + 1; play(() => labHum(0.15 + morph * 0.85)); }
+        if (now > nextZap) { nextZap = now + 0.5 + Math.random() * (1.6 - morph); play(() => labZap(0.04 + morph * 0.05)); }
+      }
       let hue = em ? em.hue : 200;
       if (frantic) hue = hue + Math.sin(t * 0.7) * 40 * morph;
       const tint = (l, a) => alarmOn ? `hsla(350,70%,${l}%,${a})` : `hsla(${hue},65%,${l}%,${a})`;
@@ -235,7 +250,7 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
           const opts = IDLE[arm];
           schedule(arm, opts[Math.floor(Math.random() * opts.length)], now, false);
         }
-        if (frantic && Math.random() < 0.3 && !busy(3, now)) schedule(3, ["lever0", "lever1", "lever2"][Math.floor(Math.random() * 3)], now, false);
+        if (frantic && Math.random() < 0.3 && !busy(3, now)) schedule(3, ["lever0", "lever1", "lever2"][Math.floor(Math.random() * 3)], now, Math.random() < 0.6);
       }
       jobs.forEach((j) => {
         if (!j.fired && now >= j.fxAt) { j.fired = true; live.current.loud = j.loud; effects[j.kind] && effects[j.kind](now); live.current.loud = false; }
@@ -448,7 +463,7 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
       }
     };
     raf = requestAnimationFrame(draw);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("pointermove", onMove); io && io.disconnect(); setLabMirror(null); };
+    return () => { cancelAnimationFrame(raf); window.removeEventListener("pointermove", onMove); io && io.disconnect(); setLabMirror(null); play(() => labHum(0)); };
   }, []);
 
   return (

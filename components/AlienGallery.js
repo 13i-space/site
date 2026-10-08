@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import AlienCard from "./AlienCard";
 import { runTrials } from "../lib/alienTrials";
 import { recordMilestone } from "../lib/milestones";
@@ -92,8 +92,9 @@ export default function AlienGallery({ species: initial, highlight = null, canRe
 // Sentinel-X only (Update 5.63): repaint every Kin portrait in solid colour,
 // two at a time. Each repaint keeps the original (portrait_line_svg).
 function RepaintPanel({ species, onPainted }) {
-  const todo = species.filter((sp) => !sp.archive && sp.portrait_svg && !sp.portrait_line_svg);
+  const todo = species.filter((sp) => !sp.archive && sp.portrait_svg && !sp.portrait_line_svg && !/data-solid=/.test(sp.portrait_svg));
   const [status, setStatus] = useState("idle"); // idle | running | done
+  const started = useRef(false);
   const [log, setLog] = useState([]);
   const note = (line) => setLog((l) => [...l.slice(-12), line]);
 
@@ -113,7 +114,7 @@ function RepaintPanel({ species, onPainted }) {
       return true;
     } catch (e) {
       note(`${sp.name} - ${e.message}`);
-      return !/Run docs|Only Sentinel|SERVICE_ROLE/.test(e.message);
+      return !/Only Sentinel|SERVICE_ROLE/.test(e.message);
     }
   };
   const run = async () => {
@@ -124,6 +125,8 @@ function RepaintPanel({ species, onPainted }) {
     await Promise.all([worker(), worker()]);
     setStatus("done");
   };
+  // Update 5.64: it starts by itself when Sentinel-X opens the gallery
+  useEffect(() => { if (!started.current && todo.length) { started.current = true; run(); } }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div className="panel repaint-panel">
@@ -131,7 +134,7 @@ function RepaintPanel({ species, onPainted }) {
         <div className="mono" style={{ fontSize: 10, color: "#E8B4C8", letterSpacing: "1.5px" }}>SENTINEL-X &middot; SOLID COLOUR</div>
         <div style={{ fontSize: 13, color: "#8A8FBF", marginTop: 4 }}>
           {todo.length
-            ? `${todo.length} Kin portrait${todo.length === 1 ? "" : "s"} still in line art. Repaint them in solid colour - same drawings, new paint. The originals are kept for the switch below. About a minute each.`
+            ? status === "running" ? `Repainting ${todo.length} portrait${todo.length === 1 ? "" : "s"} in solid colour, two at a time - about a minute each. Keep this page open; each card changes when it's done.` : `${todo.length} Kin portrait${todo.length === 1 ? "" : "s"} still in line art.`
             : "Every Kin portrait has a solid version. New species are drawn in solid colour from the start."}
         </div>
         {log.length > 0 && <div className="mono repaint-log">{log.map((l, i) => <div key={i}>{l}</div>)}</div>}

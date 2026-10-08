@@ -6,6 +6,7 @@ import { createClient } from "../lib/supabaseBrowser";
 import { ALIEN_QUESTIONS } from "../lib/alienQuestions";
 import { lyraReact } from "../lib/lyraReact";
 import { lyraLookAt } from "../lib/lyraMusic";
+import { labZap } from "../lib/alienSound";
 
 // answers that make Lyra's eye go wide (they match lib/alienQuestions.js)
 const BIG_ANSWERS = new Set([
@@ -36,10 +37,36 @@ import { specimenTraits } from "../lib/specimen";
 import { embryoState } from "../lib/embryo";
 
 const OTHER = "__other__";
+// Update 5.64: the questions about how it LOOKS come after the points, all
+// on one screen, with a free description of its look - the creator's own
+// vision, which the portrait follows. Everything else is asked first.
+const LOOK_IDS = ["size", "symmetry", "limbs", "locomotion", "manipulation", "exterior"];
+const FLOW = ALIEN_QUESTIONS.filter((q) => !LOOK_IDS.includes(q.id));
+const LOOKS = ALIEN_QUESTIONS.filter((q) => LOOK_IDS.includes(q.id));
+const LOOK_KEY = "Physical Form / Describe what it looks like";
+const LOOK_IDEAS = ["colours", "eyes", "markings", "a crest, horns or fins", "texture", "something no animal on Earth has"];
+
+// a random split of each group's points (always the full pool)
+function randomStats() {
+  const out = {};
+  STAT_GROUPS.forEach((g) => {
+    const w = g.stats.map(() => Math.pow(Math.random(), 1.6) + 0.02);
+    const sum = w.reduce((a, b) => a + b, 0);
+    const vals = w.map((x) => Math.floor((x / sum) * g.pool));
+    let left = g.pool - vals.reduce((a, b) => a + b, 0);
+    while (left-- > 0) vals[Math.floor(Math.random() * vals.length)] += 1;
+    g.stats.forEach((st, i) => { out[st.id] = vals[i]; });
+  });
+  return out;
+}
+const zeroStats = () => Object.fromEntries(STAT_GROUPS.flatMap((g) => g.stats.map((st) => [st.id, 0])));
 
 export default function AlienCreator({ loggedIn }) {
   const router = useRouter();
-  const [step, setStep] = useState(0); // 0..N-1 questions, N = points, N+1 = sheet
+  const [step, setStep] = useState(0); // 0..N-1 questions, N = points, N+1 = its look, N+2 = sheet
+  const [lookText, setLookText] = useState("");
+  const [nameNag, setNameNag] = useState(false);
+  const labRef = useRef(null);
   const [answers, setAnswers] = useState({});
   const [otherText, setOtherText] = useState({});
   const [speciesName, setSpeciesName] = useState("");
@@ -75,15 +102,21 @@ export default function AlienCreator({ loggedIn }) {
     return () => clearInterval(id);
   }, [portraitStatus]);
 
-  const total = ALIEN_QUESTIONS.length;
+  const total = FLOW.length;
   const onPoints = step === total;
-  const onSheet = step === total + 1;
-  const current = step < total ? ALIEN_QUESTIONS[step] : null;
+  const onLooks = step === total + 1;
+  const onSheet = step === total + 2;
+  const current = step < total ? FLOW[step] : null;
+
+  // a new screen (points, its look, the sheet) starts at the top of the lab -
+  // not wherever the last button was
+  const toLab = () => { const el = labRef.current; if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 12, behavior: "smooth" }); };
+  useEffect(() => { if (step >= total) toLab(); }, [step]); // eslint-disable-line react-hooks/exhaustive-deps
   const pointsLeft = STAT_GROUPS.reduce((n, g) => n + g.pool - groupTotal(stats, g), 0);
 
   // the crew: a reaction to the answer just given, then the next question
   useEffect(() => {
-    const line = onPoints ? crewLine("points", {}) : onSheet ? crewLine(saveStatus === "done" ? "saved" : "sheet", {}) : crewLine("question", { questionId: ALIEN_QUESTIONS[step]?.id });
+    const line = onPoints ? crewLine("points", {}) : onLooks ? crewLine("looks", {}) : onSheet ? crewLine(saveStatus === "done" ? "saved" : "sheet", {}) : crewLine("question", { questionId: FLOW[step]?.id });
     const id = setTimeout(() => setCrew(line), step === 0 && !onSheet ? 900 : 1700);
     return () => clearTimeout(id);
   }, [step, saveStatus]); // eslint-disable-line react-hooks/exhaustive-deps
@@ -100,9 +133,9 @@ export default function AlienCreator({ loggedIn }) {
     const a = answers[id];
     if (a === undefined) return undefined;
     return a === OTHER ? otherText[id] || "" : a;
-  }, answeredCount / total);
+  }, answeredCount / ALIEN_QUESTIONS.length);
   const lab = (panel, vatLabel = labPhase === "anomaly" ? "SPECIMEN \u00b7 ?" : labPhase === "cocoon" ? "SPECIMEN \u00b7 TRANSFORMING" : labPhase === "reveal" ? "SPECIES REVEALED" : "SPECIMEN IN PROGRESS") => (
-    <div className="lab">
+    <div className="lab" ref={labRef}>
       <div className="lab-head">
         <span className="mono">⟡ XENOGENESIS BAY 13 &middot; ALIEN-RUN &middot; GUESTS WELCOME</span>
         <span className="mono lab-head-glyphs" aria-hidden="true">⌬ ⏃ ⍜ ⟁ ◬ ⋔ ⏚</span>
@@ -171,12 +204,14 @@ export default function AlienCreator({ loggedIn }) {
   const sheetAnswers = () => {
     const out = {};
     ALIEN_QUESTIONS.forEach((q) => { out[q.category + " / " + q.question] = displayAnswer(q); });
+    if (lookText.trim()) out[LOOK_KEY] = lookText.trim().slice(0, 600);
     return out;
   };
 
   const answersForClaude = () => {
     const out = {};
     ALIEN_QUESTIONS.forEach((q) => { out[`${q.category}: ${q.question}`] = displayAnswer(q) || ""; });
+    if (lookText.trim()) out["Its look, in the creator's own words (follow this closely)"] = lookText.trim().slice(0, 600);
     return out;
   };
 
@@ -199,6 +234,8 @@ export default function AlienCreator({ loggedIn }) {
   };
 
   const generatePortrait = async () => {
+    toLab();
+    try { labZap(0.05); } catch (e) { /* wakes the lab's sound inside the click, for Safari */ }
     // the first time: something happens in the tank. Then it wraps itself up.
     if (!anomalySeen.current) {
       anomalySeen.current = true;
@@ -259,6 +296,7 @@ export default function AlienCreator({ loggedIn }) {
   };
 
   const save = async () => {
+    if (!speciesName.trim()) { setNameNag(true); toLab(); return; }
     setSaveStatus("loading");
     setError("");
     try {
@@ -268,7 +306,7 @@ export default function AlienCreator({ loggedIn }) {
       const finalAnswers = sheetAnswers();
       const row = {
         user_id: user.id,
-        name: speciesName.trim() || "Unnamed species",
+        name: speciesName.trim(),
         answers: finalAnswers,
         stats,
       };
@@ -307,10 +345,11 @@ export default function AlienCreator({ loggedIn }) {
           <div style={{ display: "flex", gap: 8, marginBottom: 16, flexWrap: "wrap" }}>
             <input
               value={speciesName}
-              onChange={(e) => setSpeciesName(e.target.value)}
+              onChange={(e) => { setSpeciesName(e.target.value); setNameNag(false); }}
               placeholder="Name this species..."
+              aria-label="Species name (required)"
               style={{
-                flex: "1 1 220px", background: "transparent", border: "1px solid #262A55", borderRadius: 3,
+                flex: "1 1 220px", background: "transparent", border: `1px solid ${nameNag ? "#E9D29A" : "#262A55"}`, borderRadius: 3, boxShadow: nameNag ? "0 0 0 3px rgba(233,210,154,0.25)" : "none",
                 color: "#E4E4EF", fontSize: 18, padding: "10px 12px", outline: "none",
                 boxSizing: "border-box", fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic",
               }}
@@ -325,6 +364,7 @@ export default function AlienCreator({ loggedIn }) {
           </div>
         )}
 
+        {nameNag && <p className="mono" style={{ fontSize: 11, color: "#E9D29A", margin: "-8px 0 14px" }}>Every species needs a name before it goes to 13i. Type one, or press Suggest a name.</p>}
         <div style={{ marginBottom: 20 }}>
           {portrait && portraitStatus !== "drawing" ? (
             <img
@@ -355,16 +395,17 @@ export default function AlienCreator({ loggedIn }) {
           <div style={{ textAlign: "center" }}>
             <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 8 }}>YOUR CARD &middot; FOUR SIDES &middot; TAP TO TURN</div>
             <AlienCard
-              species={{ id: null, name: speciesName.trim() || "Unnamed species", answers: sheetAnswers(), portrait_svg: labPhase === "reveal" ? portrait : null, stats, review, created_at: new Date().toISOString() }}
+              species={{ id: null, name: speciesName.trim() || "Name it above", answers: sheetAnswers(), portrait_svg: labPhase === "reveal" ? portrait : null, stats, review, created_at: new Date().toISOString() }}
               creator="you"
               width={230}
               live
             />
           </div>
           {saveStatus !== "done" && (
-            <button onClick={() => setStep(total)} className="mono" style={{ background: "none", border: "none", color: "#6E76B8", fontSize: 12, cursor: "pointer", alignSelf: "flex-end" }}>
-              &larr; adjust points
-            </button>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6, alignSelf: "flex-end" }}>
+              <button onClick={() => setStep(total + 1)} className="mono" style={{ background: "none", border: "none", color: "#6E76B8", fontSize: 12, cursor: "pointer", textAlign: "left" }}>&larr; change its look</button>
+              <button onClick={() => setStep(total)} className="mono" style={{ background: "none", border: "none", color: "#6E76B8", fontSize: 12, cursor: "pointer", textAlign: "left" }}>&larr; adjust points</button>
+            </div>
           )}
         </div>
 
@@ -375,6 +416,12 @@ export default function AlienCreator({ loggedIn }) {
               <span style={{ color: "#D9DCFF", textAlign: "right" }}>{displayAnswer(q)}</span>
             </div>
           ))}
+          {lookText.trim() && (
+            <div style={{ fontSize: 13, padding: "6px 0", borderBottom: "1px solid #21244A" }}>
+              <span style={{ color: "#565B8F" }}>Its look</span>
+              <div style={{ color: "#D9DCFF", fontStyle: "italic", marginTop: 4 }}>{lookText.trim()}</div>
+            </div>
+          )}
         </div>
 
         {saveStatus === "done" ? (
@@ -411,13 +458,13 @@ export default function AlienCreator({ loggedIn }) {
         ) : (
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             {loggedIn ? (
-              <button onClick={save} disabled={saveStatus === "loading" || portraitStatus === "drawing"} className="lab-submit">
+              <button onClick={save} disabled={saveStatus === "loading" || portraitStatus === "drawing"} className={`lab-submit ${speciesName.trim() ? "" : "lab-submit-unnamed"}`} title={speciesName.trim() ? "" : "Name it first"}>
                 {saveStatus === "loading" ? "Transmitting..." : "Submit to 13i \u2192"}
               </button>
             ) : (
               <a href="/login?next=/create/alien-lab" className="lab-submit" style={{ textDecoration: "none" }}>Sign in to submit to 13i</a>
             )}
-            <button onClick={() => { setStep(0); setPortrait(null); setPortraitStatus("idle"); setStats(evenStats()); setLabPhase("grow"); }} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
+            <button onClick={() => { setStep(0); setPortrait(null); setPortraitStatus("idle"); setStats(evenStats()); setLabPhase("grow"); setLookText(""); }} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
               Start over
             </button>
             {error && <span className="mono" style={{ fontSize: 12, color: "#C97B6E" }}>{error}</span>}
@@ -453,7 +500,7 @@ export default function AlienCreator({ loggedIn }) {
         <p style={{ fontSize: 17, color: "#DCDFFF", margin: "0 0 6px" }}>Spend your points.</p>
         <p style={{ fontSize: 13, color: "#8A8FBF", margin: "0 0 18px", lineHeight: 1.6 }}>
           Every species gets the same budget: 100 Physical, 100 Mental, 50 Ecological &amp; Sensory and 50 Life Cycle.
-          Spread them evenly or pour everything into one thing. These go on your card and decide how
+          Spread them evenly, roll the dice, or set everything to zero and build up from nothing. These go on your card and decide how
           your species does in the Survival Trials.
         </p>
 
@@ -497,10 +544,16 @@ export default function AlienCreator({ loggedIn }) {
 
         <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
           <button onClick={() => setStep(total + 1)} disabled={pointsLeft > 0} style={{ ...btnStyle, opacity: pointsLeft > 0 ? 0.4 : 1, cursor: pointsLeft > 0 ? "default" : "pointer" }}>
-            Continue &rarr;
+            Continue to its look &rarr;
           </button>
-          <button onClick={() => setStats(evenStats())} style={{ ...btnStyle, background: "none", opacity: 0.7 }}>
+          <button onClick={() => { setStats(evenStats()); setNudge((n) => n + 1); }} style={{ ...btnStyle, background: "none", opacity: 0.8 }}>
             Even split
+          </button>
+          <button onClick={() => { setStats(randomStats()); setBigAnswer(false); setPulse((n) => n + 1); }} style={{ ...btnStyle, background: "none", opacity: 0.8 }}>
+            &#x2684; Randomize
+          </button>
+          <button onClick={() => { setStats(zeroStats()); setNudge((n) => n + 1); }} style={{ ...btnStyle, background: "none", opacity: 0.8 }}>
+            All to zero
           </button>
           {pointsLeft > 0 && <span className="mono" style={{ fontSize: 11, color: "#E8CFC0" }}>spend all {pointsLeft} remaining points to continue</span>}
         </div>
@@ -514,6 +567,72 @@ export default function AlienCreator({ loggedIn }) {
         </button>
       </div>,
       "SPECIMEN · CALIBRATING"
+    );
+  }
+
+  if (onLooks) {
+    const pickLook = (q, opt, e) => {
+      if (e && e.currentTarget) { const r = e.currentTarget.getBoundingClientRect(); lyraLookAt(r.left + r.width / 2, r.top + r.height / 2, 900); }
+      lyraReact(BIG_ANSWERS.has(opt) ? "wow" : "notice");
+      setBigAnswer(BIG_ANSWERS.has(opt));
+      setPulse((n) => n + 1);
+      reacted.current += 1;
+      setCrew(crewLine("question", { answered: true, big: BIG_ANSWERS.has(opt), n: reacted.current }));
+      setAnswers((a) => ({ ...a, [q.id]: opt }));
+    };
+    const looksLeft = LOOKS.filter((q) => answers[q.id] === undefined || (answers[q.id] === OTHER && !(otherText[q.id] || "").trim())).length;
+    return lab(
+      <div>
+        <div className="mono" style={{ fontSize: 10, color: "#565B8F", letterSpacing: "1px", marginBottom: 4 }}>ITS LOOK &middot; THE BODY</div>
+        <div style={{ height: 3, background: "#21244A", borderRadius: 2, marginBottom: 16, overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${((LOOKS.length - looksLeft) / LOOKS.length) * 100}%`, background: "#E9D29A", transition: "width .2s" }} />
+        </div>
+        <p style={{ fontSize: 17, color: "#DCDFFF", margin: "0 0 4px" }}>Now: what does it look like?</p>
+        <p style={{ fontSize: 13, color: "#8A8FBF", margin: "0 0 16px", lineHeight: 1.6 }}>Build its body, then describe it in your own words. The portrait follows what you write.</p>
+        {LOOKS.map((q) => (
+          <div key={q.id} className="look-q">
+            <div className="look-q-label">{q.question}</div>
+            <div className="look-chips">
+              {q.options.map((opt) => (
+                <button key={opt} onClick={(e) => pickLook(q, opt, e)} className={`look-chip ${answers[q.id] === opt ? "on" : ""}`}>{opt}</button>
+              ))}
+              <button onClick={() => setAnswers((a) => ({ ...a, [q.id]: OTHER }))} className={`look-chip look-chip-other ${answers[q.id] === OTHER ? "on" : ""}`}>Other&hellip;</button>
+            </div>
+            {answers[q.id] === OTHER && (
+              <input
+                autoFocus
+                value={otherText[q.id] || ""}
+                onChange={(e) => setOtherText((t) => ({ ...t, [q.id]: e.target.value }))}
+                onBlur={() => (otherText[q.id] || "").trim() && setPulse((n) => n + 1)}
+                placeholder="Your answer..."
+                className="look-other"
+              />
+            )}
+          </div>
+        ))}
+        <div className="look-q">
+          <div className="look-q-label">Describe what it looks like <span className="mono" style={{ fontSize: 10, color: "#6E76B8", marginLeft: 6 }}>YOUR VISION &middot; OPTIONAL</span></div>
+          <textarea
+            value={lookText}
+            onChange={(e) => setLookText(e.target.value.slice(0, 600))}
+            onBlur={() => lookText.trim() && setPulse((n) => n + 1)}
+            rows={4}
+            placeholder={"e.g. Tall and thin, deep violet with gold markings that glow when it speaks. Three eyes in a row, a fan-shaped crest, and long fingers that fold like a heron's legs."}
+            className="look-text"
+          />
+          <div className="mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 10, color: "#565B8F", marginTop: 4, gap: 10 }}>
+            <span>think about: {LOOK_IDEAS.join(" \u00b7 ")}</span><span>{lookText.length}/600</span>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap", marginTop: 8 }}>
+          <button onClick={() => setStep(total + 2)} disabled={looksLeft > 0} style={{ ...btnStyle, opacity: looksLeft > 0 ? 0.4 : 1, cursor: looksLeft > 0 ? "default" : "pointer" }}>
+            Continue to name it &rarr;
+          </button>
+          {looksLeft > 0 && <span className="mono" style={{ fontSize: 11, color: "#E8CFC0" }}>{looksLeft} to choose</span>}
+        </div>
+        <button onClick={() => setStep(total)} className="mono" style={{ marginTop: 20, background: "none", border: "none", color: "#565B8F", fontSize: 12, cursor: "pointer" }}>&larr; back to points</button>
+      </div>,
+      "SPECIMEN \u00b7 TAKING FORM"
     );
   }
 
