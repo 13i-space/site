@@ -4,6 +4,15 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.62 (no SQL): songs fixed and the first extended remix. All 36
+  songs and the album covers were on the old Tempo Goat WordPress site and
+  vanished when the new tempogoatstudios.com replaced it (Oct 7). They now
+  live on 13i.space: songs in public/audio/signal/<name>.mp3 (file names =
+  the names in lib/musicReleases.js), covers in public/covers/albums/.
+  /api/track/<name>.mp3 now just redirects there. "Apprehension (Megan
+  Halloween Remix)" sits beside the Apprehension video on /music
+  (public/audio/apprehension-megan-halloween-remix.mp3; more remixes go in
+  the `remixes` list in lib/musicReleases.js).
 - Update 5.61 (needs docs/v5.61-spacecore-survival.sql): the SpaceCore
   survival update - Lyra stays closed, crew needs + blackouts, power grids,
   dust storms, research, borer paint, drag-building, Season projects after

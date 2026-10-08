@@ -3,6 +3,27 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.62 — The songs come home, and the first extended remix (Oct 2026)
+No SQL.
+- **Why every song stopped**: the 36 songs and three album covers were
+  served from the old Tempo Goat Studios WordPress site
+  (tempogoatstudios.com/wp-content/uploads/2026/09/). When the new Tempo
+  Goat site went live on Vercel (Oct 7), those addresses started answering
+  403, so /api/track had nothing to pass through and the fallback failed
+  too. Nothing in 13i.space's own code had changed.
+- **Fix**: songs now live on 13i.space itself, in public/audio/signal/
+  (named exactly as in lib/musicReleases.js, e.g. Circadian-Pulse.mp3),
+  copied from Paul's Desktop > LogicPro Sessions > 13i > 13i All Songs.
+  Apprehension was only a WAV there, so it was encoded to MP3 (V2).
+  Same-address files mean Lyra and the light ring always hear the music;
+  the WordPress fallback is gone. /api/track/<name>.mp3 redirects to the
+  new place so old links still work. Album covers are the new Signal_Ø /
+  Signal_1 / Signal_∞ art (public/covers/albums/).
+- **Apprehension (Megan Halloween Remix)**: the first extended remix, in a
+  pair of cards with the Apprehension video on /music. Plays in the deck
+  with the Extended Remixes cover. New `remixes` list in
+  lib/musicReleases.js for future remixes.
+
 ## Update 5.61 — SpaceCore: the survival update (Oct 2026)
 Needs docs/v5.61-spacecore-survival.sql (the game says "outdated" until it
 runs: that's the 5.42 safeguard). Built from a three-hour playtest by one of
