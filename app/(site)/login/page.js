@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import PasswordInput from "../../../components/PasswordInput";
 import { createClient } from "../../../lib/supabaseBrowser";
 
 const inputStyle = {
@@ -180,7 +181,7 @@ export default function LoginPage() {
       {tab === "login" && (
         <form onSubmit={doLogin} className="panel">
           <input style={inputStyle} required value={identifier} onChange={(e) => setIdentifier(e.target.value)} placeholder="username or email" />
-          <input style={inputStyle} required type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" />
+          <PasswordInput style={inputStyle} required value={password} onChange={(e) => setPassword(e.target.value)} placeholder="password" />
           <button type="submit" disabled={loading} style={btnStyle(loading)}>
             {loading ? "Signing in..." : "Log in"}
           </button>
@@ -237,7 +238,7 @@ export default function LoginPage() {
         <form onSubmit={doSignup} className="panel">
           <input style={inputStyle} required value={username} onChange={(e) => setUsername(e.target.value)} placeholder="username" />
           <input style={inputStyle} required type="email" value={signupEmail} onChange={(e) => setSignupEmail(e.target.value)} placeholder="email" />
-          <input style={inputStyle} required type="password" value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} placeholder="password (min 8 characters)" />
+          <PasswordInput style={inputStyle} required value={signupPassword} onChange={(e) => setSignupPassword(e.target.value)} placeholder="password (min 8 characters)" />
           <button type="submit" disabled={loading} style={btnStyle(loading)}>
             {loading ? "Creating account..." : "Create account"}
           </button>

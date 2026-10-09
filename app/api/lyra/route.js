@@ -21,7 +21,7 @@ import { SPACECORE_GUIDE } from "../../../lib/spacecore";
 // repeat questions only pay full price for the short, personal part.
 // Uses fetch rather than the SDK, like app/api/oracle and app/api/alien.
 
-const MODEL = "claude-sonnet-5-5";
+const MODEL = process.env.LYRA_MODEL || "claude-haiku-5-5"; // Update 5.66: was Sonnet 5.5
 const MAX_TURNS = 16;
 const MAX_CHARS = 1500;
 

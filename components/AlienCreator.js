@@ -65,6 +65,13 @@ export default function AlienCreator({ loggedIn }) {
   const router = useRouter();
   const [step, setStep] = useState(0); // 0..N-1 questions, N = points, N+1 = its look, N+2 = sheet
   const [lookText, setLookText] = useState("");
+  const [quota, setQuota] = useState(null); // { used, limit, unlimited } - Update 5.66
+  useEffect(() => {
+    if (!loggedIn) return;
+    fetch("/api/alien", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "quota" }) })
+      .then((r) => r.json()).then((q) => { if (q && Number.isFinite(q.used)) setQuota(q); }).catch(() => {});
+  }, [loggedIn]);
+  const outOfDrawings = quota && !quota.unlimited && quota.used >= quota.limit;
   const [nameNag, setNameNag] = useState(false);
   const labRef = useRef(null);
   const [answers, setAnswers] = useState({});
@@ -255,6 +262,7 @@ export default function AlienCreator({ loggedIn }) {
       });
       if (!res.body || (res.headers.get("content-type") || "").includes("application/json")) {
         const data = await res.json().catch(() => ({}));
+        if (data.quota) setQuota({ ...data.quota, unlimited: false });
         throw new Error(data.error || "The portrait couldn't be started.");
       }
       // newline-delimited JSON: progress pings, then the SVG (or an error)
@@ -279,6 +287,7 @@ export default function AlienCreator({ loggedIn }) {
         });
       }
       if (result && result.svg) {
+        setQuota((q) => (q && !q.unlimited ? { ...q, used: q.used + 1 } : q));
         // an SVG shown through <img> must declare its namespace
         const svg = /xmlns=/.test(result.svg) ? result.svg : result.svg.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"');
         setPortrait(svg);
@@ -383,12 +392,17 @@ export default function AlienCreator({ loggedIn }) {
           )}
           {saveStatus !== "done" && (
             <div style={{ display: "flex", justifyContent: "center", marginTop: 12 }}>
-              <button onClick={generatePortrait} disabled={portraitStatus === "drawing"} style={btnStyle}>
+              <button onClick={generatePortrait} disabled={portraitStatus === "drawing" || outOfDrawings} style={{ ...btnStyle, opacity: outOfDrawings ? 0.45 : 1 }}>
                 {portraitStatus === "drawing" ? "Drawing..." : portrait ? "Generate again" : "Generate Species"}
               </button>
             </div>
           )}
           {portraitNote && <p className="mono" style={{ fontSize: 11, color: "#C97B6E", textAlign: "center", margin: "8px 0 0" }}>{portraitNote}</p>}
+          {quota && !quota.unlimited && saveStatus !== "done" && (
+            <p className="mono" style={{ fontSize: 11, color: outOfDrawings ? "#E9D29A" : "#6E76B8", textAlign: "center", margin: "8px 0 0" }}>
+              {outOfDrawings ? `You've made ${quota.limit} today - the Lab's daily limit. It reopens at midnight (Central).` : `${quota.limit - quota.used} of ${quota.limit} creations left today${portrait ? " \u00b7 Generate again uses one" : ""}`}
+            </p>
+          )}
         </div>
 
         <div style={{ display: "flex", flexWrap: "wrap", gap: 20, alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
@@ -508,13 +522,24 @@ export default function AlienCreator({ loggedIn }) {
           <StatRadar stats={stats} size={230} />
         </div>
 
+        {/* Update 5.66: how many are left, big; the three quick options up top */}
+        <div className={`pts-left ${pointsLeft ? "" : "pts-left-done"}`} aria-live="polite">
+          <span className="pts-left-n">{pointsLeft}</span>
+          <span className="pts-left-label">{pointsLeft ? (pointsLeft === 1 ? "point left to spend" : "points left to spend") : "all spent - ready"}</span>
+        </div>
+        <div className="pts-quick">
+          <button onClick={() => { setStats(evenStats()); setNudge((n) => n + 1); }}>Even split</button>
+          <button onClick={() => { setStats(randomStats()); setBigAnswer(false); setPulse((n) => n + 1); }}>&#x2684; Randomize</button>
+          <button onClick={() => { setStats(zeroStats()); setNudge((n) => n + 1); }}>All to zero</button>
+        </div>
+
         {STAT_GROUPS.map((g) => {
           const left = g.pool - groupTotal(stats, g);
           return (
-            <div key={g.id} style={{ marginBottom: 20 }}>
-              <div className="mono" style={{ display: "flex", justifyContent: "space-between", fontSize: 11, letterSpacing: "1px", color: g.color, paddingBottom: 6, borderBottom: `1px solid ${g.color}44`, marginBottom: 10 }}>
-                <span>{g.label.toUpperCase()} &middot; {g.pool}</span>
-                <span style={{ color: left ? "#E8CFC0" : "#565B8F" }}>{left ? `${left} left` : "all spent"}</span>
+            <div key={g.id} className="pts-group" style={{ "--g": g.color }}>
+              <div className="pts-group-head">
+                <span className="mono">{g.label.toUpperCase()} &middot; {g.pool}</span>
+                <span className={`pts-group-left ${left ? "" : "done"}`}>{left ? <><b>{left}</b> left</> : "all spent \u2713"}</span>
               </div>
               {g.stats.map((st) => (
                 <div key={st.id} style={{ marginBottom: 12 }}>
@@ -522,7 +547,7 @@ export default function AlienCreator({ loggedIn }) {
                     <span style={{ fontSize: 14, color: "#DCDFFF" }}>{st.label}</span>
                     <span className="mono" style={{ fontSize: 15, color: "#E4E4EF", minWidth: 28, textAlign: "right" }}>{stats[st.id]}</span>
                   </div>
-                  <div style={{ fontSize: 11.5, color: "#565B8F", marginBottom: 4 }}>{st.desc}</div>
+                  <div style={{ fontSize: 11.5, color: "#6E76B8", marginBottom: 4 }}>{st.desc}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <button aria-label={`Less ${st.label}`} onClick={() => setStat(g, st.id, stats[st.id] - 1)} style={stepBtn}>&minus;</button>
                     <input
@@ -546,16 +571,7 @@ export default function AlienCreator({ loggedIn }) {
           <button onClick={() => setStep(total + 1)} disabled={pointsLeft > 0} style={{ ...btnStyle, opacity: pointsLeft > 0 ? 0.4 : 1, cursor: pointsLeft > 0 ? "default" : "pointer" }}>
             Continue to its look &rarr;
           </button>
-          <button onClick={() => { setStats(evenStats()); setNudge((n) => n + 1); }} style={{ ...btnStyle, background: "none", opacity: 0.8 }}>
-            Even split
-          </button>
-          <button onClick={() => { setStats(randomStats()); setBigAnswer(false); setPulse((n) => n + 1); }} style={{ ...btnStyle, background: "none", opacity: 0.8 }}>
-            &#x2684; Randomize
-          </button>
-          <button onClick={() => { setStats(zeroStats()); setNudge((n) => n + 1); }} style={{ ...btnStyle, background: "none", opacity: 0.8 }}>
-            All to zero
-          </button>
-          {pointsLeft > 0 && <span className="mono" style={{ fontSize: 11, color: "#E8CFC0" }}>spend all {pointsLeft} remaining points to continue</span>}
+          {pointsLeft > 0 && <span className="mono" style={{ fontSize: 12, color: "#E9D29A" }}>spend all {pointsLeft} remaining points to continue</span>}
         </div>
 
         <button
@@ -590,8 +606,8 @@ export default function AlienCreator({ loggedIn }) {
         <p style={{ fontSize: 17, color: "#DCDFFF", margin: "0 0 4px" }}>Now: what does it look like?</p>
         <p style={{ fontSize: 13, color: "#8A8FBF", margin: "0 0 16px", lineHeight: 1.6 }}>Build its body, then describe it in your own words. The portrait follows what you write.</p>
         {LOOKS.map((q) => (
-          <div key={q.id} className="look-q">
-            <div className="look-q-label">{q.question}</div>
+          <div key={q.id} className={`look-q ${answers[q.id] !== undefined ? "look-q-done" : ""}`}>
+            <div className="look-q-label"><span className="look-q-n mono">{LOOKS.indexOf(q) + 1}</span>{q.question}</div>
             <div className="look-chips">
               {q.options.map((opt) => (
                 <button key={opt} onClick={(e) => pickLook(q, opt, e)} className={`look-chip ${answers[q.id] === opt ? "on" : ""}`}>{opt}</button>
@@ -610,8 +626,8 @@ export default function AlienCreator({ loggedIn }) {
             )}
           </div>
         ))}
-        <div className="look-q">
-          <div className="look-q-label">Describe what it looks like <span className="mono" style={{ fontSize: 10, color: "#6E76B8", marginLeft: 6 }}>YOUR VISION &middot; OPTIONAL</span></div>
+        <div className="look-q look-q-vision">
+          <div className="look-q-label"><span className="look-q-n mono">{LOOKS.length + 1}</span>Describe what it looks like <span className="mono" style={{ fontSize: 10, color: "#6E76B8", marginLeft: 6 }}>YOUR VISION &middot; OPTIONAL</span></div>
           <textarea
             value={lookText}
             onChange={(e) => setLookText(e.target.value.slice(0, 600))}

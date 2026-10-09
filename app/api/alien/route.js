@@ -15,7 +15,18 @@ import { isSentinelUser } from "../../../lib/sentinel";
 // project has no npm dependency on the SDK.
 export const runtime = "edge";
 
-const MODEL = "claude-opus-5-5";
+// Update 5.66 - cost. Each call uses the cheapest model that does it well;
+// any of them can be changed in Vercel's environment variables:
+//   ALIEN_PORTRAIT_MODEL (default Sonnet 5.5, low effort - the costly one;
+//     "claude-haiku-5-5" is cheaper still, "claude-opus-5-5" the old look)
+//   ALIEN_TEXT_MODEL (names and 13i's reviews; default Haiku 5.5)
+const PORTRAIT_MODEL = () => process.env.ALIEN_PORTRAIT_MODEL || "claude-sonnet-5-5";
+const TEXT_MODEL = () => process.env.ALIEN_TEXT_MODEL || "claude-haiku-5-5";
+const MODEL = "claude-sonnet-5-5"; // fallback label for usage records
+// effort is for the larger models only
+const effort = (model, level) => (/opus|sonnet|fable/.test(model) ? { output_config: { effort: level } } : {});
+// Update 5.66 - a cap: each Kin gets this many drawings a day (Sentinel-X is exempt)
+const DAILY_DRAWINGS = Number(process.env.ALIEN_DAILY_LIMIT || 3);
 const API = "https://api.anthropic.com/v1/messages";
 
 function headers(apiKey) {
@@ -105,9 +116,9 @@ async function writeReview(apiKey, supabase, userId, speciesId) {
     method: "POST",
     headers: headers(apiKey),
     body: JSON.stringify({
-      model: MODEL,
+      model: TEXT_MODEL(),
       max_tokens: 3000,
-      output_config: { effort: "low" },
+      ...effort(TEXT_MODEL(), "low"),
       fallbacks: "default",
       system: REVIEW_SYSTEM,
       messages: [{ role: "user", content: `Review this species.\n\n${describeSpecies(sp)}` }],
@@ -115,7 +126,7 @@ async function writeReview(apiKey, supabase, userId, speciesId) {
   });
   if (!res.ok) return Response.json({ error: "13i didn't answer. Try again in a moment." }, { status: 502 });
   const data = await res.json();
-  await recordClaudeUsage({ feature: "alien-review", model: data.model || MODEL, usage: data.usage });
+  await recordClaudeUsage({ feature: "alien-review", model: data.model || TEXT_MODEL(), usage: data.usage });
   if (data.stop_reason === "refusal") return Response.json({ error: "No review came back for that one. Try again." }, { status: 422 });
   const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
   let parsed = null;
@@ -176,9 +187,9 @@ async function suggestName(apiKey, answers) {
     method: "POST",
     headers: headers(apiKey),
     body: JSON.stringify({
-      model: MODEL,
+      model: TEXT_MODEL(),
       max_tokens: 2000,
-      output_config: { effort: "low" },
+      ...effort(TEXT_MODEL(), "low"),
       fallbacks: "default",
       system: NAME_SYSTEM,
       messages: [{ role: "user", content: describe(answers) }],
@@ -186,7 +197,7 @@ async function suggestName(apiKey, answers) {
   });
   if (!res.ok) return Response.json({ error: "The name didn't come through. Try again." }, { status: 502 });
   const data = await res.json();
-  await recordClaudeUsage({ feature: "alien-name", model: data.model || MODEL, usage: data.usage });
+  await recordClaudeUsage({ feature: "alien-name", model: data.model || TEXT_MODEL(), usage: data.usage });
   if (data.stop_reason === "refusal") return Response.json({ error: "No name came back for that one. Try again." }, { status: 422 });
   const text = (data.content || []).filter((b) => b.type === "text").map((b) => b.text).join(" ");
   const name = text.replace(/["'“”*_`]/g, "").split("\n")[0].trim().slice(0, 40);
@@ -195,8 +206,47 @@ async function suggestName(apiKey, answers) {
 
 // Streams newline-delimited JSON: {"progress":n} while drawing, then
 // {"svg":"..."} or {"error":"..."}.
-function drawPortrait(apiKey, answers, name) {
-  return streamSvg(apiKey, { system: PORTRAIT_SYSTEM, content: `Draw this species.\n\n${describe(answers, name)}`, feature: "alien-portrait" });
+function drawPortrait(apiKey, answers, name, onDone) {
+  return streamSvg(apiKey, { system: PORTRAIT_SYSTEM, content: `Draw this species.\n\n${describe(answers, name)}`, feature: "alien-portrait", onDone });
+}
+
+// ─── the daily cap (Update 5.66) ───
+// Counted on the account itself (Supabase app_metadata, which only the
+// server can write), so it needs no table. The day is Central time.
+const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date());
+async function adminUser(id) {
+  const admin = getSupabaseAdmin();
+  if (!admin) return null;
+  try {
+    const r = await fetch(`${admin.url}/auth/v1/admin/users/${id}`, { headers: { apikey: admin.serviceKey, Authorization: `Bearer ${admin.serviceKey}` } });
+    return r.ok ? { admin, user: await r.json() } : null;
+  } catch (e) { return null; }
+}
+async function drawingsToday(id) {
+  const a = await adminUser(id);
+  if (!a) return { used: 0, limit: DAILY_DRAWINGS, counted: false };
+  const q = a.user.app_metadata?.alien_drawings || {};
+  return { used: q.day === today() ? Number(q.n) || 0 : 0, limit: DAILY_DRAWINGS, counted: true };
+}
+async function countDrawing(id) {
+  const a = await adminUser(id);
+  if (!a) return;
+  const meta = a.user.app_metadata || {};
+  const q = meta.alien_drawings || {};
+  const n = (q.day === today() ? Number(q.n) || 0 : 0) + 1;
+  try {
+    await fetch(`${a.admin.url}/auth/v1/admin/users/${id}`, {
+      method: "PUT",
+      headers: { apikey: a.admin.serviceKey, Authorization: `Bearer ${a.admin.serviceKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ app_metadata: { ...meta, alien_drawings: { day: today(), n } } }),
+    });
+  } catch (e) { /* not counted - never block a drawing over bookkeeping */ }
+}
+async function isSentinel(supabase, userId) {
+  try {
+    const { data } = await supabase.from("profiles").select("username").eq("id", userId).maybeSingle();
+    return isSentinelUser(data?.username);
+  } catch (e) { return false; }
 }
 
 // Sentinel-X only: repaint one saved species' portrait in solid colour and
@@ -230,7 +280,7 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   });
 }
 
-function streamSvg(apiKey, { system, content, feature, onSvg }) {
+function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL() }) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -243,10 +293,10 @@ function streamSvg(apiKey, { system, content, feature, onSvg }) {
           method: "POST",
           headers: headers(apiKey),
           body: JSON.stringify({
-            model: MODEL,
+            model,
             max_tokens: 16000,
             stream: true,
-            output_config: { effort: "medium" },
+            ...effort(model, "low"),
             fallbacks: "default",
             system,
             messages: [{ role: "user", content }],
@@ -261,7 +311,7 @@ function streamSvg(apiKey, { system, content, feature, onSvg }) {
         // parts arrive on this stream - cleanSvg keeps the last complete SVG.)
         const reader = res.body.getReader();
         const decoder = new TextDecoder();
-        let buffer = "", text = "", stopReason = null, usage = null, served = MODEL;
+        let buffer = "", text = "", stopReason = null, usage = null, served = model;
         for (;;) {
           const { value, done } = await reader.read();
           if (done) break;
@@ -286,7 +336,10 @@ function streamSvg(apiKey, { system, content, feature, onSvg }) {
         if (svg && onSvg) {
           const saved = await onSvg(svg);
           send(saved ? { svg, saved: true } : { error: "Repainted, but it couldn't be saved. Try again." });
-        } else send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
+        } else {
+          if (svg && onDone) await onDone();
+          send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
+        }
       } catch (e) {
         send({ error: "The connection dropped while drawing. Try again." });
       } finally {
@@ -317,6 +370,11 @@ export async function POST(request) {
   let body;
   try { body = await request.json(); } catch { body = {}; }
   const { action, answers, name, speciesId } = body || {};
+  if (action === "quota") {
+    const sentinel = await isSentinel(supabase, user.id);
+    const q = await drawingsToday(user.id);
+    return Response.json({ ...q, unlimited: sentinel || !q.counted });
+  }
   if (action === "repaint") {
     if (typeof speciesId !== "string") return Response.json({ error: "Expected { action: 'repaint', speciesId }" }, { status: 400 });
     return repaintPortrait(apiKey, supabase, user.id, speciesId);
@@ -328,6 +386,13 @@ export async function POST(request) {
   if (!answers || typeof answers !== "object") return Response.json({ error: "Expected { action, answers }" }, { status: 400 });
 
   if (action === "name") return suggestName(apiKey, answers);
-  if (action === "portrait") return drawPortrait(apiKey, answers, name);
+  if (action === "portrait") {
+    const sentinel = await isSentinel(supabase, user.id);
+    if (!sentinel) {
+      const q = await drawingsToday(user.id);
+      if (q.counted && q.used >= q.limit) return Response.json({ error: `That's ${q.limit} creations today - the Lab's limit. It reopens at midnight (Central).`, quota: q }, { status: 429 });
+    }
+    return drawPortrait(apiKey, answers, name, sentinel ? null : () => countDrawing(user.id));
+  }
   return Response.json({ error: "Unknown action" }, { status: 400 });
 }

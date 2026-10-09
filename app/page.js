@@ -4,10 +4,17 @@ import ThemedHero from "../components/ThemedHero";
 import EmailSignup from "../components/EmailSignup";
 import EasterStars from "../components/EasterStars";
 import BetaSignup from "../components/BetaSignup";
+import AuthLinkForwarder from "../components/AuthLinkForwarder";
+import { redirect } from "next/navigation";
 
-export default function CountdownPage() {
+export default function CountdownPage({ searchParams }) {
+  // a sign-in or reset link that Supabase sent here instead of its callback
+  // (Update 5.66): pass it on
+  const code = typeof searchParams?.code === "string" ? searchParams.code : null;
+  if (code) redirect(`/auth/landing?code=${encodeURIComponent(code)}`);
   return (
     <div style={styles.page}>
+      <AuthLinkForwarder />
       {/* the Big Bang begins here at zero (components/LaunchMoment.js) */}
       <div data-launch-origin style={styles.origin}>
         <ThemedHero logoWrapStyle={styles.logoWrap} />

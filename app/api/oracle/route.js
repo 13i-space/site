@@ -45,7 +45,7 @@ const LIMITS = () => ({
 });
 // The model is the Oracle's voice. Opus 5.5 since Update 5.11; set
 // ORACLE_MODEL (e.g. "claude-sonnet-4-6") in Vercel to trade voice for cost.
-const MODEL = () => process.env.ORACLE_MODEL || "claude-opus-5-5";
+const MODEL = () => process.env.ORACLE_MODEL || "claude-sonnet-5-5"; // Update 5.66: default was Opus 5.5
 const MAX_TOKENS = 400;
 const MAX_HISTORY = 12;
 const MAX_MESSAGE_CHARS = 1000;

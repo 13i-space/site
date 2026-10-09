@@ -93,6 +93,8 @@ export default function SurvivalTournament({ entrants, highlight = null }) {
   };
   const begin = () => { setCursor(0); setStep(0); };
   const replay = () => { setInspect(null); setCursor(0); setStep(0); setAuto(true); };
+  // Update 5.66: jump straight to the champion
+  const skip = () => { clearTimeout(timer.current); setInspect(null); setAuto(false); setCursor(battles.length); setStep(0); stageRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }); };
   const fresh = () => { setInspect(null); setAuto(false); setCursor(-1); setStep(0); setSeed(String(Math.floor(Math.random() * 1e9))); };
 
   // which battles have finished (for the bracket and the records)
@@ -144,9 +146,11 @@ export default function SurvivalTournament({ entrants, highlight = null }) {
         {!done && (auto
           ? <button className="st-btn" onClick={() => setAuto(false)}>Pause</button>
           : <button className="st-btn" onClick={() => { setAuto(true); if (cursor < 0) begin(); else if (battleDone) next(); }}>Auto play</button>)}
+        {!done && <button className="st-btn" onClick={skip}>Skip to results &raquo;</button>}
         {done && <button className="st-btn st-btn-main" onClick={replay}>Replay</button>}
         <button className="st-btn st-btn-quiet" onClick={fresh}>New tournament</button>
       </div>
+      {cursor >= 0 && !done && <button className="st-skip-float" onClick={skip}>Skip to results &raquo;</button>}
 
       <section ref={stageRef} className="st-stage">
         {done && !inspect ? (

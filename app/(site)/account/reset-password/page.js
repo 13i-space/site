@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../../../lib/supabaseBrowser";
+import PasswordInput from "../../../../components/PasswordInput";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -21,7 +22,7 @@ export default function ResetPasswordPage() {
     const supabase = createClient();
     const { error: authError } = await supabase.auth.updateUser({ password });
     if (authError) {
-      setError(authError.message);
+      setError(/session/i.test(authError.message) ? "That link has expired or was already used. Ask for a new one from the sign-in page (forgot password?)." : authError.message);
       setStatus("idle");
       return;
     }
@@ -40,9 +41,9 @@ export default function ResetPasswordPage() {
         <p style={{ color: "#B7BADF" }}>Password set — taking you to your account...</p>
       ) : (
         <form onSubmit={submit} className="panel">
-          <input
-            type="password"
+          <PasswordInput
             required
+            autoFocus
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="new password (min 8 characters)"

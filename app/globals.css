@@ -2014,7 +2014,27 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 .lab-submit { display: inline-block; padding: 13px 22px; border-radius: 10px; border: none; cursor: pointer; background: linear-gradient(135deg, #6FC3A8, #B9C0FF); color: #0A0B1C; font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; box-shadow: 0 0 22px rgba(111,195,168,.3); transition: transform .2s, box-shadow .2s; }
 .lab-submit:hover:not([disabled]) { transform: translateY(-2px); box-shadow: 0 0 30px rgba(111,195,168,.5); }
 .lab-submit-unnamed { opacity: .55; }
-.look-q { margin-bottom: 16px; }
+.look-q { margin-bottom: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid #262A55; background: rgba(14,16,38,0.6); transition: border-color .2s; }
+.look-q-done { border-color: rgba(233,210,154,0.45); background: rgba(233,210,154,0.04); }
+.look-q-vision { border-color: rgba(111,195,168,0.45); }
+.look-q-n { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: #21244A; color: #B9C0FF; font-size: 10px; margin-right: 8px; vertical-align: 1px; }
+.look-q-done .look-q-n { background: #E9D29A; color: #14163A; }
+/* the points screen (Update 5.66) */
+.pts-left { display: flex; align-items: baseline; justify-content: center; gap: 10px; margin: 6px 0 12px; padding: 10px; border-radius: 12px; border: 1px solid rgba(233,210,154,0.45); background: rgba(233,210,154,0.06); }
+.pts-left-n { font-family: var(--font-mono); font-size: 40px; line-height: 1; color: #E9D29A; text-shadow: 0 0 18px rgba(233,210,154,0.4); }
+.pts-left-label { font-size: 14px; color: #E8CFC0; }
+.pts-left-done { border-color: rgba(111,195,168,0.5); background: rgba(111,195,168,0.08); }
+.pts-left-done .pts-left-n { color: #6FC3A8; text-shadow: 0 0 18px rgba(111,195,168,0.4); }
+.pts-left-done .pts-left-label { color: #9BE0C8; }
+.pts-quick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px; }
+.pts-quick button { background: #14162a; border: 1px solid #3A3E75; border-radius: 8px; color: #B9C0FF; font-family: var(--font-mono); font-size: 12px; padding: 10px 6px; cursor: pointer; }
+.pts-quick button:hover { border-color: #E9D29A; color: #F5EEDB; }
+.pts-group { margin-bottom: 16px; padding: 12px 14px 4px; border-radius: 12px; border: 1px solid var(--g); background: color-mix(in srgb, var(--g) 6%, transparent); box-shadow: inset 3px 0 0 var(--g); }
+.pts-group-head { display: flex; justify-content: space-between; align-items: baseline; padding-bottom: 8px; margin-bottom: 10px; border-bottom: 1px solid color-mix(in srgb, var(--g) 35%, transparent); color: var(--g); }
+.pts-group-head .mono { font-size: 11px; letter-spacing: 1.5px; }
+.pts-group-left { font-size: 13px; color: #E8CFC0; }
+.pts-group-left b { font-family: var(--font-mono); font-size: 20px; color: #F5EEDB; font-weight: 500; }
+.pts-group-left.done { color: #6FC3A8; font-family: var(--font-mono); font-size: 11px; }
 .look-q-label { font-size: 14px; color: #DCDFFF; margin-bottom: 8px; }
 .look-chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .look-chip { background: none; border: 1px solid #262A55; border-radius: 16px; color: #C9CCF0; font-size: 12.5px; padding: 6px 12px; cursor: pointer; text-align: left; transition: all .15s; }
@@ -2367,3 +2387,7 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
   .ds-lane { grid-template-columns: 1fr; }
   .ds-rolls { grid-template-columns: 1fr; }
 }
+
+/* Survival Trials: skip to results, always in reach while it plays (Update 5.66) */
+.st-skip-float { position: fixed; right: 18px; bottom: 86px; z-index: 60; padding: 11px 18px; border-radius: 24px; border: 1px solid #E9D29A; background: rgba(12,13,30,.92); color: #F5EEDB; font-family: var(--font-mono); font-size: 12px; letter-spacing: 1px; cursor: pointer; box-shadow: 0 8px 24px rgba(0,0,0,.5), 0 0 18px rgba(233,210,154,.25); }
+.st-skip-float:hover { background: #E9D29A; color: #14163A; }
