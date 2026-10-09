@@ -4,6 +4,13 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.68 (no SQL): The Music -> **The Rave**, with **Rave Mode**: a
+  full-screen alien rave on the beat of the song playing
+  (components/RaveMode.js, lib/rave/*). Beat grids measured per song in
+  lib/rave/beatData.js - a new or changed song file needs the script re-run
+  (docs/rave-beats.py) or it falls back to live tempo. Tested in a cloud
+  browser (landscape, phone, iPad, drops, controls); watch it on a real
+  screen with sound on the first deploy.
 - Update 5.66 (no SQL): cheaper models per call (env-overridable), 3 Lab
   drawings/day per Kin, reset links that land on the countdown now reach
   the reset form, show-password eyes, skip in the Survival Trials, Lab

@@ -3,6 +3,32 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.68 — The Rave and Rave Mode (Oct 2026)
+No SQL. "The Music" is now **The Rave** (page title, nav, Explore, search,
+launch journey; the address stays /music). The player has a **Rave Mode**
+button (and a band under it): a full-screen Alien Rave (components/RaveMode.js,
+lib/rave/*). Qeth, Ilu, Ixxen and Varrow dance on a floor at the edge of
+space, a new DJ (four arms, glowing cranium, LED visor, curled horns) plays
+at the decks, with an LED wall, moving heads, lasers, a lit dance floor,
+fog, a glowstick crowd and confetti on the drops.
+- **On the beat**: every song's tempo and first downbeat were measured from
+  the files (docs/rave-beats.py with librosa -> lib/rave/beatData.js, plus
+  the loudness of each 2 seconds). The beat comes from the song's own clock
+  (audio.currentTime minus the speakers' delay), so it holds through seeks
+  and pauses. Checked against what the live analyser hears: within ~25 ms.
+  A song not in the table (a new release) falls back to live tempo.
+  **New song? Re-run the script and paste its output into beatData.js.**
+- **Choreography**: 5 moves each (Qeth sway/ripple/toss/vogue/raise, Ilu
+  bob/twirl/wave/glowsticks/mirrorball, Ixxen nod/octopus/conduct/shuffle/
+  shades, Varrow nod/orbit/shimmy/raise-the-roof/lift), chosen every four
+  bars by how hard that part of the song goes. Drops are found from the
+  measured energy: the DJ raises its hands for the two bars before, then
+  every alien hits its signature move. Big sections sometimes get a
+  ripple, the same move travelling across the stage.
+- Strobe is off by default (a toggle); none at all with reduced motion.
+  Keeps the screen awake, drops resolution on slow machines, works upright
+  on phones (two rows of dancers). Esc / arrows / F / space.
+
 ## Update 5.67 — The Gazette, page two (Oct 2026)
 No SQL. The Galactic Gazette (/galaxy/news) has a second page you turn to -
 the folded corner, the tabs, or the arrow keys (#page-2 links straight to

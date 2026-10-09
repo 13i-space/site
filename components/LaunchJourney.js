@@ -15,7 +15,7 @@ const STOPS = [
   {
     key: "explore", href: "/explore", title: "Explore", verb: "discover it",
     line: "The book, the music, 13i's own records, the galaxy they happen in.",
-    places: [["The Book", "/book"], ["The Music", "/music"], ["Short Stories", "/assignments"], ["The Galaxy", "/galaxy"]],
+    places: [["The Book", "/book"], ["The Rave", "/music"], ["Short Stories", "/assignments"], ["The Galaxy", "/galaxy"]],
     color: "#8B95F6",
   },
   {
