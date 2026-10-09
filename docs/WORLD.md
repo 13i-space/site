@@ -233,6 +233,13 @@ injector, the intake, the valve, the slate it writes everything on. Pulls
 back at the anomaly; works flat out while a species takes shape. A Lab
 character, not 13i canon.
 
+## The Rave and its DJ — developing (site feature, Update 5.68)
+Rave Mode puts Qeth, Ilu, Ixxen and Varrow on a dance floor together. The
+**DJ** is new and unnamed: four arms, a translucent cranium that lights
+with the bass, an LED visor, headphones round its neck and great curled
+horns (a nod to Tempo Goat Studios). Not canon; Paul to name it if he wants.
+Varrow got a full body (robe, feet) the Wish Engine never showed.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they

@@ -2,10 +2,17 @@
 
 import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { listenToElement, primeAudio, onMusic } from "../../../lib/lyraMusic";
 import { albums, parseTrack, releaseDateFor, remixes, songSrc } from "../../../lib/musicReleases";
 
-// The Music (Update 5.55): one deck instead of 36 separate players.
+// Rave Mode loads only when it's opened (Update 5.68)
+const RaveMode = dynamic(() => import("../../../components/RaveMode"), { ssr: false });
+
+// The Rave (was The Music; renamed in Update 5.68). One deck instead of 36
+// separate players (Update 5.55), and Rave Mode (Update 5.68): a full-screen
+// alien rave - Qeth, Ilu, Ixxen and Varrow dancing on the beat of whatever is
+// playing, with a DJ at the decks (components/RaveMode.js).
 //   - Play an album, Play all three albums (36 signals in order), or Shuffle
 //     everything; Repeat one; Today's signal; pick up where you left off
 //   - a spinning record with the album's cover, a live ring that moves with
@@ -102,6 +109,7 @@ export default function MusicPage() {
   const [resume, setResume] = useState(null);
   const [open, setOpen] = useState({ 0: true, 1: true, 2: true });
   const [about, setAbout] = useState(false);
+  const [rave, setRave] = useState(false);
   const current = pos >= 0 ? queue[pos] : null;
   const today = useRef(null);
   if (!today.current) today.current = todays();
@@ -156,6 +164,13 @@ export default function MusicPage() {
     setPos(n);
     load(queue[n]);
   }, [queue, pos, load]);
+  // Rave Mode: start the music if nothing's on, then go full screen
+  const openRave = () => {
+    primeAudio();
+    if (!current) playAllThree();
+    else if (audioRef.current?.paused) audioRef.current.play().catch(() => {});
+    setRave(true);
+  };
   const toggle = () => {
     const el = audioRef.current;
     if (!el) return;
@@ -214,10 +229,10 @@ export default function MusicPage() {
       <section className="mx-hero">
         <div>
           <div className="mono mx-kicker">36 signals &middot; 3 albums &middot; one a month from April 2027</div>
-          <h1 className="mx-title">The Music</h1>
+          <h1 className="mx-title">The Rave</h1>
           <p className="mx-lede">
             Instrumental electronic music from the edge of the 13i universe: cinematic synth-wave, progressive EDM and ambient
-            texture, 100% human made. Put your headphones on.
+            texture, 100% human made. Put your headphones on, or hit Rave Mode and let the aliens dance.
           </p>
           <button className="mono mx-about-btn" onClick={() => setAbout((a) => !a)} aria-expanded={about}>
             {about ? "less about the music ↑" : "more about the music ↓"}
@@ -277,6 +292,7 @@ export default function MusicPage() {
             <button onClick={() => next(-1)} aria-label="Previous" disabled={!current}>⏮</button>
             <button onClick={toggle} className="mx-play" aria-label={playing ? "Pause" : "Play"}>{playing ? "❚❚" : "▶"}</button>
             <button onClick={() => next(1)} aria-label="Next" disabled={!current}>⏭</button>
+            <button onClick={openRave} className="mono mx-rave" title="Full-screen alien rave, dancing to this song"><span className="mx-rave-dot" aria-hidden="true" />RAVE MODE</button>
             <button onClick={() => setRepeatOne((r) => !r)} aria-pressed={repeatOne} className={`mono mx-small ${repeatOne ? "mx-active" : ""}`} title="Repeat this song">repeat one</button>
           </div>
           {upNext.length > 0 && (
@@ -286,6 +302,17 @@ export default function MusicPage() {
           )}
         </div>
       </section>
+
+      {/* Rave Mode (Update 5.68) */}
+      <button className="mx-rave-band" onClick={openRave}>
+        <span className="mx-rave-band-icon" aria-hidden="true">👽</span>
+        <span>
+          <span className="mono mx-rave-band-k" style={{ display: "block" }}>NEW &middot; RAVE MODE</span>
+          <span className="mx-rave-band-t" style={{ display: "block" }}>The Alien Rave</span>
+          <span className="mx-rave-band-s" style={{ display: "block" }}>Qeth, Ilu, Ixxen and Varrow on the dance floor, the DJ on the decks, every move on the beat of the song you pick. Full screen. Leave it on.</span>
+        </span>
+        <span className="mono mx-rave-band-go">ENTER &rarr;</span>
+      </button>
 
       {/* ways to listen */}
       <section className={`mx-ways ${resume ? "" : "mx-ways-3"}`}>
@@ -376,6 +403,20 @@ export default function MusicPage() {
           </div>
         ))}
       </section>
+
+      {rave && (
+        <RaveMode
+          audioRef={audioRef}
+          track={current}
+          title={current ? current.label : null}
+          sub={current ? (current.remix ? "Extended remix" : `${album.title} · track ${current.ti + 1}`) : null}
+          playing={playing}
+          onToggle={toggle}
+          onNext={() => next(1)}
+          onPrev={() => next(-1)}
+          onClose={() => setRave(false)}
+        />
+      )}
 
       <div className="panel" style={{ marginTop: 28 }}>
         <div className="mono" style={{ fontSize: 11, color: "#6E76B8", letterSpacing: "1px", marginBottom: 10 }}>

@@ -425,7 +425,7 @@ export default function ApprehensionVideo() {
           <div className="av-links">
             <button onClick={fullscreen}>full screen</button>
             <button onClick={record}>{recording ? "stop recording" : "save as a video file"}</button>
-            <Link href="/music">&larr; back to The Music</Link>
+            <Link href="/music">&larr; back to The Rave</Link>
           </div>
           {note && <div className="av-note">{note}</div>}
         </div>

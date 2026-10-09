@@ -38,7 +38,7 @@ export default async function Nav() {
           <div className="nav-dropdown-menu">
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/book">Book</Link></li>
-              <li><Link href="/music">Music</Link></li>
+              <li><Link href="/music">The Rave</Link></li>
               <li><Link href="/assignments">Short Stories</Link></li>
               <li><Link href="/galaxy">Galaxy</Link></li>
             </ul>
