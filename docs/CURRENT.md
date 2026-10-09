@@ -4,6 +4,10 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.66 (no SQL): cheaper models per call (env-overridable), 3 Lab
+  drawings/day per Kin, reset links that land on the countdown now reach
+  the reset form, show-password eyes, skip in the Survival Trials, Lab
+  polish. Check one real password reset on the first deploy.
 - Update 5.65 (no SQL): Signal Composer v2, the Alien DJ Controller
   (components/AlienDeck.js + components/deck/*, lib/deck/*). Tested in a
   cloud browser: playback, sync, transitions, pads in all four modes, drops,

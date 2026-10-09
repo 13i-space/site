@@ -10,7 +10,7 @@ import { createClient } from "../../../lib/supabaseServer";
 // reply can't hit a serverless time limit.
 export const runtime = "edge";
 
-const MODEL = "claude-opus-5-5";
+const MODEL = process.env.MUSIC_MODEL || "claude-haiku-5-5"; // Update 5.66: was Opus; a small JSON job
 
 const SYSTEM = `You compose short loops for the Signal Composer on 13i.space - a synthesizer that plays four bars of sixteen 16th-note steps, looping. Its sound: synthesized, atmospheric, cinematic, "a signal, translated".
 Given a description, reply with one JSON object and nothing else (no markdown fences):
@@ -71,7 +71,6 @@ export async function POST(request) {
           body: JSON.stringify({
             model: MODEL,
             max_tokens: 8000,
-            output_config: { effort: "low" },
             fallbacks: "default",
             system: SYSTEM,
             messages: [{ role: "user", content: prompt }],

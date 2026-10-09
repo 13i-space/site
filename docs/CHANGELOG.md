@@ -3,6 +3,32 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.66 — Cost, limits, the reset link, polish (Oct 2026)
+No SQL.
+- **Cost**: each Claude call now uses the cheapest model that does it well
+  (env var overrides in brackets): Alien portraits Sonnet 5.5 at low effort
+  (ALIEN_PORTRAIT_MODEL; was Opus 5.5 medium - the ~10c per card); names
+  and 13i's reviews Haiku 5.5 (ALIEN_TEXT_MODEL); Lyra Haiku 5.5
+  (LYRA_MODEL; was Sonnet); the composer Haiku 5.5 (MUSIC_MODEL; was Opus);
+  the Oracle Sonnet 5.5 (ORACLE_MODEL; was Opus). Stories unchanged.
+  lib/apiUsage.js knows Haiku 5.5's price.
+- **A daily cap**: 3 Alien Lab drawings per Kin per day (ALIEN_DAILY_LIMIT),
+  counted on the account (Supabase app_metadata, written by the server;
+  no table), resetting at midnight Central. Sentinel-X is exempt. The Lab
+  shows how many are left; "Generate again" uses one.
+- **Password reset**: a reset (or sign-in) link that Supabase sends to the
+  Site URL - the countdown page - is now passed on: ?code= goes to
+  /auth/landing (exchanges it; a recovery session goes to the reset form),
+  and a #access_token / type=recovery hash goes to /account/reset-password.
+  An expired link says so. Cause: the redirect wasn't on Supabase's
+  allow-list exactly (www vs bare domain), so Supabase fell back to "/".
+- **Show password**: an eye on every password field (components/PasswordInput.js).
+- **Survival Trials**: Skip to results, in the controls and floating while
+  the tournament plays.
+- **Lab**: points in bordered, colour-coded sections; a big "points left";
+  Even split / Randomize / All to zero above the sections; each look
+  question in its own numbered card.
+
 ## Update 5.65 — Signal Composer v2: the Alien DJ Controller (Oct 2026)
 No SQL. /create/signal-composer is now a two-deck DJ controller in the
 spirit of a DDJ-FLX4, a small DAW and an alien crowd. Everything is still
