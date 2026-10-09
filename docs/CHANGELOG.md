@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.67 — The Gazette, page two (Oct 2026)
+No SQL. The Galactic Gazette (/galaxy/news) has a second page you turn to -
+the folded corner, the tabs, or the arrow keys (#page-2 links straight to
+it): **Screen, Page & Sound**, sci-fi entertainment from io9, Reactor (the
+old Tor.com), Den of Geek and /Film (lib/scifiNews.js). Only science
+fiction gets in (a keyword filter - the general feeds carry everything),
+filed under At the Pictures, On the Small Screens, The Bookshelf and The
+Sound Stage (music checked first, then books, TV, film). Same RSS reader as
+page one (lib/spaceNews.js now exports fetchSource / parseFeed /
+previewImage); components/news/GazetteBook.js turns the pages.
+
 ## Update 5.66 — Cost, limits, the reset link, polish (Oct 2026)
 No SQL.
 - **Cost**: each Claude call now uses the cheapest model that does it well

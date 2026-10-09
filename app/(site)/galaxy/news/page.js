@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { getSpaceNewspaper, NEWS_SOURCES } from "../../../../lib/spaceNews";
+import { getSciFiPaper, SCIFI_SOURCES } from "../../../../lib/scifiNews";
+import GazetteBook from "../../../../components/news/GazetteBook";
 import NewsImage from "../../../../components/news/NewsImage";
 
 // Rebuild this page with fresh headlines at most every 30 minutes
@@ -29,12 +31,7 @@ function Story({ a, size = "brief", noImage = false }) {
 }
 
 export default async function SpaceNewsPage() {
-  const { sections, lead } = await getSpaceNewspaper();
-  const now = new Date();
-  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
-  const issue = Math.floor((now - start) / 86400000);
-  const front = lead ? sections.flatMap((s) => s.articles).filter((a) => a.link !== lead.link).sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 9) : [];
-
+  const [space, scifi] = await Promise.all([getSpaceNewspaper(), getSciFiPaper()]);
   return (
     <div className="gz-wrap">
       <link
@@ -45,7 +42,23 @@ export default async function SpaceNewsPage() {
       <Link href="/galaxy" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
         &larr; back to The Galaxy
       </Link>
+      {/* Update 5.66: two pages - turn to the entertainment section */}
+      <GazetteBook labels={["The Cosmos", "Screen, Page & Sound"]} pages={[<PageOne key="1" {...space} />, <PageTwo key="2" {...scifi} />]} />
+    </div>
+  );
+}
 
+function issueNo(now) {
+  const start = Date.UTC(now.getUTCFullYear(), 0, 0);
+  return Math.floor((now - start) / 86400000);
+}
+
+function PageOne({ sections, lead }) {
+  const now = new Date();
+  const issue = issueNo(now);
+  const front = lead ? sections.flatMap((s) => s.articles).filter((a) => a.link !== lead.link).sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 9) : [];
+
+  return (
       <article className="gz-paper">
         <header className="gz-mast">
           <div className="gz-ears">
@@ -106,11 +119,85 @@ export default async function SpaceNewsPage() {
           pictures belong to their publishers.
         </footer>
       </article>
-    </div>
+  );
+}
+
+// Page two: the entertainment section - sci-fi on screens, in books and in sound
+function PageTwo({ sections, lead }) {
+  const now = new Date();
+  const front = lead ? sections.flatMap((s) => s.articles).filter((a) => a.link !== lead.link).sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 5) : [];
+  return (
+    <article className="gz-paper gz-paper-two">
+      <header className="gz-mast">
+        <div className="gz-ears">
+          <span>Vol. XIII &middot; No. {issueNo(now)} &middot; Page 2</span>
+          <span className="gz-ear-mid">&ldquo;What Earth imagines, we read with interest&rdquo;</span>
+          <span>The Entertainment Section</span>
+        </div>
+        <h1 className="gz-title gz-title-two">Screen, Page &amp; Sound</h1>
+        <div className="gz-dateline">
+          <span>Science fiction on Earth this week</span>
+          <span>Films &middot; Series &middot; Books &middot; Scores</span>
+          <span>Reviewed by 13i, with some amusement</span>
+        </div>
+      </header>
+      {!lead ? (
+        <p className="gz-empty">The entertainment wire is quiet. Check back shortly.</p>
+      ) : (
+        <>
+          <section className="gz-front">
+            <div className="gz-front-lead"><Story a={lead} size="lead" /></div>
+            <div className="gz-front-side">
+              <div className="gz-kicker">Now showing</div>
+              {front.map((a, i) => <Story key={a.link} a={a} size="brief" noImage={i > 0} />)}
+            </div>
+          </section>
+          <nav className="gz-index" aria-label="Sections">
+            <span>In this section:</span>
+            {sections.map((s) => <a key={s.id} href={`#gz-two-${s.id}`}>{s.section}</a>)}
+          </nav>
+          {sections.map((s, i) => (
+            <section key={s.id} id={`gz-two-${s.id}`} className={`gz-section ${i % 2 ? "gz-flip" : ""}`}>
+              <h2 className="gz-sec-title"><span>{s.section}</span><small>{s.note}</small></h2>
+              <div className="gz-sec-body">
+                <div className="gz-sec-lead"><Story a={s.articles[0]} size="feature" /></div>
+                {s.articles.slice(1).map((a, k) => <div key={a.link} className="gz-cell"><Story a={a} size="brief" noImage={k > 3} /></div>)}
+              </div>
+            </section>
+          ))}
+        </>
+      )}
+      <footer className="gz-foot">
+        From {SCIFI_SOURCES.map((s) => s.name).join(", ")} - science fiction only, filed by subject. Each story opens on its original site in a new tab; pictures belong to their publishers.
+      </footer>
+    </article>
   );
 }
 
 const CSS = `
+.gz-book { position: relative; margin-top: 14px; perspective: 2200px; }
+.gz-tabs { display: flex; gap: 6px; }
+.gz-tab { display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 8px 16px 9px; border: none; border-radius: 8px 8px 0 0; background: #c9bb9b; color: #4a3c22; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 15px; cursor: pointer; opacity: .75; transition: opacity .2s; }
+.gz-tab span { font-family: 'Old Standard TT', Georgia, serif; font-weight: 400; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+.gz-tab.on { background: #efe4cc; color: #16110a; opacity: 1; }
+.gz-leaf { position: relative; transform-origin: left center; transform-style: preserve-3d; }
+.gz-leaf .gz-paper { margin-top: 0; }
+.gz-turn-fwd { animation: gz-turn-fwd .76s ease-in-out; }
+.gz-turn-back { animation: gz-turn-back .76s ease-in-out; transform-origin: right center; }
+@keyframes gz-turn-fwd { 0% { transform: rotateY(0); } 49% { transform: rotateY(-90deg); filter: brightness(.7); } 51% { transform: rotateY(90deg); filter: brightness(.7); } 100% { transform: rotateY(0); } }
+@keyframes gz-turn-back { 0% { transform: rotateY(0); } 49% { transform: rotateY(90deg); filter: brightness(.7); } 51% { transform: rotateY(-90deg); filter: brightness(.7); } 100% { transform: rotateY(0); } }
+.gz-corner { position: absolute; right: 0; bottom: 0; width: 150px; height: 120px; border: none; cursor: pointer; padding: 0; z-index: 3;
+  background: linear-gradient(135deg, transparent 50%, #d8c9a6 50%, #b9a67c 72%, #8f7c55 100%); box-shadow: -6px -6px 18px rgba(0,0,0,.25); clip-path: polygon(100% 0, 100% 100%, 0 100%); transition: width .25s, height .25s; }
+.gz-corner:hover { width: 180px; height: 145px; }
+.gz-corner span { position: absolute; right: 12px; bottom: 12px; text-align: right; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 14px; color: #241d12; }
+.gz-corner small { display: block; font-family: 'Old Standard TT', Georgia, serif; font-weight: 400; font-style: italic; font-size: 11px; }
+.gz-corner-back { right: auto; left: 0; background: linear-gradient(225deg, transparent 50%, #d8c9a6 50%, #b9a67c 72%, #8f7c55 100%); clip-path: polygon(0 0, 100% 100%, 0 100%); box-shadow: 6px -6px 18px rgba(0,0,0,.25); }
+.gz-corner-back span { right: auto; left: 12px; text-align: left; }
+.gz-leaf .gz-foot { padding: 0 170px 30px; }
+@media (max-width: 640px) { .gz-leaf .gz-foot { padding: 0 0 110px; } }
+.gz-paper-two .gz-title-two { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-style: italic; letter-spacing: -1px; }
+@media (prefers-reduced-motion: reduce) { .gz-turn-fwd, .gz-turn-back { animation: none; } }
+@media (max-width: 640px) { .gz-corner { width: 120px; height: 96px; } .gz-corner span { font-size: 12px; } .gz-tab { font-size: 13px; padding: 7px 10px; } }
 .gz-wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px 40px; }
 .gz-paper {
   margin-top: 16px; color: #241d12; position: relative;
