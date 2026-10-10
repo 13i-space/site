@@ -20,7 +20,9 @@ import { useEffect, useRef, useState } from "react";
 import { onMusic, createListener } from "../lib/lyraMusic";
 import { gridFor, energyAt, dropsOf, liveTempo } from "../lib/rave/clock";
 import { DANCERS, REPERTOIRE } from "../lib/rave/dancers";
-import { layout, drawSky, drawWall, drawTruss, drawSpots, drawLasers, drawSpeakers, drawDJ, drawBooth, drawFloor, drawFog, drawCrowd, burst, drawParticles } from "../lib/rave/stage";
+import { layout, drawSky, drawWall, drawTruss, drawSpots, drawLasers, drawFloor, drawFog, drawCrowd, burst, drawParticles } from "../lib/rave/stage";
+import { drawDJ, drawBoothTop, drawDJHands, drawBoothFront, drawStageLip } from "../lib/rave/booth";
+import { drawSpeakers, drawPlanet } from "../lib/rave/scenery";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
 
 // the show's colours, a pair of hues at a time
@@ -189,56 +191,100 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       if (bins && analyser && playingNow) analyser.getByteFrequencyData(bins);
       const spectrum = playingNow ? bins : null;
 
-      ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
+      // a slow drifting camera: nearer things move more than far ones (parallax),
+      // and it pushes in a touch on the build and the drop
+      const cam = {
+        x: (Math.sin(t * 0.11) * 2.6 + Math.sin(t * 0.047 + 1) * 1.6) * (reduced ? 0 : 1),
+        y: Math.sin(t * 0.083) * 0.8 * (reduced ? 0 : 1),
+        z: 1 + (reduced ? 0 : 0.012 * Math.sin(t * 0.07) + build * 0.03 + drop * 0.05),
+      };
+      const fx = L.cx, fyc = L.floorTop;
+      const layer = (depth) => {
+        const k = 1 + (cam.z - 1) * depth;
+        ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
+        ctx.translate(fx, fyc); ctx.scale(k, k); ctx.translate(-fx + cam.x * depth, -fyc + cam.y * depth);
+      };
       ctx.globalCompositeOperation = "source-over";
       ctx.globalAlpha = 1;
 
       // the world, back to front
-      drawSky(ctx, L, m);
+      layer(0.08); drawSky(ctx, L, m);
+      layer(0.18); drawPlanet(ctx, L.planet.x, L.planet.y, L.planet.r, m);
+      layer(0.42);
       const titleA = 1 - smooth(4.5, 6, t - st.titleAt);
       drawWall(ctx, L, m, spectrum, { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA });
       drawTruss(ctx, L, m);
-      drawSpeakers(ctx, L, m);
       drawSpots(ctx, L, m, playingNow ? 0.45 + 0.55 * st.e : 0.25);
+      layer(0.5);
+      drawSpeakers(ctx, L, m);
       drawDJ(ctx, L, m, spectrum);
-      drawBooth(ctx, L, m, ttl);
+      drawBoothTop(ctx, L, m, spectrum);
+      drawDJHands(ctx, L, m);
+      drawBoothFront(ctx, L, m, ttl, spectrum);
+      drawStageLip(ctx, L, m);
+      layer(0.62);
       drawFloor(ctx, L, m);
       const laserI = !playingNow ? 0 : build > 0 ? 0.15 * (1 - build) : clamp(smooth(0.55, 0.9, st.e) + drop * 0.6, 0, 1);
-      drawLasers(ctx, L, m, laserI);
-      drawFog(ctx, L, m, false);
+      layer(0.5); drawLasers(ctx, L, m, laserI);
+      layer(0.62); drawFog(ctx, L, m, false);
 
-      // the four of them, back row first
+      // the four of them, back row first; each with a reflection in the floor
       const order = ORDER.slice().sort((a, b) => L.dancers[a][1] - L.dancers[b][1]);
+      const poses = {};
       order.forEach((key) => {
         const D = DANCERS[key];
-        const [x, fy, h] = L.dancers[key];
         const ci = ORDER.indexOf(key);
         const cur = moveAt(key, ci, B, st, playingNow);
-        const pose = (() => {
-          const pB = D.moves[cur.name](shifted(m, cur.delay));
-          const k = clamp((B - cur.start) / 1, 0, 1);
-          if (k >= 1) return pB;
+        const pB = D.moves[cur.name](shifted(m, cur.delay));
+        const k = clamp((B - cur.start) / 1, 0, 1);
+        let pose = pB;
+        if (k < 1) {
           const prev = moveAt(key, ci, cur.start - 0.001, st, playingNow);
-          if (prev.name === cur.name && prev.delay === cur.delay) return pB;
-          return mix(D.moves[prev.name](shifted(m, prev.delay)), pB, smooth(0, 1, k));
-        })();
-        // shadow and floor glow
+          if (prev.name !== cur.name || prev.delay !== cur.delay) pose = mix(D.moves[prev.name](shifted(m, prev.delay)), pB, smooth(0, 1, k));
+        }
+        poses[key] = pose;
+      });
+      const place = (key) => {
+        const D = DANCERS[key];
+        const [x, fy, h] = L.dancers[key];
+        const sc = h / D.height;
+        ctx.translate(x, fy); ctx.scale(sc, sc);
+        if (key === "ixxen" && x > L.cx) ctx.scale(-1, 1);
+      };
+      if (st.quality > 0.85) {
+        order.forEach((key) => {
+          const fy = L.dancers[key][1];
+          layer(0.7 + (fy - L.floorTop) / 120);
+          ctx.save();
+          ctx.beginPath(); ctx.rect(-40, fy, L.VW + 80, L.VH); ctx.clip();
+          ctx.globalAlpha = 0.2;
+          const [x, , h] = L.dancers[key];
+          ctx.translate(x, fy); ctx.scale(1, -0.55); ctx.translate(-x, -fy);
+          place(key);
+          DANCERS[key].draw(ctx, poses[key], m);
+          ctx.restore();
+        });
+        ctx.globalAlpha = 1;
+      }
+      order.forEach((key) => {
+        const [x, fy, h] = L.dancers[key];
+        const ci = ORDER.indexOf(key);
+        layer(0.7 + (fy - L.floorTop) / 120);
+        // contact shadow and floor glow
         ctx.save(); ctx.translate(x, fy); ctx.scale(1, 0.25);
         ctx.fillStyle = "rgba(0,0,0,0.55)"; ctx.beginPath(); ctx.arc(0, 0, h * 0.32, 0, Math.PI * 2); ctx.fill();
         glow(ctx, 0, 0, h * 0.6, hsl(ci % 2 ? pal.a : pal.b, 100, 60, 0.8), 0.25 + m.bass * 0.35);
         ctx.restore();
         ctx.save();
-        ctx.translate(x, fy);
-        const sc = h / D.height;
-        ctx.scale(sc, sc);
-        if (key === "ixxen" && x > L.cx) ctx.scale(-1, 1);
-        D.draw(ctx, pose, m);
+        place(key);
+        DANCERS[key].draw(ctx, poses[key], m);
         ctx.restore();
       });
 
-      drawFog(ctx, L, m, true);
-      drawCrowd(ctx, L, m);
-      drawParticles(ctx, st.parts, dt);
+      layer(1.05); drawFog(ctx, L, m, true);
+      layer(1.25); drawCrowd(ctx, L, m);
+      layer(0.8); drawParticles(ctx, st.parts, dt);
+      ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
 
       // strobe (only if switched on): every other beat in the big moments
       if (strobeOn && playingNow && !reduced && (drop > 0 || st.e > 0.85) && Math.floor(B) % 2 === 0 && ph < 0.08) {
@@ -287,6 +333,14 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
 }
 
 const DEBUG = typeof window !== "undefined" && /[?&]ravedebug/.test(window.location.search) ? (window.__rave = []) : null;
+// ?ravemove=ixxen:robot,ilu:soar pins moves, for checking a move by eye
+const FORCE = (() => {
+  if (typeof window === "undefined") return {};
+  const mm = window.location.search.match(/[?&]ravemove=([^&]+)/);
+  const o = {};
+  if (mm) decodeURIComponent(mm[1]).split(",").forEach((kv) => { const [k, v] = kv.split(":"); if (k && v) o[k] = v; });
+  return o;
+})();
 
 function palAt(B, seed) {
   const sec = Math.floor(B / 64);
@@ -299,6 +353,7 @@ function palAt(B, seed) {
 // which move a dancer is doing at a given beat (pure: same song moment, same move)
 function moveAt(key, ci, beat, st, playing) {
   const R = REPERTOIRE[key];
+  if (FORCE[key]) return { name: FORCE[key], delay: 0, start: -1e9 };
   if (!playing) return { name: R.chill[0], delay: 0, start: -1e9 };
   for (const d of st.drops) if (beat >= d && beat < d + 32) return { name: R.drop, delay: 0, start: d };
   const block = Math.floor(beat / 16);

@@ -3,6 +3,35 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.69 — Rave Mode, in depth (Oct 2026)
+No SQL. Rave Mode gets a more 3D look and a lot more detail.
+- **Figures with form** (lib/rave/shade.js): every arm is now a shaded,
+  muscled limb (lit side, shadow side, a stage-coloured rim light, elbow
+  crease) with sleeves and cuffs where there's clothing, and real hands
+  (palm, jointed fingers). Heads, robes and bodies get shading, rim light
+  and highlights.
+- **Clothing**: Qeth's robe has a front panel of gold diamonds, folds, an
+  embroidered band, a sash with a gem, a high collar and two-plate
+  pauldrons; Varrow has a robe with a glyph panel, a belt and gem, a
+  tasselled capelet, and sleeves; Ixxen's mantle has plates, rivets, a
+  belt with pouches and chasing hem lights.
+- **Ixxen** turns its head to face the crowd for eight beats in every 32,
+  and has a new move, **the robot**: square to the crowd, four arms
+  snapping between right angles on every beat, head ticking.
+- **Ilu** takes off: a new "soar" move, and in other moves it now and then
+  rises high and drifts back down, sparkles trailing.
+- **The DJ** (lib/rave/booth.js): more detail (ridged horns, ears, jacket
+  with lapels, zip and a horned patch, headphones, cheek lights, teeth),
+  and its hands now visibly work the decks (scratching, faders, knobs).
+  The booth was raised so its scrolling title is never hidden, and has two
+  decks with jog wheels and screens, a mixer, level meters and an emblem.
+- **Speakers** are 3D cabinets with subwoofers that punch out on the kick
+  (lib/rave/scenery.js). **Saturn**: cloud bands, a drifting storm, the
+  ring's shadow, rings that turn (inner faster), two moons.
+- **Depth**: a slow drifting camera with parallax (near things move more)
+  that pushes in on builds and drops, and dancers reflected in the floor.
+- ?ravemove=ixxen:robot,ilu:soar pins moves (for checking a move by eye).
+
 ## Update 5.68 — The Rave and Rave Mode (Oct 2026)
 No SQL. "The Music" is now **The Rave** (page title, nav, Explore, search,
 launch journey; the address stays /music). The player has a **Rave Mode**
