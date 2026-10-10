@@ -240,6 +240,10 @@ with the bass, an LED visor, headphones round its neck and great curled
 horns (a nod to Tempo Goat Studios). Not canon; Paul to name it if he wants.
 Varrow got a full body (robe, feet) the Wish Engine never showed.
 
+**The girl** (Update 5.70) appears only in Rave Mode for the Halloween remix:
+a small alien girl, huge black eyes with a red pinprick, long black hair, a
+torn nightgown, a stitched Ilu doll. Unnamed, site-side, not canon.
+
 ## Galaxy map placements — developing (map only)
 Update 5.0 put the Assignments' worlds on the Galaxy Map, at positions
 invented purely for the map (Paul's call: "you can make up where they

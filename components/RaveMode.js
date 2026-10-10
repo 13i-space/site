@@ -20,9 +20,13 @@ import { useEffect, useRef, useState } from "react";
 import { onMusic, createListener } from "../lib/lyraMusic";
 import { gridFor, energyAt, dropsOf, liveTempo } from "../lib/rave/clock";
 import { DANCERS, REPERTOIRE } from "../lib/rave/dancers";
-import { layout, drawSky, drawWall, drawTruss, drawSpots, drawLasers, drawFloor, drawFog, drawCrowd, burst, drawParticles } from "../lib/rave/stage";
+import { layout, drawSky, drawTruss, drawSpots, drawLasers, drawFloor, drawFog, drawCrowd, burst, drawParticles } from "../lib/rave/stage";
 import { drawDJ, drawBoothTop, drawDJHands, drawBoothFront, drawStageLip } from "../lib/rave/booth";
-import { drawSpeakers, drawPlanet } from "../lib/rave/scenery";
+import { drawSpeakers, drawPlanet, drawCity } from "../lib/rave/scenery";
+import { drawWall } from "../lib/rave/wall";
+import { specialFor, voiceAt, THEMES } from "../lib/rave/specials";
+import { drawGirl } from "../lib/rave/girl";
+import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
 
 // the show's colours, a pair of hues at a time
@@ -140,6 +144,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         st.grid = tr ? gridFor(tr.file) : null;
         st.drops = dropsOf(st.grid);
         st.seed = tr ? Math.floor(hash(String(tr.file).length, (tr.ai || 0) * 13 + (tr.ti || 0)) * 1000) : 0;
+        st.special = tr ? specialFor(tr.file) : null;
+        st.palettes = (st.special && st.special.theme && THEMES[st.special.theme]) ? THEMES[st.special.theme].palettes : PALETTES;
         st.lt = liveTempo();
         st.titleAt = t;
         st.lastB = null;
@@ -181,13 +187,17 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         for (const d of st.drops) {
           if (B >= d && B < d + 32) drop = 1 - ((B - d) / 32) * 0.7;
           if (d > B && d - B <= 8) build = 1 - (d - B) / 8;
-          if (st.lastB != null && st.lastB < d && B >= d && B - st.lastB < 1 && !reduced) burst(st.parts, L, { pal: palAt(B, st.seed) }, 140);
+          if (st.lastB != null && st.lastB < d && B >= d && B - st.lastB < 1 && !reduced) burst(st.parts, L, { pal: palAt(B, st.seed, st.palettes) }, 140);
         }
       }
       st.lastB = playingNow ? B : null;
 
-      const pal = palAt(B, st.seed);
-      const m = { B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
+      const pal = palAt(B, st.seed, st.palettes);
+      // a song's own guest: she is here while its voice speaks
+      const vo = playingNow ? voiceAt(st.special, s) : { on: 0, mouth: 0 };
+      st.g = (st.g || 0) + (vo.on - (st.g || 0)) * Math.min(1, dt * 4);
+      const ghost = st.g, spooky = st.special && st.special.theme === "halloween";
+      const m = { ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
       if (bins && analyser && playingNow) analyser.getByteFrequencyData(bins);
       const spectrum = playingNow ? bins : null;
 
@@ -210,11 +220,14 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       // the world, back to front
       layer(0.08); drawSky(ctx, L, m);
       layer(0.18); drawPlanet(ctx, L.planet.x, L.planet.y, L.planet.r, m);
+      layer(0.28); drawCity(ctx, L, m);
+      if (spooky) { layer(0.32); drawBats(ctx, L, m); }
       layer(0.42);
       const titleA = 1 - smooth(4.5, 6, t - st.titleAt);
-      drawWall(ctx, L, m, spectrum, { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA });
+      drawWall(ctx, L, m, spectrum, { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA }, clamp(L.u * dpr * 0.8, 4, 12));
       drawTruss(ctx, L, m);
-      drawSpots(ctx, L, m, playingNow ? 0.45 + 0.55 * st.e : 0.25);
+      if (spooky) drawWebs(ctx, L, m);
+      drawSpots(ctx, L, m, (playingNow ? 0.45 + 0.55 * st.e : 0.25) * (1 - 0.8 * ghost));
       layer(0.5);
       drawSpeakers(ctx, L, m);
       drawDJ(ctx, L, m, spectrum);
@@ -222,25 +235,27 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       drawDJHands(ctx, L, m);
       drawBoothFront(ctx, L, m, ttl, spectrum);
       drawStageLip(ctx, L, m);
+      if (spooky) drawPumpkins(ctx, L, m);
       layer(0.62);
       drawFloor(ctx, L, m);
-      const laserI = !playingNow ? 0 : build > 0 ? 0.15 * (1 - build) : clamp(smooth(0.55, 0.9, st.e) + drop * 0.6, 0, 1);
+      const laserI = (!playingNow ? 0 : build > 0 ? 0.15 * (1 - build) : clamp(smooth(0.55, 0.9, st.e) + drop * 0.6, 0, 1)) * (1 - ghost);
       layer(0.5); drawLasers(ctx, L, m, laserI);
       layer(0.62); drawFog(ctx, L, m, false);
 
       // the four of them, back row first; each with a reflection in the floor
       const order = ORDER.slice().sort((a, b) => L.dancers[a][1] - L.dancers[b][1]);
       const poses = {};
+      const mD = ghost > 0.01 ? { ...m, amp: m.amp * (1 - 0.75 * ghost) } : m;
       order.forEach((key) => {
         const D = DANCERS[key];
         const ci = ORDER.indexOf(key);
         const cur = moveAt(key, ci, B, st, playingNow);
-        const pB = D.moves[cur.name](shifted(m, cur.delay));
+        const pB = D.moves[cur.name](shifted(mD, cur.delay));
         const k = clamp((B - cur.start) / 1, 0, 1);
         let pose = pB;
         if (k < 1) {
           const prev = moveAt(key, ci, cur.start - 0.001, st, playingNow);
-          if (prev.name !== cur.name || prev.delay !== cur.delay) pose = mix(D.moves[prev.name](shifted(m, prev.delay)), pB, smooth(0, 1, k));
+          if (prev.name !== cur.name || prev.delay !== cur.delay) pose = mix(D.moves[prev.name](shifted(mD, prev.delay)), pB, smooth(0, 1, k));
         }
         poses[key] = pose;
       });
@@ -281,6 +296,17 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         ctx.restore();
       });
 
+      // the girl: the lights die around her, and she stands in a cold beam
+      if (ghost > 0.01) {
+        ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
+        ctx.fillStyle = `rgba(2,0,6,${0.5 * ghost})`; ctx.fillRect(0, 0, L.VW, L.VH);
+        const [gx, gy, gh] = L.girl;
+        layer(0.75 + (gy - L.floorTop) / 120);
+        drawGirlLight(ctx, gx, L.truss + 3, gy, ghost);
+        ctx.save(); ctx.translate(gx, gy); ctx.scale(gh / 100, gh / 100);
+        drawGirl(ctx, m, ghost, vo.mouth);
+        ctx.restore();
+      }
       layer(1.05); drawFog(ctx, L, m, true);
       layer(1.25); drawCrowd(ctx, L, m);
       layer(0.8); drawParticles(ctx, st.parts, dt);
@@ -342,10 +368,11 @@ const FORCE = (() => {
   return o;
 })();
 
-function palAt(B, seed) {
+function palAt(B, seed, palettes = PALETTES) {
   const sec = Math.floor(B / 64);
-  const a = PALETTES[(((sec + seed) % PALETTES.length) + PALETTES.length) % PALETTES.length];
-  const b = PALETTES[(((sec + seed - 1) % PALETTES.length) + PALETTES.length) % PALETTES.length];
+  const n = palettes.length;
+  const a = palettes[(((sec + seed) % n) + n) % n];
+  const b = palettes[(((sec + seed - 1) % n) + n) % n];
   const k = smooth(0, 4, B - sec * 64);
   return { a: hueMix(b[0], a[0], k), b: hueMix(b[1], a[1], k) };
 }

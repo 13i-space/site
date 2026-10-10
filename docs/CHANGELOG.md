@@ -3,6 +3,36 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.70 — The real i, a curved screen, and a guest for Halloween (Oct 2026)
+No SQL.
+- **The real 13i i** (cut from the logo into public/rave/13i-i.webp,
+  lib/rave/glyph.js): a screen show with two i's flanking the DJ, their
+  cores glowing and throwing rings on the beat like the launch-page logo;
+  the i on the booth front between the horns; and projected on the dance
+  floor like a turning gobo.
+- **Curved LED screen** (lib/rave/wall.js): the picture is drawn flat then
+  laid on a curve in strips, with a bezel, a visible underside, side caps,
+  a glass sheen, rigging and legs.
+- **Orbs** (Qeth's, Varrow's) are now always the front-most thing.
+- **Qeth's crown lights** lift off and dance in the air (a new "lights"
+  move): the five tips leave their filaments, circle above in the colours of
+  Before's motes, gather into one flare, and fly home.
+- **Legs**: Varrow (shorter robe, teal legs, gold anklets, three-toed feet)
+  and Ixxen (jointed legs with glowing bands, plated boots, a stiff pop in
+  the robot), stepping in time. Qeth still floats.
+- **The DJ** has a long ridged goat's neck, a fur ruff and a goat's beard.
+- **The horizon**: a faint alien city - ridges and a rock arch, towers,
+  domes, needle and bulb spires, flickering windows, beacons on the beat,
+  searchlights, air traffic (lib/rave/scenery.js drawCity).
+- **Songs with something of their own** (lib/rave/specials.js). The
+  Apprehension (Megan Halloween Remix) gets Halloween colours, bats,
+  jack-o'-lanterns and cobwebs, and **the girl** (lib/rave/girl.js): a
+  creepy little alien girl who flickers in when the track's voice speaks
+  (0.5-13.4 s and 165.4-174.2 s, found with a voice-activity model and the
+  spectrogram) and mouths its words (the voice's loudness, 30 steps a
+  second). The lights die, the dancers hold still, she stands in a cold
+  beam with a stitched Ilu doll.
+
 ## Update 5.69 — Rave Mode, in depth (Oct 2026)
 No SQL. Rave Mode gets a more 3D look and a lot more detail.
 - **Figures with form** (lib/rave/shade.js): every arm is now a shaded,
