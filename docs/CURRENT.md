@@ -4,6 +4,13 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.70 (no SQL): Rave Mode - the real 13i i (screen, booth, floor),
+  a curved screen, orbs in front, Qeth's flying crown lights, legs for
+  Varrow and Ixxen, the DJ's goat neck, an alien city on the horizon, and
+  per-song specials (lib/rave/specials.js): the Halloween remix's theme and
+  its lip-syncing girl. Her timing comes from the remix file as it is now;
+  if the remix is re-exported with different timing, the windows need
+  re-measuring.
 - Update 5.69 (no SQL): Rave Mode in depth - shaded figures with real arms
   and hands, detailed clothing, Ixxen's head turn and robot, Ilu soaring,
   a detailed DJ working the decks, raised booth, 3D speakers with punching
