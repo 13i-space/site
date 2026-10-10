@@ -4,6 +4,11 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.69 (no SQL): Rave Mode in depth - shaded figures with real arms
+  and hands, detailed clothing, Ixxen's head turn and robot, Ilu soaring,
+  a detailed DJ working the decks, raised booth, 3D speakers with punching
+  subs, Saturn with turning rings, parallax camera, floor reflections. It
+  draws more than 5.68; slower machines drop resolution automatically.
 - Update 5.68 (no SQL): The Music -> **The Rave**, with **Rave Mode**: a
   full-screen alien rave on the beat of the song playing
   (components/RaveMode.js, lib/rave/*). Beat grids measured per song in
