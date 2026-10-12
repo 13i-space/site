@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.75 — The Halloween remix, re-cut (Oct 2026)
+No SQL. Paul's new mix of Apprehension (Megan Halloween Remix) replaces the
+old file (public/audio/apprehension-megan-halloween-remix.mp3; beat grid
+re-measured, unchanged). The girl in Rave Mode now follows Paul's nine
+voice windows (lib/rave/specials.js): talking at 0:10-0:23, 2:27-2:30,
+2:43-2:51, 3:41-4:17, 5:00-5:03, 6:32-6:56 (she's solid, mouthing the
+words), whispering at 2:02-2:17, 4:18-4:31 (she flickers and fades in and
+out), and the last whisper at 6:57-7:04 keeps fading until she's gone right
+at the end of the song. Mouths re-measured with the steady music notes and
+drums taken out, so they follow the voice under the music.
+
 ## Update 5.74 — The Black Hole, issues 2-4 and Season One (Oct 2026)
 No SQL.
 - **No. 02 Quantum Fluctuations** (8 steps): empty a box; the uncertainty

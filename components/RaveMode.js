@@ -194,7 +194,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
 
       const pal = palAt(B, st.seed, st.palettes);
       // a song's own guest: she is here while its voice speaks
-      const vo = playingNow ? voiceAt(st.special, s) : { on: 0, mouth: 0 };
+      const vo = playingNow ? voiceAt(st.special, s) : { on: 0, mouth: 0, whisper: false };
       st.g = (st.g || 0) + (vo.on - (st.g || 0)) * Math.min(1, dt * 4);
       const ghost = st.g, spooky = st.special && st.special.theme === "halloween";
       const m = { ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
@@ -304,7 +304,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         layer(0.75 + (gy - L.floorTop) / 120);
         drawGirlLight(ctx, gx, L.truss + 3, gy, ghost);
         ctx.save(); ctx.translate(gx, gy); ctx.scale(gh / 100, gh / 100);
-        drawGirl(ctx, m, ghost, vo.mouth);
+        drawGirl(ctx, m, ghost, vo.mouth, vo.whisper);
         ctx.restore();
       }
       layer(1.05); drawFog(ctx, L, m, true);
