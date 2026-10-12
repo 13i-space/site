@@ -4,6 +4,11 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.72 (no SQL): the shop is open - all eight products link to
+  their pages on 13i-shop.fourthwall.com with Fourthwall's prices. Prices
+  are typed into lib/shop.js, so a price change in Fourthwall needs the
+  same change there. Product pictures are Claude's renders, not
+  Fourthwall's photos.
 - Update 5.71 (no SQL): the 13i Shop at /shop (footer link). Products live
   in lib/shop.js; Buy buttons go to Fourthwall, which runs checkout and
   fulfillment. All buy links are empty until the Fourthwall products exist,

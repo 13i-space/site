@@ -10,6 +10,9 @@ import { buyHref, formatPrice } from "../../lib/shop";
 export default function ProductCard({ product, index = 0 }) {
   const [side, setSide] = useState("front");
   const [option, setOption] = useState(product.options && product.options.values.length === 1 ? product.options.values[0] : null);
+  // size buttons only when a size changes where Buy goes; otherwise the
+  // buyer picks the size on Fourthwall's page and the card just lists them
+  const perOption = !!((product.links && Object.keys(product.links).length) || (product.variantIds && Object.keys(product.variantIds).length));
   const hasBack = !!(product.images && product.images.back);
   const src = (product.images && (side === "back" && hasBack ? product.images.back : product.images.front)) || null;
   const href = buyHref(product, option);
@@ -37,7 +40,14 @@ export default function ProductCard({ product, index = 0 }) {
         {product.details && <div className="mono shop-card-details">{product.details}{product.color ? ` · ${product.color}` : ""}</div>}
         {product.blurb && <p className="shop-card-blurb">{product.blurb}</p>}
 
-        {product.options && product.options.values.length > 1 && (
+        {product.options && product.options.values.length > 0 && !perOption && (
+          <div className="mono shop-sizes">
+            {product.options.label}{product.options.values.length > 1 ? "s" : ""}{" "}
+            <span>{product.options.values.length > 1 ? `${product.options.values[0]} – ${product.options.values[product.options.values.length - 1]}` : product.options.values[0]}</span>
+          </div>
+        )}
+
+        {perOption && product.options && product.options.values.length > 1 && (
           <div className="shop-options" role="group" aria-label={product.options.label}>
             <span className="mono shop-options-label">{product.options.label}</span>
             {product.options.values.map((v) => (
