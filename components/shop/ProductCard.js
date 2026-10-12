@@ -21,7 +21,7 @@ export default function ProductCard({ product, index = 0 }) {
 
   return (
     <article className="shop-card" style={{ "--i": index }}>
-      <div className="shop-stage">
+      <div className={`shop-stage${product.images && product.images.photo ? " shop-stage-photo" : ""}`}>
         {src ? (
           <img src={src} alt={`${product.name}, ${side}`} loading="lazy" width="900" height="900" />
         ) : (
