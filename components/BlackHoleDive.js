@@ -11,6 +11,8 @@ import { ISSUE_07 } from "./blackhole/issue07";
 import { ISSUE_08 } from "./blackhole/issue08";
 import { ISSUE_09 } from "./blackhole/issue09";
 import { ISSUE_10 } from "./blackhole/issue10";
+import { ISSUE_11 } from "./blackhole/issue11";
+import { ISSUE_12 } from "./blackhole/issue12";
 import Link from "next/link";
 import { startAmbient, whoosh, ping, soundOn, setSoundOn } from "../lib/spaceSound";
 
@@ -479,7 +481,7 @@ function Hawking() {
   return <canvas ref={ref} className="bh-canvas" />;
 }
 
-const VISUALS = { drop: Drop, sheet: Sheet, orbit: Orbit, lens: Lens, clocks: Clocks, squeeze: Squeeze, cones: Cones, fall: Fall, real: Real, hawking: Hawking, ...ISSUE_02, ...ISSUE_03, ...ISSUE_04, ...ISSUE_05, ...ISSUE_06, ...ISSUE_07, ...ISSUE_08, ...ISSUE_09, ...ISSUE_10 };
+const VISUALS = { drop: Drop, sheet: Sheet, orbit: Orbit, lens: Lens, clocks: Clocks, squeeze: Squeeze, cones: Cones, fall: Fall, real: Real, hawking: Hawking, ...ISSUE_02, ...ISSUE_03, ...ISSUE_04, ...ISSUE_05, ...ISSUE_06, ...ISSUE_07, ...ISSUE_08, ...ISSUE_09, ...ISSUE_10, ...ISSUE_11, ...ISSUE_12 };
 
 function Quiz({ issue }) {
   const [picks, setPicks] = useState({});
