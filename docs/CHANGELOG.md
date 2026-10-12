@@ -3,6 +3,46 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.77 — The Black Hole, Season One complete: issues 5-13 (Oct 2026)
+No SQL.
+- **No. 05 Star Stuff**: the elements in a body and where each was made;
+  the first twenty minutes (hydrogen/helium); a cloud collapsing into a
+  star; fusion and the 0.7% mass loss; the onion of a heavy star by mass;
+  a supernova; a neutron-star collision with an audible chirp; generations
+  of stars enriching the galaxy.
+- **No. 06 The Lighthouse Stars**: crush 1.4 Suns to city size; weigh a
+  teaspoon; the skater spin-up; the lighthouse beam (tilt + our position,
+  with a recorder); Jocelyn Bell's 1967 chart; hear five real pulsar spin
+  rates as clicks (up to 716/s); timing (planets 1992, Hulse-Taylor
+  1974); magnetars.
+- **No. 07 Other Suns, Other Worlds**: glare and a coronagraph; the wobble
+  with real m/s; transits; TRAPPIST-1 with a note per transit; the
+  habitable zone by star type; transmission spectra (CO2 at WASP-39 b);
+  the census (6,000+ confirmed); find Earth in the Pale Blue Dot.
+- **No. 08 The Long Way Around**: orbit vs height; a slow-down-to-catch-up
+  docking game; a Hohmann launch-window game to Mars; the rocket equation;
+  gravity assists; Lagrange points (real restricted three-body motion, tap
+  to park probes); landing with a light delay vs autopilot; Voyager 1 and
+  the one-light-day date (live).
+- **No. 09 The Speed Limit**: light's constant speed; the light clock;
+  time dilation from cars to the LHC; muons reaching the ground; length
+  contraction; the twins; the energy wall; looking back in time.
+- **No. 10 The Missing Mass**: flat rotation curves (Rubin), add a halo to
+  fit; Zwicky's cluster; lensing mass maps; the Bullet Cluster; the 5/27/68
+  recipe; underground detectors; the cosmic web.
+- **No. 11 The Pull of the Moon**: tidal bulges; spring/neap through the
+  month; the Moon receding and longer days; tidal locking; the Roche
+  limit; Saturn's rings; Io's tidal volcanoes; a tidal disruption event.
+- **No. 12 The Arrow of Time**: a shattering glass backward; gases mixing;
+  counting coin arrangements (entropy); heat flow; life on sunlight's
+  order; the smooth beginning; footprints and memory; the far future.
+- **No. 13 A Signal, Translated** (finale): spacetime ripples; stretch and
+  squeeze; LIGO's arms; two detectors vs noise; GW150914's chirp (audible);
+  a catalogue of chirps; the pulsar-timing hum; the chirp turned into
+  notes - closing on 13i's "a signal, translated".
+- Index lists issues in reading order now the season is whole. Phone
+  captions shortened where they clipped.
+
 ## Update 5.76 — Halloween costumes (Oct 2026)
 No SQL. On the Halloween remix only (lib/rave/costumes.js): Qeth is a
 vampire (black cape lined in blood red, a flaring collar, fangs), Varrow a

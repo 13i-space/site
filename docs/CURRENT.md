@@ -4,6 +4,14 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.77 (no SQL): The Black Hole Season One complete - issues 5-13
+  (Star Stuff through the finale, A Signal, Translated): 13 of 13 up, index
+  now in reading order (No. 01 first) with no 'next week' card. Same structure as 5.74 (lib/blackhole/NN-slug.js words,
+  components/blackhole/issueNN.js pictures). No. 08's last step reads the
+  date: Voyager 1 reaches one light-day on 18 Nov 2026, and the card counts
+  down to it, then says "since". Tested in a cloud browser, desktop and
+  phone; listen to No. 06 (pulsar clicks) and No. 07 (TRAPPIST-1 notes)
+  with sound on after deploy.
 - Update 5.76 (no SQL): Halloween costumes for the four dancers and the DJ's
   candy pail, and a TRICK OR TREAT screen show, on the Halloween remix only.
 - Update 5.75 (no SQL): new mix of the Halloween remix; the Rave girl follows
