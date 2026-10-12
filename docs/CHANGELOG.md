@@ -3,7 +3,7 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
-## Update 5.77 — The Black Hole, issues 5-8 (Oct 2026)
+## Update 5.77 — The Black Hole, Season One complete: issues 5-13 (Oct 2026)
 No SQL.
 - **No. 05 Star Stuff**: the elements in a body and where each was made;
   the first twenty minutes (hydrogen/helium); a cloud collapsing into a
@@ -24,8 +24,24 @@ No SQL.
   gravity assists; Lagrange points (real restricted three-body motion, tap
   to park probes); landing with a light delay vs autopilot; Voyager 1 and
   the one-light-day date (live).
-- Season plan: No. 06's subtitle updated. Phone captions shortened where
-  they clipped.
+- **No. 09 The Speed Limit**: light's constant speed; the light clock;
+  time dilation from cars to the LHC; muons reaching the ground; length
+  contraction; the twins; the energy wall; looking back in time.
+- **No. 10 The Missing Mass**: flat rotation curves (Rubin), add a halo to
+  fit; Zwicky's cluster; lensing mass maps; the Bullet Cluster; the 5/27/68
+  recipe; underground detectors; the cosmic web.
+- **No. 11 The Pull of the Moon**: tidal bulges; spring/neap through the
+  month; the Moon receding and longer days; tidal locking; the Roche
+  limit; Saturn's rings; Io's tidal volcanoes; a tidal disruption event.
+- **No. 12 The Arrow of Time**: a shattering glass backward; gases mixing;
+  counting coin arrangements (entropy); heat flow; life on sunlight's
+  order; the smooth beginning; footprints and memory; the far future.
+- **No. 13 A Signal, Translated** (finale): spacetime ripples; stretch and
+  squeeze; LIGO's arms; two detectors vs noise; GW150914's chirp (audible);
+  a catalogue of chirps; the pulsar-timing hum; the chirp turned into
+  notes - closing on 13i's "a signal, translated".
+- Index lists issues in reading order now the season is whole. Phone
+  captions shortened where they clipped.
 
 ## Update 5.76 — Halloween costumes (Oct 2026)
 No SQL. On the Halloween remix only (lib/rave/costumes.js): Qeth is a

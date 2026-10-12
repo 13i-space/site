@@ -4,9 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
-- Update 5.77 (no SQL): The Black Hole issues 5-8 - Star Stuff, The
-  Lighthouse Stars, Other Suns Other Worlds, The Long Way Around (8 of 13
-  now up). Same structure as 5.74 (lib/blackhole/NN-slug.js words,
+- Update 5.77 (no SQL): The Black Hole Season One complete - issues 5-13
+  (Star Stuff through the finale, A Signal, Translated): 13 of 13 up, index
+  now in reading order (No. 01 first) with no 'next week' card. Same structure as 5.74 (lib/blackhole/NN-slug.js words,
   components/blackhole/issueNN.js pictures). No. 08's last step reads the
   date: Voyager 1 reaches one light-day on 18 Nov 2026, and the card counts
   down to it, then says "since". Tested in a cloud browser, desktop and

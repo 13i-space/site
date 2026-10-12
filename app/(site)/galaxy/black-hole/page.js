@@ -8,7 +8,7 @@ export const metadata = {
 
 // The Black Hole: the list of issues, newest first (lib/blackHole.js).
 export default function BlackHoleIndex() {
-  const issues = [...BLACK_HOLE_ISSUES].sort((a, b) => b.number - a.number);
+  const issues = [...BLACK_HOLE_ISSUES].sort((a, b) => a.number - b.number); // a whole season: read it in order
   const next = nextIssue();
   return (
     <div className="bh-index">
