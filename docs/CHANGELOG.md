@@ -3,6 +3,12 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.72 — The first shirt on sale (Oct 2026)
+No SQL.
+- **13i Neon Emblem Tee** ($18.45) added to 13i Originals, linked to its
+  Fourthwall page; the first live Buy button. SHOP.fourthwallDomain set to
+  13i-shop.fourthwall.com. The shop's status now reads "Open".
+
 ## Update 5.71 — The 13i Shop (Oct 2026)
 No SQL. No new paid service.
 - **/shop**, linked in the footer next to About and Contact. Four

@@ -4,6 +4,10 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.72 (no SQL): first product live in the shop - the 13i Neon
+  Emblem Tee, linked to 13i-shop.fourthwall.com. The Fourthwall site must
+  be switched from "Coming soon" to "Live" (Fourthwall > Site Design >
+  status tag) or the link lands on its coming-soon page.
 - Update 5.71 (no SQL): the 13i Shop at /shop (footer link). Products live
   in lib/shop.js; Buy buttons go to Fourthwall, which runs checkout and
   fulfillment. All buy links are empty until the Fourthwall products exist,
