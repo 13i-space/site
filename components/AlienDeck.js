@@ -34,7 +34,7 @@ const ALIEN = ["Mutate", "Xeno tune", "Lift", "Half-time", "Hats ×2", "Drop", "
 const MODE_COLOR = { "HOT CUE": "#8B95F6", "PAD FX": "#E9D29A", SAMPLER: "#E88CBE", ALIEN: "#6FC3A8" };
 const BEAT_FX = [["echo", "Echo"], ["reverb", "Reverb"], ["flanger", "Flanger"], ["crush", "Transmit"], ["spiral", "Spiral"]];
 const BEATS = [0.25, 0.5, 0.75, 1, 2];
-const CROWD = ["the Holders", "the Velani", "the Deep Walkers", "the Nerathi", "the Returners"];
+const CROWD = ["the Holders", "the Velani", "the Deep Walkers", "the Nerathi", "the Returners", "the Kesh", "the wakers"];
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
 const HYPE_WORDS = [[0.15, "waiting"], [0.35, "warming up"], [0.55, "dancing"], [0.75, "losing it"], [0.92, "ASCENDING"], [2, "FULL CONTINUANCE"]];
 

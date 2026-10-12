@@ -18,7 +18,7 @@ const ARCADE = [
   { href: "/games/asteroid-belt", title: "Asteroid Belt", art: "asteroids", color: "#B9C0FF", tag: "arcade", blurb: "Clear the belt, and watch for the mining ship's twelve tungsten rods." },
   { href: "/games/13i-vs-nemesis", title: "13i vs NEMESIS", art: "defend", color: "#8B95F6", tag: "arcade", blurb: "Defend Earth across five zones of approach, with weapons and countermeasures." },
 ];
-const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"] };
+const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"] };
 
 // ── the little screens ──
 export function GameScreen({ art, color }) {
@@ -102,6 +102,26 @@ export function GameScreen({ art, color }) {
             </g>
           ))}
           <circle cx="80" cy="50" r="12" fill="none" stroke={c} strokeWidth="1" strokeDasharray="3 3" className="gs-spin" style={{ transformOrigin: "80px 50px" }} />
+        </svg>
+      );
+    case "holdfire":
+      return (
+        <svg {...common}>
+          {[0, 1, 2, 3, 4].map((i) => (
+            <path key={i} className="gs-bend" style={{ animationDelay: `${i * 0.55}s` }} d={i % 2 ? "M160 10 L104 40 Q96 46 110 70 L130 100" : "M0 90 L56 60 Q64 54 50 30 L30 0"} fill="none" stroke={c} strokeWidth="1.4" />
+          ))}
+          <circle cx="80" cy="50" r="16" fill="none" stroke="#8B95F6" strokeWidth="1" className="gs-blip" />
+          <circle cx="80" cy="50" r="5" fill="none" stroke="#B9C0FF" strokeWidth="1.4" />
+        </svg>
+      );
+    case "fermata":
+      return (
+        <svg {...common}>
+          <ellipse cx="96" cy="52" rx="56" ry="22" fill="none" stroke={c} strokeWidth="0.8" strokeDasharray="2 4" opacity="0.7" />
+          <circle cx="46" cy="52" r="10" fill="#FFD98A" opacity="0.15" />
+          <circle cx="46" cy="52" r="3" fill="#FFF4DC" />
+          <g className="gs-spin" style={{ transformOrigin: "96px 52px", animationDuration: "6s" }}><circle cx="40" cy="52" r="2.4" fill={c} /></g>
+          <path d="M70 22 A10 10 0 0 1 90 22" fill="none" stroke="#F6E3B4" strokeWidth="1.2" /><circle cx="80" cy="20" r="1.4" fill="#F6E3B4" />
         </svg>
       );
     default:

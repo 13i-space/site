@@ -4,6 +4,10 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.79 (no SQL): Season 1 Weeks 6 (First Fire + HOLD FIRE) and 7
+  (The Fermata + FERMATA), all six pieces each; Seasons now 7 of 12 weeks
+  built. Launch page NEXT SIGNAL shows the Halloween remix until Nov 30.
+  Both interactives walked on every path; both games bot-tested for balance.
 - Update 5.77 (no SQL): The Black Hole Season One complete - issues 5-13
   (Star Stuff through the finale, A Signal, Translated): 13 of 13 up, index
   now in reading order (No. 01 first) with no 'next week' card. Same structure as 5.74 (lib/blackhole/NN-slug.js words,

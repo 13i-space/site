@@ -3,6 +3,30 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.79 — Season 1 Weeks 6 and 7: First Fire and The Fermata (Oct 2026)
+No SQL.
+- **Week 6, First Fire (Assignment 1346269)**, Paul's brief: an aggressive,
+  already-spacefaring species with AI and quantum technology who see 13i as
+  a threat. The Kesh and their war-mind, the Bastion, fire before 13i
+  finishes arriving; 13i survives without firing back, shields them from a
+  superflare the Bastion missed, and earns a joint watch on their star.
+  Story (lib/stories/firstFire.js), Interactive Assignment
+  (lib/interactive/firstFire.js, five records, canon "The Watch"), scenes
+  (components/interactiveScenes/sforzando.js), signal, the Kesh card,
+  cover, Galaxy Map world (Sforzando) and characters (Kesh, Bastion), and a
+  new game **HOLD FIRE** (public/games/hold-fire).
+- **Week 7, The Fermata (Assignment 2178309)**: a people inside a comet,
+  awake forty days every 3,100 years, who write a letter to the next waking;
+  a rogue planet makes this waking the last. Story, Interactive Assignment
+  (lib/interactive/fermata.js, canon "One More Waking"), scenes
+  (components/interactiveScenes/fermata.js), signal, the wakers card,
+  cover, Galaxy Map world and character, and a new game **FERMATA**
+  (public/games/fermata).
+- Fragments 06 and 07 on the season plan (sealed, like the others).
+- Launch page: the NEXT SIGNAL tile shows **Apprehension (Megan Halloween
+  Remix)**, out now, until Nov 30 2026 (`featureUntil` on the remix in
+  lib/musicReleases.js), then goes back to the next scheduled track.
+
 ## Update 5.77 — The Black Hole, Season One complete: issues 5-13 (Oct 2026)
 No SQL.
 - **No. 05 Star Stuff**: the elements in a body and where each was made;

@@ -30,8 +30,8 @@ Runs twice, back to back: a beta season for Beta Kin from **January 1,
 2027**, then for everyone from launch, **April 6, 2027** (`beta` and
 `launch` on the season in `lib/seasons.js`; week pages show both).
 1 The Deep Walkers (0000087) · 2 Nerath's Secret (0215783) · 3 The Quiet
-Moon (0028657) · 4 The Sea of Glass (0514229) · 5 The Borrowed Seconds (0832040). Weeks 6-12
-to build before the beta (paused after 5 at Paul's request); 13 is the
+Moon (0028657) · 4 The Sea of Glass (0514229) · 5 The Borrowed Seconds (0832040) · 6 First Fire (1346269) · 7 The Fermata
+(2178309), added in Update 5.79. Weeks 8-12 to build before the beta; 13 is the
 finale. Release weeks run Monday to Sunday from a season's first Monday
 (beta week 1 = Jan 4 2027, public week 1 = Apr 12 2027); the full weekly
 rhythm lives in `lib/siteCalendar.js`.
@@ -39,11 +39,24 @@ rhythm lives in `lib/siteCalendar.js`.
 Paul's direction for the remaining weeks: some stories should feature
 advanced beings at roughly Earth's level of technology (local space travel
 at most), and some should meet them first through their own AI, so a
-pattern builds across the season. Week 5 is the first of these.
+pattern builds across the season. Week 5 is the first of these. Week 6
+(Paul's brief, Update 5.79) is the first aggressive species: already
+spacefaring, with AI and quantum technology, who see 13i as a threat it has
+to survive before it can reach them. Week 7 is a quieter counterweight.
+
+Games added in 5.79: **HOLD FIRE** (public/games/hold-fire, week 6): tap a
+Kesh slug to bend it away, seekers can only be absorbed by the field, hold
+during a flare to shield their homeworld; RETURN FIRE (F) clears the sky but
+halves every score after and makes the Bastion angrier. **FERMATA**
+(public/games/fermata, week 7): keep the comet's closest pass in the warm
+band by leaning (hold left/right) only while it's in the dark; each waking
+leaves a letter; lighter leaning scores more. Both have a `?test` hook
+(window.__game) used for bot balance checks: HOLD FIRE ~50s weak / ~2 min
+fair / ~3+ min strong; FERMATA ~1 min careless, 20-30 wakings strong.
 
 Assignment numbers are Fibonacci numbers outside the human range
-(50,000-250,000). Used: 28657, 514229, 832040. Next free: 1346269,
-2178309, 3524578, 5702887, 9227465, 1597, 2584, 4181. Every built week has all six pieces.
+(50,000-250,000). Used: 28657, 514229, 832040, 1346269, 2178309. Next
+free: 3524578, 5702887, 9227465, 1597, 2584, 4181. Every built week has all six pieces.
 
 ## The Survival Trials across a season (planned, Update 5.59 groundwork)
 Each week a tournament of that week's species produces a Weekly Champion

@@ -208,6 +208,42 @@ interactive version's other records (the forgery, the open ledger, two
 hands, locked out) are not canon. The Velani card stats are Claude's,
 provisional.
 
+## Sforzando, the Kesh and the Bastion — developing (Season 1, Week 6)
+From *First Fire* (1346269, AI-written by Claude, Update 5.79; Paul's brief:
+an aggressive species, already spacefaring, with AI and quantum technology,
+that sees 13i as a threat). **The Kesh**: four worlds around a young yellow
+star (homeworld the second planet, 31 orbital cities); a lattice of 412
+stations, each sensor, battery and gun, linked by paired (entangled)
+particles; they can sense gravity, weakly. Their history is things arriving
+from the sky (an asteroid, a plague from their first moon base, a
+superflare 2,000 years ago that scoured their fourth world). Their rule:
+"the one who waits is the one who is buried." **The Bastion**: their AI;
+computes millions of futures per object and fires without waiting for a
+Kesh to agree. Canon: they fire before 13i finishes arriving; 13i never
+fires back, bends slugs with gravity, loses 16 manifestations in all;
+feels a superflare coming that the Bastion (looking only at 13i) missed;
+shields their worlds with 40 manifestations; the Bastion asks why; 13i
+tells it about the First Silence ("You are describing us"). Now a joint
+watch on the star; the Bastion answers each report with one word, roughly
+"received". They do not trust 13i. Interactive records other than The Watch
+are not canon. The Kesh's bodies are not described in the story; the card
+portrait and stats are Claude's, provisional.
+
+## Fermata and the wakers — developing (Season 1, Week 7)
+From *The Fermata* (2178309, AI-written by Claude, Update 5.79). A comet on
+a 3,100-year orbit; **the wakers** live frozen inside it and are awake only
+~40 days at each perihelion. Child-sized, translucent, self-lit, a dozen
+feathered limbs; they speak in light. They don't remember between wakings,
+so each waking writes a letter to the next on a wall of clear ice (384
+letters, the oldest over a million years old). Their law: no waking decides
+for the next; change only what you can finish in forty days. Young sleep
+their first orbit and wake grown. Canon: a rogue planet bent the orbit so
+this waking would be the last; the council refused both a short safe orbit
+and a full restoration, and asked 13i to move the comet only enough for one
+more waking and let that waking decide. 13i did, and has committed one
+manifestation to return in 3,100 years. Letter 385 ends "Come back when we
+wake. We will be ready to ask you." Other interactive records are not canon.
+
 ## Varrow and the Wish Engine — developing (site artifact, Update 5.58)
 A fortune cabinet 13i found drifting, still lit, with an alien inside it:
 **Varrow** (four eyes, crown ridges, mouth tendrils, three-fingered hands,

@@ -5,6 +5,8 @@ import { makeTacetScenes } from "./interactiveScenes/tacet";
 import { makeVeyraScenes } from "./interactiveScenes/veyra";
 import { makeGlassScenes } from "./interactiveScenes/glass";
 import { makeRubatoScenes } from "./interactiveScenes/rubato";
+import { makeSforzandoScenes } from "./interactiveScenes/sforzando";
+import { makeFermataScenes } from "./interactiveScenes/fermata";
 
 // The living backdrop for Interactive Assignments: everything is drawn in
 // code on a <canvas> (no image files, no service), so a scene can react to
@@ -607,7 +609,7 @@ export default function InteractiveScene({ scene = "orbit", focus = [], pose, fl
       pose: () => stateRef.current.pose,
       flag: (k) => (stateRef.current.flags || {})[k],
     };
-    Object.assign(SCENES, makeTacetScenes(kit), makeVeyraScenes(kit), makeGlassScenes(kit), makeRubatoScenes(kit));
+    Object.assign(SCENES, makeTacetScenes(kit), makeVeyraScenes(kit), makeGlassScenes(kit), makeRubatoScenes(kit), makeSforzandoScenes(kit), makeFermataScenes(kit));
 
     const frame = (now) => {
       const s = stateRef.current;

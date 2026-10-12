@@ -1845,8 +1845,10 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 @keyframes gs-dash { to { stroke-dashoffset: -28; } }
 .gs-msg { animation: gs-msg 3.2s linear infinite; }
 @keyframes gs-msg { from { transform: translate(-40px, var(--y)); } 45% { transform: translate(62px, var(--y)); } 60% { transform: translate(62px, var(--y)); } to { transform: translate(170px, var(--y)); } }
+.gs-bend { stroke-dasharray: 160; stroke-dashoffset: 160; animation: gs-bend 2.75s linear infinite; }
+@keyframes gs-bend { 60% { stroke-dashoffset: 0; opacity: 1; } to { stroke-dashoffset: 0; opacity: 0; } }
 @media (max-width: 720px) { .ga-hero-text { padding: 28px 22px; } .ga-more { grid-template-columns: 1fr 1fr; } }
-@media (prefers-reduced-motion: reduce) { .ga-cab, .gs-sweep, .gs-spin, .gs-blip, .gs-rock, .gs-ship, .gs-shot, .gs-fall, .gs-ripple, .gs-wave, .gs-limb, .gs-beam, .gs-msg { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .ga-cab, .gs-sweep, .gs-spin, .gs-blip, .gs-rock, .gs-ship, .gs-shot, .gs-fall, .gs-ripple, .gs-wave, .gs-limb, .gs-beam, .gs-msg, .gs-bend { animation: none; stroke-dashoffset: 0; } }
 
 /* ── Artifact pages (Update 5.58) ── */
 .art-page { max-width: 900px; margin: 0 auto; text-align: center; }

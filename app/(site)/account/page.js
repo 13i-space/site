@@ -109,6 +109,8 @@ export default async function AccountPage() {
     tacet: { label: "TACET", href: "/games/tacet" },
     prism: { label: "PRISM", href: "/games/prism" },
     rubato: { label: "RUBATO", href: "/games/rubato" },
+    "hold-fire": { label: "HOLD FIRE", href: "/games/hold-fire" },
+    fermata: { label: "FERMATA", href: "/games/fermata" },
   };
 
   const alphaProfile = { ...profile, created_at: profile?.created_at || user.created_at };

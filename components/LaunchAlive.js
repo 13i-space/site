@@ -5,7 +5,7 @@ import Link from "next/link";
 import { SEASONS } from "../lib/seasons";
 import { createClient } from "../lib/supabaseBrowser";
 import { currentGreatWork } from "../lib/spacecoreStages";
-import { albums, nextRelease } from "../lib/musicReleases";
+import { albums, nextRelease, featuredRemix } from "../lib/musicReleases";
 import { cardNumber } from "../lib/alienTraits";
 
 // "What's alive right now" on /launch: a few things that change on their
@@ -43,6 +43,7 @@ export default function LaunchAlive() {
   const week = season?.weeks?.[0];
   const species = latest || feed?.species?.[0];
   const release = feed?.release || nextRelease();
+  const remix = featuredRemix();
   const cover = release && albums.find((a) => a.title === release.album)?.cover;
   const date = (iso) => new Date(iso).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 
@@ -118,7 +119,19 @@ export default function LaunchAlive() {
             </span>
           </Link>
 
-          {release && (
+          {remix ? (
+            <Link href="/music" className="alive-item launch-card alive-tile alive-tile-music">
+              <span className="alive-visual alive-vinyl" aria-hidden="true">
+                <span className="alive-disc" />
+                <img src={remix.cover} alt="" className="alive-album" loading="lazy" onError={(e) => { e.currentTarget.style.opacity = 0; }} />
+              </span>
+              <span className="alive-tile-body">
+                <span className="mono alive-label">NEXT SIGNAL &middot; OUT NOW</span>
+                <span className="alive-item-title">{remix.label}</span>
+                <span className="alive-text">An extended remix of {remix.of}. Play it now on The Rave.</span>
+              </span>
+            </Link>
+          ) : release && (
             <Link href="/music" className="alive-item launch-card alive-tile alive-tile-music">
               <span className="alive-visual alive-vinyl" aria-hidden="true">
                 <span className="alive-disc" />

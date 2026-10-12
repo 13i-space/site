@@ -195,6 +195,37 @@ ASK ─ the unsent message (needs watchedMoon) ─► ✦ THE BORROWED SECONDS (
 ```
 288 paths; every node and all five endings reachable (walked every path).
 
+## First Fire: the branch map (Update 5.79)
+You are 13i at the edge of the Kesh system (Sforzando), under fire.
+Canon record: **The Watch**. Scenes: components/interactiveScenes/sforzando.js (ff-*).
+```
+ARRIVAL ─ withdraw · fire back (struck) · hold and broadcast (spoke)
+KESH ─ go into their network (tapped) · study the scoured world (history) · go in now
+APPROACH ─ (bend slugs, take seekers, never fire)
+STAR ─ send the data (rejected) · feed it into the Bastion's sensors (needs tapped: fed)
+       · silence every gun (disarmed) · leave ─► ✦ THE SECOND BURNING
+FLARE ─ shield ─► struck ✦ RETURN FIRE · disarmed ✦ THE BIGGER GUN
+                  · fed ✦ THE OPEN CHANNEL · otherwise ✦ THE WATCH (canon)
+        leave ─► ✦ THE SECOND BURNING
+```
+51 paths; every node and all five endings reachable (walked every path).
+
+## The Fermata: the branch map (Update 5.79)
+You are 13i at a comet whose people wake 40 days every 3,100 years.
+Canon record: **One More Waking**. Scenes: components/interactiveScenes/fermata.js (fm-*).
+```
+ARRIVAL ─ watch · land on the ice (landed: they go dark 3 days) · answer in light
+WAKERS ─ read the wall (read) · watch them make the tail
+STRANGER ─ trace the path to the day (computed) · just look
+PATH ─ tell them (told) ─► COUNCIL · quietly make a short orbit ─► ✦ A DIFFERENT SKY
+       · record it ─► ✦ THE LONG DARK
+COUNCIL ─ one more waking (needs computed) ─► ✦ ONE MORE WAKING (canon)
+          overrule them ─► ✦ A DIFFERENT SKY
+          wake the sleeping young (needs read) ─► ✦ WOKEN WRONG
+          change nothing, as their law says ─► ✦ THE LAST LETTER
+```
+60 paths; every node and all five endings reachable (walked every path).
+
 ## The Deep Walkers: the branch map
 You are 13i on Veyra. The theme is patience: 13i is fast and used to
 answers; the walkers are slow, think through stone, and decide together.

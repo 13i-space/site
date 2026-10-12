@@ -22,6 +22,8 @@ const GAME_NAMES = {
   tacet: "TACET",
   prism: "PRISM",
   rubato: "RUBATO",
+  "hold-fire": "HOLD FIRE",
+  fermata: "FERMATA",
 };
 
 function ago(iso) {
