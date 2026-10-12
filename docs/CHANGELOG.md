@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.71 — The 13i Shop (Oct 2026)
+No SQL. No new paid service.
+- **/shop**, linked in the footer next to About and Contact. Four
+  collections: 13i Originals, Alien Universe, 13i Artifacts (empty for now,
+  says so), 13i Music. Eight pieces: Steel 13i Tee, Transmission Tee, The
+  Mark Hat, The Mark Hoodie, Everyone Is Kin Tee, Explore · Play · Create
+  Crew, The Alien Lab Tee (the lab scene from /create/alien-lab), The Alien
+  Rave Tee (a frame of Rave Mode). Every shirt except the Transmission Tee
+  has www.13i.space low on the back.
+- **Config-driven** (lib/shop.js): products, prices, sizes, pictures and buy
+  links in one file; reusable card (components/shop/ProductCard.js) with
+  front/back pictures, size chips and a Buy button.
+- **Fourthwall** does checkout, printing and shipping. Buy buttons link out
+  to Fourthwall (product page, or a size straight to checkout); until a
+  link is filled in they read "Opening soon". No payment code on the site.
+  What Fourthwall's API can and can't do is written up in docs/SHOP.md
+  (short version: no embedded checkout; hosted checkout redirect only).
+- Lyra has a /shop tip; the site search finds the shop.
+
 ## Update 5.70 — The real i, a curved screen, and a guest for Halloween (Oct 2026)
 No SQL.
 - **The real 13i i** (cut from the logo into public/rave/13i-i.webp,
