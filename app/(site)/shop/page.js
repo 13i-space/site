@@ -1,5 +1,5 @@
 import ProductCard from "../../../components/shop/ProductCard";
-import { COLLECTIONS, productsIn, shopIsOpen } from "../../../lib/shop";
+import { SHOP, COLLECTIONS, productsIn, shopIsOpen } from "../../../lib/shop";
 
 // The 13i Shop (Update 5.71). Products, prices, pictures and buy links all
 // live in lib/shop.js. Checkout, printing and shipping are Fourthwall's;
@@ -72,6 +72,9 @@ export default function ShopPage() {
 
       <section className="shop-fine mono">
         <p>Checkout, payment, shipping, tracking and returns are handled by Fourthwall, the shop's print partner. 13i.space never sees your card.</p>
+        {SHOP.fourthwallDomain && (
+          <p>The whole shop is also at <a href={`https://${SHOP.fourthwallDomain}`} rel="noopener">{SHOP.fourthwallDomain}</a>.</p>
+        )}
         <p>Prices in US dollars. Questions about an order? <a href="/contact">Contact Paul</a>.</p>
       </section>
     </div>

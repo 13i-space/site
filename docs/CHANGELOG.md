@@ -3,11 +3,16 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
-## Update 5.72 — The first shirt on sale (Oct 2026)
+## Update 5.72 — The shop opens (Oct 2026)
 No SQL.
-- **13i Neon Emblem Tee** ($18.45) added to 13i Originals, linked to its
-  Fourthwall page; the first live Buy button. SHOP.fourthwallDomain set to
-  13i-shop.fourthwall.com. The shop's status now reads "Open".
+- All eight pieces now have live Buy buttons linked to their Fourthwall
+  pages at 13i-shop.fourthwall.com, with Fourthwall's real prices ($18.45
+  tees, $18.65 hat, $36.24 hoodie, $27.74 sweatshirt) and sizes.
+- New: **13i Neon Emblem Tee** (first in 13i Originals). The Steel 13i Tee
+  is hidden (hidden: true) since the Neon tee took its place.
+- Cards list sizes as text; size buttons only appear when a size changes
+  where Buy goes (per-size links or variant ids). Buyers pick the size on
+  Fourthwall's page. Fine print links to the whole Fourthwall shop.
 
 ## Update 5.71 — The 13i Shop (Oct 2026)
 No SQL. No new paid service.
