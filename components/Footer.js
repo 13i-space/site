@@ -26,6 +26,7 @@ export default async function Footer() {
       <div style={{ display: "flex", justifyContent: "center", gap: 18, marginBottom: 16, flexWrap: "wrap" }}>
         <Link href="/about" style={{ color: "#6E76B8" }}>About</Link>
         <Link href="/contact" style={{ color: "#6E76B8" }}>Contact</Link>
+        <Link href="/shop" style={{ color: "#6E76B8" }}>Shop</Link>
       </div>
 
       <div>

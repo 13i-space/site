@@ -4,6 +4,12 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.71 (no SQL): the 13i Shop at /shop (footer link). Products live
+  in lib/shop.js; Buy buttons go to Fourthwall, which runs checkout and
+  fulfillment. All buy links are empty until the Fourthwall products exist,
+  so every button reads "Opening soon" - fill in `fourthwallUrl` per
+  product (docs/SHOP.md). Prices on the page are typed in, not read from
+  Fourthwall: keep them in step.
 - Update 5.70 (no SQL): Rave Mode - the real 13i i (screen, booth, floor),
   a curved screen, orbs in front, Qeth's flying crown lights, legs for
   Varrow and Ixxen, the DJ's goat neck, an alien city on the horizon, and
