@@ -1280,6 +1280,7 @@ main {
 .bh-index-hole span { position: absolute; inset: 22%; border-radius: 50%; border: 1px dashed rgba(233,210,154,0.35); animation: mode-spin 30s linear infinite; }
 @keyframes bh-pulse { 0%, 100% { transform: scale(0.97); filter: brightness(0.95); } 50% { transform: scale(1.03); filter: brightness(1.15); } }
 .bh-index-title { font-family: var(--font-display); font-style: italic; font-weight: 500; font-size: clamp(46px, 7vw, 78px); margin: 4px 0 6px; color: #F1F1FF; line-height: 1; }
+.bh-season { font-size: 10.5px; letter-spacing: 2.5px; color: #8B95F6; margin: 0 0 10px; }
 .bh-index-line { color: #A9AEDB; font-size: 16px; line-height: 1.7; max-width: 560px; margin: 0; }
 .bh-issues { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; }
 .bh-issue-card { display: flex; flex-direction: column; gap: 6px; padding: 22px; border-radius: 14px; text-decoration: none; color: inherit;

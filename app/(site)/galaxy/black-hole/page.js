@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BLACK_HOLE_ISSUES } from "../../../../lib/blackHole";
+import { BLACK_HOLE_ISSUES, SEASON_ONE, nextIssue } from "../../../../lib/blackHole";
 
 export const metadata = {
   title: "The Black Hole",
@@ -9,6 +9,7 @@ export const metadata = {
 // The Black Hole: the list of issues, newest first (lib/blackHole.js).
 export default function BlackHoleIndex() {
   const issues = [...BLACK_HOLE_ISSUES].sort((a, b) => b.number - a.number);
+  const next = nextIssue();
   return (
     <div className="bh-index">
       <Link href="/galaxy" className="mono bh-back">&larr; The Galaxy</Link>
@@ -17,6 +18,7 @@ export default function BlackHoleIndex() {
         <div>
           <div className="mono bh-kicker">A NEW DEEP DIVE EVERY WEEK</div>
           <h1 className="bh-index-title">The Black Hole</h1>
+          <div className="mono bh-season">SEASON ONE &middot; {BLACK_HOLE_ISSUES.length} OF {SEASON_ONE.length}</div>
           <p className="bh-index-line">One idea from space, physics or science, taken apart a step at a time, with something to touch at every step. Five to ten minutes. Fall in.</p>
         </div>
       </div>
@@ -29,11 +31,13 @@ export default function BlackHoleIndex() {
             <span className="mono bh-issue-meta">{it.steps.length} steps &middot; {it.minutes} minutes &middot; begin &rarr;</span>
           </Link>
         ))}
-        <div className="bh-issue-card bh-issue-soon">
-          <span className="mono bh-issue-no">NO. {String(BLACK_HOLE_ISSUES.length + 1).padStart(2, "0")} &middot; NEXT WEEK</span>
-          <span className="wordmark bh-issue-title">Quantum Fluctuations</span>
-          <span className="bh-issue-sub">empty space is never empty</span>
-        </div>
+        {next && (
+          <div className="bh-issue-card bh-issue-soon">
+            <span className="mono bh-issue-no">NO. {String(next.number).padStart(2, "0")} &middot; NEXT WEEK</span>
+            <span className="wordmark bh-issue-title">{next.title}</span>
+            <span className="bh-issue-sub">{next.subtitle}</span>
+          </div>
+        )}
       </div>
     </div>
   );

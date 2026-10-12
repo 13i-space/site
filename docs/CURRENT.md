@@ -4,6 +4,14 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.74 (no SQL): The Black Hole gets issues 2-4 - Quantum
+  Fluctuations, The Stretching Universe, The Barcode in the Rainbow - and
+  the whole 13-issue Season One plan (SEASON_ONE in lib/blackHole.js; the
+  index's "next week" card reads from it). All three went up at once, not
+  week by week. Words: lib/blackhole/NN-slug.js; pictures:
+  components/blackhole/issueNN.js; shared drawing pieces:
+  components/blackhole/kit.js (canvas labels now shrink to fit phones).
+  Tested in a cloud browser, desktop and phone, every step.
 - Update 5.72 (no SQL): the shop is open - all eight products link to
   their pages on 13i-shop.fourthwall.com with Fourthwall's prices. Prices
   are typed into lib/shop.js, so a price change in Fourthwall needs the

@@ -3,6 +3,36 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.74 — The Black Hole, issues 2-4 and Season One (Oct 2026)
+No SQL.
+- **No. 02 Quantum Fluctuations** (8 steps): empty a box; the uncertainty
+  rule; zero-point motion (classical vs quantum bowl, liquid helium); fields
+  and ripples; virtual-pair foam; the Casimir effect with the real pressure
+  formula; inflation stretching the fizz into galaxy seeds; the 120-powers-
+  of-ten vacuum energy puzzle.
+- **No. 03 The Stretching Universe** (8 steps): Olbers' paradox; Doppler
+  (with sound); measure galaxies to build Hubble's law; raisin-bread
+  expansion from any galaxy; stretched light up to z = 14; rewind to the hot
+  beginning; the CMB (TV static, the sky, contrast up); 1998's acceleration
+  (real expansion curves, dark energy on/off).
+- **No. 04 The Barcode in the Rainbow** (8 steps): Newton's prism;
+  blackbody colour and the Planck curve; Fraunhofer's lines with a
+  magnifier; hydrogen's energy ladder (find all four Balmer colours);
+  read three mystery stars; helium found in the Sun in 1868; Doppler shifts
+  and the 51 Pegasi wobble; Cecilia Payne's 1925 result.
+- **Season One plan** (13 issues) in `SEASON_ONE`, lib/blackHole.js:
+  5 Star Stuff · 6 The Lighthouse Stars · 7 Other Suns, Other Worlds ·
+  8 The Long Way Around · 9 The Speed Limit · 10 The Missing Mass ·
+  11 The Pull of the Moon · 12 The Arrow of Time · 13 A Signal,
+  Translated (gravitational waves, the finale). Each issue's last step
+  hands off to the next.
+- Index shows "Season one · N of 13"; the next-week card comes from the
+  plan. The end of each issue links straight to the next one.
+- Structure: issues from No. 02 live in `lib/blackhole/NN-slug.js`
+  (words) and `components/blackhole/issueNN.js` (pictures); the shared
+  drawing kit moved out of BlackHoleDive.js into
+  `components/blackhole/kit.js`, whose labels now shrink to fit narrow
+  screens (No. 01 benefits too).
 ## Update 5.73 — Real product photos in the shop (Oct 2026)
 No SQL.
 - Every shop card now shows Fourthwall's own product photos (front and

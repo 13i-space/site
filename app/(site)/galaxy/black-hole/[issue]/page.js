@@ -11,5 +11,6 @@ export function generateMetadata({ params }) {
 export default function BlackHoleIssuePage({ params }) {
   const issue = issueFor(params.issue);
   if (!issue) notFound();
-  return <BlackHoleDive issue={issue} />;
+  const after = issueFor(issue.number + 1);
+  return <BlackHoleDive issue={issue} after={after ? { number: after.number, title: after.title } : null} />;
 }
