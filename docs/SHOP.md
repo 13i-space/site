@@ -37,7 +37,10 @@ card.
    read prices from Fourthwall yet (see "Possible next step" below).
 5. New product: add an entry to `PRODUCTS` (copy an existing one), and put
    its pictures in `public/shop/` named `<id>-front.webp` and
-   `<id>-back.webp`.
+   `<id>-back.webp`. The pictures are Fourthwall's own product photos,
+   cropped square (set `photo: true` in `images`). Fourthwall's shop grid
+   shows the back on hover, so save photos from the product page; its
+   first gallery image is the front and the second is the back.
 6. To take a product off the page without deleting it, set `hidden: true`.
 
 When at least one product has a link, the page's status reads "Open" and the

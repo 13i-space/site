@@ -3,6 +3,16 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.73 — Real product photos in the shop (Oct 2026)
+No SQL.
+- Every shop card now shows Fourthwall's own product photos (front and
+  back) instead of drawn mockups, cropped square in public/shop/
+  (`images.photo: true` in lib/shop.js makes a photo fill the card).
+  Originals are on Paul's Mac in Shop Print Files/fourthwall (fw-<id>-1 is
+  the front, -2 the back).
+- Neon Emblem Tee and Mark Hat descriptions corrected to match the
+  actual products.
+
 ## Update 5.72 — The shop opens (Oct 2026)
 No SQL.
 - All eight pieces now have live Buy buttons linked to their Fourthwall
