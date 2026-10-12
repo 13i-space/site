@@ -3,6 +3,30 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.77 — The Black Hole, issues 5-8 (Oct 2026)
+No SQL.
+- **No. 05 Star Stuff**: the elements in a body and where each was made;
+  the first twenty minutes (hydrogen/helium); a cloud collapsing into a
+  star; fusion and the 0.7% mass loss; the onion of a heavy star by mass;
+  a supernova; a neutron-star collision with an audible chirp; generations
+  of stars enriching the galaxy.
+- **No. 06 The Lighthouse Stars**: crush 1.4 Suns to city size; weigh a
+  teaspoon; the skater spin-up; the lighthouse beam (tilt + our position,
+  with a recorder); Jocelyn Bell's 1967 chart; hear five real pulsar spin
+  rates as clicks (up to 716/s); timing (planets 1992, Hulse-Taylor
+  1974); magnetars.
+- **No. 07 Other Suns, Other Worlds**: glare and a coronagraph; the wobble
+  with real m/s; transits; TRAPPIST-1 with a note per transit; the
+  habitable zone by star type; transmission spectra (CO2 at WASP-39 b);
+  the census (6,000+ confirmed); find Earth in the Pale Blue Dot.
+- **No. 08 The Long Way Around**: orbit vs height; a slow-down-to-catch-up
+  docking game; a Hohmann launch-window game to Mars; the rocket equation;
+  gravity assists; Lagrange points (real restricted three-body motion, tap
+  to park probes); landing with a light delay vs autopilot; Voyager 1 and
+  the one-light-day date (live).
+- Season plan: No. 06's subtitle updated. Phone captions shortened where
+  they clipped.
+
 ## Update 5.76 — Halloween costumes (Oct 2026)
 No SQL. On the Halloween remix only (lib/rave/costumes.js): Qeth is a
 vampire (black cape lined in blood red, a flaring collar, fangs), Varrow a
