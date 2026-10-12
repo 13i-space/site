@@ -197,7 +197,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       const vo = playingNow ? voiceAt(st.special, s) : { on: 0, mouth: 0, whisper: false };
       st.g = (st.g || 0) + (vo.on - (st.g || 0)) * Math.min(1, dt * 4);
       const ghost = st.g, spooky = st.special && st.special.theme === "halloween";
-      const m = { ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
+      const m = { halloween: !!spooky, ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
       if (bins && analyser && playingNow) analyser.getByteFrequencyData(bins);
       const spectrum = playingNow ? bins : null;
 

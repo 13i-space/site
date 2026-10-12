@@ -3,6 +3,16 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.76 — Halloween costumes (Oct 2026)
+No SQL. On the Halloween remix only (lib/rave/costumes.js): Qeth is a
+vampire (black cape lined in blood red, a flaring collar, fangs), Varrow a
+witch (a tall crooked hat, patched, with an orange band and buckle), Ilu a
+bat (wings flapping on the beat, pointed ears, fangs), Ixxen a mummy
+(bandages round mantle, neck and head, a loose end trailing), and the DJ
+has a jack-o'-lantern candy pail on the decks. The screen shows TRICK OR
+TREAT now and then (16 beats in every 80): dripping, bobbing letters, a
+harvest moon, bats, grinning pumpkins. The girl is unchanged.
+
 ## Update 5.75 — The Halloween remix, re-cut (Oct 2026)
 No SQL. Paul's new mix of Apprehension (Megan Halloween Remix) replaces the
 old file (public/audio/apprehension-megan-halloween-remix.mp3; beat grid
