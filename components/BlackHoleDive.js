@@ -1,6 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { C, useCanvas, glow, label, starfield, bg, Slider } from "./blackhole/kit";
+import { ISSUE_02 } from "./blackhole/issue02";
+import { ISSUE_03 } from "./blackhole/issue03";
+import { ISSUE_04 } from "./blackhole/issue04";
 import Link from "next/link";
 import { startAmbient, whoosh, ping, soundOn, setSoundOn } from "../lib/spaceSound";
 
@@ -10,61 +14,11 @@ import { startAmbient, whoosh, ping, soundOn, setSoundOn } from "../lib/spaceSou
 // is a three-question check and a look at next week.
 //
 // Visuals: drop · sheet · orbit · lens · clocks · squeeze · cones · fall ·
-// real · hawking. Add a new one to VISUALS for a new issue's idea.
+// real · hawking (No. 1). Later issues: components/blackhole/issueNN.js,
+// spread into VISUALS below. Give a new picture a name no other issue uses.
 
-const C = { bg: "#05060f", grid: "#3A3E75", lav: "#B9C0FF", gold: "#E9D29A", rose: "#C97B6E", warm: "#E8CFC0", text: "#DCDFFF", dim: "#6E76B8" };
-
-// a canvas that redraws every frame: draw(ctx, W, H, t, dt)
-function useCanvas(draw) {
-  const ref = useRef(null);
-  const drawRef = useRef(draw);
-  drawRef.current = draw;
-  useEffect(() => {
-    const c = ref.current;
-    const ctx = c.getContext("2d");
-    let raf = 0, last = performance.now(), dpr = 1;
-    const loop = (now) => {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      const W = c.clientWidth, H = c.clientHeight;
-      if (c.width !== Math.round(W * dpr) || c.height !== Math.round(H * dpr)) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      const dt = Math.min(0.05, (now - last) / 1000);
-      last = now;
-      try { drawRef.current(ctx, W, H, now / 1000, dt); } catch (e) { /* keep going */ }
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
-  }, []);
-  return ref;
-}
-
-const glow = (ctx, x, y, r, color, a = 1) => {
-  if (r <= 0) return;
-  const g = ctx.createRadialGradient(x, y, 0, x, y, r);
-  g.addColorStop(0, color); g.addColorStop(1, "rgba(0,0,0,0)");
-  ctx.globalAlpha = Math.max(0, Math.min(1, a)); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2); ctx.globalAlpha = 1;
-};
-const label = (ctx, s, x, y, { size = 12, color = C.dim, align = "center", font = "JetBrains Mono" } = {}) => {
-  ctx.font = `${size}px "${font}", monospace`; ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "middle"; ctx.fillText(s, x, y);
-};
-const stars = (() => { let s = 7; const r = () => ((s = (s * 16807) % 2147483647) / 2147483647); return Array.from({ length: 140 }, () => ({ x: r(), y: r(), s: r() * 1.3 + 0.2, p: r() * 6.28 })); })();
-const starfield = (ctx, W, H, t, a = 0.6) => {
-  ctx.fillStyle = "#EDEBFF";
-  stars.forEach((s) => { ctx.globalAlpha = a * (0.3 + 0.7 * Math.abs(Math.sin(t * 0.5 + s.p))); ctx.fillRect(s.x * W, s.y * H, s.s, s.s); });
-  ctx.globalAlpha = 1;
-};
-const bg = (ctx, W, H) => { ctx.fillStyle = C.bg; ctx.fillRect(0, 0, W, H); };
-
-function Slider({ label: l, min, max, step, value, onChange, show }) {
-  return (
-    <label className="bh-slider">
-      <span className="mono">{l}</span>
-      <input type="range" min={min} max={max} step={step} value={value} onChange={(e) => onChange(Number(e.target.value))} />
-      {show && <span className="mono bh-slider-val">{show}</span>}
-    </label>
-  );
-}
+// Update 5.74: the shared drawing pieces moved to components/blackhole/kit.js,
+// and issues 2 onward keep their pictures in components/blackhole/issueNN.js.
 
 // ─────────────────────────── 01 drop ───────────────────────────
 function Drop() {
@@ -519,7 +473,7 @@ function Hawking() {
   return <canvas ref={ref} className="bh-canvas" />;
 }
 
-const VISUALS = { drop: Drop, sheet: Sheet, orbit: Orbit, lens: Lens, clocks: Clocks, squeeze: Squeeze, cones: Cones, fall: Fall, real: Real, hawking: Hawking };
+const VISUALS = { drop: Drop, sheet: Sheet, orbit: Orbit, lens: Lens, clocks: Clocks, squeeze: Squeeze, cones: Cones, fall: Fall, real: Real, hawking: Hawking, ...ISSUE_02, ...ISSUE_03, ...ISSUE_04 };
 
 function Quiz({ issue }) {
   const [picks, setPicks] = useState({});
@@ -583,7 +537,7 @@ function useDiveSound(i, n) {
   return { on, toggle, tap };
 }
 
-export default function BlackHoleDive({ issue }) {
+export default function BlackHoleDive({ issue, after = null }) {
   const [i, setI] = useState(0);
   const n = issue.steps.length;
   const snd = useDiveSound(i, n);
@@ -631,7 +585,11 @@ export default function BlackHoleDive({ issue }) {
         <button className="bh-btn" onClick={() => go(-1)} disabled={i === 0}>&larr; back</button>
         <span className="mono bh-count">{atQuiz ? "the check" : `${i + 1} / ${n}`}</span>
         {atQuiz ? (
-          <Link href="/galaxy" className="bh-btn bh-btn-on">back to The Galaxy</Link>
+          after ? (
+            <Link href={`/galaxy/black-hole/${after.number}`} className="bh-btn bh-btn-on">No. {String(after.number).padStart(2, "0")}: {after.title} &rarr;</Link>
+          ) : (
+            <Link href="/galaxy/black-hole" className="bh-btn bh-btn-on">all issues &rarr;</Link>
+          )
         ) : (
           <button className="bh-btn bh-btn-on" onClick={() => go(1)}>{i === n - 1 ? "the check →" : "next →"}</button>
         )}
