@@ -50,8 +50,8 @@ export default async function Nav() {
             <ul className="nav-dropdown-menu-inner">
               <li><Link href="/oracle">Oracle</Link></li>
               <li><Link href="/games">Games</Link></li>
-              <li><Link href="/assignments/interactive">Interactive Stories</Link></li>
               <li><Link href="/artifacts">Artifacts</Link></li>
+              <li><Link href="/assignments/interactive">Interactive Stories</Link></li>
             </ul>
           </div>
         </li>
@@ -59,9 +59,9 @@ export default async function Nav() {
           <Link href="/create">Create</Link>
           <div className="nav-dropdown-menu">
             <ul className="nav-dropdown-menu-inner">
-              <li><Link href="/create/spacecore">SpaceCore</Link></li>
               <li><Link href="/create/alien-lab">The Alien Lab</Link></li>
               <li><Link href="/create/signal-composer">Signal Composer</Link></li>
+              <li><Link href="/create/spacecore">SpaceCore</Link></li>
               <li><Link href="/assignments/write">Write an Assignment</Link></li>
             </ul>
           </div>

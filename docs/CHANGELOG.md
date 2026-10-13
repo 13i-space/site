@@ -3,6 +3,31 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.83 — Menu order + the three core games, upgraded (Oct 2026)
+No SQL.
+- **Menu order** (both dropdowns, the /launch journey and the mode pages):
+  Play = The Oracle, Games, Artifacts, Interactive Stories. Create = The
+  Alien Lab, Signal Composer, SpaceCore, Write an Assignment.
+- **lib/gameArt.js** (new): shared canvas art for the React games - the 13i
+  ship (steel ring, blue eye, thruster nozzle behind, two guns forward),
+  a UFO, grey cratered asteroids (pre-drawn sprites), the rod rocket,
+  tungsten rods, NEMESIS's turret, invaders, painted skies, glowing sparks.
+- **NEMESIS Command**: NEMESIS can slide halfway off either edge (invaders at
+  the side are reachable); invaders spawn just inside the edges. A UFO
+  crosses the sky every 18-28s (first at ~12s) firing at NEMESIS: a hit
+  costs a life and shoves NEMESIS sideways; shooting it scores 100 x level.
+  New art throughout (sky, ground, turret, invaders, tracers, sparks).
+- **Asteroid Belt**: grey-filled rocks; the rod ship is a rocket hauling a
+  strapped bundle of rods; 13i has a real thruster and fires two bullets at
+  once from twin guns; a UFO crosses every 25-40s (first ~15s) shooting at
+  you, 300 points; Lyra Assist targets it too. New life icons.
+- **13i vs NEMESIS**: a real Earth (Natural Earth land outlines, public
+  domain, baked in as a 256x128 bitmap) drawn as a lit turning sphere with
+  clouds and atmosphere; the Moon orbits it through cislunar space; 13i is
+  the logo mark come to life (steel ring, blue eye, the "i" stem with a
+  drive glow, gravity ripple); encounters show the Moon in the sky and the
+  curve of Earth below NEMESIS's battery; painted sky, twinkling stars.
+
 ## Update 5.82 — Extended Remixes album + the Cicada Rave (Oct 2026)
 No SQL.
 - **Circadian Pulse (Cicada Remix)** added (public/audio/circadian-pulse-cicada-remix.mp3,

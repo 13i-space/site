@@ -7,6 +7,15 @@ import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, cel
 import Leaderboard from "./Leaderboard";
 import LyraAssistToggle from "./LyraAssistToggle";
 import { loadAssist, saveAssist, drawLyra, playerTwoAt, playerTwoEnd, canvasToViewport } from "../lib/lyraAssist";
+import { drawShip13i, gunTips13i, drawUFO, makeAsteroidSprite, drawRocket, drawRod, makeSky, makeStars, drawStars, glow } from "../lib/gameArt";
+
+// Update 5.83: new art (lib/gameArt.js) - grey-filled rocks, a rocket for
+// the rod ship, and 13i with a real thruster behind and two guns forward
+// that fire side by side. A UFO crosses now and then, shooting at you:
+// 300 points if you bring it down.
+const UFO_FIRST = 900; // frames (~15s)
+const UFO_GAP = [1500, 2400];
+const hexRGB = (h) => { const n = parseInt(h.slice(1), 16); return `${(n >> 16) & 255},${(n >> 8) & 255},${n & 255}`; };
 
 const SHIP_RADIUS = 12;
 const ROD_COUNT = 12;
@@ -123,6 +132,7 @@ export default function AsteroidBelt() {
     }
     const speedMult = 1 + lvl * 0.07;
     const angle = biasAngle !== undefined ? biasAngle + (Math.random() - 0.5) * 1.4 : Math.random() * Math.PI * 2;
+    const shape = makeAsteroidShape();
     const speed = (0.4 + Math.random() * 0.6) * speedMult;
     return {
       x, y,
@@ -131,7 +141,8 @@ export default function AsteroidBelt() {
       rot: Math.random() * Math.PI * 2,
       vrot: (Math.random() - 0.5) * 0.03,
       tier,
-      shape: makeAsteroidShape(),
+      shape,
+      sprite: makeAsteroidSprite(shape, ASTEROID_TIERS[tier].radius),
       alive: true,
     };
   }, []);
@@ -155,6 +166,11 @@ export default function AsteroidBelt() {
       asteroids: [],
       particles: [],
       stars,
+      ufo: null,
+      ufoBolts: [],
+      ufoTimer: UFO_FIRST,
+      gunFlash: 0,
+      frame: 0,
       score: 0,
       lives: START_LIVES,
       level: 0,
@@ -206,11 +222,8 @@ export default function AsteroidBelt() {
       // regenerate stars for the new size so they cover the whole canvas
       const s = stateRef.current;
       if (s) {
-        s.stars = Array.from({ length: 70 }, () => ({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          r: Math.random() * 1 + 0.4,
-        }));
+        s.stars = makeStars(canvas.width, canvas.height, 60);
+        s.sky = null;
       }
     };
     window.addEventListener("resize", handleResize);
@@ -258,16 +271,71 @@ export default function AsteroidBelt() {
 
       if (s.fireCooldown > 0) s.fireCooldown--;
       if (keys.fire && s.fireCooldown <= 0) {
-        s.bullets.push({
-          x: ship.x + Math.cos(ship.angle) * SHIP_RADIUS,
-          y: ship.y + Math.sin(ship.angle) * SHIP_RADIUS,
-          vx: Math.cos(ship.angle) * BULLET_SPEED + ship.vx,
-          vy: Math.sin(ship.angle) * BULLET_SPEED + ship.vy,
-          life: BULLET_LIFE,
+        // both guns at once, side by side
+        gunTips13i(ship.x, ship.y, ship.angle, SHIP_RADIUS * 1.15).forEach((tip) => {
+          s.bullets.push({
+            x: tip.x,
+            y: tip.y,
+            vx: Math.cos(ship.angle) * BULLET_SPEED + ship.vx,
+            vy: Math.sin(ship.angle) * BULLET_SPEED + ship.vy,
+            life: BULLET_LIFE,
+          });
         });
         s.fireCooldown = 10;
+        s.gunFlash = 1;
         sfx.fire();
       }
+      s.gunFlash = Math.max(0, s.gunFlash - 0.2);
+      s.frame += 1;
+
+      // ---- the UFO: crosses the field, firing at you ----
+      if (!s.ufo) {
+        s.ufoTimer--;
+        if (s.ufoTimer <= 0) {
+          const fromLeft = Math.random() < 0.5;
+          s.ufo = {
+            x: fromLeft ? -30 : w + 30, y: h * (0.15 + Math.random() * 0.7), baseY: 0,
+            vx: (fromLeft ? 1 : -1) * (1.1 + Math.random() * 0.5 + lvl * 0.08), cd: 70, ph: Math.random() * 6,
+          };
+          s.ufo.baseY = s.ufo.y;
+        }
+      } else {
+        const U = s.ufo;
+        U.x += U.vx;
+        U.y = U.baseY + Math.sin(s.frame / 40 + U.ph) * 26;
+        U.cd--;
+        if (U.cd <= 0 && U.x > 0 && U.x < w) {
+          const a = Math.atan2(ship.y - U.y, ship.x - U.x) + (Math.random() - 0.5) * 0.5;
+          s.ufoBolts.push({ x: U.x, y: U.y, vx: Math.cos(a) * 3.2, vy: Math.sin(a) * 3.2, life: 140 });
+          U.cd = Math.max(55, 100 - lvl * 6);
+          sfx.fire();
+        }
+        s.bullets.forEach((b) => {
+          if (b.life <= 0 || !s.ufo) return;
+          if (Math.abs(b.x - U.x) < 20 && Math.abs(b.y - U.y) < 10) {
+            b.life = 0;
+            if (!b.lyra) s.score += 300;
+            explode(s, U.x, U.y, 34, "#B6FFD9");
+            sfx.explosion("large");
+            s.ufo = null;
+          }
+        });
+        if (s.ufo && ship.invuln <= 0 && Math.abs(ship.x - U.x) < 20 + SHIP_RADIUS && Math.abs(ship.y - U.y) < 8 + SHIP_RADIUS) {
+          explode(s, ship.x, ship.y, 20, "#C97B6E");
+          respawnShip(s, w, h);
+        }
+        if (s.ufo && (U.x < -50 || U.x > w + 50)) s.ufo = null;
+        if (!s.ufo) s.ufoTimer = UFO_GAP[0] + Math.random() * (UFO_GAP[1] - UFO_GAP[0]);
+      }
+      s.ufoBolts.forEach((b) => {
+        b.x = wrap(b.x + b.vx, w); b.y = wrap(b.y + b.vy, h); b.life--;
+        if (b.life > 0 && ship.invuln <= 0 && Math.hypot(b.x - ship.x, b.y - ship.y) < SHIP_RADIUS + 2) {
+          b.life = 0;
+          explode(s, ship.x, ship.y, 20, "#C97B6E");
+          respawnShip(s, w, h);
+        }
+      });
+      s.ufoBolts = s.ufoBolts.filter((b) => b.life > 0);
 
       // ---- Lyra assists ----
       const L = s.lyra;
@@ -289,6 +357,7 @@ export default function AsteroidBelt() {
             ...s.asteroids.filter((a) => a.alive),
             ...s.rods.filter((r) => r.alive),
             ...(s.miningShip && s.miningShip.alive ? [s.miningShip] : []),
+            ...(s.ufo ? [{ x: s.ufo.x, y: s.ufo.y, vx: s.ufo.vx, vy: 0 }] : []),
           ];
           let best = null, bd = 260;
           targets.forEach((o) => { const d = Math.hypot(o.x - L.x, o.y - L.y); if (d < bd) { bd = d; best = o; } });
@@ -391,8 +460,8 @@ export default function AsteroidBelt() {
             const a = (i / ROD_COUNT) * Math.PI * 2 + Math.random() * 0.3;
             const speed = 0.8 + Math.random() * 1.6;
             s.rods.push({
-              x: ms.x - Math.cos(ms.angle) * (i * ROD_GAP),
-              y: ms.y - Math.sin(ms.angle) * (i * ROD_GAP),
+              x: ms.x - Math.cos(ms.angle) * (46 + Math.floor(i / 4) * (ROD_LEN + 3)),
+              y: ms.y - Math.sin(ms.angle) * (46 + Math.floor(i / 4) * (ROD_LEN + 3)),
               vx: Math.cos(a) * speed, vy: Math.sin(a) * speed,
               angle: Math.random() * Math.PI * 2, vangle: (Math.random() - 0.5) * 0.1,
               alive: true,
@@ -481,125 +550,83 @@ export default function AsteroidBelt() {
       }
 
       // --- draw ---
-      ctx.fillStyle = "#060712";
-      ctx.fillRect(0, 0, w, h);
-      s.stars.forEach((star) => {
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-        ctx.fillStyle = "rgba(220,223,255,0.5)";
-        ctx.fill();
-      });
-
-      // ship - same 13i design used in NEMESIS Command: a ringed eye with
-      // a trailing fin, rotated to face the direction of travel
-      if (ship.invuln === 0 || Math.floor(ship.invuln / 5) % 2 === 0) {
-        ctx.save();
-        ctx.translate(ship.x, ship.y);
-        ctx.rotate(ship.angle);
-        const r = SHIP_RADIUS;
-        // trailing fin
-        ctx.beginPath();
-        ctx.moveTo(-r * 0.55, -r * 0.4);
-        ctx.lineTo(-r * 0.55, r * 0.4);
-        ctx.lineTo(-r * 1.8, 0);
-        ctx.closePath();
-        ctx.fillStyle = "rgba(201, 123, 110, 0.35)"; // see-through, so it never hides a rock
-        ctx.fill();
-        // ring body
-        ctx.strokeStyle = "#C97B6E";
-        ctx.lineWidth = 1.6;
-        ctx.beginPath();
-        ctx.arc(0, 0, r, 0, Math.PI * 2);
-        ctx.stroke();
-        // eye
-        ctx.fillStyle = "#E8CFC0";
-        ctx.beginPath();
-        ctx.arc(0, 0, r * 0.42, 0, Math.PI * 2);
-        ctx.fill();
-        if (keys.thrust) {
-          ctx.beginPath();
-          ctx.moveTo(-r * 1.8, 0);
-          ctx.lineTo(-r * 2.6, 0);
-          ctx.strokeStyle = "rgba(232, 207, 192, 0.4)";
-          ctx.lineWidth = 1.6;
-          ctx.stroke();
-        }
-        ctx.restore();
+      const T = s.frame / 60;
+      if (!s.sky || s.sky.width !== Math.round(w) || s.sky.height !== Math.round(h)) {
+        s.sky = makeSky(w, h, 3, "warm");
+        if (!s.stars[0] || s.stars[0].sp === undefined) s.stars = makeStars(w, h, 60);
       }
+      ctx.drawImage(s.sky, 0, 0);
+      drawStars(ctx, s.stars, T);
 
-      s.bullets.forEach((b) => {
-        ctx.fillStyle = b.lyra ? "#B9C0FF" : "#DCDFFF";
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.lyra ? 2.4 : 1.8, 0, Math.PI * 2); ctx.fill();
-      });
-      if (assistRef.current) drawLyra(ctx, L.x, L.y, 9, performance.now() / 1000, L.flash);
-
-      // asteroids
+      // asteroids: grey stone, rotating
       s.asteroids.forEach((a) => {
-        const r = ASTEROID_TIERS[a.tier].radius;
         ctx.save();
         ctx.translate(a.x, a.y);
         ctx.rotate(a.rot);
-        ctx.beginPath();
-        a.shape.forEach((mult, i) => {
-          const ang = (i / a.shape.length) * Math.PI * 2;
-          const px = Math.cos(ang) * r * mult;
-          const py = Math.sin(ang) * r * mult;
-          if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
-        });
-        ctx.closePath();
-        ctx.strokeStyle = "#6E76B8";
-        ctx.lineWidth = 1.4;
-        ctx.stroke();
+        ctx.drawImage(a.sprite, -a.sprite.width / 2, -a.sprite.height / 2);
         ctx.restore();
       });
 
+      // the rod ship: a rocket hauling its rods in a strapped bundle behind it
       if (ms && ms.alive) {
+        const ca = Math.cos(ms.angle), sa = Math.sin(ms.angle);
+        const back = (d, side) => [ms.x - ca * d - sa * side, ms.y - sa * d + ca * side];
+        // tow line
+        const [tx0, ty0] = back(24, 0), [tx1, ty1] = back(36, 0);
+        ctx.strokeStyle = "rgba(200,205,225,0.5)";
+        ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(tx0, ty0); ctx.lineTo(tx1, ty1); ctx.stroke();
+        // 12 rods: 3 deep, 4 across
         for (let i = 0; i < ROD_COUNT; i++) {
-          const rx = ms.x - Math.cos(ms.angle) * ((i + 1.6) * ROD_GAP);
-          const ry = ms.y - Math.sin(ms.angle) * ((i + 1.6) * ROD_GAP);
-          ctx.save();
-          ctx.translate(rx, ry);
-          ctx.rotate(ms.angle);
-          ctx.fillStyle = "#6E76B8";
-          ctx.fillRect(-ROD_LEN / 2, -2.5, ROD_LEN, 5);
-          ctx.restore();
+          const row = Math.floor(i / 4), col = i % 4;
+          const [rx, ry] = back(46 + row * (ROD_LEN + 3), (col - 1.5) * 5.6);
+          drawRod(ctx, rx, ry, ms.angle, ROD_LEN);
         }
-        ctx.save();
-        ctx.translate(ms.x, ms.y);
-        ctx.rotate(ms.angle);
-        ctx.fillStyle = "#C97B6E";
-        ctx.beginPath();
-        ctx.moveTo(14, 0);
-        ctx.lineTo(-10, 8);
-        ctx.lineTo(-6, 0);
-        ctx.lineTo(-10, -8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.restore();
-        if (ms.detonateTimer < 120 && Math.floor(ms.detonateTimer / 8) % 2 === 0) {
+        // straps
+        ctx.strokeStyle = "rgba(201,123,110,0.8)";
+        ctx.lineWidth = 1.4;
+        for (let row = 0; row < 3; row++) {
+          const [ax, ay] = back(46 + row * (ROD_LEN + 3), -11), [bx2, by2] = back(46 + row * (ROD_LEN + 3), 11);
+          ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx2, by2); ctx.stroke();
+        }
+        const warn = ms.detonateTimer < 120 ? (Math.floor(ms.detonateTimer / 8) % 2 === 0 ? 1 : 0.2) : 0;
+        drawRocket(ctx, ms.x, ms.y, ms.angle, 1.5, T, warn);
+        if (warn === 1) {
           ctx.beginPath();
-          ctx.arc(ms.x, ms.y, 20, 0, Math.PI * 2);
-          ctx.strokeStyle = "#C97B6E";
+          ctx.arc(ms.x, ms.y, 30, 0, Math.PI * 2);
+          ctx.strokeStyle = "rgba(201,123,110,0.8)";
           ctx.stroke();
         }
       }
 
-      s.rods.forEach((r) => {
-        ctx.save();
-        ctx.translate(r.x, r.y);
-        ctx.rotate(r.angle);
-        ctx.fillStyle = "#6E76B8";
-        ctx.fillRect(-ROD_LEN / 2, -2.5, ROD_LEN, 5);
-        ctx.restore();
+      s.rods.forEach((r) => drawRod(ctx, r.x, r.y, r.angle, ROD_LEN));
+
+      // the UFO and its shots
+      if (s.ufo) drawUFO(ctx, s.ufo.x, s.ufo.y, 18, T);
+      s.ufoBolts.forEach((b) => {
+        glow(ctx, b.x, b.y, 8, "150,255,200", 0.7);
+        ctx.fillStyle = "#E8FFF4";
+        ctx.beginPath(); ctx.arc(b.x, b.y, 2.2, 0, Math.PI * 2); ctx.fill();
       });
 
+      // bullets: bright tracers
+      s.bullets.forEach((b) => {
+        glow(ctx, b.x, b.y, b.lyra ? 7 : 6, b.lyra ? "185,192,255" : "170,200,255", 0.7);
+        ctx.fillStyle = b.lyra ? "#DCDFFF" : "#FFFFFF";
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.lyra ? 2.2 : 1.7, 0, Math.PI * 2); ctx.fill();
+      });
+
+      // 13i
+      if (ship.invuln === 0 || Math.floor(ship.invuln / 5) % 2 === 0) {
+        drawShip13i(ctx, ship.x, ship.y, ship.angle, SHIP_RADIUS * 1.15, { thrust: keys.thrust, t: T, flash: s.gunFlash });
+      }
+      if (assistRef.current) drawLyra(ctx, L.x, L.y, 9, performance.now() / 1000, L.flash);
+
       s.particles.forEach((p) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 1.6, 0, Math.PI * 2);
-        ctx.fillStyle = p.color;
-        ctx.globalAlpha = Math.max(0, p.life / 40);
-        ctx.fill();
-        ctx.globalAlpha = 1;
+        const a = Math.max(0, p.life / 40);
+        glow(ctx, p.x, p.y, 5, hexRGB(p.color), a * 0.7);
+        ctx.fillStyle = `rgba(255,255,255,${a})`;
+        ctx.fillRect(p.x - 0.7, p.y - 0.7, 1.4, 1.4);
       });
 
       rafRef.current = requestAnimationFrame(tick);
@@ -702,12 +729,16 @@ export default function AsteroidBelt() {
 }
 
 function LifeIcon({ lost }) {
+  // the 13i ship in miniature: steel ring, blue eye, guns forward, nozzle behind
   return (
-    <svg width={26} height={26} viewBox="0 0 26 26" style={{ opacity: lost ? 0.22 : 1 }}>
-      <g transform="translate(13,13) rotate(-90)">
-        <path d="M -6 -4.4 L -6 4.4 L -18 0 Z" fill="#C97B6E" />
-        <circle cx="0" cy="0" r="10" fill="none" stroke="#C97B6E" strokeWidth="1.8" />
-        <circle cx="0" cy="0" r="4.2" fill="#E8CFC0" />
+    <svg width={28} height={26} viewBox="0 0 28 26" style={{ opacity: lost ? 0.22 : 1 }}>
+      <g transform="translate(14,13) rotate(-90)">
+        <path d="M -8 -2.6 L -12.5 -3.8 L -12.5 3.8 L -8 2.6 Z" fill="#9AA0B8" />
+        <rect x="5" y="-5.6" width="7" height="2" fill="#C3C8D8" />
+        <rect x="5" y="3.6" width="7" height="2" fill="#C3C8D8" />
+        <circle cx="0" cy="0" r="7.6" fill="none" stroke="#B9BFD2" strokeWidth="2.6" />
+        <circle cx="0" cy="0" r="3.8" fill="#5A8CFF" />
+        <circle cx="-0.9" cy="-0.9" r="1.2" fill="#fff" />
       </g>
     </svg>
   );

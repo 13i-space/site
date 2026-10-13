@@ -470,108 +470,342 @@
     renderWeaponButtons();
   }
 
-  // ---------- SHARED VISUALS ----------
-  // Same ring-eye-fin "13i" design used in NEMESIS Command / Asteroid Belt
-  function draw13iShip(x, y, angle, damaged, critical){
+  // ---------- SHARED VISUALS (Update 5.83) ----------
+  // 13i: the logo's mark come to life - a brushed-steel ring, the blue eye
+  // glowing inside it, and the tapering stem of the "i" trailing behind,
+  // with a drive-glow at its tip. (NEMESIS Command and Asteroid Belt draw
+  // their 13i from lib/gameArt.js.)
+  function glowAt(x, y, r, rgb, a){
+    if (r <= 0 || a <= 0) return;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    g.addColorStop(0, 'rgba('+rgb+','+a+')');
+    g.addColorStop(0.4, 'rgba('+rgb+','+(a*0.35)+')');
+    g.addColorStop(1, 'rgba('+rgb+',0)');
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); ctx.fill();
+  }
+  function draw13iShip(x, y, angle, damaged, critical, size){
+    const r = size || 12;
+    const t = state.t;
+    const eyeRGB = critical ? '255,110,90' : (damaged ? '200,150,255' : '90,140,255');
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-    const r = 10;
-    const color = critical ? '#ff8a80' : (damaged ? '#c9a8ff' : '#9b6bff');
-    // trailing fin
+    // halo: 13i sees mass, not light - a faint gravity ripple around it
+    const rip = (t * 0.6) % 1;
+    ctx.strokeStyle = 'rgba(170,200,255,' + (0.35 * (1 - rip)) + ')';
+    ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.arc(0, 0, r * (1.2 + rip * 1.6), 0, Math.PI*2); ctx.stroke();
+    glowAt(0, 0, r * 2.6, eyeRGB, 0.22);
+    // the stem: a tapered steel blade behind the ring (pointing back along +y)
+    const sg = ctx.createLinearGradient(-r*0.3, 0, r*0.3, 0);
+    sg.addColorStop(0, '#4A4F63'); sg.addColorStop(0.5, '#E6E9F2'); sg.addColorStop(1, '#5B6178');
+    ctx.fillStyle = sg;
     ctx.beginPath();
-    ctx.moveTo(-r*0.55, -r*0.4);
-    ctx.lineTo(-r*0.55, r*0.4);
-    ctx.lineTo(-r*1.7, 0);
+    ctx.moveTo(-r*0.16, r*0.95);
+    ctx.lineTo(-r*0.34, r*1.55);
+    ctx.lineTo(0, r*2.6);
+    ctx.lineTo(r*0.34, r*1.55);
+    ctx.lineTo(r*0.16, r*0.95);
     ctx.closePath();
-    ctx.fillStyle = color;
     ctx.fill();
-    // ring body
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 1.8;
-    ctx.shadowColor = color; ctx.shadowBlur = 12;
+    ctx.fillStyle = '#0A0D1C';
     ctx.beginPath();
-    ctx.arc(0, 0, r, 0, Math.PI*2);
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    // eye
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(0, 0, r*0.4, 0, Math.PI*2);
-    ctx.fill();
+    ctx.moveTo(0, r*1.45); ctx.lineTo(-r*0.12, r*1.7); ctx.lineTo(0, r*2.25); ctx.lineTo(r*0.12, r*1.7);
+    ctx.closePath(); ctx.fill();
+    // drive glow at the stem's tip
+    glowAt(0, r*2.65, r*(0.9 + Math.sin(t*20)*0.15), '150,185,255', 0.65);
+    // the ring
+    const rg = ctx.createLinearGradient(-r, -r, r, r);
+    rg.addColorStop(0, '#F2F4FA'); rg.addColorStop(0.35, '#9AA0B8'); rg.addColorStop(0.6, '#5A6078'); rg.addColorStop(1, '#C3C8D8');
+    ctx.strokeStyle = rg;
+    ctx.lineWidth = r * 0.28;
+    ctx.beginPath(); ctx.arc(0, 0, r*0.86, Math.PI*0.62, Math.PI*2.38); ctx.stroke();
+    // the eye
+    glowAt(0, 0, r * 1.3, eyeRGB, 0.6 + Math.sin(t*2.4)*0.12);
+    const eg = ctx.createRadialGradient(-r*0.12, -r*0.12, 0, 0, 0, r*0.46);
+    eg.addColorStop(0, '#FFFFFF'); eg.addColorStop(0.3, 'rgb(' + eyeRGB + ')'); eg.addColorStop(1, '#0C1640');
+    ctx.fillStyle = eg;
+    ctx.beginPath(); ctx.arc(0, 0, r*0.44, 0, Math.PI*2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+    ctx.lineWidth = Math.max(0.6, r*0.04);
+    ctx.beginPath(); ctx.moveTo(-r*0.3, 0); ctx.lineTo(r*0.3, 0); ctx.moveTo(0, -r*0.3); ctx.lineTo(0, r*0.3); ctx.stroke();
+    // damage: sparks and venting
     if (damaged){
-      for(let i=0;i<3;i++){
-        const jx = (Math.random()-0.5)*10, jy = 6+Math.random()*10;
-        ctx.fillStyle = critical ? 'rgba(255,65,54,0.6)' : 'rgba(255,176,32,0.5)';
-        ctx.beginPath(); ctx.arc(jx, jy, 1.6, 0, Math.PI*2); ctx.fill();
+      for (let i = 0; i < (critical ? 6 : 3); i++){
+        const jx = (Math.random()-0.5) * r * 1.4, jy = (Math.random()-0.5) * r * 1.4;
+        glowAt(jx, jy, r*0.35, critical ? '255,80,60' : '255,176,32', 0.7);
       }
     }
     ctx.restore();
   }
 
-  // A small, believable, slowly-rotating Earth - green continents drifting
-  // across a blue ocean, built entirely from shapes (no image asset needed)
-  const CONTINENTS = [
-    {a:0.2, w:1.1, h:0.7},
-    {a:2.1, w:0.8, h:0.9},
-    {a:3.6, w:1.3, h:0.6},
-    {a:5.0, w:0.7, h:0.5},
-  ];
+  // ---------- EARTH & MOON (Update 5.83) ----------
+  // A real Earth: the continents come from Natural Earth's public-domain
+  // land outlines, rasterised to a 256x128 map (1 bit per cell, below).
+  // Drawn as a lit, turning sphere with drifting clouds and a blue
+  // atmosphere; the Moon circles it through cislunar space.
+  const LAND_B64 = 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP/wAB/+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD////////zgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAB//////////AAAP4AH4AAAA/AAAAAAAAAAAAAAAAADP//////////AAAf/wAEAAAAB/wAAAAAAAAAAAAAAAHef/////////4AAAf8AAAAAAAAPwAAAAAAAAAAAAAAD/ef//h//////gAAAYAAAAH4AAO/+AAHgAAAAAAAAAAE/5//8AA////+AAAAAAAAH8AAf//8AAf/AAAAAAAAAB/53//4AA////4AAAAAAAA8AAf///+eAeAAAAAAAAAAP//f//8AD///+AAAAAAAAPAPf/////8j/gAADAD/wADP/+fP//AP///4AAAAB+AA+B///////////AAYAf////////v/+Af///gAAAB//AAD//////////////wH/////////+f8A///gAAAA///v////////////////8H/////////5/+H//AawAAH///////////////////////////////P/gP/4D/gAA////////////////////n////////////+A/8AH8AAP///////////////////+DP////////x//wA/AAAAAH/v//////////////////wB////////4Af4AD8AAAAAf+f/////////////////4AP/+//////gAfmAAwAAAAB/9///////////////+fkAAD/AD/////gD/8AAAAAAeDfj//////////////BnwAAADsAB/////wH/4AAAAAB4H8//////////////gA/gAAB8AAD/////8//4AAAAAPgf7/////////////8AD8AAAOAAAf/////3//4AAAAB/D///////////////9APgAAAAAABv/////v//gAAAAH/f///////////////8A8AAAAAAAA////////+AAAAAz/////////////////4BgAAAAAAAD////////cAAAAAf////////////////9gAAAAAAAAAD////////4AAAAA/////////////////+AAAAAAAAAAH////////gAAAAB//////j/////////+4AAAAAAAAAAf///////AAAAAAB/////4P/////////7gAAAAAAAAAB///////wAAAAACH///n/h/////////+PAAAAAAAAAAH//////EAAAAAAf/vf8A+D/////////x8AAAAAAAAAAf/////+AAAAAAB/5v///8H////////4HAAAAAAAAAAB//////AAAAAAAH+GP///4f////////AYAAAAAAAAAAD/////4AAAAAAAf4b7///B///////68BgAAAAAAAAAAP/////gAAAAAAB/f/Hf/8H////////4eAAAAAAAAAAAf////+AAAAAAAB//AeX//////////Hv4AAAAAAAAAAA/////wAAAAAAAH/8AY//////////8d/AAAAAAAAAAAB////8AAAAAAAB//8OA//////////4PgAAAAAAAAAAAD////gAAAAAAAH//8////////////gwAAAAAAAAAAAAH///+AAAAAAAAf//////////////+AAAAAAAAAAAAAAP/+YYAAAAAAAH//////+////////4AAAAAAAAAAAAAA//gB4AAAAAAA////////////////AAAAAAAAAAAAAAB/+AHwAAAAAAH///////7///////8AAAAAAAAAAAAAAD/4AKAAAAAAAf///////+d//////4AAAAAAAAAAAAAAH/gD4AAAAAAD//////f/+D/////9gAAAAAAAAOAAAAAD+D/wAAAAAAf////////4H/////EAAAAAAAAAMAAAAAP8eD8AAAAAB//////7//AP/x/9gAAAAAAAAAAQAAAAAf/wN/AAAAAD//////n/8Af+D/2BgAAAAAAAAAAAAAAAf/A38AAAAAP//////f/gB/wH/QHAAAAAAAAAAAAAAAAf/gAAAAAAA//////8/4AD+A/+AYAAAAAAAAAAAAAAAAD+AAAAAAAH///////+AAPgAf8BwAAAAAAAAAAAAAAAAH4AAAAAAAP///////gAAfAB/wHgAAAAAAAAAAAAAAAADgfAAAAAA///////zgAB4AH/AvAAAAAAAAAAAAAAAAAOD/4AAAAB///////+AADgAJ8D8AAAAAAAAAAAAAAAAAf//wAAAAD///////wAAPABzAZwAAAAAAAAAAAAAAAAAf//gAAAAP///////AAAeAHABPAAAAAAAAAAAAAAAAAAP//wAAAAf//////8AAA4AOAOsAAAAAAAAAAAAAAAAAA///wAAAA/x/////gAAAAHcB4QAAAAAAAAAAAAAAAAAD///AAAAAAA////8AAAAAPwfAAAAAAAAAAAAAAAAAAAf//+AAAAAAD////gAAAAAfn8PAAAAAAAAAAAAAAAAAB///4AAAAAAP///8AAAAAA+f/sAAAAAAAAAAAAAAAAAP///4AAAAAA////AAAAAAB5/8/AAAAAAAAAAAAAAAAA////8AAAAAD///8AAAAAAHz7xf4EAAAAAAAAAAAAAAD////+AAAAAH///gAAAAAAPPvf/4YAAAAAAAAAAAAAAP////+AAAAAP//+AAAAAAA8A8B/34AAAAAAAAAAAAAA/////8AAAAA///4AAAAAAA/hQE/8wAAAAAAAAAAAAAB/////wAAAAB///gAAAAAAB/9YH/B4AAAAAAAAAAAAAD/////AAAAAH//+AAAAAAAAF/gDOBgAAAAAAAAAAAAAP////wAAAAAf//4AAAAAAAABYIEcDAAAAAAAAAAAAAAf////AAAAAB///gwAAAAAAAAD8wAAAAAAAAAAAAAAAB////4AAAAAP//+DAAAAAAAAAvzgAAAAAAAAAAAAAAAH////gAAAAA///4cAAAAAAAAP+PAAIAgAAAAAAAAAAAH///+AAAAAD///nwAAAAAAAB/+8AAwGAAAAAAAAAAAAH///4AAAAAP//8fAAAAAAAAP//wAAAwAAAAAAAAAAAAf///AAAAAA///B4AAAAAAAB///gAACAAAAAAAAAAAAA///8AAAAAB//4HgAAAAAAA////ADAAAAAAAAAAAAAAD///gAAAAAH//w+AAAAAAAP////AGAAAAAAAAAAAAAAf//+AAAAAAP//DwAAAAAAA////8AAAAAAAAAAAAAAAB//+AAAAAAA//8HAAAAAAAD////4AAAAAAAAAAAAAAAH//wAAAAAAD//AYAAAAAAAP////gAAAAAAAAAAAAAAAf//AAAAAAAP/8AAAAAAAAAf////AAAAAAAAAAAAAAAB//8AAAAAAAf/wAAAAAAAAB////8AAAAAAAAAAAAAAAH//AAAAAAAA/8AAAAAAAAAH////gAAAAAAAAAAAAAAAf/8AAAAAAAD/wAAAAAAAAAP///+AAAAAAAAAAAAAAAB//gAAAAAAAP+AAAAAAAAAB/gf/4AAAAAAAAAAAAAAAP/+AAAAAAAA/gAAAAAAAAAH8A//AAMAAAAAAAAAAAAA//AAAAAAAAAAAAAAAAAAAAAAB/8AAYAAAAAAAAAAAAH/8AAAAAAAAAAAAAAAAAAAAAAB/gAB4AAAAAAAAAAAAf/gAAAAAAAAAAAAAAAAAAAAAAD4AAHgAAAAAAAAAAAB/wAAAAAAAAAAAAAAAAAAAAAAACAAA8AAAAAAAAAAAAH/AAAAAAAAAAAAAAAAAAAAAAAAPAADwAAAAAAAAAAAAf4AAAAAAAAAAAAAAAAAAAAAAAAcAA8AAAAAAAAAAAAB/AAAAAAAAAAAAAAAAAAAAAAAAAgAHwAAAAAAAAAAAAP8AAAAAAAAAAAAAAAAAAAAAAAAAAA8AAAAAAAAAAAAA/wAAAAAAAAAAAAAAAAAAAAAAAAAABgAAAAAAAAAAAAD/AAAAAAAAAAAAAAADgAAAAAAAAAAAAAAAAAAAAAAAAPwAAAAAAAAAAAAAAAOAAAAAAAAAAAAAAAAAAAAAAAAA/DgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD8MAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABwAAAAAAAAAAAAB4AAAABgwACAAAAAAAAAAAAAAAAAAfAAAAAAAAAAAAA/5AA///////8AAAAAAAAAAAAAAAADwAAAAAAAAAABh///gf////////4AAAAAAAAAAAAAAA/wAAAAAAAG/w/////P/////////+AAAAAAAAAAAQAAP/gAAAAA/////////////////////8AAAAAAAAAD8OA/+AAAAAf/////////////////////wAAAAAP//4P////4AAAAD/////////////////////+AAAAB/////////+AAAAD//////////////////////AAAAef/////////AAAAP//////////////////////4AAAf//////////AAD4P///////////////////////4AAA5/////////wAwfw////////////////////////gAAAP///////////H+f///////////////////////gAAAAP/////////////////////////////////////wAr4A//////////////////////////////////////+T//////////////////////////////////////////wAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==';
+  const TEX_W = 256, TEX_H = 128;
+  const land = (function(){
+    const bin = atob(LAND_B64);
+    const out = new Uint8Array(TEX_W * TEX_H);
+    for (let i = 0; i < out.length; i++) out[i] = (bin.charCodeAt(i >> 3) >> (7 - (i & 7))) & 1;
+    return out;
+  })();
+  // colour map: oceans deep blue, coasts shallower, land by latitude
+  // (green, then dry bands, ice near the poles)
+  const earthTex = (function(){
+    const tex = new Uint8ClampedArray(TEX_W * TEX_H * 3);
+    const near = (x, y) => {
+      for (let dy = -2; dy <= 2; dy++) for (let dx = -2; dx <= 2; dx++){
+        const xx = (x + dx + TEX_W) % TEX_W, yy = Math.max(0, Math.min(TEX_H-1, y + dy));
+        if (land[yy*TEX_W + xx]) return true;
+      }
+      return false;
+    };
+    for (let y = 0; y < TEX_H; y++){
+      const lat = 90 - (y + 0.5) / TEX_H * 180, al = Math.abs(lat);
+      for (let x = 0; x < TEX_W; x++){
+        const i = y*TEX_W + x, o = i*3;
+        const n = (Math.sin(x*0.21 + y*0.13) + Math.sin(x*0.07 - y*0.29)) * 0.5;
+        let c;
+        if (land[i]){
+          if (al > 64) c = [228, 234, 242];
+          else if (al > 15 && al < 34) c = [178 + n*20, 152 + n*16, 104 + n*10];
+          else if (al < 12) c = [52 + n*14, 112 + n*20, 54 + n*10];
+          else c = [78 + n*18, 128 + n*20, 70 + n*12];
+        } else if (al > 72){
+          c = [210, 222, 236];
+        } else {
+          c = near(x, y) ? [38, 110, 170] : [14, 58 + n*6, 122 + n*8];
+        }
+        tex[o] = c[0]; tex[o+1] = c[1]; tex[o+2] = c[2];
+      }
+    }
+    return tex;
+  })();
+  // clouds: soft value noise
+  const clouds = (function(){
+    const cw = 128, ch = 64, a = new Float32Array(cw*ch);
+    const g = [];
+    for (let i = 0; i < 16*8; i++) g.push(Math.random());
+    const at = (x, y) => g[((y % 8) + 8) % 8 * 16 + (((x % 16) + 16) % 16)];
+    for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++){
+      let v = 0, amp = 1, f = 1/8, tot = 0;
+      for (let o = 0; o < 3; o++){
+        const fx = x*f, fy = y*f, ix = Math.floor(fx), iy = Math.floor(fy), tx = fx-ix, ty = fy-iy;
+        const sx = tx*tx*(3-2*tx), sy = ty*ty*(3-2*ty);
+        const top = at(ix,iy)*(1-sx) + at(ix+1,iy)*sx, bot = at(ix,iy+1)*(1-sx) + at(ix+1,iy+1)*sx;
+        v += (top*(1-sy) + bot*sy) * amp; tot += amp; amp *= 0.5; f *= 2;
+      }
+      v /= tot;
+      a[y*cw + x] = Math.max(0, Math.min(1, (v - 0.56) * 3));
+    }
+    return {a, cw, ch};
+  })();
+  // smooth (bilinear) lookups, so the low-res maps don't look blocky up close
+  const texOut = [0,0,0];
+  function sampleEarth(u, v){
+    const fx = u*TEX_W - 0.5, fy = Math.max(0, Math.min(TEX_H-1.001, v*TEX_H - 0.5));
+    const x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+    const xa = (x0 + TEX_W) % TEX_W, xb = (x0 + 1 + TEX_W) % TEX_W, yb = Math.min(TEX_H-1, y0+1);
+    const i00 = (y0*TEX_W+xa)*3, i10 = (y0*TEX_W+xb)*3, i01 = (yb*TEX_W+xa)*3, i11 = (yb*TEX_W+xb)*3;
+    for (let k = 0; k < 3; k++){
+      texOut[k] = (earthTex[i00+k]*(1-tx) + earthTex[i10+k]*tx)*(1-ty) + (earthTex[i01+k]*(1-tx) + earthTex[i11+k]*tx)*ty;
+    }
+    return texOut;
+  }
+  function sampleCloud(u, v){
+    const cw = clouds.cw, ch = clouds.ch;
+    const fx = u*cw, fy = Math.max(0, Math.min(ch-1.001, v*ch));
+    const x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+    const xa = ((x0 % cw) + cw) % cw, xb = (xa + 1) % cw, yb = Math.min(ch-1, y0+1);
+    const a = clouds.a;
+    return (a[y0*cw+xa]*(1-tx) + a[y0*cw+xb]*tx)*(1-ty) + (a[yb*cw+xa]*(1-tx) + a[yb*cw+xb]*tx)*ty;
+  }
+  const LIGHT = (function(){ const l = [-0.62, -0.42, 0.66], m = Math.hypot(l[0], l[1], l[2]); return l.map(v => v/m); })();
+
+  // Paint a lit sphere of radius R at (cx, cy) into the canvas, rows
+  // [y0, y1) only (so a huge horizon can be drawn cheaply). kind: 'earth' | 'moon'
+  const sphereCache = {};
+  function paintSphere(cx, cy, R, rot, kind, y0, y1, target){
+    const tctx = target || ctx;
+    const top = Math.max(Math.floor(cy - R), y0 == null ? -Infinity : y0);
+    const bot = Math.min(Math.ceil(cy + R), y1 == null ? Infinity : y1);
+    const left = Math.floor(cx - R), right = Math.ceil(cx + R);
+    const w = right - left, h = bot - top;
+    if (w <= 0 || h <= 0) return;
+    const key = kind + w + 'x' + h;
+    let slot = sphereCache[key];
+    if (!slot){
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const cx2 = c.getContext('2d');
+      slot = sphereCache[key] = {c, cx2, img: cx2.createImageData(w, h)};
+    }
+    const img = slot.img;
+    const d = img.data;
+    const cr = rot * 1.25;
+    for (let py = 0; py < h; py++){
+      const ny = (top + py + 0.5 - cy) / R;
+      for (let px = 0; px < w; px++){
+        const o = (py*w + px) * 4;
+        const nx = (left + px + 0.5 - cx) / R;
+        const rr = nx*nx + ny*ny;
+        if (rr > 1){ d[o+3] = 0; continue; }
+        const nz = Math.sqrt(1 - rr);
+        const lat = Math.asin(-ny);
+        let lon = Math.atan2(nx, nz) + rot;
+        let u = ((lon / (Math.PI*2)) % 1 + 1) % 1;
+        const v = 0.5 - lat / Math.PI;
+        const lit = Math.max(0, nx*LIGHT[0] + ny*LIGHT[1] + nz*LIGHT[2]);
+        let r, g, b;
+        if (kind === 'earth'){
+          const tx = Math.min(TEX_W-1, (u*TEX_W)|0), ty = Math.min(TEX_H-1, (v*TEX_H)|0);
+          const sc = sampleEarth(u, v);
+          r = sc[0]; g = sc[1]; b = sc[2];
+          // clouds, drifting a little faster than the ground
+          let cu = (((lon - rot + cr) / (Math.PI*2)) % 1 + 1) % 1;
+          const ca = sampleCloud(cu, v) * 0.6;
+          r = r + (245 - r)*ca; g = g + (248 - g)*ca; b = b + (255 - b)*ca;
+          // ocean glint
+          const spec = Math.pow(lit, 24) * (land[ty*TEX_W+tx] ? 0.1 : 0.6) * (1-ca);
+          const k = 0.06 + lit * 1.0;
+          r = r*k + spec*255; g = g*k + spec*255; b = b*k + spec*255;
+          // atmosphere at the limb
+          const limb = Math.pow(1 - nz, 2.2);
+          r += (90 - r) * limb * 0.7 * (0.3 + lit); g += (160 - g) * limb * 0.7 * (0.3 + lit); b += (255 - b) * limb * 0.8 * (0.3 + lit);
+        } else {
+          // the Moon: grey, with darker seas and a few craters
+          const m = Math.sin(u*31.4 + Math.sin(v*9)*2) * Math.cos(v*17.3) + Math.sin(u*12.6 - v*7);
+          let base = 168 + m * 14;
+          if (Math.sin(u*6.28*1.5 + 1.2) * Math.cos(v*3.14*2.2) > 0.35) base -= 38;
+          const k = 0.04 + lit * 1.05;
+          r = base*k; g = base*k*0.98; b = base*k*0.95;
+        }
+        d[o] = r; d[o+1] = g; d[o+2] = b; d[o+3] = 255;
+      }
+    }
+    // through a small canvas so the corners stay transparent
+    slot.cx2.putImageData(img, 0, 0);
+    tctx.drawImage(slot.c, left, top);
+  }
+
   function drawEarth(cx, cy, r){
-    ctx.save();
-    // ocean base
-    const grad = ctx.createRadialGradient(cx-r*0.35, cy-r*0.35, r*0.1, cx, cy, r);
-    grad.addColorStop(0, '#5fd4ff');
-    grad.addColorStop(0.55, '#1f7fd6');
-    grad.addColorStop(1, '#0b3f7a');
+    // atmosphere glow behind
+    glowAt(cx, cy, r * 1.6, '80,150,255', 0.35);
+    paintSphere(cx, cy, r, 3.3 + state.t * 0.08, 'earth');
     ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.fillStyle = grad;
-    ctx.shadowColor = '#2fe6c4'; ctx.shadowBlur = 14;
-    ctx.fill();
-    ctx.shadowBlur = 0;
-
-    // continents, clipped to the circle, slowly rotating around it
-    ctx.save();
-    ctx.beginPath();
-    ctx.arc(cx, cy, r, 0, Math.PI*2);
-    ctx.clip();
-    const spin = state.t * 0.15;
-    CONTINENTS.forEach(c=>{
-      const a = c.a + spin;
-      const px = cx + Math.cos(a) * r * 0.55;
-      const py = cy + Math.sin(a) * r * 0.4;
-      ctx.beginPath();
-      ctx.ellipse(px, py, r*c.w*0.42, r*c.h*0.42, a, 0, Math.PI*2);
-      ctx.fillStyle = '#3fae5c';
-      ctx.fill();
-    });
-    ctx.restore();
-
-    // atmosphere rim
-    ctx.beginPath();
-    ctx.arc(cx, cy, r+1.5, 0, Math.PI*2);
-    ctx.strokeStyle = 'rgba(95,212,255,0.5)';
-    ctx.lineWidth = 2;
+    ctx.arc(cx, cy, r + 1, 0, Math.PI*2);
+    ctx.strokeStyle = 'rgba(120,190,255,0.55)';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
+  }
+  // The Moon on its orbit (an ellipse in the map's tilted plane). Returns
+  // whether it's behind Earth right now, so the map can draw it first.
+  function moonPos(cx, cy, orbitR){
+    const a = state.t * 0.22 + 1.2;
+    return {x: cx + Math.cos(a) * orbitR, y: cy + Math.sin(a) * orbitR * 0.42, behind: Math.sin(a) < 0};
+  }
+  function drawMoon(x, y, r){
+    paintSphere(Math.round(x), Math.round(y), r, 0.4, 'moon');
+  }
+
+  // a painted sky behind everything, made once
+  let skyCanvas = null;
+  function drawSky(){
+    if (!skyCanvas){
+      skyCanvas = document.createElement('canvas');
+      skyCanvas.width = W; skyCanvas.height = H;
+      const g = skyCanvas.getContext('2d');
+      g.fillStyle = '#03050a'; g.fillRect(0, 0, W, H);
+      [['70,60,160', 0.2, 0.3, 0.6], ['40,90,150', 0.8, 0.7, 0.5], ['120,60,140', 0.6, 0.15, 0.4]].forEach(([rgb, x, y, rr]) => {
+        const gr = g.createRadialGradient(W*x, H*y, 0, W*x, H*y, W*rr);
+        gr.addColorStop(0, 'rgba(' + rgb + ',0.16)'); gr.addColorStop(1, 'rgba(' + rgb + ',0)');
+        g.fillStyle = gr; g.fillRect(0, 0, W, H);
+      });
+    }
+    ctx.drawImage(skyCanvas, 0, 0);
+  }
+
+  // NEMESIS's battery on the ground: an amber-eyed emplacement
+  function drawBattery(x, y){
+    ctx.save();
+    ctx.translate(x, y);
+    const g = ctx.createLinearGradient(0, -18, 0, 4);
+    g.addColorStop(0, '#9AA0B8'); g.addColorStop(1, '#2A2E40');
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.moveTo(-26, 4); ctx.lineTo(-18, -8); ctx.lineTo(18, -8); ctx.lineTo(26, 4); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(0, -8, 12, Math.PI, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#3A3F55';
+    ctx.fillRect(-3, -30, 6, 18);
+    const pulse = 0.7 + Math.sin(state.t*3)*0.3;
+    glowAt(0, -11, 14, '255,176,32', 0.6*pulse);
+    ctx.fillStyle = '#ffb020';
+    ctx.beginPath(); ctx.arc(0, -11, 3.4, 0, Math.PI*2); ctx.fill();
     ctx.restore();
   }
+
+  // the curve of Earth along the bottom of an encounter, painted once: the
+  // planet seen from just above it - continents, clouds and the thin blue
+  // line of the atmosphere along the curve
+  let horizon = null;
+  function drawHorizon(){
+    if (!horizon){
+      horizon = document.createElement('canvas');
+      horizon.width = W; horizon.height = H;
+      const hctx = horizon.getContext('2d');
+      const band = 86, R = W * 1.4, cx = W/2, cy = H - band + R;
+      const y0 = H - band - 4;
+      const img = hctx.createImageData(W, H - y0);
+      const d = img.data;
+      for (let y = y0; y < H; y++){
+        for (let x = 0; x < W; x++){
+          const o = ((y - y0) * W + x) * 4;
+          const depth = Math.hypot(x - cx, y - cy);
+          const below = R - depth; // pixels below the curve
+          if (below < 0){
+            // a soft halo of atmosphere just above the curve
+            const a = Math.max(0, 1 + below / 10);
+            d[o] = 90; d[o+1] = 160; d[o+2] = 255; d[o+3] = a * a * 140;
+            continue;
+          }
+          const u = ((x / W) * 0.28 + 0.12 + 1) % 1;
+          const v = 0.22 + Math.min(1, below / band) * 0.16 + Math.pow(Math.abs(x - cx) / W, 2) * 0.05;
+          const sc = sampleEarth(u, v);
+          let r = sc[0], g = sc[1], b = sc[2];
+          const ca = sampleCloud((u*2.2) % 1, (v*1.8) % 1) * 0.45;
+          r += (240 - r)*ca; g += (245 - g)*ca; b += (255 - b)*ca;
+          // lit from the left, darker toward the bottom and the right
+          const lit = 0.35 + 0.75 * (1 - x / W) * 0.6 + 0.4 * Math.max(0, 1 - below / band);
+          r *= lit; g *= lit; b *= lit;
+          // atmosphere band hugging the curve
+          const atm = Math.max(0, 1 - below / 9);
+          r += (110 - r) * atm * 0.8; g += (180 - g) * atm * 0.8; b += (255 - b) * atm * 0.9;
+          d[o] = r; d[o+1] = g; d[o+2] = b; d[o+3] = 255;
+        }
+      }
+      hctx.putImageData(img, 0, y0);
+    }
+    ctx.drawImage(horizon, 0, 0);
+  }
+
 
   // ---------- MAP VIEW ----------
   function drawMap(){
     ctx.clearRect(0,0,W,H);
     // starfield
-    ctx.fillStyle = '#03050a';
-    ctx.fillRect(0,0,W,H);
+    drawSky();
     drawStars();
 
     const cx = W*0.5, cy = H*0.52;
-    const EARTH_R = 18;
+    const EARTH_R = 36;
     // orbit rings for each zone boundary - same radius formula as the ship,
     // so the innermost ring sits right at Earth's edge rather than a fixed
     // gap short of it
     ZONES.forEach((z,i)=>{
-      const r = EARTH_R + (100-z.min) * 3.82;
+      const r = EARTH_R + (100-z.min) * 3.7;
       ctx.beginPath();
       ctx.ellipse(cx, cy, r, r*0.42, 0, 0, Math.PI*2);
       ctx.strokeStyle = 'rgba(18,48,73,0.9)';
@@ -579,34 +813,41 @@
       ctx.stroke();
     });
 
+    // the Moon, circling through cislunar space (behind Earth half the time)
+    const moon = moonPos(cx, cy, EARTH_R + 72);
+    if (moon.behind) drawMoon(moon.x, moon.y, 8);
     drawEarth(cx, cy, EARTH_R);
+    if (!moon.behind) drawMoon(moon.x, moon.y, 8);
     ctx.fillStyle = '#cfe3ee';
     ctx.font = "10px 'JetBrains Mono'";
     ctx.textAlign = 'center';
     ctx.fillText('EARTH', cx, cy+EARTH_R+18);
+    ctx.fillStyle = 'rgba(207,227,238,0.55)';
+    ctx.font = "9px 'JetBrains Mono'";
+    ctx.fillText('MOON', moon.x, moon.y + 18);
 
     // 13i position: progress 0 -> far ring, 100 -> earth's surface
-    const r = EARTH_R + (100-state.progress) * 3.82;
+    const r = EARTH_R + (100-state.progress) * 3.7;
     const angle = -Math.PI/2 + (state.progress/100)*1.4 + Math.sin(state.t*0.4)*0.02;
     const sx = cx + Math.cos(angle)*r;
     const sy = cy + Math.sin(angle)*r*0.42;
 
     // trail
     ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(-Math.PI/2)*(EARTH_R+100*3.82), cy + Math.sin(-Math.PI/2)*(EARTH_R+100*3.82)*0.42);
+    ctx.moveTo(cx + Math.cos(-Math.PI/2)*(EARTH_R+100*3.7), cy + Math.sin(-Math.PI/2)*(EARTH_R+100*3.7)*0.42);
     for(let p=0; p<=state.progress; p+=2){
-      const rr = EARTH_R + (100-p)*3.82;
+      const rr = EARTH_R + (100-p)*3.7;
       const aa = -Math.PI/2 + (p/100)*1.4;
       ctx.lineTo(cx+Math.cos(aa)*rr, cy+Math.sin(aa)*rr*0.42);
     }
-    ctx.strokeStyle = 'rgba(155,107,255,0.35)';
+    ctx.strokeStyle = 'rgba(120,160,255,0.35)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
     // 13i ship — condition reflected visually
     const damaged = state.hull < 60;
     const critical = state.hull < 30;
-    draw13iShip(sx, sy, angle + Math.PI/2, damaged, critical);
+    draw13iShip(sx, sy, angle + Math.PI, damaged, critical, 12);
 
     // readouts panel
     ctx.textAlign = 'left';
@@ -632,8 +873,9 @@
         stars.push({x:Math.random()*W, y:Math.random()*H, r:Math.random()*1.4+0.2, a:Math.random()*0.6+0.2});
       }
     }
-    stars.forEach(s=>{
-      ctx.fillStyle = 'rgba(207,227,238,'+s.a+')';
+    stars.forEach((s, i)=>{
+      const tw = s.a * (0.7 + 0.3*Math.sin(state.t*(0.6 + (i%7)*0.25) + i));
+      ctx.fillStyle = 'rgba(207,227,238,'+tw+')';
       ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
     });
   }
@@ -858,13 +1100,12 @@
     const e = state.encounter;
     const et = state.t - e.startT;
     ctx.clearRect(0,0,W,H);
-    ctx.fillStyle = '#03050a';
-    ctx.fillRect(0,0,W,H);
+    drawSky();
     drawStars();
-
-    // battery
-    ctx.fillStyle = '#ffb020';
-    ctx.fillRect(W/2-14, H-22, 28, 14);
+    // the Moon hangs in the sky; Earth curves away below the battery
+    drawMoon(W*0.86, H*0.2, 22);
+    drawHorizon();
+    drawBattery(W/2, H-20);
 
     const tp = targetPos(et);
     const defActive = deflectionActive(et);
@@ -882,7 +1123,7 @@
     }
 
     // target (13i)
-    draw13iShip(tp.x, tp.y, 0, state.hull < 60, state.hull < 30);
+    draw13iShip(tp.x, tp.y, Math.PI + Math.sin(state.t*1.3)*0.15, state.hull < 60, state.hull < 30, 18);
 
     // Lyra and her beam
     if (lyraAssist){

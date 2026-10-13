@@ -20,14 +20,14 @@ const STOPS = [
   },
   {
     key: "play", href: "/play", title: "Play", verb: "step inside it",
-    line: "Speak with 13i. Make its choices. Play the games its records left behind.",
-    places: [["The Oracle", "/oracle"], ["Interactive Stories", "/assignments/interactive"], ["Games", "/games"], ["Artifacts", "/artifacts"]],
+    line: "Speak with 13i. Play the games its records left behind. Make its choices.",
+    places: [["The Oracle", "/oracle"], ["Games", "/games"], ["Artifacts", "/artifacts"], ["Interactive Stories", "/assignments/interactive"]],
     color: "#B9C0FF",
   },
   {
     key: "create", href: "/create", title: "Create", verb: "add to it",
-    line: "Build a species. Compose a signal. Write an Assignment. Dig into Mars with everyone else.",
-    places: [["The Alien Lab", "/create/alien-lab"], ["Write an Assignment", "/assignments/write"], ["Signal Composer", "/create/signal-composer"], ["SpaceCore", "/create/spacecore"]],
+    line: "Build a species. Compose a signal. Dig into Mars with everyone else. Write an Assignment.",
+    places: [["The Alien Lab", "/create/alien-lab"], ["Signal Composer", "/create/signal-composer"], ["SpaceCore", "/create/spacecore"], ["Write an Assignment", "/assignments/write"]],
     color: "#E8CFC0",
     marked: true,
   },

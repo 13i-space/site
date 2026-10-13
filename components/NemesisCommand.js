@@ -7,6 +7,14 @@ import Leaderboard from "./Leaderboard";
 import FullscreenButton from "./FullscreenButton";
 import LyraAssistToggle from "./LyraAssistToggle";
 import { loadAssist, saveAssist, drawLyra, playerTwoAt, playerTwoEnd, canvasToViewport } from "../lib/lyraAssist";
+import { drawNemesis, drawInvader, drawUFO, makeSky, makeStars, drawStars, glow, burst, stepSparks } from "../lib/gameArt";
+
+// Update 5.83: new art (lib/gameArt.js), NEMESIS can slide halfway off
+// either edge to reach invaders falling right at the side, and a UFO now
+// crosses the sky now and then, firing down at NEMESIS - shoot it for a
+// bonus; a hit knocks NEMESIS sideways and costs a life.
+const UFO_FIRST_MS = 12000;
+const UFO_GAP_MS = [18000, 28000];
 
 // The game was designed on a 600x400 field; speeds scale with the real
 // field height so a bigger screen doesn't make it easier or harder.
@@ -83,6 +91,14 @@ export default function NemesisCommand() {
       phase: Math.random() * Math.PI * 2,
     }));
     return {
+      sparks: [],
+      ufo: null,
+      ufoBolts: [],
+      nextUfo: null,
+      shake: 0,
+      recoil: 0,
+      hurt: 0,
+      popups: [],
       turretX: canvas.width / 2,
       aimAngle: -Math.PI / 2,
       projectiles: [],
@@ -127,12 +143,17 @@ export default function NemesisCommand() {
       const s = stateRef.current;
       const groundY = canvas.height - 20;
       const k = canvas.height / DESIGN_HEIGHT;
+      const kk = Math.min(1.6, Math.sqrt(k));
+      // from the barrel's muzzle
+      const mx = s.turretX + Math.cos(s.aimAngle) * 34 * kk;
+      const my = groundY - 19 * kk + Math.sin(s.aimAngle) * 34 * kk;
       s.projectiles.push({
-        x: s.turretX,
-        y: groundY - 20,
+        x: mx,
+        y: my,
         vx: Math.cos(s.aimAngle) * 7 * k,
         vy: Math.sin(s.aimAngle) * 7 * k,
       });
+      s.recoil = 1;
       sfx.fire();
     };
 
@@ -143,6 +164,7 @@ export default function NemesisCommand() {
       const dx = x - s.turretX;
       const dy = y - (groundY - 20);
       s.aimAngle = Math.atan2(dy || -1, dx || 0.0001);
+      s.turretX = Math.max(0, Math.min(canvas.width, s.turretX));
     };
 
     const handleClick = (e) => {
@@ -199,58 +221,7 @@ export default function NemesisCommand() {
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("keyup", handleKeyUp);
 
-    const drawEnemy = (x, y, r) => {
-      ctx.strokeStyle = "#C97B6E";
-      ctx.lineWidth = 1.6;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.stroke();
-      ctx.fillStyle = "#E8CFC0";
-      ctx.beginPath();
-      ctx.arc(x, y, r * 0.42, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#C97B6E";
-      ctx.beginPath();
-      ctx.moveTo(x - r * 0.4, y + r * 0.55);
-      ctx.lineTo(x + r * 0.4, y + r * 0.55);
-      ctx.lineTo(x, y + r * 1.8);
-      ctx.closePath();
-      ctx.fill();
-    };
-
-    const drawPlayer = (x, groundY, angle) => {
-      ctx.fillStyle = "#3A3E75";
-      ctx.fillRect(x - 16, groundY - 4, 32, 8);
-      ctx.fillStyle = "#4C5192";
-      ctx.beginPath();
-      ctx.arc(x, groundY - 14, 11, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#3A3E75";
-      ctx.beginPath();
-      ctx.moveTo(x - 11, groundY - 14);
-      ctx.lineTo(x - 20, groundY - 6);
-      ctx.lineTo(x - 11, groundY - 6);
-      ctx.closePath();
-      ctx.fill();
-      ctx.beginPath();
-      ctx.moveTo(x + 11, groundY - 14);
-      ctx.lineTo(x + 20, groundY - 6);
-      ctx.lineTo(x + 11, groundY - 6);
-      ctx.closePath();
-      ctx.fill();
-      const bx = x + Math.cos(angle) * 20;
-      const by = groundY - 14 + Math.sin(angle) * 20;
-      ctx.strokeStyle = "#8B95F6";
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.moveTo(x, groundY - 14);
-      ctx.lineTo(bx, by);
-      ctx.stroke();
-      ctx.fillStyle = "#E8CFC0";
-      ctx.beginPath();
-      ctx.arc(x, groundY - 14, 3.5, 0, Math.PI * 2);
-      ctx.fill();
-    };
+    let sky = null, skyW = 0, skyH = 0, stars = null;
 
     let frame = 0;
     const loop = (t) => {
@@ -261,13 +232,18 @@ export default function NemesisCommand() {
 
       // arrow-key movement, scaled to the field like everything else
       const move = 6 * (canvas.height / DESIGN_HEIGHT);
-      if (held.left) s.turretX = Math.max(20, s.turretX - move);
-      if (held.right) s.turretX = Math.min(canvas.width - 20, s.turretX + move);
+      // NEMESIS can go halfway off either edge, so nothing at the side is out of reach
+      if (held.left) s.turretX = Math.max(0, s.turretX - move);
+      if (held.right) s.turretX = Math.min(canvas.width, s.turretX + move);
+      const k = canvas.height / DESIGN_HEIGHT;
+      const kk = Math.min(1.6, Math.sqrt(k));
+      const groundY = canvas.height - 20;
       const cfg = LEVELS[lvl];
 
       if (t - s.lastSpawn > cfg.spawnMs) {
         s.threats.push({
-          x: Math.random() * canvas.width,
+          seed: Math.random() * 10,
+          x: 6 + Math.random() * (canvas.width - 12),
           y: -10,
           speed: (cfg.speedMin + Math.random() * (cfg.speedMax - cfg.speedMin)) * (canvas.height / DESIGN_HEIGHT),
         });
@@ -283,6 +259,63 @@ export default function NemesisCommand() {
       );
 
       s.threats.forEach((th) => (th.y += th.speed));
+
+      // ---- the UFO: across the sky, firing down at NEMESIS ----
+      if (s.nextUfo === null) s.nextUfo = t + UFO_FIRST_MS;
+      if (!s.ufo && t > s.nextUfo) {
+        const fromLeft = Math.random() < 0.5;
+        s.ufo = {
+          x: fromLeft ? -40 * kk : canvas.width + 40 * kk,
+          y: canvas.height * (0.1 + Math.random() * 0.1),
+          vx: (fromLeft ? 1 : -1) * (1.5 + Math.random() * 0.7 + lvl * 0.15) * k,
+          nextShot: t + 900,
+          hurt: 0,
+        };
+        sfx.ufo && sfx.ufo();
+      }
+      const U = s.ufo;
+      if (U) {
+        U.x += U.vx;
+        U.y += Math.sin(t / 300) * 0.3 * k;
+        U.hurt = Math.max(0, U.hurt - 0.1);
+        if (t > U.nextShot && U.x > 0 && U.x < canvas.width) {
+          const tx = s.turretX + (Math.random() - 0.5) * 30 * k, ty = groundY - 14 * kk;
+          const d = Math.hypot(tx - U.x, ty - U.y) || 1;
+          const sp = (3.2 + lvl * 0.25) * k;
+          s.ufoBolts.push({ x: U.x, y: U.y + 8 * kk, vx: ((tx - U.x) / d) * sp, vy: ((ty - U.y) / d) * sp });
+          U.nextShot = t + Math.max(700, 1500 - lvl * 160);
+          sfx.fire();
+        }
+        for (const p of s.projectiles) {
+          if (!p.hit && Math.abs(p.x - U.x) < 22 * kk && Math.abs(p.y - U.y) < 11 * kk) {
+            p.hit = true;
+            const bonus = 100 * (lvl + 1);
+            s.score += bonus;
+            s.popups.push({ x: U.x, y: U.y, text: "+" + bonus, age: 0 });
+            burst(s.sparks, U.x, U.y, 40, "170,255,210", 3.4, 2.4);
+            s.explosions.push({ x: U.x, y: U.y, age: 0, big: true });
+            sfx.explosion("large");
+            s.ufo = null;
+            break;
+          }
+        }
+        if (s.ufo && (U.x < -60 * kk || U.x > canvas.width + 60 * kk)) s.ufo = null;
+        if (!s.ufo) s.nextUfo = t + UFO_GAP_MS[0] + Math.random() * (UFO_GAP_MS[1] - UFO_GAP_MS[0]);
+      }
+      s.ufoBolts.forEach((b) => { b.x += b.vx; b.y += b.vy; });
+      for (const b of s.ufoBolts) {
+        if (!b.hit && Math.abs(b.x - s.turretX) < 18 * kk && b.y > groundY - 30 * kk && b.y < groundY) {
+          // knocked: a life, a shove sideways, the screen shakes
+          b.hit = true;
+          s.lives -= 1;
+          s.hurt = 1;
+          s.shake = 10;
+          s.turretX = Math.max(0, Math.min(canvas.width, s.turretX + (b.vx >= 0 ? 1 : -1) * 46 * k));
+          burst(s.sparks, b.x, b.y, 26, "255,176,32", 3, 2);
+          sfx.lifeLost();
+        }
+      }
+      s.ufoBolts = s.ufoBolts.filter((b) => !b.hit && b.y < canvas.height && b.x > -20 && b.x < canvas.width + 20);
 
       // ---- Lyra assists (player two) ----
       // She plays by your rules: she slides along the ground line under an
@@ -329,7 +362,7 @@ export default function NemesisCommand() {
       for (const th of s.threats) {
         if (th.hit) continue;
         for (const sh of L.shots) {
-          if (!sh.hit && Math.hypot(th.x - sh.x, th.y - sh.y) < 14) {
+          if (!sh.hit && Math.hypot(th.x - sh.x, th.y - sh.y) < 14 * kk) {
             th.hit = true;
             sh.hit = true;
             s.explosions.push({ x: th.x, y: th.y, age: 0, lyra: true });
@@ -342,11 +375,12 @@ export default function NemesisCommand() {
       for (const th of s.threats) {
         if (th.hit) continue;
         for (const p of s.projectiles) {
-          if (!th.hit && Math.hypot(th.x - p.x, th.y - p.y) < 14) {
+          if (!th.hit && Math.hypot(th.x - p.x, th.y - p.y) < 16 * kk) {
             th.hit = true;
             p.hit = true;
             s.score += 10;
             s.explosions.push({ x: th.x, y: th.y, age: 0 });
+            burst(s.sparks, th.x, th.y, 16, "232,170,150", 2.4, 1.8);
             sfx.explosion("small");
           }
         }
@@ -362,7 +396,10 @@ export default function NemesisCommand() {
       });
       s.projectiles = s.projectiles.filter((p) => !p.hit);
       s.explosions.forEach((ex) => (ex.age += 1));
-      s.explosions = s.explosions.filter((ex) => ex.age < 16);
+      s.explosions = s.explosions.filter((ex) => ex.age < (ex.big ? 26 : 16));
+      s.recoil = Math.max(0, s.recoil - 0.15);
+      s.hurt = Math.max(0, s.hurt - 0.04);
+      s.shake = Math.max(0, s.shake - 0.7);
 
       setScore(s.score);
       setLives(s.lives);
@@ -383,33 +420,45 @@ export default function NemesisCommand() {
         return;
       }
 
-      ctx.fillStyle = "#0A0B1C";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // ---- draw ----
+      const W = canvas.width, H = canvas.height;
+      if (!sky || skyW !== W || skyH !== H) { sky = makeSky(W, H, 7); skyW = W; skyH = H; stars = makeStars(W, H, 70); }
+      ctx.save();
+      if (s.shake > 0) ctx.translate((Math.random() - 0.5) * s.shake, (Math.random() - 0.5) * s.shake);
+      ctx.drawImage(sky, 0, 0);
+      drawStars(ctx, stars, frame / 60);
 
-      s.stars.forEach((star) => {
-        const a = 0.3 + Math.sin(frame * 0.03 + star.phase) * 0.2;
-        ctx.fillStyle = `rgba(180, 190, 240, ${Math.max(0, a)})`;
-        ctx.beginPath();
-        ctx.arc(star.x, star.y, star.r, 0, Math.PI * 2);
-        ctx.fill();
-      });
+      // the ground: a dark horizon with a lit rim
+      const gg = ctx.createLinearGradient(0, groundY - 10, 0, H);
+      gg.addColorStop(0, "rgba(40,44,80,0)");
+      gg.addColorStop(0.35, "#1A1D35");
+      gg.addColorStop(1, "#0B0C1A");
+      ctx.fillStyle = gg;
+      ctx.fillRect(0, groundY - 10, W, H - groundY + 10);
+      ctx.strokeStyle = "rgba(139,149,246,0.45)";
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(W, groundY); ctx.stroke();
+      glow(ctx, s.turretX, groundY, 60 * kk, "255,176,32", 0.08);
 
-      ctx.strokeStyle = "#3A3E75";
-      ctx.beginPath();
-      ctx.moveTo(0, canvas.height - 20);
-      ctx.lineTo(canvas.width, canvas.height - 20);
-      ctx.stroke();
-
-      drawPlayer(s.turretX, canvas.height - 20, s.aimAngle);
-
-      ctx.fillStyle = "#E8CFC0";
+      // shots: NEMESIS's amber tracers
       s.projectiles.forEach((p) => {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
+        glow(ctx, p.x, p.y, 9 * kk, "255,190,90", 0.6);
+        ctx.strokeStyle = "rgba(255,230,180,0.9)";
+        ctx.lineWidth = 2.2 * kk;
+        ctx.beginPath(); ctx.moveTo(p.x - p.vx * 1.4, p.y - p.vy * 1.4); ctx.lineTo(p.x, p.y); ctx.stroke();
       });
 
-      s.threats.forEach((th) => drawEnemy(th.x, th.y, 9));
+      // the UFO and its bolts
+      if (s.ufo) drawUFO(ctx, s.ufo.x, s.ufo.y, 20 * kk, frame / 60, s.ufo.hurt);
+      s.ufoBolts.forEach((b) => {
+        glow(ctx, b.x, b.y, 10 * kk, "150,255,200", 0.7);
+        ctx.fillStyle = "#E8FFF4";
+        ctx.beginPath(); ctx.arc(b.x, b.y, 2.4 * kk, 0, Math.PI * 2); ctx.fill();
+      });
+
+      drawNemesis(ctx, s.turretX, groundY, s.aimAngle, kk * 1.2, frame / 60, s.recoil, s.hurt);
+
+      s.threats.forEach((th) => drawInvader(ctx, th.x, th.y, 10 * kk, frame / 60, th.seed || 0));
 
       if (assistRef.current || L.shots.length) {
         ctx.fillStyle = "#B9C0FF";
@@ -432,13 +481,24 @@ export default function NemesisCommand() {
       }
 
       s.explosions.forEach((ex) => {
-        const p = ex.age / 16;
+        const p = ex.age / (ex.big ? 26 : 16);
+        if (ex.age < 4) glow(ctx, ex.x, ex.y, (ex.big ? 50 : 26) * kk, ex.lyra ? "185,192,255" : "255,220,190", 1 - ex.age / 4);
         ctx.strokeStyle = ex.lyra ? `rgba(185, 192, 255, ${1 - p})` : `rgba(232, 207, 192, ${1 - p})`;
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(ex.x, ex.y, 6 + p * 18, 0, Math.PI * 2);
+        ctx.arc(ex.x, ex.y, (6 + p * (ex.big ? 40 : 18)) * kk, 0, Math.PI * 2);
         ctx.stroke();
       });
+      s.sparks = stepSparks(ctx, s.sparks);
+      s.popups.forEach((pp) => {
+        pp.age += 1;
+        ctx.fillStyle = `rgba(182,255,217,${Math.max(0, 1 - pp.age / 60)})`;
+        ctx.font = `${Math.round(13 * kk)}px 'JetBrains Mono', monospace`;
+        ctx.textAlign = "center";
+        ctx.fillText(pp.text, pp.x, pp.y - pp.age * 0.5);
+      });
+      s.popups = s.popups.filter((pp) => pp.age < 60);
+      ctx.restore();
 
       raf = requestAnimationFrame(loop);
     };
