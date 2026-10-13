@@ -3,6 +3,27 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.80 — Apprehension, the music video rebuilt (Oct 2026)
+No SQL.
+- **/music/apprehension** replaces the first, browser-drawn film (Update
+  5.55) with a real video file: public/video/apprehension.mp4 (1080p H.264,
+  2.39:1, 3:34, under 50 MB so it lives in the repo like the songs) and a
+  poster frame. The page keeps the same title card; Play, full screen,
+  "save as a video file" (now a straight download of the mp4), a new
+  "read Chapter 1" link, and back to The Rave.
+- The film is a visual companion to Chapter 1, "Aiden - Apprehension":
+  normal → the ping → investigation → the break → UNKNOWN, and a coda where
+  the Unknown may notice him. Wordless; Lyra and Sentinel-X speak only in
+  interface text. Ends ALL SYSTEMS NORMAL → UNKNOWN → black.
+- Cut on the song's measured grid: 116 BPM, first downbeat 8.295 s; the
+  seventh segment appears on the drop at 2:20.7.
+- Version 1: interface shots (Lyra, Sentinel-X, network map, pie chart,
+  UNKNOWN) are final; Aiden and NovaCore shots are stand-ins cropped from
+  Paul's reference boards and graded to night, to be swapped for generated
+  footage without changing timing.
+- Film source, assets and render scripts: video-src/apprehension (not part
+  of the website build; README explains re-rendering).
+
 ## Update 5.79 — Season 1 Weeks 6 and 7: First Fire and The Fermata (Oct 2026)
 No SQL.
 - **Week 6, First Fire (Assignment 1346269)**, Paul's brief: an aggressive,

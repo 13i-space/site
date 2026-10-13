@@ -4,6 +4,13 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.80 (no SQL): /music/apprehension now plays the new Apprehension
+  music video (public/video/apprehension.mp4, 47.6 MB, 1080p, 3:34) - a story
+  tied to Chapter 1, cut on the song's measured 116 BPM grid. Version 1:
+  interface shots final, Aiden/NovaCore shots are stand-ins from Paul's
+  reference boards until generated footage replaces them. Film source and
+  how to re-render it: video-src/apprehension/README.md. The old
+  browser-drawn film is gone from the page (still in git history).
 - Update 5.79 (no SQL): Season 1 Weeks 6 (First Fire + HOLD FIRE) and 7
   (The Fermata + FERMATA), all six pieces each; Seasons now 7 of 12 weeks
   built. Launch page NEXT SIGNAL shows the Halloween remix until Nov 30.

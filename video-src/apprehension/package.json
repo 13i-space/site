@@ -1,0 +1,13 @@
+{
+  "name": "apprehension-film",
+  "private": true,
+  "description": "Source for the 13i Apprehension music video (not part of the website build)",
+  "type": "module",
+  "dependencies": {
+    "@fontsource/ibm-plex-mono": "^5.0.0",
+    "@fontsource/lora": "^5.0.0",
+    "playwright": "^1.50.0",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2"
+  }
+}
