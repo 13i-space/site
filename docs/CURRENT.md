@@ -4,6 +4,11 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.82 (no SQL): Extended Remixes album row on The Rave (two remixes,
+  release dates Apr 16 / May 16 2027, RAVE VERSION buttons) and the Cicada
+  Rave for Circadian Pulse (Cicada Remix): forest at dusk, a cicada's life
+  from nymph to final molt on the song's clock, ranger hats
+  (lib/rave/cicada.js). Story timings are in LIFE at the top of that file.
 - Update 5.81 (no SQL): hidden easter egg - the original Apprehension film
   lives at /music/message, linked only from the word "message" in The
   Rave's "more about the music" dropdown. Keep the link invisible.

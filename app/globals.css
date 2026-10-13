@@ -1179,6 +1179,24 @@ main {
 .mx-eq i:nth-child(2) { animation-delay: 0.2s; } .mx-eq i:nth-child(3) { animation-delay: 0.4s; }
 @keyframes mx-eq { 0%, 100% { height: 3px; } 50% { height: 12px; } }
 
+.mx-album-wide { grid-column: 1 / -1; }
+.mx-album-wide .mx-album-head { flex-direction: row; align-items: flex-start; gap: 22px; }
+.mx-album-wide .mx-cover-btn { width: 220px; flex: none; }
+.mx-wide-body { flex: 1; min-width: 0; }
+.mx-rtrack { display: flex; align-items: center; gap: 10px; border-top: 1px solid #1c1f45; }
+.mx-rtrack .mx-track { border-top: none; flex: 1; min-width: 0; }
+.mx-rave-v { flex: none; display: inline-flex; align-items: center; gap: 7px; font-size: 10px; letter-spacing: 1.5px; padding: 7px 13px; border-radius: 999px; cursor: pointer; border: none; color: #fff;
+  background: linear-gradient(135deg, #FF4FB8, #7B6CFF); box-shadow: 0 0 16px rgba(255,79,184,0.3); }
+.mx-rave-v:hover { box-shadow: 0 0 24px rgba(255,79,184,0.55); }
+@media (max-width: 900px) {
+  .mx-album-wide .mx-album-head { flex-direction: column; }
+  .mx-album-wide .mx-cover-btn { width: 100%; }
+}
+@media (max-width: 520px) {
+  .mx-rtrack { flex-wrap: wrap; padding-bottom: 10px; }
+  .mx-rtrack .mx-track { flex: 1 1 100%; }
+  .mx-rave-v { margin-left: 42px; }
+}
 @media (max-width: 900px) {
   .mx-deck { grid-template-columns: 1fr; justify-items: center; text-align: center; padding: 22px 16px; }
   .mx-record-wrap { width: min(260px, 70vw); }
