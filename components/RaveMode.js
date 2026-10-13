@@ -27,6 +27,7 @@ import { drawWall } from "../lib/rave/wall";
 import { specialFor, voiceAt, THEMES } from "../lib/rave/specials";
 import { drawGirl } from "../lib/rave/girl";
 import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
+import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/rave/cicada";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
 
 // the show's colours, a pair of hues at a time
@@ -197,7 +198,9 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       const vo = playingNow ? voiceAt(st.special, s) : { on: 0, mouth: 0, whisper: false };
       st.g = (st.g || 0) + (vo.on - (st.g || 0)) * Math.min(1, dt * 4);
       const ghost = st.g, spooky = st.special && st.special.theme === "halloween";
-      const m = { halloween: !!spooky, ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
+      // Update 5.82: the cicada's forest; its story runs on the song's own clock
+      const forest = !!(st.special && st.special.theme === "cicada");
+      const m = { halloween: !!spooky, cicada: forest, s: el ? el.currentTime : 0, ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
       if (bins && analyser && playingNow) analyser.getByteFrequencyData(bins);
       const spectrum = playingNow ? bins : null;
 
@@ -218,9 +221,9 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       ctx.globalAlpha = 1;
 
       // the world, back to front
-      layer(0.08); drawSky(ctx, L, m);
-      layer(0.18); drawPlanet(ctx, L.planet.x, L.planet.y, L.planet.r, m);
-      layer(0.28); drawCity(ctx, L, m);
+      layer(0.08); if (forest) drawDusk(ctx, L, m); else drawSky(ctx, L, m);
+      layer(0.18); if (forest) ctx.globalAlpha = 0.55; drawPlanet(ctx, L.planet.x, L.planet.y, L.planet.r, m); ctx.globalAlpha = 1;
+      layer(0.28); if (forest) drawForest(ctx, L, m); else drawCity(ctx, L, m);
       if (spooky) { layer(0.32); drawBats(ctx, L, m); }
       layer(0.42);
       const titleA = 1 - smooth(4.5, 6, t - st.titleAt);
@@ -230,6 +233,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       drawSpots(ctx, L, m, (playingNow ? 0.45 + 0.55 * st.e : 0.25) * (1 - 0.8 * ghost));
       layer(0.5);
       drawSpeakers(ctx, L, m);
+      if (forest) drawSwarm(ctx, L, m);
       drawDJ(ctx, L, m, spectrum);
       drawBoothTop(ctx, L, m, spectrum);
       drawDJHands(ctx, L, m);
@@ -295,6 +299,9 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         DANCERS[key].draw(ctx, poses[key], m);
         ctx.restore();
       });
+
+      // the cicada, in the middle of the floor (Update 5.82)
+      if (forest) { const [, gy] = L.girl; layer(0.75 + (gy - L.floorTop) / 120); drawCicada(ctx, L, m); }
 
       // the girl: the lights die around her, and she stands in a cold beam
       if (ghost > 0.01) {

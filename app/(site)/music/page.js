@@ -4,7 +4,7 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { listenToElement, primeAudio, onMusic } from "../../../lib/lyraMusic";
-import { albums, parseTrack, releaseDateFor, remixes, songSrc } from "../../../lib/musicReleases";
+import { albums, parseTrack, releaseDateFor, remixes, remixAlbum, remixDate, songSrc } from "../../../lib/musicReleases";
 
 // Rave Mode loads only when it's opened (Update 5.68)
 const RaveMode = dynamic(() => import("../../../components/RaveMode"), { ssr: false });
@@ -149,6 +149,10 @@ export default function MusicPage() {
   };
   const playAlbum = (ai, ti = 0) => start(ALL.filter((x) => x.ai === ai), { kind: "album", ai }, ti);
   const playAllThree = () => start(ALL, { kind: "all" });
+  // the Extended Remixes album (Update 5.82): play it, or open one remix's
+  // special Rave version straight away
+  const playRemixes = (i = 0) => start(REMIXES, { kind: "remixes" }, i);
+  const raveVersion = (i) => { primeAudio(); playRemixes(i); setRave(true); };
   const shuffleAll = () => start(shuffled(ALL), { kind: "shuffle" });
   const playOne = (track) => {
     // inside whatever is already queued, or as the start of its album
@@ -189,7 +193,7 @@ export default function MusicPage() {
     if (!current || typeof navigator === "undefined" || !navigator.mediaSession) return;
     const album = albums[current.ai];
     try {
-      navigator.mediaSession.metadata = new window.MediaMetadata({ title: current.label, artist: "13i", album: album.title, artwork: [{ src: current.cover || album.cover, sizes: "900x900", type: "image/webp" }] });
+      navigator.mediaSession.metadata = new window.MediaMetadata({ title: current.label, artist: "13i", album: current.remix ? remixAlbum.title : album.title, artwork: [{ src: current.cover || album.cover, sizes: "900x900", type: "image/webp" }] });
       navigator.mediaSession.setActionHandler("play", () => audioRef.current?.play());
       navigator.mediaSession.setActionHandler("pause", () => audioRef.current?.pause());
       navigator.mediaSession.setActionHandler("nexttrack", () => next(1));
@@ -209,7 +213,7 @@ export default function MusicPage() {
   });
 
   const album = current ? albums[current.ai] : albums[0];
-  const modeLabel = !mode ? "" : mode.kind === "album" ? `album · ${albums[mode.ai].title}` : mode.kind === "all" ? "all three albums" : mode.kind === "shuffle" ? "shuffle everything" : mode.kind === "remix" ? "extended remix" : "";
+  const modeLabel = !mode ? "" : mode.kind === "album" ? `album · ${albums[mode.ai].title}` : mode.kind === "all" ? "all three albums" : mode.kind === "shuffle" ? "shuffle everything" : mode.kind === "remix" ? "extended remix" : mode.kind === "remixes" ? "extended remixes" : "";
   const upNext = queue.slice(pos + 1, pos + 4);
 
   return (
@@ -279,7 +283,7 @@ export default function MusicPage() {
         <div className="mx-now">
           <div className="mono mx-now-kicker">{current ? (playing ? "NOW PLAYING" : "PAUSED") : "READY"}{modeLabel && <> &middot; {modeLabel.toUpperCase()}</>}</div>
           <div className="wordmark mx-now-title">{current ? current.label : "Choose a way to listen"}</div>
-          <div className="mx-now-album">{!current ? "Thirty-six signals, three albums. Start anywhere." : current.remix ? `Extended remix · from ${album.title}, track ${current.ti + 1} (${current.ofLabel})` : `${album.title} · track ${current.ti + 1} · ${releaseDateFor(current.g)}`}</div>
+          <div className="mx-now-album">{!current ? "Thirty-six signals, three albums. Start anywhere." : current.remix ? `${remixAlbum.title} · ${remixDate(current)} · from ${album.title}, track ${current.ti + 1} (${current.ofLabel})` : `${album.title} · track ${current.ti + 1} · ${releaseDateFor(current.g)}`}</div>
           {err && <div className="mono mx-err" role="status">{err}</div>}
           <div className="mx-seek">
             <span className="mono">{fmt(time.now)}</span>
@@ -371,7 +375,7 @@ export default function MusicPage() {
       {/* the albums */}
       <section className="mx-albums">
         {albums.map((a, ai) => (
-          <div key={a.title} className={`mx-album ${current?.ai === ai ? "mx-album-on" : ""}`}>
+          <div key={a.title} className={`mx-album ${current?.ai === ai && !current?.remix ? "mx-album-on" : ""}`}>
             <div className="mx-album-head">
               <button className="mx-cover-btn" onClick={() => playAlbum(ai)} aria-label={`Play ${a.title}`}>
                 <img src={a.cover} alt="" onError={(e) => { e.currentTarget.style.opacity = 0; }} />
@@ -404,6 +408,40 @@ export default function MusicPage() {
             )}
           </div>
         ))}
+
+        {/* Extended Remixes (Update 5.82): its own row under the three albums */}
+        <div className={`mx-album mx-album-wide ${current?.remix ? "mx-album-on" : ""}`}>
+          <div className="mx-album-head">
+            <button className="mx-cover-btn" onClick={() => playRemixes(0)} aria-label={`Play ${remixAlbum.title}`}>
+              <img src={remixAlbum.cover} alt="" onError={(e) => { e.currentTarget.style.opacity = 0; }} />
+              <span className="mx-cover-play">▶</span>
+            </button>
+            <div className="mx-wide-body">
+              <div className="wordmark mx-album-title">{remixAlbum.title}</div>
+              <div className="mono mx-album-year">{remixAlbum.year}</div>
+              <div className="mx-album-actions">
+                <button className="mono" onClick={() => playRemixes(0)}>▶ play album</button>
+              </div>
+              <ol className="mx-tracks">
+                {REMIXES.map((r, i) => {
+                  const on = current?.g === r.g;
+                  return (
+                    <li key={r.file} className="mx-rtrack">
+                      <button className={`mx-track ${on ? "mx-track-on" : ""}`} onClick={() => (on ? toggle() : playRemixes(i))}>
+                        <span className="mono mx-track-n">{on && playing ? <span className="mx-eq"><i /><i /><i /></span> : i + 1}</span>
+                        <span className="mx-track-name">{r.label}</span>
+                        <span className="mono mx-track-date">{remixDate(r)}</span>
+                      </button>
+                      <button className="mono mx-rave-v" onClick={() => raveVersion(i)} title={`Full-screen Rave made for ${r.label}`}>
+                        <span className="mx-rave-dot" aria-hidden="true" />RAVE VERSION
+                      </button>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          </div>
+        </div>
       </section>
 
       {rave && (

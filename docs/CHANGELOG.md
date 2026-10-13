@@ -3,6 +3,35 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.82 — Extended Remixes album + the Cicada Rave (Oct 2026)
+No SQL.
+- **Circadian Pulse (Cicada Remix)** added (public/audio/circadian-pulse-cicada-remix.mp3,
+  6:51). Beat grid measured with docs/rave-beats.py: 117 BPM, first
+  downbeat 0.052 s (lib/rave/beatData.js).
+- **Extended Remixes**, a fourth album on The Rave on its own full-width row
+  under the three albums (cover: public/covers/albums/extended-remixes.webp):
+  Apprehension (Megan Halloween Remix), Apr 16 2027, and Circadian Pulse
+  (Cicada Remix), May 16 2027 (`release` on each remix, `remixAlbum` and
+  `remixDate` in lib/musicReleases.js). Play the album, play a song, or
+  **RAVE VERSION**: starts that remix and opens Rave Mode on its special
+  version. On phones the button drops under the song.
+- **The Cicada Rave** (lib/rave/cicada.js, theme "cicada" in
+  lib/rave/specials.js): the city becomes a dense forest at dusk (getting
+  darker over the song, fireflies coming out, a shimmer in the canopy when
+  the track's cicadas buzz), greens/browns/amber lights. A cicada lives its
+  whole life centre stage on the song's clock: the soil bulges and cracks
+  under the opening chorus, the nymph claws out on the hit at 0:08, looks
+  around, dances from 0:24 while its wing pads grow (rubbing them on the beat
+  from 1:40); first molt 2:52.5-3:00.5 (the back splits on the four stabs),
+  a 6-second chirp 3:00.5-3:06.3; the green-and-black red-eyed adult rubs its
+  wings on every beat; final molt 6:17.5-6:41.5 into a bigger black-and-
+  emerald form with three glowing ocelli and lit wing veins; it chirps from
+  6:41.5 and flies off over the last 3 seconds. Both shells stay on the
+  floor. Waves of small cicadas fly in from the trees to the speakers and the
+  LED wall's edges, molt, and fly back. The four dancers wear park ranger
+  campaign hats; the DJ has a lantern; the wall's occasional show is
+  "13 YEARS UNDERGROUND · BROOD 13i".
+
 ## Update 5.81 — Easter egg: the original Apprehension film (Oct 2026)
 No SQL.
 - The first, browser-drawn Apprehension film (Update 5.55) is back as a
