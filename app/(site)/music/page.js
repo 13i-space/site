@@ -260,7 +260,9 @@ export default function MusicPage() {
           <p style={{ margin: 0, fontStyle: "italic", color: "#B7BADF" }}>
             More than sound ~ this is a signal.
             <br />
-            More than music ~ this is a message.
+            More than music ~ this is a{" "}
+            {/* hidden easter egg (Update 5.81): the original Apprehension film */}
+            <Link href="/music/message" style={{ color: "inherit", textDecoration: "none", cursor: "text" }}>message</Link>.
           </p>
         </div>
       )}

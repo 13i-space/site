@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.81 (no SQL): hidden easter egg - the original Apprehension film
+  lives at /music/message, linked only from the word "message" in The
+  Rave's "more about the music" dropdown. Keep the link invisible.
 - Update 5.80 (no SQL): /music/apprehension now plays the new Apprehension
   music video (public/video/apprehension.mp4, 47.6 MB, 1080p, 3:34) - a story
   tied to Chapter 1, cut on the song's measured 116 BPM grid. Version 1:
