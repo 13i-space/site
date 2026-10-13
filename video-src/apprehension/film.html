@@ -1,0 +1,310 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>
+@font-face{font-family:Plex;src:url(node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2)}
+@font-face{font-family:Plex;font-weight:500;src:url(node_modules/@fontsource/ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2)}
+html,body{margin:0;background:#000}
+canvas{display:block}
+</style></head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<script>
+// APPREHENSION — 13i music video, v1 (stand-in footage from the reference boards).
+// Everything is a function of time t (seconds into the track) on the measured 116 BPM grid.
+const FW=1920, FH=1080, W=1920, H=804, PY=138;
+const BPM=116, BEAT=60/BPM, BAR=4*BEAT, T0=8.295;
+const B=n=>T0+n*BAR, BT=n=>T0+n*BEAT;
+const C={ink:'#05070d',amber:'#e8a75a',gold:'#f2d29b',slate:'#7d8a9c',slateD:'#3a4352',sage:'#8fae8b',cream:'#f1e6d4',rust:'#b4643c',dim:'#1a1f29',lyra:'#f0b46a'};
+const MONO='Plex, "DejaVu Sans Mono", monospace', SERIF='Lora, Georgia, serif';
+const cv=document.getElementById('c'), X=cv.getContext('2d');
+const off=document.createElement('canvas'); off.width=W; off.height=H; const O=off.getContext('2d');
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)), lerp=(a,b,t)=>a+(b-a)*t;
+const ss=(a,b,v)=>{const t=clamp((v-a)/(b-a));return t*t*(3-2*t)};
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6d2b79f5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296}}
+
+// ---------- assets ----------
+const IMG={}; const names=['B_skyline','A_office','B_atwork','A_back','B_window','B_server','C_portrait','C_profile','C_eyes','O_crop'];
+let DOTS=[];
+async function load(){
+  await Promise.all(names.map(n=>new Promise(r=>{const i=new Image();i.onload=()=>{IMG[n]=i;r()};i.src='assets/'+n+'.png'})));
+  DOTS=await (await fetch('dots.json')).json();
+  await document.fonts.load('40px Plex'); await document.fonts.load('500 40px Plex'); await document.fonts.load('italic 40px Lora'); await document.fonts.load('40px Lora');
+  // grain tiles
+  for(let k=0;k<3;k++){const g=document.createElement('canvas');g.width=g.height=384;const gx=g.getContext('2d');const d=gx.createImageData(384,384);const r=rng(99+k);for(let i=0;i<d.data.length;i+=4){const v=128+(r()-.5)*255*.9;d.data[i]=d.data[i+1]=d.data[i+2]=v;d.data[i+3]=255}gx.putImageData(d,0,0);GRAIN.push(g)}
+  prepDots();
+}
+const GRAIN=[];
+
+// ---------- drawing helpers ----------
+function cover(ctx,img,cx,cy,zoom=1,blur=0,alpha=1,flip=false){
+  const s=Math.max(W/img.width,H/img.height)*zoom, dw=img.width*s, dh=img.height*s;
+  let x=W/2-cx*dw, y=H/2-cy*dh; x=clamp(x,W-dw,0); y=clamp(y,H-dh,0);
+  ctx.save(); ctx.globalAlpha=alpha; if(blur>0.2) ctx.filter=`blur(${blur}px)`;
+  if(flip){ctx.translate(W,0);ctx.scale(-1,1);x=W-x-dw}
+  ctx.drawImage(img,x,y,dw,dh); ctx.restore();
+}
+// image placed at height h centred on (px,py), edges feathered into darkness
+function feather(img,px,py,h,{blur=0,alpha=1,fx=.62,fy=.7}={}){
+  const s=h/img.height, w=img.width*s;
+  O.clearRect(0,0,W,H); O.save(); if(blur>.2)O.filter=`blur(${blur}px)`; O.drawImage(img,px-w/2,py-h/2,w,h); O.restore();
+  O.save(); O.globalCompositeOperation='destination-in';
+  O.translate(px,py); O.scale(w*fx/2, h*fy/2);
+  const g=O.createRadialGradient(0,0,.35,0,0,1); g.addColorStop(0,'rgba(0,0,0,1)'); g.addColorStop(1,'rgba(0,0,0,0)');
+  O.fillStyle=g; O.fillRect(-3,-3,6,6); O.restore();
+  X.save(); X.globalAlpha=alpha; X.drawImage(off,0,0); X.restore();
+}
+function txt(s,x,y,{font=MONO,size=22,color=C.cream,alpha=1,align='left',sp=0,weight='400',style='normal',base='alphabetic'}={}){
+  X.save(); X.globalAlpha*=alpha; X.font=`${style} ${weight} ${size}px ${font}`; X.fillStyle=color; X.textAlign=align; X.textBaseline=base; X.letterSpacing=sp+'px'; X.fillText(s,x,y); X.restore();
+}
+function glow(x,y,r,color,a=1){X.save();X.globalAlpha*=a;const g=X.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,color);g.addColorStop(1,'rgba(0,0,0,0)');X.fillStyle=g;X.fillRect(x-r,y-r,2*r,2*r);X.restore()}
+function fill(c){X.fillStyle=c;X.fillRect(0,0,W,H)}
+function hex(c,a){const n=parseInt(c.slice(1),16);return `rgba(${n>>16},${(n>>8)&255},${n&255},${a})`}
+function screenBg(){fill('#06080d'); const g=X.createRadialGradient(W*.5,H*.45,50,W*.5,H*.5,W*.75); g.addColorStop(0,'rgba(30,36,48,.35)'); g.addColorStop(1,'rgba(0,0,0,0)'); X.fillStyle=g; X.fillRect(0,0,W,H);
+  // faint scan texture
+  X.save(); X.globalAlpha=.035; X.fillStyle='#9fb0c8'; for(let y=0;y<H;y+=3)X.fillRect(0,y,W,1); X.restore();}
+function line(x1,y1,x2,y2,c,w=1,a=1){X.save();X.globalAlpha*=a;X.strokeStyle=c;X.lineWidth=w;X.beginPath();X.moveTo(x1,y1);X.lineTo(x2,y2);X.stroke();X.restore()}
+function rect(x,y,w,h,c,a=1,stroke=false,lw=1){X.save();X.globalAlpha*=a;if(stroke){X.strokeStyle=c;X.lineWidth=lw;X.strokeRect(x,y,w,h)}else{X.fillStyle=c;X.fillRect(x,y,w,h)}X.restore()}
+function push(s,cx=W/2,cy=H/2){X.translate(cx,cy);X.scale(s,s);X.translate(-cx,-cy)}
+
+// ---------- the three amber lights + skyline window (S01, S02, S25) ----------
+const LIGHTS=[[0.440,0.180],[0.311,0.262],[0.586,0.332]]; // tower tops in B_skyline (fractions)
+function skylineFrame(t,{cityBlur,reflBlur,reflA,lightsA=1,dark=0}){
+  fill('#020306');
+  cover(X,IMG.B_skyline,.5,.5,1.0,cityBlur,1);
+  // window mullions
+  X.save(); X.globalAlpha=.55; X.fillStyle='#010204'; X.fillRect(W*.33,0,10,H); X.fillRect(W*.78,0,12,H); X.restore();
+  // reflection of the room on the glass: Aiden at his desk, mirrored, faint
+  if(reflA>0){X.save(); X.globalCompositeOperation='screen'; cover(X,IMG.A_office,.55,.6,1.35,reflBlur,reflA,true); X.restore();}
+  // the three lights (drawn so they match S01 exactly)
+  const s=Math.max(W/IMG.B_skyline.width,H/IMG.B_skyline.height), dw=IMG.B_skyline.width*s, dh=IMG.B_skyline.height*s;
+  const ox=(W-dw)/2, oy=(H-dh)/2;
+  LIGHTS.forEach(([fx,fy])=>{const x=ox+fx*dw,y=oy+fy*dh; glow(x,y,30+cityBlur*2,'rgba(255,165,80,.75)',lightsA); glow(x,y,8,'rgba(255,225,170,1)',lightsA)});
+  if(dark>0) fill(`rgba(0,0,0,${dark})`);
+  return {ox,oy,dw,dh};
+}
+function lightsXY(){const s=Math.max(W/IMG.B_skyline.width,H/IMG.B_skyline.height), dw=IMG.B_skyline.width*s, dh=IMG.B_skyline.height*s;return LIGHTS.map(([fx,fy])=>[(W-dw)/2+fx*dw,(H-dh)/2+fy*dh])}
+
+// ---------- network map ----------
+let DOTA=[];
+const CL=[[12,23],[133,-24],[-40,72]]; // the three-point clusters: Sahara, central Australia, Greenland
+const HOT=[[127,37.5,1],[139.7,35.7,1],[121.5,31.2,1],[77.2,28.6,1],[72.8,19,1],[88.4,22.6,1],[106.8,-6.2,.8],[3.4,6.5,.8],[-46.6,-23.5,.7],[2.35,48.9,.8],[-0.1,51.5,.8],[13.4,52.5,.7],[37.6,55.7,.6],[31.2,30,.7],[151.2,-33.9,.6],[-74,40.7,.5],[-97.7,30.3,.6],[-118.2,34,.4],[100.5,13.7,.9],[103.8,1.3,.9],[114.1,22.4,1],[90.4,23.8,.9]];
+function localHour(lon){return ((8.55+lon/15)%24+24)%24}
+function act(lon){const h=localHour(lon); const s=h>=6?Math.sin(Math.PI*(h-6)/18):0; return .24+.76*Math.pow(Math.max(s,0),.8)}
+function prepDots(){DOTA=DOTS.map(([lon,lat,r])=>{let hot=0;for(const[a,b,w]of HOT){const d=Math.hypot(a-lon,b-lat);if(d<9)hot=Math.max(hot,w*(1-d/9))}return{lon,lat,r,a:act(lon),hot,eu:(lon>-11&&lon<42&&lat>35&&lat<71)}})}
+function mapXY(lon,lat,m){const k=4.85*m.zoom;return[W/2+(lon-m.clon)*k, H/2-(lat-m.clat)*k]}
+function drawMap(t,m){
+  // m: {clon,clat,zoom,alpha,euRamp,clusters:[idx],clusterA,resort,ocean}
+  X.save(); X.globalAlpha*=m.alpha??1;
+  const sz=Math.min(2.1*Math.sqrt(m.zoom),5.2);
+  for(let i=0;i<DOTA.length;i++){const d=DOTA[i];const[x,y]=mapXY(d.lon,d.lat,m); if(x<-10||x>W+10||y<-10||y>H+10)continue;
+    let a=d.a*(.55+.45*d.r)+d.hot*.55;
+    if(m.euRamp!==undefined&&d.eu){a*=.25+.75*ss(0,.15,m.euRamp-(d.lon+11)/53)}
+    if(m.resort){const alt=DOTA[(i*7919)%DOTA.length].a*(.55+.45*d.r); a=lerp(a,alt,m.resort)}
+    a*=.82+.18*Math.sin(t*1.7+d.r*40);
+    a=clamp(a,.05,1);
+    X.fillStyle=a>.75?`rgba(255,214,150,${a})`:`rgba(232,167,90,${a*.9})`;
+    let dx=0,dy=0; if(m.resort){dx=Math.sin(d.r*99)*m.resort*3*m.zoom;dy=Math.cos(d.r*77)*m.resort*3*m.zoom}
+    X.fillRect(x-sz/2+dx,y-sz/2+dy,sz,sz)}
+  // clusters
+  (m.clusters||[]).forEach(ci=>{const[lon,lat]=CL[ci];const[x,y]=mapXY(lon,lat,m);const r=4.5*Math.sqrt(m.zoom);const a=m.clusterA??.9;
+    for(let k=0;k<3;k++){const an=-Math.PI/2+k*2*Math.PI/3;const px=x+Math.cos(an)*r,py=y+Math.sin(an)*r;glow(px,py,5*Math.sqrt(m.zoom),'rgba(244,236,223,.6)',a);X.fillStyle=`rgba(250,244,232,${a})`;X.fillRect(px-sz*.6,py-sz*.6,sz*1.2,sz*1.2)}});
+  X.restore();
+}
+
+// ---------- Sentinel-X ----------
+const COMP=['API GATEWAY','AUTH SERVICE','CONFIG MANAGEMENT','RESOURCE USAGE','INTRUSION DETECTION','PACKET INSPECTION','MODEL SERVING','VOICE INTERFACE','DATA PIPELINE','CACHE LAYER','LOAD BALANCING','REGION · AMERICAS','REGION · EUROPE','REGION · ASIA','REGION · OCEANIA','REGION · AFRICA'];
+function sentinelHeader(label,right){txt('SENTINEL-X',70,70,{size:20,color:C.slate,sp:6,weight:'500'});txt(label,70,100,{size:15,color:C.slateD,sp:3});if(right)txt(right,W-70,70,{size:18,color:C.slate,align:'right',sp:3});line(70,118,W-70,118,C.slateD,1,.8)}
+function card(i,x,y,w,h,shown,t,bright=1){
+  if(shown<=0)return; const a=ss(0,1,shown);
+  rect(x,y,w,h,'#0b0f16',a*.95); rect(x,y,w,h,C.slateD,a*.9,true,1);
+  txt(COMP[i],x+18,y+34,{size:15,color:C.slate,sp:2,alpha:a});
+  const oce=i===14; const ok=ss(.35,.9,shown);
+  txt(oce?'ELEVATED · WITHIN RANGE':'NOMINAL',x+18,y+h-20,{size:14,color:oce?C.amber:C.sage,sp:2,alpha:ok*bright});
+  // tick
+  X.save();X.globalAlpha=ok*a;X.strokeStyle=oce?C.amber:C.sage;X.lineWidth=2;X.beginPath();X.moveTo(x+w-44,y+h-28);X.lineTo(x+w-37,y+h-21);X.lineTo(x+w-24,y+h-36);X.stroke();X.restore();
+  // sparkline
+  const r=rng(i+3);X.save();X.globalAlpha=a*.7;X.strokeStyle=C.slate;X.lineWidth=1.2;X.beginPath();for(let k=0;k<=40;k++){const px=x+18+k*(w-36)/40;const py=y+56+Math.sin(k*.5+i+t*1.3*(r()*.4+.8))*6*(oce?1.8:1)+(r()-.5)*5;k?X.lineTo(px,py):X.moveTo(px,py)}X.stroke();X.restore();
+}
+function dashboard(t,shownFn,bright=1){
+  const gx=70,gy=146,cw=(W-140-3*24)/4,ch=112;
+  for(let i=0;i<16;i++){const c=i%4,r=(i/4)|0;card(i,gx+c*(cw+24),gy+r*(ch+16),cw,ch,shownFn(i),t,bright)}
+}
+
+// ---------- pie ----------
+const SL=[['ASIA',.30,'#6f7b8c'],['OCEANIA',.12,'#55606f'],['SOUTH AMERICA',.17,'#8b7a66'],['AFRICA',.22,'#a0855f'],['EUROPE',.11,'#4a5463'],['NORTH AMERICA',.08,'#7c6a59']];
+function pie(t,{cx=700,cy=430,r=255,shown=6,landFrac=1,gap=0,legendA=1,unknownChars=0,unknownRow=0,flashAnt=0,reticle=null}){
+  // gap: angular size (radians) of the 7th "slice" — drawn as nothing but a hairline edge
+  const start=-Math.PI/2+gap/2; const avail=2*Math.PI-gap; let a0=start;
+  for(let i=0;i<6;i++){const f=SL[i][1]*avail;const vis=clamp(shown-i);if(vis<=0){a0+=f;continue}
+    const sweep=f*ease(clamp((shown-i)/1))*(i<Math.floor(shown)?1:1);
+    X.save();X.fillStyle=SL[i][2];X.globalAlpha=.92;X.beginPath();X.moveTo(cx,cy);X.arc(cx,cy,r,a0,a0+sweep);X.closePath();X.fill();
+    X.strokeStyle='#06080d';X.lineWidth=3;X.stroke();X.restore(); a0+=f}
+  if(gap>0.0005){const g0=-Math.PI/2-gap/2,g1=-Math.PI/2+gap/2;
+    X.save();X.strokeStyle='rgba(241,230,212,.95)';X.lineWidth=1.8;X.beginPath();X.moveTo(cx,cy);X.lineTo(cx+Math.cos(g0)*r,cy+Math.sin(g0)*r);X.arc(cx,cy,r,g0,g1);X.lineTo(cx,cy);X.stroke();X.restore()}
+  // legend
+  const lx=1180,ly=250;
+  for(let i=0;i<6;i++){const a=clamp(shown-i)*legendA;if(a<=0)continue;rect(lx,ly+i*58-16,18,18,SL[i][2],a);txt(SL[i][0],lx+40,ly+i*58,{size:20,color:C.cream,sp:3,alpha:a*.9});txt(Math.round(SL[i][1]*100*landFrac)+'%',lx+520,ly+i*58,{size:20,color:C.slate,align:'right',alpha:a})}
+  if(unknownRow>0){const y=ly+6*58;rect(lx,y-16,18,18,'rgba(241,230,212,.8)',unknownRow,true,1.2);txt('UNKNOWN'.slice(0,unknownChars),lx+40,y,{size:20,color:C.cream,sp:3,alpha:unknownRow});if(unknownChars>=7)txt('—',lx+520,y,{size:20,color:C.slate,align:'right',alpha:unknownRow})}
+  if(reticle){const[x,y,a]=reticle;X.save();X.globalAlpha=a;X.strokeStyle='rgba(241,230,212,.85)';X.lineWidth=1.3;X.beginPath();X.arc(x,y,16,0,7);X.stroke();X.fillStyle='rgba(241,230,212,.9)';X.fillRect(x-1.5,y-1.5,3,3);X.restore()}
+}
+function pieTitle(a=1){txt('NEW ACCOUNTS · PAST 24 H · BY REGION',70,90,{size:18,color:C.slate,sp:4,alpha:a})}
+
+// ---------- Lyra ----------
+function lyraLine(cx,cy,w,t,amp=1,a=1){X.save();X.globalAlpha*=a;X.strokeStyle=C.lyra;X.lineWidth=1.6;X.shadowColor=C.lyra;X.shadowBlur=12;X.beginPath();for(let k=0;k<=120;k++){const u=k/120;const env=Math.sin(Math.PI*u);const y=cy+Math.sin(u*18+t*2.2)*Math.sin(t*.9+u*5)*9*amp*env;k?X.lineTo(cx-w/2+u*w,y):X.moveTo(cx-w/2,y)}X.stroke();X.restore()}
+
+// ---------- shots ----------
+const SH=[];
+const S=(a,b,fn)=>SH.push([a,b,fn]);
+
+// S01 three lights in the dark (onsets 0.14, 0.30, 0.46)
+S(0,B(-2),t=>{fill('#000');const P=lightsXY();[0.14,0.30,0.46].forEach((o,k)=>{const a=ss(o,o+.25,t)*(1-ss(3.4,4.15,t)*.3);const[x,y]=P[k];glow(x,y,46,'rgba(255,165,80,.55)',a);glow(x,y,16,'rgba(255,205,140,.9)',a)})});
+// S02 the city, then focus pulls to the reflection
+S(B(-2),B(0),t=>{const u=t-B(-2);const cityBlur=lerp(9,0,ss(0,1.2,u))+lerp(0,5,ss(2.1,3.9,u));const reflBlur=lerp(9,0,ss(2.1,3.9,u));const reflA=lerp(.08,.42,ss(2.1,3.9,u));skylineFrame(t,{cityBlur,reflBlur,reflA,dark:1-ss(0,.9,u)*.98-.0})});
+// S03 server room, lights pulse with the kick
+const LEDS=(()=>{const r=rng(5),a=[];for(let i=0;i<260;i++){const side=r()<.5;const x=side?r()*.33:.66+r()*.34;a.push([x,.08+r()*.72,r(),r()<.22])}return a})();
+S(B(0),B(4),t=>{const u=(t-B(0))/(B(4)-B(0));const cx=lerp(.47,.53,u);cover(X,IMG.B_server,cx,.5,1.08);
+  const s=Math.max(W/IMG.B_server.width,H/IMG.B_server.height)*1.08, dw=IMG.B_server.width*s, dh=IMG.B_server.height*s; let ox=clamp(W/2-cx*dw,W-dw,0), oy=clamp(H/2-.5*dh,H-dh,0);
+  const bp=((t-T0)/BEAT)%1; const kick=Math.exp(-bp*6);
+  LEDS.forEach(([fx,fy,r,amb])=>{const ph=Math.floor((t-T0)/BEAT+r*4)%4===0;const a=(.25+.75*kick)*(ph?1:.35);X.fillStyle=amb?`rgba(240,170,90,${a})`:`rgba(200,214,232,${a*.85})`;X.fillRect(ox+fx*dw,oy+fy*dh,3,2)});
+  fill(`rgba(0,0,0,${.15+.1*(1-kick)})`)});
+// S04 wide: the empty office, one man
+S(B(4),B(8),t=>{const u=(t-B(4))/(B(8)-B(4));cover(X,IMG.A_office,.58,.55,lerp(1.0,1.16,ease(u)))});
+// S05 Lyra wakes
+S(B(8),B(12),t=>{const u=t-B(8);fill('#07070a');glow(W/2,H*.48,700,'rgba(240,180,106,.10)',ss(0,2,u));
+  txt('Lyra',70,82,{font:SERIF,size:26,color:C.lyra,alpha:ss(0,1,u)*.85,style:'italic'});txt('3:33 AM',W-70,82,{size:20,color:C.slate,align:'right',sp:3,alpha:ss(0,1,u)});
+  const w1='Welcome back, Aiden.';txt(w1,W/2,H*.44,{font:SERIF,size:64,color:C.cream,align:'center',alpha:ss(.4,1.8,u),style:'italic'});
+  txt('All security systems functioning normally.',W/2,H*.44+70,{font:SERIF,size:30,color:'#cdbfa9',align:'center',alpha:ss(3.2,4.6,u)});
+  txt('Security update complete',W/2,H*.44+118,{size:16,color:C.slate,align:'center',sp:4,alpha:ss(5,6.2,u)});
+  lyraLine(W/2,H*.78,520,t,.6+.4*ss(.4,1.8,u),ss(0,1.2,u))});
+// S06 into a dot -> Seoul, Lagos, São Paulo -> back out
+function cityShot(t,u,kind){fill('#030305');const r=rng(kind.length*7);
+  if(kind==='SEOUL'){for(let i=0;i<9;i++){const y=120+i*70+r()*20;const x=((t*900+r()*W*2)%(W*1.6))-W*.3;X.save();X.filter='blur(14px)';X.fillStyle=`rgba(200,214,232,${.12+r()*.12})`;X.fillRect(x,y,380+r()*300,26);X.restore()}}
+  if(kind==='LAGOS'){for(let i=0;i<22;i++){const x=r()*W,y=H*.35+r()*H*.5;glow(x+Math.sin(t+i)*20,y,30+r()*50,r()<.6?'rgba(210,60,40,.35)':'rgba(240,170,90,.35)',.9)}}
+  if(kind==='SÃO PAULO'){X.save();X.filter='blur(10px)';X.fillStyle='rgba(60,70,95,.35)';X.fillRect(W*.62,H*.12,260,320);X.restore();glow(W*.4,H*.9,500,'rgba(120,90,60,.12)',1)}
+  // phone, Lyra glowing on it
+  const px=W*.42+(kind==='LAGOS'?140:kind==='SEOUL'?-80:40),py=H*.52,pw=170,ph=330;
+  glow(px,py,420,'rgba(240,180,106,.22)',1);
+  X.save();X.translate(px,py);X.rotate(kind==='SEOUL'?-.12:kind==='LAGOS'?.08:-.04);X.fillStyle='#0b0b0e';X.beginPath();X.roundRect(-pw/2-8,-ph/2-8,pw+16,ph+16,26);X.fill();
+  const g=X.createLinearGradient(0,-ph/2,0,ph/2);g.addColorStop(0,'#2a1d10');g.addColorStop(1,'#120c07');X.fillStyle=g;X.beginPath();X.roundRect(-pw/2,-ph/2,pw,ph,20);X.fill();
+  X.font=`italic 22px ${SERIF}`;X.fillStyle=C.lyra;X.textAlign='center';X.fillText('Lyra',0,-60);X.restore();
+  lyraLine(px,py+30,120,t,.8,1);
+  txt(kind,80,H-70,{size:18,color:C.cream,sp:5,alpha:.85});txt(kind==='SEOUL'?'5:33 PM':kind==='LAGOS'?'9:33 AM':'5:33 AM',80,H-42,{size:16,color:C.slate,sp:3});
+}
+S(B(12),B(16),t=>{const u=t-B(12);const d=B(16)-B(12);
+  const seoul={clon:127,clat:37.5};
+  if(u<1.4){const z=lerp(1.6,40,Math.pow(ss(0,1.4,u),2.2));screenBg();drawMap(t,{clon:lerp(60,127,ss(0,1.2,u)),clat:lerp(25,37.5,ss(0,1.2,u)),zoom:z,alpha:1-ss(1.15,1.4,u)});glow(W/2,H/2,60*(z/10),'rgba(255,214,150,.5)',ss(.6,1.3,u));fill(`rgba(240,180,106,${ss(1.2,1.4,u)*.6})`);return}
+  if(u<3.4){cityShot(t,u,'SEOUL');return} if(u<5.4){cityShot(t,u,'LAGOS');return} if(u<7.4){cityShot(t,u,'SÃO PAULO');return}
+  const z=lerp(40,1.6,ss(7.4,d,u));screenBg();drawMap(t,{clon:lerp(127,60,ss(7.6,d,u)),clat:lerp(37.5,25,ss(7.6,d,u)),zoom:z,alpha:ss(7.4,7.6,u)})});
+// S07 update -> reboot (dark) -> screens return
+S(B(16),B(20),t=>{const u=t-B(16);
+  if(t<B(18)){screenBg();sentinelHeader('SYSTEM UPDATE','3:33 AM');const p=ss(.3,B(18)-B(16)-.25,u);txt('SECURITY UPDATE · INTEGRATING INTO MONITORING',W/2,H*.46,{size:22,color:C.cream,align:'center',sp:4});rect(W/2-420,H*.52,840,2,C.slateD);rect(W/2-420,H*.52,840*p,2,C.cream);txt(Math.round(p*100)+'%',W/2+420,H*.52+40,{size:18,color:C.slate,align:'right'});return}
+  if(t<B(19)){fill('#000');feather(IMG.C_portrait,W*.52,H*.5,H*1.15,{alpha:.55*ss(B(18),B(18)+.4,t),fx:.55,fy:.62});fill('rgba(8,10,20,.25)');return}
+  const v=ss(B(19),B(19)+1.2,t);cover(X,IMG.O_crop,.5,.5,1.05);fill(`rgba(0,0,0,${1-v*.95})`);
+  // monitors flicker back
+  if(Math.sin(t*60)>.6&&v<.6)fill('rgba(140,160,190,.04)')});
+// S08 Sentinel-X repopulates, one component per beat
+S(B(20),B(24),t=>{const u=(t-B(20))/(B(24)-B(20));X.save();push(lerp(1,1.03,u));screenBg();sentinelHeader('POST-UPDATE SCAN','3:34 AM');dashboard(t,i=>clamp((t-BT(80+i))/(BEAT*.9)+.05));X.restore()});
+// S09 ALL SYSTEMS NORMAL — brightest frame
+function allNormal(t,a=1){screenBg();glow(W/2,H*.5,900,'rgba(143,174,139,.07)',a);sentinelHeader('POST-UPDATE SCAN','3:34 AM');dashboard(t,()=>1);X.save();X.globalAlpha=.88;fill('rgba(6,8,13,.0)');X.restore();
+  rect(70,H-128,W-140,80,'#0b1110',a*.95);rect(70,H-128,W-140,80,C.sage,a*.6,true,1);txt('ALL SYSTEMS NORMAL',W/2,H-76,{size:34,color:C.sage,align:'center',sp:12,weight:'500',alpha:a})}
+S(B(24),B(26),t=>allNormal(t,ss(B(24),B(24)+.15,t)));
+// S10 his eyes (1 bar), then his point of view: three blinks, focus sharpens
+S(B(26),B(28),t=>{if(t<B(27)){const u=(t-B(26))/BAR;fill('#000');cover(X,IMG.C_eyes,lerp(.48,.5,u),.5,lerp(1,1.06,u),0,.9);fill('rgba(4,6,14,.3)');return}
+  const bl=[BT(108),BT(109),BT(110)];let lid=0;bl.forEach(b=>{const d=t-b;if(d>=0&&d<.24)lid=Math.max(lid,Math.sin(Math.PI*d/.24))});
+  const blur=lerp(7,0,ss(BT(110)+.2,BT(111),t));X.save();X.filter=`blur(${blur}px)`;allNormal(t,1);X.restore();
+  if(lid>0){X.fillStyle='#000';X.fillRect(0,0,W,H*.5*lid);X.fillRect(0,H-H*.5*lid,W,H*.5*lid)}});
+// S11 one number; Sent says no
+S(B(28),B(32),t=>{const u=(t-B(28))/(B(32)-B(28));screenBg();sentinelHeader('RESOURCE USAGE · LATENCY','3:35 AM');
+  const z=lerp(1,1.12,ease(u));X.save();push(z,W*.5,H*.42);
+  rect(W/2-360,H*.2,720,260,'#0b0f16',.95);rect(W/2-360,H*.2,720,260,C.slateD,.9,true);txt('LOAD TIME · GLOBAL MEDIAN',W/2-330,H*.2+44,{size:16,color:C.slate,sp:3});
+  txt('142 ms',W/2-330,H*.2+150,{size:90,color:C.cream,weight:'400'});txt('+3 ms vs baseline',W/2-330,H*.2+205,{size:20,color:C.amber,sp:2});txt('NOMINAL',W/2+330,H*.2+205,{size:16,color:C.sage,align:'right',sp:3});X.restore();
+  const q=(s,y,a)=>txt(s,W/2-360,y,{size:22,color:C.cream,alpha:a});const r=(s,y,a)=>txt(s,W/2-360,y,{size:22,color:C.sage,sp:3,alpha:a});
+  q('› Sent — unusual user activity?',H*.72,ss(B(29),B(29)+.3,t));r('NO UNUSUAL ACTIVITY.',H*.72+38,ss(B(30),B(30)+.12,t));
+  q('› Unusual user activity?',H*.72+90,ss(B(30)+1,B(30)+1.3,t));r('NO UNUSUAL ACTIVITY.',H*.72+128,ss(B(31),B(31)+.12,t))});
+// S12 the search — layers open on strong bars, settle on weak ones (bars 32..40); his profile on bars 36-38
+function layer(t,k,open,settle,depth){const a=1-depth*.45;X.save();X.globalAlpha=a;push(1-depth*.12,W/2,H*.55);X.translate(0,-depth*40);
+  const x=180,y=150,w=W-360,h=H-260;rect(x,y,w,h,'#0a0d14',.96);rect(x,y,w,h,C.slateD,.9,true);
+  const T=['BANDWIDTH · BY REGION','BANDWIDTH · BY INTERFACE','ACTIVE USERS · BY HOUR','PER-NODE LOAD · 4,096 NODES'][k];txt(T,x+30,y+44,{size:18,color:C.slate,sp:4});
+  const r=rng(k+20); const jit=open*(1-settle);
+  if(k===0||k===1){const n=k?4:6;const labs=k?['VOICE','TEXT','VISION','API']:['ASIA','OCEANIA','S. AMERICA','AFRICA','EUROPE','N. AMERICA'];for(let i=0;i<n;i++){const v=.25+r()*.6+Math.sin(t*9+i)*.08*jit;const bw=(w-120)/n-30;const bx=x+60+i*(bw+30);const bh=(h-160)*v*ss(0,1,open);rect(bx,y+h-60-bh,bw,bh,i===0&&k===0?C.amber:C.slate,.55+.3*jit);txt(labs[i],bx,y+h-28,{size:14,color:C.slate,sp:2})}}
+  if(k===2){X.save();X.strokeStyle=C.amber;X.lineWidth=2;X.beginPath();for(let i=0;i<=96;i++){const px=x+60+i*(w-120)/96*ss(0,1,open);const py=y+h-80-(Math.sin(i/96*Math.PI*2-1)+1.3)*(h-200)/2.6-(r()-.5)*20*jit;i?X.lineTo(px,py):X.moveTo(px,py)}X.stroke();X.restore()}
+  if(k===3){const cs=14;for(let gy=0;gy<(h-120)/cs;gy++)for(let gx=0;gx<(w-80)/cs;gx++){const v=r();X.fillStyle=`rgba(232,167,90,${(.08+v*.4)*ss(0,1,open)+(v>.97?.3*jit:0)})`;X.fillRect(x+40+gx*cs,y+80+gy*cs,cs-3,cs-3)}}
+  txt(settle>.5?'WITHIN RANGE':'',x+w-30,y+44,{size:16,color:C.sage,align:'right',sp:3,alpha:ss(.5,.9,settle)});X.restore()}
+S(B(32),B(40),t=>{if(t>=B(36)&&t<B(38)){const u=(t-B(36))/(2*BAR);fill('#000');cover(X,IMG.C_profile,.5,.45,lerp(1.02,1.1,u));return}
+  screenBg();const bi=(t-B(32))/BAR;const cyc=Math.floor(bi/2);const k=cyc===2?2:cyc;
+  for(let j=0;j<=Math.min(cyc,3);j++){if(j===2&&cyc!==2)continue;const depth=cyc-j;const lo=(t-B(32+j*2));layer(t,j,ss(0,1.2,lo),ss(BAR,BAR+.8,lo),Math.min(depth,2))}});
+// S13 the whole network; Europe wakes; Kolkata in the corner
+S(B(40),B(44),t=>{const u=(t-B(40))/(B(44)-B(40));screenBg();drawMap(t,{clon:8,clat:12,zoom:lerp(1.1,1.0,ease(u)),euRamp:u*1.3});
+  txt('LYRA · ACTIVE USERS · LIVE',70,70,{size:18,color:C.slate,sp:4});txt('3:36 AM CDT',W-70,70,{size:18,color:C.slate,align:'right',sp:3});
+  txt('BANDWIDTH +0.12% · ATTRIBUTED: INDIA',70,H-60,{size:18,color:C.sage,sp:3,alpha:ss(.3,.5,u)});
+  const nx=W-470,ny=H-300;rect(nx,ny,400,225,'#08090c',.95);rect(nx,ny,400,225,C.slateD,.9,true);X.save();X.beginPath();X.rect(nx,ny,400,225);X.clip();glow(nx+230,ny+120,140,'rgba(200,110,50,.35)',1);glow(nx+180,ny+90,180,'rgba(120,110,105,.35)',1);X.restore();
+  txt('LIVE · NO SOUND',nx+14,ny+24,{size:12,color:C.slate,sp:2});txt('EXPLOSION REPORTED NEAR KOLKATA',nx+14,ny+208,{size:13,color:C.cream,sp:1})});
+// S14 over his shoulder: the map, two clusters on his screens
+S(B(44),B(48),t=>{const u=(t-B(44))/(B(48)-B(44));cover(X,IMG.A_office,.56,.42,lerp(1.85,1.95,u));
+  // sparkle clusters on the map monitors (estimated monitor positions)
+  const pts=[[W*.525,H*.43],[W*.585,H*.39]];pts.forEach(([x,y],k)=>{const a=ss(.15+k*.25,.4+k*.25,u)*(.75+.25*Math.sin(t*3+k));for(let j=0;j<3;j++){const an=-Math.PI/2+j*2.094;glow(x+Math.cos(an)*9,y+Math.sin(an)*9,9,'rgba(255,248,235,1)',a)}})});
+// S15 the camera drifts past a cluster without stopping
+S(B(48),B(52),t=>{const u=(t-B(48))/(B(52)-B(48));screenBg();drawMap(t,{clon:lerp(-8,32,u),clat:lerp(26,20,u),zoom:5.5,clusters:[0],clusterA:.85});
+  txt('LYRA · ACTIVE USERS · LIVE',70,70,{size:18,color:C.slate,sp:4})});
+// S16 he stops; the window
+S(B(52),B(56),t=>{const u=(t-B(52))/(B(56)-B(52));
+  cover(X,IMG.A_back,.5,.5,lerp(1.0,1.1,ease(u)))});
+// S17 he sits back down; panels close one per beat; one line left
+S(B(56),B(58),t=>{if(t<B(57)){cover(X,IMG.B_atwork,.4,.5,1.12);const k=Math.floor((t-B(56))/BEAT);const mons=[[.06,.36],[.19,.36],[.31,.36],[.43,.36]];
+    // dim monitors progressively (approximate monitor zones)
+    const MZ=[[0,.25],[.25,.37],[.49,.585],[.585,.685]];for(let i=0;i<4;i++){const d=clamp((t-B(56)-i*BEAT)/.18);if(d>0){X.save();X.globalAlpha=.9*d;X.fillStyle='#030406';X.fillRect(W*MZ[i][0],H*.33,W*(MZ[i][1]-MZ[i][0]),H*.38);X.restore()}}fill(`rgba(0,0,0,${.1+k*.07})`);return}
+  fill('#040507');const u=t-B(57);txt('› New users · past 24 h',W/2-300,H/2,{size:30,color:C.cream,alpha:ss(0,.3,u)});if((u*2.2|0)%2===0)rect(W/2+128,H/2-26,14,32,C.cream,ss(0,.3,u))});
+// S18 six slices, one per bar; still on the loudest bar
+const pieBase=(t,extra={})=>{screenBg();pieTitle();pie(t,Object.assign({shown:6},extra))};
+S(B(58),B(64),t=>{const shown=clamp((t-B(58))/BAR*1+0)*1+clamp((t-B(59))/(BAR))*1+clamp((t-B(60))/BAR)+clamp((t-B(61))/BAR)+clamp((t-B(62))/BAR)+clamp((t-B(63))/BAR);
+  const sh=[58,59,60,61,62,63].reduce((s,b)=>s+ss(0,.45,t-B(b)),0);screenBg();pieTitle();pie(t,{shown:sh});
+  X.save();X.globalCompositeOperation='screen';feather(IMG.C_portrait,W*.38,H*.5,H*1.1,{alpha:.06,blur:3});X.restore()});
+// S19 the drop: the seventh segment, a gap; Antarctica flash; UNKNOWN
+S(B(64),B(66),t=>{const u=t-B(64);screenBg();pieTitle();pie(t,{shown:6,gap:.21,unknownRow:u>B(65)-B(64)-.3?1:0,unknownChars:Math.floor(clamp((t-B(65))/.55)*7)});
+  if(u>.35&&u<.85){fill('#07080b');X.save();X.filter='grayscale(1) blur(.6px)';X.globalAlpha=.7;txt('LAUNCH WEEK · ARCHIVE',70,90,{size:18,color:'#9a9a9a',sp:4});
+    const cx=700,cy=430,r=255;let a0=-Math.PI/2;SL.forEach(([n,f])=>{X.fillStyle='#555';X.beginPath();X.moveTo(cx,cy);X.arc(cx,cy,r,a0,a0+f*2*Math.PI*.985);X.fill();X.strokeStyle='#111';X.lineWidth=3;X.stroke();a0+=f*2*Math.PI*.985});
+    X.fillStyle='#bbb';X.beginPath();X.moveTo(cx,cy);X.arc(cx,cy,r,a0,-Math.PI/2+2*Math.PI);X.fill();txt('ANTARCTICA',1220,250+6*58,{size:20,color:'#bbb',sp:3});X.fillStyle='#bbb';X.fillRect(1180,250+6*58-16,18,18);X.restore()}});
+// S20 his face. The music climaxes; nothing moves.
+S(B(66),B(72),t=>{const u=(t-B(66))/(B(72)-B(66));fill('#000');feather(IMG.C_portrait,W*.5,lerp(H*.5,H*.56,u),lerp(H*1.25,H*1.75,ease(u)),{alpha:.95,fx:.6,fy:.68});
+  X.save();X.globalCompositeOperation='screen';const g=X.createLinearGradient(W,0,W*.35,0);g.addColorStop(0,'rgba(190,205,230,.18)');g.addColorStop(1,'rgba(0,0,0,0)');X.fillStyle=g;X.fillRect(0,0,W,H);X.restore()});
+// gap angle over the coda: .21 rad -> closes on B(95)
+const gapAt=t=>t<B(80)?.21:t<B(95)?.21*(1-ease(clamp((t-B(80))/(B(95)-B(80))))) : 0;
+function gaze(t){ // saccades toward the gap: hops every ~0.45 s with fixation jitter
+  const n=Math.floor(t/.45), f=(t/.45)%1; const r1=rng(n), r0=rng(n-1);
+  const tgt=(k,r)=>{const p=clamp((k*.45-B(72))/(B(94)-B(72)));return[lerp(1500,700,p)+(r()-.5)*220*(1-p*.7),lerp(560,430-255*.6,p)+(r()-.5)*160*(1-p*.7)]};
+  const a=tgt(n-1,r0),b=tgt(n,r1);const k=ss(0,.12,f);return[lerp(a[0],b[0],k)+Math.sin(t*41)*1.2,lerp(a[1],b[1],k)+Math.cos(t*37)*1.2]}
+function codaScreen(t,strong,str){screenBg();pieTitle();const[x,y]=gaze(t);
+  pie(t,{shown:6,gap:gapAt(t),unknownRow:gapAt(t)>.004?1:ss(B(95)+.3,B(95),t),unknownChars:7,reticle:[x,y,.9]});
+  // side map panel
+  const px=1180,py=670-150,pw=560,ph=0;}
+S(B(72),B(80),t=>{const bi=(t-B(72))/BAR;const strong=Math.floor(bi)%2===0;const str=strong?Math.sin(Math.PI*clamp(bi%1)):0;
+  X.save();push(1+.012*str,700,430);screenBg();pieTitle();const[x,y]=gaze(t);pie(t,{shown:6,gap:gapAt(t),unknownRow:1,unknownChars:7,reticle:[x,y,.9]});X.restore();
+  // small live map under the legend
+  X.save();X.beginPath();X.rect(1180,640,560,140);X.clip();rect(1180,640,560,140,'#07090e',1);X.translate(1460-W/2,710-H/2);drawMap(t,{clon:20,clat:20,zoom:.33,alpha:.9,clusters:strong?[0,1,2]:[],clusterA:str,resort:str*.85});X.restore();rect(1180,640,560,140,C.slateD,.9,true)});
+// S22 eyes / gap, alternating every bar
+S(B(80),B(88),t=>{const bi=Math.floor((t-B(80))/BAR);if(bi%2===0){const u=((t-B(80))/BAR)%1;fill('#000');cover(X,IMG.C_eyes,lerp(.52-bi*.005,.46-bi*.005,u),.5,1.04,0,.92);fill('rgba(4,6,14,.3)');return}
+  screenBg();pieTitle();const[x,y]=gaze(t);pie(t,{shown:6,gap:gapAt(t),unknownRow:1,unknownChars:7,reticle:[x,y,.9]})});
+// S23 the gap narrows to a hairline and closes on the final shimmer
+S(B(88),B(96),t=>{const u=(t-B(88))/(B(96)-B(88));X.save();push(lerp(1.06,1.0,ease(u)),700,430);screenBg();pieTitle();const[x,y]=gaze(Math.min(t,B(95)));
+  const closed=t>=B(95);pie(t,{shown:6,gap:gapAt(t),unknownRow:closed?0:1,unknownChars:7,reticle:closed?null:[x,y,.9]});X.restore()});
+// S24 ALL SYSTEMS NORMAL fills the screen
+S(B(96),B(97),t=>{fill('#05070a');glow(W/2,H/2,800,'rgba(143,174,139,.08)',1);txt('ALL SYSTEMS NORMAL',W/2,H/2+22,{size:68,color:C.sage,align:'center',sp:22,weight:'500'});txt('SENTINEL-X',W/2,H/2+90,{size:16,color:C.slate,align:'center',sp:8});lyraLine(W-260,H-60,300,t,.4,.6)});
+// S25 the opening frame again; UNKNOWN in the reflection
+S(B(97),212.5,t=>{skylineFrame(t,{cityBlur:5,reflBlur:0,reflA:.42});fill('rgba(4,8,20,.12)');
+  const a=ss(211.0,211.35,t);txt('UNKNOWN',W*.43,H*.66,{size:26,color:'#e9e2d6',sp:7,alpha:a*.75})});
+// black to the end
+S(212.5,999,t=>fill('#000'));
+
+// ---------- frame ----------
+function render(t){
+  X.setTransform(1,0,0,1,0,0); X.fillStyle='#000'; X.fillRect(0,0,FW,FH);
+  X.save(); X.translate(0,PY); X.beginPath(); X.rect(0,0,W,H); X.clip();
+  for(const[a,b,fn]of SH){if(t>=a&&t<b){X.save();fn(t);X.restore();break}}
+  // grain + vignette
+  if(t<212.5){X.save();X.globalCompositeOperation='overlay';X.globalAlpha=.10;const g=GRAIN[Math.floor(t*24)%3];const p=X.createPattern(g,'repeat');const r=rng(Math.floor(t*24));X.translate(-r()*384,-r()*384);X.fillStyle=p;X.fillRect(0,0,W+384,H+384);X.restore();
+    const v=X.createRadialGradient(W/2,H/2,H*.45,W/2,H/2,W*.68);v.addColorStop(0,'rgba(0,0,0,0)');v.addColorStop(1,'rgba(0,0,0,.55)');X.fillStyle=v;X.fillRect(0,0,W,H)}
+  X.restore();
+}
+window.ready=load().then(()=>{window.render=render;return true});
+</script></body></html>
