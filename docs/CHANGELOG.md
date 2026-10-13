@@ -3,6 +3,15 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.81 — Easter egg: the original Apprehension film (Oct 2026)
+No SQL.
+- The first, browser-drawn Apprehension film (Update 5.55) is back as a
+  hidden find at **/music/message**. The only way in: the word "message" in
+  "More than music ~ this is a message." in The Rave's "more about the
+  music" dropdown, an invisible link (same colour, no underline, text
+  cursor). The page asks search engines not to index it
+  (app/music/message/layout.js).
+
 ## Update 5.80 — Apprehension, the music video rebuilt (Oct 2026)
 No SQL.
 - **/music/apprehension** replaces the first, browser-drawn film (Update
