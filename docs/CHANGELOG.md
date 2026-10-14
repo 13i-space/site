@@ -3,6 +3,24 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.84 — Season 1 Weeks 8 and 9: The Accord and The Ring (Oct 2026)
+No SQL.
+- **Week 8, The Accord (Assignment 3524578)**, Paul's brief: a world teeming
+  with life. Tutti and the Great Wood; the Pell, finger-sized, speaking with
+  their tails, keep the Accord with two hundred species; a vine nobody can
+  reach turns out to be the young of the loom-beasts. Story, Interactive
+  Assignment (lib/interactive/accord.js, canon "The Two Hundred and Second
+  Voice"), scenes (components/interactiveScenes/tutti.js), signal, the Pell
+  card, cover, Galaxy Map world and characters, and a new game **TUTTI**.
+- **Week 9, The Ring (Assignment 5702887)**: 13i returns to a world that saw
+  it 11,000 years ago and built a faith around the sighting; it has to
+  decide how not to be their god. Story, Interactive Assignment
+  (lib/interactive/ring.js, canon "The Years Since Ashet"), scenes
+  (components/interactiveScenes/ritornello.js), signal, the Oduli card,
+  cover, Galaxy Map world and characters, and a new game **RITORNELLO**.
+- Fragments 08 and 09 on the season plan. SITE_VERSION brought up to 5.84
+  (it had been left at 5.79).
+
 ## Update 5.83 — Menu order + the three core games, upgraded (Oct 2026)
 No SQL.
 - **Menu order** (both dropdowns, the /launch journey and the mode pages):

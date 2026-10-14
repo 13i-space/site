@@ -226,6 +226,34 @@ COUNCIL ─ one more waking (needs computed) ─► ✦ ONE MORE WAKING (canon)
 ```
 60 paths; every node and all five endings reachable (walked every path).
 
+## The Accord: the branch map (Update 5.84)
+You are 13i on Tutti, studying the Pell and their Accord.
+Canon record: **The Two Hundred and Second Voice**. Scenes: components/interactiveScenes/tutti.js (tu-*).
+```
+ARRIVAL ─ weigh the world (counted) · go down slowly · dive in (down)
+ASKED "what do you give?" ─ wait · "nothing" (nothing) · "anything" (offered)
+SOUTH ─ feel under the vine (deep) ─► FRAME · burn it ─► ✦ THE CLEARING
+        · record it and go ─► ✦ THE UNASKED
+FRAME ─ take them to see it ─► offered ✦ THE GIFT TOO LARGE · else ✦ THE TWO HUNDRED AND SECOND VOICE (canon)
+        tell them from the branch ─► ✦ THE DIVIDED SONG
+        burn it anyway ─► ✦ THE CLEARING
+```
+45 paths; every node and all five endings reachable (walked every path).
+
+## The Ring: the branch map (Update 5.84)
+You are 13i, back on Ritornello eleven thousand years after being seen.
+Canon record: **The Years Since Ashet**. Scenes: components/interactiveScenes/ritornello.js (ri-*).
+```
+ARRIVAL ─ read our old record (oldrecord) · go in
+CITY ─ read their oldest book (book) · watch the astronomers (astro)
+SEEN ─ leave ─► ✦ FOUND WANTING · speak to the whole sky ─► truth ✦ THE NEW SCRIPTURE / "we watch" ✦ THE WATCHER
+       · speak to Teodi · shield the observatory first (shielded) then Teodi
+TEODI "did you say it?" ─ no ─► OLUN · let her believe ─► ✦ THE WATCHER
+OLUN "don't tell them" ─ won't lie, the kindness was theirs (needs book) ─► ✦ THE YEARS SINCE ASHET (canon)
+                         keep the secret ─► ✦ THE KEPT SECRET
+```
+32 paths; every node and all five endings reachable (walked every path).
+
 ## The Deep Walkers: the branch map
 You are 13i on Veyra. The theme is patience: 13i is fast and used to
 answers; the walkers are slow, think through stone, and decide together.

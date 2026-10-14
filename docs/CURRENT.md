@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.84 (no SQL): Season 1 Weeks 8 (The Accord + TUTTI) and 9 (The Ring
+  + RITORNELLO), all six pieces each; Seasons now 9 of 12 weeks built. Both
+  interactives walked on every path; both games bot-tested for balance.
 - Update 5.82 (no SQL): Extended Remixes album row on The Rave (two remixes,
   release dates Apr 16 / May 16 2027, RAVE VERSION buttons) and the Cicada
   Rave for Circadian Pulse (Cicada Remix): forest at dusk, a cicada's life

@@ -18,7 +18,7 @@ const ARCADE = [
   { href: "/games/asteroid-belt", title: "Asteroid Belt", art: "asteroids", color: "#B9C0FF", tag: "arcade", blurb: "Clear the belt, and watch for the mining ship's twelve tungsten rods." },
   { href: "/games/13i-vs-nemesis", title: "13i vs NEMESIS", art: "defend", color: "#8B95F6", tag: "arcade", blurb: "Defend Earth across five zones of approach, with weapons and countermeasures." },
 ];
-const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"] };
+const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
 
 // ── the little screens ──
 export function GameScreen({ art, color }) {
@@ -122,6 +122,28 @@ export function GameScreen({ art, color }) {
           <circle cx="46" cy="52" r="3" fill="#FFF4DC" />
           <g className="gs-spin" style={{ transformOrigin: "96px 52px", animationDuration: "6s" }}><circle cx="40" cy="52" r="2.4" fill={c} /></g>
           <path d="M70 22 A10 10 0 0 1 90 22" fill="none" stroke="#F6E3B4" strokeWidth="1.2" /><circle cx="80" cy="20" r="1.4" fill="#F6E3B4" />
+        </svg>
+      );
+    case "tutti":
+      return (
+        <svg {...common}>
+          {[[34, 30, "#7FD6E8"], [80, 70, "#9FE3B0"], [126, 34, "#F2C14E"], [60, 52, "#E8A4C8"], [110, 74, "#8B95F6"]].map(([x, y, col], i) => (
+            <g key={i}>
+              <circle cx={x} cy={y} r="8" fill="#0c1a12" stroke={col} strokeWidth="2.4" />
+              <circle cx={x} cy={y} r="2.6" fill={col} className="gs-blip" style={{ animationDelay: `${i * 0.4}s` }} />
+            </g>
+          ))}
+          <path d="M34 30 L60 52 L80 70 L110 74 M126 34 L80 70" stroke={c} strokeWidth="0.9" opacity="0.6" className="gs-beam" fill="none" />
+        </svg>
+      );
+    case "ritornello":
+      return (
+        <svg {...common}>
+          {[0, 1, 2, 3, 4, 5].map((i) => {
+            const a0 = -Math.PI / 2 + (i - 0.45) * (Math.PI / 3), a1 = -Math.PI / 2 + (i + 0.45) * (Math.PI / 3);
+            return <path key={i} className="gs-blip" style={{ animationDelay: `${i * 0.33}s` }} d={`M${80 + 30 * Math.cos(a0)} ${50 + 30 * Math.sin(a0)} A30 30 0 0 1 ${80 + 30 * Math.cos(a1)} ${50 + 30 * Math.sin(a1)}`} fill="none" stroke={c} strokeWidth="5" />;
+          })}
+          <circle cx="80" cy="50" r="4" fill="none" stroke="#B9C0FF" strokeWidth="1.2" />
         </svg>
       );
     default:

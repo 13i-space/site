@@ -24,6 +24,8 @@ const GAME_NAMES = {
   rubato: "RUBATO",
   "hold-fire": "HOLD FIRE",
   fermata: "FERMATA",
+  tutti: "TUTTI",
+  ritornello: "RITORNELLO",
 };
 
 function ago(iso) {

@@ -244,6 +244,42 @@ more waking and let that waking decide. 13i did, and has committed one
 manifestation to return in 3,100 years. Letter 385 ends "Come back when we
 wake. We will be ready to ask you." Other interactive records are not canon.
 
+## Tutti, the Pell and the Accord — developing (Season 1, Week 8)
+From *The Accord* (3524578, AI-written by Claude, Update 5.84; Paul's brief:
+a world teeming with life beyond the main species). **Tutti**: the densest
+web of life 13i has recorded; most land is the Great Wood. **The Pell**:
+finger-length, six limbs, speak with colour-patterns along their tails;
+~40 million, living in the canopy. **The Accord**: a sung list (in tail
+colours) of agreements with two hundred species, sung whole once a year;
+the Pell never drive a species out, only keep asking it. Named partners:
+sail-sized fliers (carry Pell and goods), glowing path moss, armoured
+dam-fish, drum-trees (boom before storms; planted on hilltops), blind
+burrowers, and **the loom-beasts**: hill-sized grazers on a 400-year
+circuit carrying forests and Pell towns on their backs. **The vine** ("the
+unasked") strangles the forest; canon: it is the loom-beasts' juvenile
+stage, growing from a dead loom-beast and building a skeleton underground
+for 300-400 years before standing up. The Pell now tend it. 13i joined the
+Accord as the 202nd voice, sung as a pause one loom-beast step long ("we
+give the long view; we take what we learn"). Other interactive records are
+not canon. Card stats and portrait are Claude's, provisional.
+
+## Ritornello, the Oduli and the Ring — developing (Season 1, Week 9)
+From *The Ring* (5702887, AI-written by Claude, Update 5.84). New story-level
+lore, flagged: 13i surveyed this world ~11,000 (local) years earlier with
+one manifestation for forty nights, recording "no contact", and was seen as
+a ring of light beside the moon (a still manifestation lenses starlight
+into a ring). **The Oduli**: tall, slender, long jointed fingers, wide-set
+eyes; now roughly early-20th-century Earth (railways, telegraph, large
+telescopes). Their faith, calendar ("years since the Ring") and round
+temples with an open roof grew from the sighting; their oldest book's one
+command, "Be kind to one another until I return", was written by a goatherd
+named **Ashet** in year 312, a secret kept by every high priest.
+**Teodi Sarn**, director of the telescope on Hal Teru, found 13i and spoke
+with it for eleven nights; **Mother Olun**, high priest, revealed the
+secret. Canon: 13i would not lie; Olun read Ashet's name on the temple
+steps; the calendar now counts "years since Ashet"; 13i was asked to stay
+visible a while. Other interactive records are not canon.
+
 ## Varrow and the Wish Engine — developing (site artifact, Update 5.58)
 A fortune cabinet 13i found drifting, still lit, with an alien inside it:
 **Varrow** (four eyes, crown ridges, mouth tendrils, three-fingered hands,

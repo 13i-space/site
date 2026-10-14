@@ -111,6 +111,8 @@ export default async function AccountPage() {
     rubato: { label: "RUBATO", href: "/games/rubato" },
     "hold-fire": { label: "HOLD FIRE", href: "/games/hold-fire" },
     fermata: { label: "FERMATA", href: "/games/fermata" },
+    tutti: { label: "TUTTI", href: "/games/tutti" },
+    ritornello: { label: "RITORNELLO", href: "/games/ritornello" },
   };
 
   const alphaProfile = { ...profile, created_at: profile?.created_at || user.created_at };

@@ -31,7 +31,8 @@ Runs twice, back to back: a beta season for Beta Kin from **January 1,
 `launch` on the season in `lib/seasons.js`; week pages show both).
 1 The Deep Walkers (0000087) · 2 Nerath's Secret (0215783) · 3 The Quiet
 Moon (0028657) · 4 The Sea of Glass (0514229) · 5 The Borrowed Seconds (0832040) · 6 First Fire (1346269) · 7 The Fermata
-(2178309), added in Update 5.79. Weeks 8-12 to build before the beta; 13 is the
+(2178309), added in Update 5.79 · 8 The Accord (3524578) · 9 The Ring
+(5702887), added in Update 5.84. Weeks 10-12 to build before the beta; 13 is the
 finale. Release weeks run Monday to Sunday from a season's first Monday
 (beta week 1 = Jan 4 2027, public week 1 = Apr 12 2027); the full weekly
 rhythm lives in `lib/siteCalendar.js`.
@@ -55,8 +56,20 @@ leaves a letter; lighter leaning scores more. Both have a `?test` hook
 fair / ~3+ min strong; FERMATA ~1 min careless, 20-30 wakings strong.
 
 Assignment numbers are Fibonacci numbers outside the human range
-(50,000-250,000). Used: 28657, 514229, 832040, 1346269, 2178309. Next
-free: 3524578, 5702887, 9227465, 1597, 2584, 4181. Every built week has all six pieces.
+(50,000-250,000). Used: 28657, 514229, 832040, 1346269, 2178309, 3524578,
+5702887. Next free: 9227465 (the last seven-digit Fibonacci number), then
+1597, 2584, 4181. Every built week has all six pieces.
+
+Games added in 5.84: **TUTTI** (public/games/tutti, week 8): species arrive
+with a gift (outer ring) and a need (inner dot); drag a giver to a matching
+need (two gifts each); fed species join the Accord after 18s and take their
+gifts with them; six that leave and it breaks; drag 13i onto a vine to turn
+it into a young loom-beast (7s recharge). **RITORNELLO**
+(public/games/ritornello, week 9): a six-arc Simon-style phrase that returns
+with one more note each round, sometimes asked backward (double points);
+three misses ends it. Both have the `?test` hook. Bot balance: TUTTI ~1.5 min
+slow / ~3 min fair / 4-7 min fast; RITORNELLO phrases of ~5 casual / ~9 fair
+/ ~13+ sharp.
 
 ## The Survival Trials across a season (planned, Update 5.59 groundwork)
 Each week a tournament of that week's species produces a Weekly Champion
