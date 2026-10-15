@@ -70,6 +70,38 @@ Technical rules:
 - use only basic shapes, paths, gradients and groups; no <script>, <foreignObject>, <image>, <style>, event attributes, or external references
 - keep it under 9000 characters`;
 
+// Update 5.88 - the detailed instructions, on trial in the model comparison
+// (Sentinel-X only). Aimed at the lab's own art: layered, finely rendered,
+// and anatomy that isn't an Earth animal with extras. Haiku is cheap enough
+// that a drawing two or three times longer still costs under a cent.
+const PORTRAIT_SYSTEM_DETAILED = `You are the creature illustrator for the Alien Lab on 13i.space, a science-fiction universe with a restrained, sophisticated, literary look. Its art is dark, layered and finely rendered - closer to a natural-history plate of a real organism from another world than to a cartoon.
+Draw the species described by the user as one detailed SVG portrait for a collectible card.
+
+Anatomy - the most important part:
+- Invent the body from the traits, as biology that evolved somewhere else. Do NOT start from an Earth animal (no rabbits, tortoises, bats, cats, insects or fish with extra parts) and no humanoid unless the traits say so.
+- No cartoon faces: no smiling mouths, no pair of round dot eyes, no "cute" proportions. Senses are organs shaped by the traits - sensor pits, eye clusters, slits, membranes, antennae-like filaments, or none at all.
+- Follow the traits literally: body plan, symmetry (radial, bilateral, none), number and kind of limbs, size, senses, how it moves and feeds. Count limbs carefully.
+- Show how it is built: joints, segments, plates, membranes, vents, fins, filaments, light organs, where muscle and shell meet.
+- If the creator describes its look in their own words, that comes first: follow it closely (colours, features, markings, shape), within the traits.
+
+Composition:
+- The WHOLE creature visible, nothing cropped, in a three-quarter view that shows its structure, filling about 60-70% of the frame.
+- Keep the creature inside the band from y=70 to y=330 (the card shows a 16:11 window cut from the middle of the square). Show its scale against something in its world.
+
+Rendering - use the space for detail:
+- Build the creature in layers: base forms with opaque gradients, then plates, segments and folds, then fine detail - thin linework (stroke-width 0.4 to 1.2), texture from many small repeated shapes (scales, pores, ridges, spines, veins), rim light from its world's light source, a few sharp specular highlights, shadow where parts overlap and where it meets the ground, and a cast shadow.
+- Every part of its body has an OPAQUE fill (no fill-opacity or opacity below 1 on the body). Glows and light effects may be translucent.
+- Palette: a coherent palette drawn from its traits and world, sitting well against 13i's deep navy (#0A0B1C) with lavender (#B9C0FF, #8B95F6) and warm (#E8CFC0, #E9D29A) accents where they suit it. It must read clearly against both a dark and a bright sky.
+- Spend most of the detail on the creature; the world behind it is atmospheric and simpler - two or three layers of depth, haze, its sun or suns, terrain or water or cave as the traits imply.
+- No text, labels or captions anywhere.
+
+Structure and technical rules:
+- viewBox="0 0 400 400", no width/height attributes
+- first a full rect filled #0A0B1C, then the world in <g id="world">, then the creature in <g id="creature">
+- use only basic shapes, paths, gradients and groups; no <script>, <foreignObject>, <image>, <style>, filters, event attributes or external references
+- aim for 12000 to 22000 characters; never more than 26000
+- output only the SVG markup, starting with <svg and ending with </svg>, no markdown fences`;
+
 // Repainting an existing portrait in solid colour (Update 5.63), keeping
 // the drawing itself: same shapes, same composition, new paint.
 const REPAINT_SYSTEM = `You repaint SVG portraits of alien species for 13i.space.
@@ -209,9 +241,9 @@ async function suggestName(apiKey, answers) {
 
 // Streams newline-delimited JSON: {"progress":n} while drawing, then
 // {"svg":"..."} or {"error":"..."}.
-function drawPortrait(apiKey, answers, name, onDone, compare = null) {
+function drawPortrait(apiKey, answers, name, onDone, compare = null, detailed = false) {
   return streamSvg(apiKey, {
-    system: PORTRAIT_SYSTEM,
+    system: detailed ? PORTRAIT_SYSTEM_DETAILED : PORTRAIT_SYSTEM,
     content: `Draw this species.\n\n${describe(answers, name)}`,
     feature: compare ? "alien-portrait-test" : "alien-portrait",
     onDone,
@@ -388,7 +420,7 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
-  const { action, answers, name, speciesId, model } = body || {};
+  const { action, answers, name, speciesId, model, detailed } = body || {};
   if (action === "quota") {
     const sentinel = await isSentinel(supabase, user.id);
     const q = await drawingsToday(user.id);
@@ -410,7 +442,7 @@ export async function POST(request) {
     if (model !== undefined) {
       if (!sentinel) return Response.json({ error: "Only Sentinel-X can choose the model." }, { status: 403 });
       if (!COMPARE_MODELS.includes(model)) return Response.json({ error: `Model must be one of: ${COMPARE_MODELS.join(", ")}` }, { status: 400 });
-      return drawPortrait(apiKey, answers, name, null, model);
+      return drawPortrait(apiKey, answers, name, null, model, detailed === true);
     }
     if (!sentinel) {
       const q = await drawingsToday(user.id);

@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.88 — Alien Lab: detailed portrait instructions on trial (Oct 2026)
+No SQL. Part of 13i Core v0.1 (cutting portrait cost).
+- New `PORTRAIT_SYSTEM_DETAILED` in `app/api/alien/route.js`: anatomy that
+  isn't an Earth animal with extras, no cartoon faces, whole body inside the
+  card's 16:11 band, layered rendering with fine linework and texture, and
+  room for 12-22k characters. Used only when Sentinel-X passes
+  `detailed: true` with a test model; live portraits are unchanged.
+- The Sentinel-X comparison now compares equal money: one Sonnet drawing
+  with today's instructions vs four Haiku drawings with the new ones, each
+  side with its total cost. Update 5.87 had already put every cost in cents.
+
 ## Update 5.86 — Alien Lab: model comparison for Sentinel-X (Oct 2026)
 No SQL. Part of 13i Core v0.1 (cutting portrait cost).
 - Sentinel-X sees a **Model comparison** panel under the portrait in the
