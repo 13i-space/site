@@ -24,6 +24,7 @@ start on the site until it's run.
   borer as a wreck). SpaceCore flies out a replacement, crew member #N: the
   launch and landing replay, and training, kit, research and builds carry over.
 - Dashboard shows Crew lost and the time to the next Marsquake.
+- After a Marsquake, everyone gets a day-long +25% "Fractured rock" mining boost.
 
 ## Update 5.84 — Season 1 Weeks 8 and 9: The Accord and The Ring (Oct 2026)
 No SQL.

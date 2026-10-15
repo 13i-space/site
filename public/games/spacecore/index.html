@@ -1315,9 +1315,10 @@ function onQuaked(m){
   if(!passable(S.px,S.py)) unstick();
   P.rx=S.px; P.ry=S.py; P.move=null; P.drill=null;
   if(!isNew) return;
+  S.boosts=(S.boosts||[]).filter(b=>b.label!=='Fractured rock (Marsquake)'); S.boosts.push({label:'Fractured rock (Marsquake)',pct:.25,until:Date.now()+86400000,mode:'Colony'}); save(true);
   shake=8; noise(3.2,.32,120,'lowpass',40); beep(42,3,'sawtooth',.06,28);
   post({type:'lyraReact',react:'flinch'});
-  lyra(`Marsquake! ${r.collapsed!=null?`${r.collapsed} blocks of tunnel collapsed across the colony. `:''}Anything braced held. Time to dig fresh: the rock that came down is ordinary rock again, ore and all.`,{prio:LYRA_URGENT+1,hold:true});
+  lyra(`Marsquake! ${r.collapsed!=null?`${r.collapsed} blocks of tunnel collapsed across the colony. `:''}Anything braced held. Time to dig fresh: the rock that came down is ordinary rock again, ore and all, and it's fractured, so you mine 25% more for the next day.`,{prio:LYRA_URGENT+1,hold:true});
   renderDash();
 }
 function unstick(){
