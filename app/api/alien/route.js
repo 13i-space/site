@@ -17,10 +17,12 @@ export const runtime = "edge";
 
 // Update 5.66 - cost. Each call uses the cheapest model that does it well;
 // any of them can be changed in Vercel's environment variables:
-//   ALIEN_PORTRAIT_MODEL (default Sonnet 5.5, low effort - the costly one;
-//     "claude-haiku-5-5" is cheaper still, "claude-opus-5-5" the old look)
+//   ALIEN_PORTRAIT_MODEL (Update 5.90: default Haiku 5.5 at its normal
+//     thinking level, with the detailed instructions - better drawings
+//     than Sonnet's old ones at about a third of the cost; set it to
+//     "claude-sonnet-5-5" to go back to Sonnet)
 //   ALIEN_TEXT_MODEL (names and 13i's reviews; default Haiku 5.5)
-const PORTRAIT_MODEL = () => process.env.ALIEN_PORTRAIT_MODEL || "claude-sonnet-5-5";
+const PORTRAIT_MODEL = () => process.env.ALIEN_PORTRAIT_MODEL || "claude-haiku-5-5";
 const TEXT_MODEL = () => process.env.ALIEN_TEXT_MODEL || "claude-haiku-5-5";
 const MODEL = "claude-sonnet-5-5"; // fallback label for usage records
 // effort is for the larger models only
@@ -246,6 +248,12 @@ async function suggestName(apiKey, answers) {
 // twice the room (two of four were cut off at 16,000 in Update 5.88).
 const TEST_EFFORTS = ["low", "medium"];
 function drawPortrait(apiKey, answers, name, onDone, compare = null, detailed = false, effortLevel = null) {
+  // Update 5.90: every live portrait uses the detailed instructions; Haiku
+  // draws at its normal thinking level (medium), chosen in the comparison.
+  if (!compare) {
+    detailed = true;
+    if (/haiku/.test(PORTRAIT_MODEL())) effortLevel = "medium";
+  }
   return streamSvg(apiKey, {
     ...(detailed ? { maxTokens: 32000 } : {}),
     ...(effortLevel ? { effortLevel } : {}),
@@ -314,6 +322,7 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   const original = sp.portrait_line_svg || sp.portrait_svg; // never lose the first drawing
   return streamSvg(apiKey, {
     system: REPAINT_SYSTEM,
+    maxTokens: 32000, // room for thinking, if the portrait model thinks
     content: `Repaint this portrait of "${String(sp.name || "a species").slice(0, 60)}" in solid colour.\n\n${original}`,
     feature: "alien-repaint",
     onSvg: async (svg) => {

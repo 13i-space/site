@@ -23,7 +23,7 @@ import { useState } from "react";
 // made the good drawings in 5.88) and a lower one, to see if less thinking
 // is nearly as good for less money.
 const LANES = [
-  { key: "sonnet", model: "claude-sonnet-5-5", detailed: false, count: 1, label: "Sonnet 5.5", note: "today's model + today's instructions" },
+  { key: "sonnet", model: "claude-sonnet-5-5", detailed: false, count: 1, label: "Sonnet 5.5", note: "the old setup (before Update 5.90): Sonnet + the original instructions" },
   { key: "haiku-med", model: "claude-haiku-5-5", detailed: true, effort: "medium", count: 2, label: "Haiku 5.5 · normal thinking", note: "new detailed instructions · 2 drawings" },
   { key: "haiku-low", model: "claude-haiku-5-5", detailed: true, effort: "low", count: 2, label: "Haiku 5.5 · less thinking", note: "new detailed instructions · 2 drawings" },
 ];
@@ -91,7 +91,7 @@ export default function ModelCompare({ getAnswers, name, onUse }) {
     <div style={{ marginTop: 18, padding: 14, border: "1px solid #3A3E75", borderRadius: 6, background: "rgba(20,22,58,0.6)" }}>
       <div className="mono" style={{ fontSize: 10, color: "#E9D29A", letterSpacing: "1.5px", marginBottom: 8 }}>SENTINEL-X &middot; SAME MONEY, SIDE BY SIDE</div>
       <p style={{ fontSize: 12, color: "#8A8FBF", margin: "0 0 12px", lineHeight: 1.6 }}>
-        First: one drawing the way every portrait is made today. Then: what about the same money buys with Haiku and the new detailed instructions, at two thinking levels. Test drawings are logged separately and don&rsquo;t touch anyone else&rsquo;s Lab.
+        First: one drawing the way every portrait was made before Update 5.90. Then: what about the same money buys with Haiku and the detailed instructions, at two thinking levels (normal thinking is now the Lab's default). Test drawings are logged separately and don&rsquo;t touch anyone else&rsquo;s Lab.
       </p>
       <button onClick={drawAll} disabled={busy} className="mono" style={{ background: "#1C1F4A", color: "#DCDFFF", border: "1px solid #8B95F6", borderRadius: 4, padding: "8px 14px", fontSize: 12, cursor: busy ? "default" : "pointer", opacity: busy ? 0.5 : 1 }}>
         {busy ? "Drawing..." : started ? "Draw them all again" : "Draw the comparison"}

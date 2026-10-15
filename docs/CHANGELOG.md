@@ -3,6 +3,19 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.90 — Alien Lab: Haiku + detailed instructions for every portrait (Oct 2026)
+No SQL. 13i Core v0.1: portrait cost cut, quality up.
+- Chosen from the Sentinel-X comparison (5.86-5.89): every live portrait is
+  now drawn by Haiku 5.5 at its normal thinking level (medium) with
+  `PORTRAIT_SYSTEM_DETAILED`, up to 32,000 tokens. In the test it cost about
+  0.5-0.6¢ a drawing, against 1.7-2.2¢ for Sonnet with the old
+  instructions, and looked far better.
+- `ALIEN_PORTRAIT_MODEL` now defaults to `claude-haiku-5-5`. Setting it to
+  `claude-sonnet-5-5` in Vercel rolls back to Sonnet (still with the
+  detailed instructions).
+- Repaints get 32,000 tokens too. The comparison panel stays for Sentinel-X,
+  with Sonnet + the original instructions as the reference.
+
 ## Update 5.89 — Alien Lab comparison: no more cut-off drawings (Oct 2026)
 No SQL. Part of 13i Core v0.1.
 - Two of four detailed Haiku drawings in 5.88 stopped at the 16,000-token
