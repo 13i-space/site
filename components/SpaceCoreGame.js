@@ -20,7 +20,7 @@ import { SPACECORE_TIME_SCALE } from "../lib/spacecore";
 // Needs docs/v5.39-spacecore.sql, then the later SpaceCore SQL files up to docs/v5.61-spacecore-survival.sql.
 
 const GAME = "spacecore";
-const SCHEMA_VERSION = 561; // spacecore_version() in docs/v5.61-spacecore-survival.sql
+const SCHEMA_VERSION = 585; // spacecore_version() in docs/v5.85-spacecore-quakes.sql
 const DAY = 86400000;
 const BOOST_REFRESH = 5 * 60000;
 
@@ -199,6 +199,13 @@ export default function SpaceCoreGame() {
           log: cl.log,
           ...(boosts ? { boosts } : {}),
         });
+      } else if (msg.type === "quake") {
+        // a Marsquake is due (or another crew already set it off): run it once on the
+        // server, then reload the whole world, because collapsed tunnels are deletions
+        const { data: result } = await supabase.rpc("spacecore_quake");
+        const tiles = await loadAllTiles(supabase);
+        c.lastTileAt = tiles.reduce((m, t) => (t.updated_at > m ? t.updated_at : m), "1970-01-01T00:00:00Z");
+        send({ type: "quaked", result: result || null, tiles: tiles.map((t) => [t.x, t.y, t.t, ownerIndex(t.owner)]), owners: c.names });
       } else if (msg.type === "contribute") {
         const { data, error } = await supabase.rpc("spacecore_contribute", { p_res: msg.res, p_amount: msg.amount });
         if (error) send({ type: "contributed", res: msg.res, accepted: 0, error: error.message });

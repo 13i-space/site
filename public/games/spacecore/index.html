@@ -204,6 +204,7 @@ a{color:var(--lav)}
       <div class="g"><span class="gl">O₂</span><span class="gbar"><i id="gO2"></i></span><span class="gv" id="gO2V">100%</span></div>
       <div class="g"><span class="gl">FOOD</span><span class="gbar"><i id="gFood"></i></span><span class="gv" id="gFoodV">100%</span></div>
       <div class="g"><span class="gl">MORALE</span><span class="gbar"><i id="gMood"></i></span><span class="gv" id="gMoodV">100%</span></div>
+      <div class="g"><span class="gl">RADIATION</span><span class="gbar"><i id="gRad"></i></span><span class="gv" id="gRadV">0%</span></div>
       <div class="gfoot"><span id="gOut">Outside −63°C</span><span id="gState">Surface</span></div>
       <div class="gfoot" id="gAb"></div>
     </div>
@@ -279,20 +280,22 @@ const BRICK=20, BASB=21, HEMA=22, OLIV=23, GYPS=24, ICEB=25, TGLASS=26, ALLOY=27
 const HEATER=30, SCRUB=31, SENSOR=32, REACTOR=33, CHARGER=34;
 // Update 5.61: power, comforts and rotated pieces
 const SOLAR=35, GEOTH=36, BATT=37, WIRE=38, GALLEY=39, BUNK=40, LOCKH=41, LAMPF=42;
-const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER,SOLAR,GEOTH,BATT,WIRE,GALLEY,BUNK,LAMPF]);
+// Update 5.85: the support strut (saved), and magma (natural only, never saved)
+const BEAM=43, LAVA=8, HOT=9;
+const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER,SOLAR,GEOTH,BATT,WIRE,GALLEY,BUNK,LAMPF,BEAM]);
 const isEquip = t => EQUIP_T.has(t);
 const isLock = t => t===LOCK||t===LOCKH;
 const POWER_T = new Set([WIRE,SOLAR,GEOTH,REACTOR,BATT,CHARGER,RIG]);
 const ROTATE = {[LOCK]:LOCKH, [LOCKH]:LOCK, [LAMP]:LAMPF, [LAMPF]:LAMP};
 const BASE_T = {[LOCKH]:LOCK, [LAMPF]:LAMP};
 const SOLAR_DEPTH = 8, GEO_DEPTH = 40, BUILD_CAP = 1500, REACH = 6, NEAR = 8;
-const isRockT = t => (t>=REG&&t<=MET) || t===FILL;
+const isRockT = t => (t>=REG&&t<=MET) || t===FILL || t===HOT;
 const RES = ['iron','silicon','ice','rare','food'];
 const RNAME = {iron:'Iron', silicon:'Silicon', ice:'Ice', rare:'Rare metals', food:'Food'};
 const RCOL = {iron:'#C97B6E', silicon:'#AEB4D8', ice:'#A7CFE0', rare:'#E2C27A', food:'#9CCB98'};
-const ROCKRES = {[REG]:'iron', [BAS]:'silicon', [ICE]:'ice', [MET]:'rare'};
-const HARD = {[REG]:.38, [BAS]:.6, [ICE]:.5, [MET]:.95, [FILL]:.22};
-const DRAIN = {[REG]:.45, [BAS]:.7, [ICE]:.55, [MET]:1.1, [FILL]:.2};
+const ROCKRES = {[REG]:'iron', [BAS]:'silicon', [ICE]:'ice', [MET]:'rare', [HOT]:'silicon'};
+const HARD = {[REG]:.38, [BAS]:.6, [ICE]:.5, [MET]:.95, [FILL]:.22, [HOT]:.85};
+const DRAIN = {[REG]:.45, [BAS]:.7, [ICE]:.55, [MET]:1.1, [FILL]:.2, [HOT]:1};
 const ATTRS = [
   {k:'eng', n:'Engineering', e:'Drill speed +12% per point.'},
   {k:'geo', n:'Geology', e:'More by-products and rare finds.'},
@@ -357,6 +360,7 @@ const BLOCKS = [
   {id:'tglass', tile:TGLASS, n:'Tinted glass', cost:{silicon:2, iron:1}, d:'Amber glass.'},
   {id:'alloy', tile:ALLOY, n:'Alloy panel', cost:{iron:2, rare:1}, d:'Rare-metal alloy. Gold, and it shows.'},
   {id:'wire', tile:WIRE, n:'Wire', cost:{iron:1}, d:'Carries power between solar panels, batteries, chargers and drills. Only shows in Build mode.'},
+  {id:'strut', tile:BEAM, n:'Support strut', cost:{iron:2}, d:'Iron bracing. Tunnels within 4 blocks of a strut survive Marsquakes. Your borer drives straight through it.'},
   {id:'fill', tile:FILL, n:'Backfill', cost:{}, d:'Pack rock back into a tunnel you dug. Free.'},
   {id:'remove', tile:-1, n:'Remove', cost:{}, d:'Take back a block (half refund) or equipment (back to your kit).'},
 ];
@@ -510,11 +514,28 @@ function genWorld(){
   }
   vein(ICE,120,4,90,4,12,[REG,BAS]);        // ice: about a third more, mostly in reach
   vein(REG,650,14,186,6,16,[BAS]);          // iron-rich regolith pockets all the way down
+  // Update 5.85: magma. Pockets of lava near the core, wrapped in a shell of hot rock that
+  // glows a warning before you reach them. Own RNG, only replaces rock, so nothing moves.
+  const r3=mulberry32(SEED+585), rockish=t=>t>=REG&&t<=MET, N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+  for(let i=0;i<46;i++){
+    const cx=6+Math.floor(r3()*(W-12)), cy=GY+128+Math.floor(r3()*(H-GY-138)), rx=2.5+r3()*6, ry=1.5+r3()*2.5;
+    for(let y=Math.floor(cy-ry);y<=cy+ry;y++) for(let x=Math.floor(cx-rx);x<=cx+rx;x++){
+      const dx=(x-cx)/rx, dy=(y-cy)/ry; if(dx*dx+dy*dy<=1&&inside(x,y)&&rockish(w[idx(x,y)])) w[idx(x,y)]=LAVA;
+    }
+  }
+  for(let i=0;i<W*H;i++){ if(w[i]!==LAVA) continue; const x=i%W, y=(i/W)|0; if(N8.some(([dx,dy])=>w[idx(x+dx,y+dy)]===TUN)) w[i]=HOT; }
+  for(let i=0;i<W*H;i++){ if(w[i]!==LAVA) continue; const x=i%W, y=(i/W)|0;
+    for(let dy=-3;dy<=3;dy++) for(let dx=-3;dx<=3;dx++){ const nx=x+dx, ny=y+dy; if(inside(nx,ny)&&rockish(w[idx(nx,ny)])) w[idx(nx,ny)]=HOT; } }
   return w;
 }
 world = genWorld();
 const passable=(x,y)=>{const t=tile(x,y); if(t===AIR) return y===GY-1; return t===TUN||isLock(t)||isEquip(t);};
 const diggable=isRockT;
+const N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+const nearLava=(x,y)=>N8.some(([dx,dy])=>tile(x+dx,y+dy)===LAVA);
+// lava that ends up against open space (a tunnel saved before the magma existed, or the
+// hole someone burned through) crusts over on the next load
+function crustLava(){ for(let i=0;i<W*H;i++){ if(world[i]!==LAVA) continue; const x=i%W, y=(i/W)|0; if(N8.some(([dx,dy])=>{ const t=tile(x+dx,y+dy); return t===TUN||t===AIR||t>=10; })) world[i]=HOT; } }
 const interior=t=>t===TUN||isEquip(t);
 function applyTiles(list, skipMine){
   let changed=false;
@@ -987,6 +1008,7 @@ function onContributed(m){
 // improvements, one at a time.
 function setColony(col, myDelta){
   if(!col) return;
+  noteQuake(col.quake_slot);
   C={stage:col.stage|0, have:col.have||{}, mined:col.mined||{}};
   if(S.introDone&&S.lastStage!=null&&C.stage>S.lastStage){
     const done=STAGES[C.stage-1], next=STAGES[C.stage];
@@ -1056,7 +1078,9 @@ function dig(x,y){
   else if(t===BAS){ grant('silicon',1*deep); if(Math.random()<by*1.5) grant('iron',1); }
   else if(t===ICE){ grant('ice',2); if(Math.random()<by*.6) grant('silicon',1); }
   else if(t===MET){ grant('rare',1); grant('iron',1); if(Math.random()<.04*geo*deep) grant('rare',1); }
+  else if(t===HOT){ grant('silicon',1*deep); if(Math.random()<.08+.03*geo) grant('rare',1); }
   flushGained(); addXP(t===FILL?0:1); recomputePressure();
+  if(nearLava(x,y)){ for(let k=0;k<40;k++) parts.push({x:(x+.5)*T,y:(y+.5)*T,vx:(Math.random()-.5)*260,vy:(Math.random()-.9)*220,life:1.1,c:k&1?'#ffb347':'#e8501a'}); crewLost('lava'); return; }
   beep(160,.12,'triangle',.06,80);
   for(let i=0;i<8;i++) parts.push({x:(x+.5)*T,y:(y+.5)*T,vx:(Math.random()-.5)*120,vy:(Math.random()-.8)*120,life:.6,c:t===ICE?'#d6eef6':t===MET?'#e2c27a':'#a65238'});
 }
@@ -1115,6 +1139,9 @@ function updatePlayer(dt){
     if(own[idx(tx,ty)]>=2&&t===FILL){ lyra(`${ownerName(idx(tx,ty))} packed that rock back in. It's theirs to dig.`,{prio:1,key:'fillown',cool:60}); return; }
     const depth=depthOf(ty);
     if(!P.drill) P.drill={x:tx,y:ty,t:0,need:HARD[t]*(1+depth*.012)/(1+.12*(S.attrs.eng-1))};
+    if(t===HOT){ P.temp+=dt*18;
+      if(nearLava(tx,ty)) lyra("Stop! There's molten rock right behind this. Drill through and it pours straight into the borer.",{prio:LYRA_URGENT+1,key:'brink',cool:20});
+      else lyra("This rock is hot to the touch. There's magma somewhere past it. Watch for the glow, and don't open a hole into it.",{prio:4,key:'hot',cool:240}); }
     const speed=(P.over?.5:1)*(AB.over.t?2:1)*needSlow();
     P.drill.t+=dt*speed; P.dsnd-=dt; P.strain-=dt;
     S.bat=Math.max(0,S.bat-dt*speed*(DRAIN[t]/HARD[t])*(1+depth/120)*.9);
@@ -1156,7 +1183,9 @@ function eat(meal){
   return true;
 }
 function updateNeeds(dt){
+  tickQuake(dt);
   if(!S.introDone) return;
+  tickHazards(dt); if(replacing) return;
   const n=S.needs, r=needRates();
   for(const k of ['o2','food','mood']) n[k]=clamp(n[k]+r[k]*dt,0,100);
   // a galley at home cooks for you when you're hungry
@@ -1198,6 +1227,105 @@ function recoverWreck(){
   const w=S.wreck; S.wreck=null;
   for(const [r,v] of Object.entries(w.res)) grant(r,v,true);
   flushGained('Recovered: '); chime([523,659,784,1047]); lyra("You found your wreck and got everything back. Let's not do that again.",{prio:4,celebrate:true}); save(true);
+}
+
+// ---------- hazards (Update 5.85) ----------
+// Radiation: Mars has no magnetic field and a thin sky, so the surface slowly cooks you
+// (three times faster in a dust storm). A few metres of rock stops it, and the dose eases
+// off underground, faster in a pressurized room, fastest with a radiation sensor. At 100%
+// SpaceCore evacuates you to Earth and flies out a replacement.
+// Lava: deep magma pockets inside a shell of hot rock. Sit next to lava and the hull cooks;
+// open a hole into it and it floods the borer. Either way the crew member is lost.
+const RAD_SURF=100/(8*60), RAD_DECAY=100/(12*60);
+function radRate(){
+  if(atLander()) return -RAD_DECAY*.5;
+  const storm=stormNow().active?3:1;
+  if(S.py<GY) return RAD_SURF*storm;
+  if(depthOf(S.py)<3) return RAD_SURF*.3*storm;
+  const rm=roomAt(S.px,S.py); return -RAD_DECAY*(rm?(rm.shielded?3:2):1);
+}
+function tickHazards(dt){
+  if(phase!=='play'||replacing) return;
+  S.rad=clamp((S.rad||0)+radRate()*dt,0,100);
+  if(S.rad>=40&&!P.radW1){ P.radW1=true; lyra("Your radiation dose is building. No magnetic field, thin sky: the surface cooks you slowly. Get underground, a few metres is plenty, and it eases off.",{prio:5,key:'rad1',cool:300}); }
+  if(S.rad<30) P.radW1=false;
+  if(S.rad>=80&&!P.radW2){ P.radW2=true; post({type:'lyraReact',react:'flinch'}); lyra('Radiation critical! Get below ground now, or SpaceCore pulls you off Mars.',{prio:LYRA_URGENT+1}); }
+  if(S.rad<70) P.radW2=false;
+  if(S.rad>=100){ crewLost('rad'); return; }
+  if(nearLava(S.px,S.py)){ P.burn=(P.burn||0)+dt;
+    if(P.burn>.3&&!P.burnW){ P.burnW=true; post({type:'lyraReact',react:'flinch'}); lyra('Hull temperature spiking! Lava, right next to you. Back off!',{prio:LYRA_URGENT+1}); }
+    if(P.burn>=2.5) crewLost('lava'); }
+  else { P.burn=Math.max(0,(P.burn||0)-dt); if(!P.burn) P.burnW=false; }
+}
+let replacing=null;
+function crewLost(cause){
+  if(replacing) return;
+  const lost={};
+  for(const r of ['iron','silicon','ice','rare']){ const v=Math.floor((S.res[r]||0)*.5); if(v>0){ lost[r]=v; S.res[r]-=v; } }
+  if(cause==='rad'){ const w=S.wreck||{res:{}}; for(const [r,v] of Object.entries(lost)) w.res[r]=(w.res[r]||0)+v; S.wreck={x:S.px,y:S.py,res:w.res,at:Date.now()}; }
+  S.lost=(S.lost||0)+1; S.crewNo=(S.crewNo||1)+1;
+  S.px=SPAWN_X; S.py=GY-1; P.rx=S.px; P.ry=S.py; P.move=null; P.drill=null; P.zeroT=0; P.burn=0; P.burnW=P.radW1=P.radW2=P.needWarned=false;
+  S.rad=0; S.needs={o2:100, food:100, mood:80}; S.bat=batCap(); P.temp=20; P.over=false;
+  replacing={cause, lost};
+  noise(1.6,.25,160,'lowpass',50); beep(110,1.4,'sawtooth',.05,30); shake=5;
+  post({type:'lyraReact',react:'flinch'});
+  flushTiles(); save(true);
+  setTimeout(()=>{ hidePlayUI(); lyraQ=[]; lyraCur=null; showLost(); },1200);
+}
+function showLost(){
+  const r=replacing, what=Object.entries(r.lost).map(([k,v])=>`${v} ${RNAME[k]}`).join(', ');
+  intro.hidden=false;
+  intro.innerHTML=`<div class="card"><p class="eyebrow mono">SpaceCore Mission Control · crew loss</p>
+    <h2>${r.cause==='rad'?'Radiation sickness':'Lost to the lava'}</h2>
+    <p>${r.cause==='rad'?`You stayed out on the surface too long, and medical evacuated you to Earth.${what?` Your borer sits where you went down, still holding ${what}. The next crew can recover it.`:''}`:`The borer opened into molten rock and the hull failed.${what?` ${what} melted with it.`:''}`}</p>
+    <p>SpaceCore is flying out your replacement: <b>${esc(ME.username)}</b>, crew member #${S.crewNo}. Your training, kit, research and everything you built on Mars carry over. The trip doesn't.</p>
+    <div class="row"><button class="btn primary" type="button" id="lostGo">Launch the replacement</button></div></div>`;
+  $('#lostGo').onclick=()=>{ intro.innerHTML=''; replay=true; ac(); setPhase('launch'); };
+}
+
+// ---------- Marsquakes (Update 5.85) ----------
+// Every two days at 20:00 UTC, Mars shakes. Every tunnel without support collapses back to
+// rock: tunnels within 2 blocks of anything built, or 4 of a Support strut, hold. The colony
+// database does the collapse (spacecore_quake), so every crew sees the same result.
+const QUAKE_EVERY=48*3600000, QUAKE_OFF=20*3600000;
+const quakeSlot=t=>Math.floor((t-QUAKE_OFF)/QUAKE_EVERY);
+const nextQuakeAt=()=>(quakeSlot(Date.now())+1)*QUAKE_EVERY+QUAKE_OFF;
+let quakeKnown=null, quakeAsked=0, quakeBefore=null, shake=0;
+function tickQuake(dt){
+  shake=Math.max(0,shake-dt*3);
+  if(!connected||!S.introDone||phase!=='play'||quakeKnown==null) return;
+  const now=Date.now(), slot=quakeSlot(now), left=nextQuakeAt()-now;
+  if(left<2*3600000) lyra(`The seismometers are picking up foreshocks. A Marsquake hits in about ${fmtReal(left)}. Tunnels without support will collapse: anything within 2 blocks of a build holds, and a Support strut braces 4 blocks around it.`,{prio:4,key:'quake-warn-'+slot,cool:99999});
+  if(left<10*60000&&Math.random()<dt*.5) shake=Math.max(shake,1.2);
+  if(slot>quakeKnown&&now-quakeAsked>60000){ quakeAsked=now; quakeBefore=quakeKnown; post({type:'quake'}); }
+}
+function noteQuake(q){
+  if(q==null) return;
+  q|=0;
+  if(quakeKnown!=null&&q>quakeKnown&&Date.now()-quakeAsked>60000){ quakeAsked=Date.now(); quakeBefore=quakeKnown; post({type:'quake'}); }
+  if(quakeKnown==null) quakeKnown=q;
+}
+function onQuaked(m){
+  const r=m.result||{}, slot=r.slot!=null?r.slot|0:quakeKnown, isNew=quakeBefore!=null&&slot>quakeBefore;
+  quakeKnown=Math.max(quakeKnown||0,slot||0); quakeBefore=null;
+  ownerNames=m.owners||ownerNames;
+  world=genWorld(); own.fill(0); applyTiles(m.tiles||[],false);
+  for(const [i,t] of pending){ world[i]=t; own[i]=1; }
+  crustLava(); recomputePressure(); validateRigs();
+  if(!passable(S.px,S.py)) unstick();
+  P.rx=S.px; P.ry=S.py; P.move=null; P.drill=null;
+  if(!isNew) return;
+  shake=8; noise(3.2,.32,120,'lowpass',40); beep(42,3,'sawtooth',.06,28);
+  post({type:'lyraReact',react:'flinch'});
+  lyra(`Marsquake! ${r.collapsed!=null?`${r.collapsed} blocks of tunnel collapsed across the colony. `:''}Anything braced held. Time to dig fresh: the rock that came down is ordinary rock again, ore and all.`,{prio:LYRA_URGENT+1,hold:true});
+  renderDash();
+}
+function unstick(){
+  for(let rad=1;rad<=8;rad++) for(let dy=-rad;dy<=rad;dy++) for(let dx=-rad;dx<=rad;dx++){
+    if(Math.max(Math.abs(dx),Math.abs(dy))!==rad) continue;
+    if(passable(S.px+dx,S.py+dy)&&tile(S.px+dx,S.py+dy)!==AIR){ S.px+=dx; S.py+=dy; return; }
+  }
+  S.px=SPAWN_X; S.py=GY-1; lyra('The quake buried your borer, so the colony robots dug it out and parked it at the lander.',{prio:4});
 }
 
 // ---------- abilities (Update 5.61) ----------
@@ -1383,6 +1511,13 @@ function drawSky(gy){
 const ROCK={[REG]:['#8a3f2b','#a04b33'],[BAS]:['#6a4a43','#7c5a52'],[BED]:['#23141a','#2e1b22'],[FILL]:['#7a4434','#8c5240']};
 function drawRock(t,sx,sy,x,y){
   const h=hash(x,y), i=idx(x,y);
+  if(t===LAVA&&seen[i]){ const tm=performance.now()/1000; ctx.fillStyle='#e8501a'; ctx.fillRect(sx,sy,T+.5,T+.5);
+    for(let k=0;k<3;k++){ const ph=tm*(.6+k*.3)+((h>>(k*4))&15); ctx.fillStyle=k?'rgba(255,200,90,.55)':'rgba(255,140,40,.7)'; ctx.beginPath(); ctx.arc(sx+(.5+Math.sin(ph)*.32)*T,sy+(.5+Math.cos(ph*1.3)*.3)*T,T*(.16+.06*Math.sin(ph*2)),0,7); ctx.fill(); }
+    return; }
+  if(t===HOT||t===LAVA){ const tm=performance.now()/1000, near=t===LAVA; ctx.fillStyle=near?'#4a2218':'#3b2420'; ctx.fillRect(sx,sy,T+.5,T+.5);
+    ctx.strokeStyle=`rgba(232,96,36,${(near?.75:.42)+Math.sin(tm*1.6+(h&31))*.18})`; ctx.lineWidth=Math.max(1,T*.07); ctx.beginPath();
+    const a=(h&7)/8*T, b=((h>>3)&7)/8*T; ctx.moveTo(sx+a,sy); ctx.lineTo(sx+T*.45,sy+T*.55); ctx.lineTo(sx+b,sy+T); if(h&64){ ctx.moveTo(sx+T*.45,sy+T*.55); ctx.lineTo(sx+T,sy+((h>>6)&7)/8*T); } ctx.stroke();
+    return; }
   let show=t;
   if((t===ICE||t===MET)&&!seen[i]) show=(y-GY<14)?REG:BAS;
   if(show===ICE){ ctx.fillStyle='#86b4c6'; ctx.fillRect(sx,sy,T+.5,T+.5); ctx.strokeStyle='rgba(235,248,255,.55)'; ctx.lineWidth=1; ctx.beginPath(); const a=(h&7)/8*T, b=((h>>3)&7)/8*T; ctx.moveTo(sx+a,sy); ctx.lineTo(sx+T*.5,sy+T*.5); ctx.lineTo(sx+b,sy+T); ctx.moveTo(sx,sy+a); ctx.lineTo(sx+T*.5,sy+T*.5); ctx.stroke(); }
@@ -1452,6 +1587,7 @@ function drawEquip(c,t,sx,sy,T,time,lit,extra){
   else if(t===BATT){ c.fillStyle='#3a3e68'; rr(c,sx+3*p,sy+3*p,10*p,12*p,1.5*p); c.fill(); c.fillStyle='#8a90cc'; c.fillRect(sx+6*p,sy+1.5*p,4*p,1.6*p); const f=extra==null?.6:extra; c.fillStyle='#14163A'; c.fillRect(sx+5*p,sy+5*p,6*p,8*p); c.fillStyle=f>.25?'#9CCB98':'#E2C27A'; c.fillRect(sx+5*p,sy+5*p+8*p*(1-f),6*p,8*p*f); }
   else if(t===GALLEY){ c.fillStyle='#4f5566'; c.fillRect(sx+2*p,sy+8*p,12*p,7*p); c.fillStyle='#2b2e5c'; c.fillRect(sx+3.5*p,sy+10*p,9*p,4*p); c.fillStyle='#c8ccd8'; c.fillRect(sx+3*p,sy+6.5*p,5*p,1.5*p); c.fillStyle='#8a90cc'; rr(c,sx+9*p,sy+4*p,4*p,4*p,1*p); c.fill(); if(lit){ c.strokeStyle='rgba(230,230,240,.4)'; c.lineWidth=1; c.beginPath(); const w=Math.sin(time*2)*p; c.moveTo(sx+11*p,sy+3.5*p); c.quadraticCurveTo(sx+11*p+w,sy+2*p,sx+11*p,sy+.5*p); c.stroke(); } }
   else if(t===BUNK){ c.fillStyle='#565B8F'; c.fillRect(sx+2*p,sy+3*p,1.4*p,12*p); c.fillRect(sx+12.6*p,sy+3*p,1.4*p,12*p); c.fillStyle='#454a82'; c.fillRect(sx+2*p,sy+6*p,12*p,1.6*p); c.fillRect(sx+2*p,sy+12.5*p,12*p,1.6*p); c.fillStyle='#B9C0FF'; c.fillRect(sx+3.4*p,sy+4.6*p,3*p,1.4*p); c.fillRect(sx+3.4*p,sy+11.1*p,3*p,1.4*p); c.fillStyle='#C97B6E'; c.fillRect(sx+6.6*p,sy+4.8*p,6*p,1.2*p); c.fillRect(sx+6.6*p,sy+11.3*p,6*p,1.2*p); }
+  else if(t===BEAM){ c.fillStyle='#7a7fae'; c.fillRect(sx+2*p,sy,2.4*p,16*p); c.fillRect(sx+11.6*p,sy,2.4*p,16*p); c.fillRect(sx+2*p,sy,12*p,2.2*p); c.strokeStyle='#565B8F'; c.lineWidth=Math.max(1,1.4*p); c.beginPath(); c.moveTo(sx+4*p,sy+2*p); c.lineTo(sx+12*p,sy+15*p); c.moveTo(sx+12*p,sy+2*p); c.lineTo(sx+4*p,sy+15*p); c.stroke(); }
   else if(t===WIRE){ c.strokeStyle='#E2C27A'; c.lineWidth=Math.max(1.5,T*.08); c.beginPath(); c.moveTo(sx+4*p,sy+8*p); c.lineTo(sx+12*p,sy+8*p); c.moveTo(sx+8*p,sy+4*p); c.lineTo(sx+8*p,sy+12*p); c.stroke(); }
   else if(t===RIG){ const f=extra==null?.4:extra; c.strokeStyle='#8a90cc'; c.lineWidth=1.5; c.beginPath(); c.moveTo(sx+4*p,sy+15*p); c.lineTo(sx+8*p,sy+2*p); c.lineTo(sx+12*p,sy+15*p); c.moveTo(sx+5*p,sy+11*p); c.lineTo(sx+11*p,sy+11*p); c.stroke(); c.fillStyle='#E8CFC0'; c.save(); c.translate(sx+8*p,sy+8*p); c.rotate(time*4); c.fillRect(-2*p,-.6*p,4*p,1.2*p); c.restore(); if(extra!=null){ c.fillStyle='#1b1d3d'; c.fillRect(sx+13.5*p,sy+3*p,1.8*p,11*p); c.fillStyle=f>=.99?'#E8CFC0':'#9CCB98'; c.fillRect(sx+13.5*p,sy+3*p+11*p*(1-f),1.8*p,11*p*f);} }
   else if(t===HEATER){ c.fillStyle='#3a3e68'; rr(c,sx+2*p,sy+5*p,12*p,9*p,1.5*p); c.fill(); const glow=lit?.6+Math.sin(time*2)*.25:.25; c.strokeStyle=`rgba(255,140,80,${glow})`; c.lineWidth=1.4; c.beginPath(); for(let k=0;k<4;k++){ c.moveTo(sx+4*p,sy+(7+k*2)*p); c.lineTo(sx+12*p,sy+(7+k*2)*p); } c.stroke(); c.fillStyle='#565B8F'; c.fillRect(sx+3*p,sy+14*p,2*p,2*p); c.fillRect(sx+11*p,sy+14*p,2*p,2*p); }
@@ -1554,6 +1690,7 @@ function light(x,y,r,a=1){ const g=dctx.createRadialGradient(x,y,0,x,y,r); g.add
 
 function drawGame(time,dt){
   ctx.setTransform(dpr,0,0,dpr,0,0);
+  if(shake>0) ctx.translate((Math.random()-.5)*shake*3,(Math.random()-.5)*shake*3);
   const tx=(P.rx+.5)*T-vw/2, ty=(P.ry+.5)*T-vh*.45;
   const maxX=W*T-vw, maxY=H*T-vh;
   const cx= maxX<0 ? maxX/2 : clamp(tx,0,maxX), cy=clamp(ty,0,Math.max(0,maxY));
@@ -1568,7 +1705,7 @@ function drawGame(time,dt){
     else if(t>=10){ drawBuilt(t,sx,sy,x,y,time,dt);
       if(t===LAMP||t===LAMPF) lights.push([sx+T/2,sy+T*.4,T*4.6,1]); else if(t===GEOTH||t===GALLEY) lights.push([sx+T/2,sy+T*.7,T*1.6,.6]); else if(t===SOLAR) lights.push([sx+T/2,sy+T/2,T*1.2,.45]); else if(t===O2&&press[i]) lights.push([sx+T/2,sy+T/2,T*3.4,.9]); else if(t===GREEN) lights.push([sx+T/2,sy+T/2,T*1.8,.7]); else if(t===RIG) lights.push([sx+T/2,sy+T/2,T*1.4,.6]);
       else if(t===HEATER&&press[i]) lights.push([sx+T/2,sy+T/2,T*2.6,.8]); else if(t===REACTOR) lights.push([sx+T/2,sy+T/2,T*3,.85]); else if(t===CHARGER) lights.push([sx+T/2,sy+T/2,T*1.4,.6]); else if(SEETHRU.has(t)&&press[i]) lights.push([sx+T/2,sy+T/2,T*1.1,.4]); }
-    else if(t!==AIR) drawRock(t,sx,sy,x,y);
+    else if(t!==AIR){ drawRock(t,sx,sy,x,y); if(t===LAVA) lights.push([sx+T/2,sy+T/2,T*2.4,.75]); else if(t===HOT&&(hash(x,y)&3)===0) lights.push([sx+T/2,sy+T/2,T*1.3,.3]); }
     if(t===TUN&&own[i]===0&&!seen[i]) continue;
     if(press[i] && t===TUN) lights.push([sx+T/2,sy+T/2,T*1.1,.45]);
   }
@@ -1673,7 +1810,7 @@ function drawStorm(time,dt,gy){
 
 // ---------- minimap ----------
 const mini=$('#mini'), mctx=mini.getContext('2d'); const mimg=mctx.createImageData(W,H);
-const MCOL={[REG]:[70,32,24],[BAS]:[58,42,38],[ICE]:[70,110,125],[MET]:[120,100,55],[BED]:[20,12,16],[FILL]:[70,36,28]};
+const MCOL={[REG]:[70,32,24],[BAS]:[58,42,38],[ICE]:[70,110,125],[MET]:[120,100,55],[BED]:[20,12,16],[FILL]:[70,36,28],[LAVA]:[210,80,24],[HOT]:[96,42,30]};
 function drawMini(){
   if(mini.hidden) return;
   const d=mimg.data;
@@ -1709,6 +1846,7 @@ function updateGauges(){
   gEls.st.innerHTML = P.charging ? `<em>Charging · ${P.charging}</em>` : P.over ? '<em>Overheated</em>' : S.bat<=0 ? '<em>Empty · crawl</em>' : AB.over.t ? '<em>Overdrive</em>' : P.drill ? 'Drilling' : P.move ? 'Moving' : 'Idle';
   const nc=v=>v>40?'#9CCB98':v>LOW?'#E2C27A':'#C97B6E';
   for(const [k,b,v] of [['o2','gO2','gO2V'],['food','gFood','gFoodV'],['mood','gMood','gMoodV']]){ const n=S.needs[k]; const e=$('#'+b); e.style.width=n+'%'; e.style.background=nc(n); $('#'+v).textContent=Math.round(n)+'%'; }
+  { const rv=S.rad||0, e=$('#gRad'); e.style.width=rv+'%'; e.style.background=rv<40?'#9CCB98':rv<75?'#E2C27A':'#C97B6E'; $('#gRadV').textContent=Math.round(rv)+'%'; }
   const ab=a=>AB[a].t?'<em>on</em>':AB[a].cd?`${Math.ceil(AB[a].cd)}s`:'<em>ready</em>';
   const h=`<span class="ab-row"><span>DASH ⇧ ${ab('dash')}</span><span>DRILL+ ␣ ${ab('over')}</span></span><span>${scanCool>0?`SCAN ${Math.ceil(scanCool)}s`:'SCAN <em style="font-style:normal;color:var(--ok)">Q</em>'}</span>`;
   if(gEls.ab._h!==h){ gEls.ab._h=h; gEls.ab.innerHTML=h; }
@@ -1944,9 +2082,9 @@ function showCreation(){
   intro.hidden=false;
   if(replay){
     intro.innerHTML=`<div class="card">
-      <p class="eyebrow mono">In transit · Day <span id="day">1</span> of 210 · replay</p>
-      <h2>Your crew card, ${esc(ME.username)}</h2>
-      <p>This is a replay, so your training stays as it is. On a first trip, this is where a new crew member spends their 8 starting points.</p>
+      <p class="eyebrow mono">In transit · Day <span id="day">1</span> of 210 · ${replacing?'replacement crew':'replay'}</p>
+      <h2>Your crew card, ${esc(ME.username)}${replacing?` #${S.crewNo}`:''}</h2>
+      <p>${replacing?'You inherit the training of the crew member before you.':'This is a replay, so your training stays as it is.'} On a first trip, this is where a new crew member spends their 8 starting points.</p>
       <div class="attrs">${ATTRS.map(a=>`<div class="acard"><div class="an">${a.n}</div><div class="ae">${a.e}</div>${pipsHTML(S.attrs[a.k])}<div class="pm"><span>${S.attrs[a.k]}</span></div></div>`).join('')}</div>
       <div class="row"><button class="btn primary" type="button" id="replayGo">Continue to Mars</button></div>
     </div>`;
@@ -1975,6 +2113,13 @@ function renderCAttrs(){
   $('#cattrs').querySelectorAll('button').forEach(b=>b.onclick=()=>{ const k=b.dataset.a, v=+b.dataset.v; if(v>0&&(cLeft()<=0||cpts[k]>=5)) return; if(v<0&&cpts[k]<=1) return; cpts[k]+=v; beep(v>0?600:400,.05); const lb=$('#lockBtn'); delete lb.dataset.c; lb.textContent='Lock in training'; renderCAttrs(); });
 }
 function showLandingMsg(){
+  if(replay&&replacing){
+    const div=document.createElement('div'); div.className='card'; div.id='landMsg';
+    div.innerHTML=`<p class="eyebrow mono">Mars · Landing Site Alpha · crew member #${S.crewNo}</p><h2>Boots on Mars</h2><p>The colony's still here, and so is everything you built.${S.wreck?' The last borer is still out there with its cargo. Go get it.':''} Mind the sky this time: stay underground when you can.</p><div class="row"><button class="btn primary" type="button" id="bBack">Take the borer</button></div>`;
+    intro.appendChild(div);
+    $('#bBack').onclick=()=>{ replacing=null; replay=false; setPhase('play'); lyra(`Welcome to Mars, crew member #${S.crewNo}. Same colony, fresh lungs.`,{prio:3}); save(true); };
+    return;
+  }
   if(replay){
     const div=document.createElement('div'); div.className='card'; div.id='landMsg';
     div.innerHTML=`<p class="eyebrow mono">Mars · Landing Site Alpha · replay</p><h2>Welcome back to Mars</h2><p>That's the trip every new crew member takes. Your borer is right where you left it.</p><div class="row"><button class="btn primary" type="button" id="bBack">Back to your borer</button></div>`;
@@ -2187,7 +2332,9 @@ function renderDash(){
     <span class="lbl">Shared with all Kin</span><span></span><span>${Math.floor(S.shared)}</span>
     <span class="lbl">Deepest</span><span></span><span>${S.maxDepth*2} m</span>
     <span class="lbl">Pieces built</span><span></span><span>${my.built} / ${BUILD_CAP}</span>
-    <span class="lbl">Blackouts</span><span></span><span>${S.deaths||0}</span></div>
+    <span class="lbl">Blackouts</span><span></span><span>${S.deaths||0}</span>
+    <span class="lbl">Crew lost</span><span></span><span>${S.lost||0}</span>
+    <span class="lbl">Next Marsquake</span><span></span><span>${fmtReal(nextQuakeAt()-Date.now())}</span></div>
     <p class="fine">10% of everything each Kin mines reaches every other Kin as the Commons dividend. It never comes out of anyone's share.</p>
   </section>`;
   drawLookPreview();
@@ -2348,11 +2495,12 @@ window.addEventListener('message',e=>{
   if(m.type==='init'){
     ME={username:m.user.username, sentinel:!!m.user.sentinel};
     ownerNames=m.owners||[];
-    applyTiles(m.tiles||[], false);
+    applyTiles(m.tiles||[], false); crustLava();
     if(m.state&&m.state.v>=2){ S=upgrade(migrate(m.state)); if(S.seen) seenDec(S.seen); }
     S.name=ME.username; S.inv=S.inv||{}; S.craft=S.craft||[];
     if(!S.lockGift){ S.lockGift=true; S.inv.lock=(S.inv.lock||0)+2; } if(S.bat==null) S.bat=batCap();
     recomputePressure(); validateRigs();
+    if(S.introDone&&!passable(S.px,S.py)) unstick();
     if(m.colony) C={stage:m.colony.stage|0, have:m.colony.have||{}, mined:m.colony.mined||{}};
     setColony(m.colony);
     setCrews(m.crews); setLog(m.log); siteBoosts=m.boosts||[];
@@ -2368,6 +2516,7 @@ window.addEventListener('message',e=>{
     if(m.boosts) siteBoosts=m.boosts;
     dailyCall(false); renderDash();
   } else if(m.type==='contributed'){ onContributed(m); }
+  else if(m.type==='quaked'){ onQuaked(m); }
   else if(m.type==='saved'){ saveInfo.ok=!!m.ok; saveInfo.err=m.error; if(m.ok) saveInfo.at=Date.now(); else saveTrouble(m.error); }
   else if(m.type==='tilesSaved'){
     if(m.error){ (m.changes||[]).forEach(([x,y,t])=>{ const i=idx(x,y); if(!pending.has(i)) pending.set(i,world[i]); }); saveTrouble(m.error); }
@@ -2427,7 +2576,7 @@ if(inFrame){ showWait('Contacting the colony…'); post({type:'ready'}); setTime
 else { phase='offline'; showWait('SpaceCore runs inside 13i.space. Open it from <a href="/create/spacecore">Create › SpaceCore</a> while signed in.'); }
 requestAnimationFrame(frame);
 // test hook for local harnesses only (the site never adds ?debug)
-if(/[?&]debug\b/.test(location.search)) window.__sc={get S(){return S;}, P, cam, my:()=>my, tile, own:(x,y)=>own[idx(x,y)], T:()=>T, stormNow, blackout, setNeeds:(o)=>Object.assign(S.needs,o)};
+if(/[?&]debug\b/.test(location.search)) window.__sc={get S(){return S;}, P, cam, my:()=>my, tile, own:(x,y)=>own[idx(x,y)], T:()=>T, stormNow, blackout, setNeeds:(o)=>Object.assign(S.needs,o), setPhase, noteQuake, crewLost, nearLava};
 })();
 </script>
 </body>

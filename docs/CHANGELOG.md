@@ -3,6 +3,28 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.85 — SpaceCore: Marsquakes, radiation and magma (Oct 2026)
+SQL: **docs/v5.85-spacecore-quakes.sql** (schema version 585). The game won't
+start on the site until it's run.
+- **Marsquakes** every two days at 20:00 UTC (3pm Central). Every dug tunnel
+  and backfill collapses back to natural rock unless it's within 2 blocks of
+  something built or 4 blocks of the new **Support strut** (Block, 2 Iron,
+  passable). `spacecore_quake()` does the collapse once per quake; the first
+  crew online after the time sets it off, everyone else reloads the world.
+  Foreshock warning from Lyra 2 hours before, tremors in the last 10 minutes.
+- **Radiation**: a RADIATION gauge. The surface adds dose (8 minutes to 100%,
+  3x in a storm, 30% in the first 3 blocks down). Underground it eases off,
+  faster in a pressurized room, fastest with a radiation sensor.
+- **Magma**: 46 lava pockets 128+ blocks down, wrapped in 3 blocks of glowing
+  hot rock (harder, heats the drill, gives Silicon and some Rare metals).
+  Lyra warns on hot rock, and shouts when the next block opens onto lava.
+  Lava never touches open space at load (it crusts over).
+- **Crew loss**: radiation at 100%, sitting next to lava (2.5 s), or opening a
+  hole into it. Half the carried cargo is lost (radiation: left in the old
+  borer as a wreck). SpaceCore flies out a replacement, crew member #N: the
+  launch and landing replay, and training, kit, research and builds carry over.
+- Dashboard shows Crew lost and the time to the next Marsquake.
+
 ## Update 5.84 — Season 1 Weeks 8 and 9: The Accord and The Ring (Oct 2026)
 No SQL.
 - **Week 8, The Accord (Assignment 3524578)**, Paul's brief: a world teeming

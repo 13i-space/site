@@ -174,6 +174,22 @@ docs/v5.61-spacecore-survival.sql (schema version 561).
 - Test hook: `?debug` on the game URL exposes `window.__sc` (local harnesses
   only; the site never adds it).
 
+## Update 5.85: hazards
+SQL: docs/v5.85-spacecore-quakes.sql (schema version 585).
+- **Tiles**: LAVA 8 and HOT 9 are natural only (generated in `genWorld` with
+  their own RNG, `SEED+585`, never saved). `crustLava()` turns lava touching
+  open space into hot rock on every load. BEAM 43 = Support strut (a Block,
+  equipment at tile level, so passable).
+- **Quakes**: `quakeSlot(t) = floor((t - 20h) / 48h)`, the same maths in
+  `spacecore_quake()`. `spacecore_colony.quake_slot` is the last quake run.
+  The game posts `quake` when its slot is behind (`tickQuake`, or `noteQuake`
+  from a sync); the host calls the RPC and replies `quaked` with the whole
+  world. `onQuaked` regenerates the rock, reapplies tiles and pending digs,
+  and `unstick()`s a buried borer.
+- **Radiation**: `S.rad` 0-100, `radRate()`, only while playing.
+- **Crew loss**: `crewLost(cause)` ('rad' | 'lava'), `replacing`, `showLost()`,
+  then the replay screens with replacement wording. `S.lost`, `S.crewNo`.
+
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player
 could edit them. That's fine for Alpha. Before Beta, move mining and
