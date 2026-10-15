@@ -47,7 +47,8 @@ async function readStream(res) {
 }
 
 const svgSrc = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(/xmlns=/.test(svg) ? svg : svg.replace(/<svg/i, '<svg xmlns="http://www.w3.org/2000/svg"'))}`;
-const money = (n) => (n >= 0.01 ? `$${n.toFixed(3)}` : `${(n * 100).toFixed(2)}¢`);
+// always cents, so the two costs read in the same unit
+const money = (n) => `${(n * 100).toFixed(2)}¢`;
 
 export default function ModelCompare({ getAnswers, name, onUse }) {
   const [runs, setRuns] = useState({}); // model id -> { status, svg, facts, error }
