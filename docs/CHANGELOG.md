@@ -3,6 +3,16 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.89 — Alien Lab comparison: no more cut-off drawings (Oct 2026)
+No SQL. Part of 13i Core v0.1.
+- Two of four detailed Haiku drawings in 5.88 stopped at the 16,000-token
+  limit (Haiku 5.5 thinks first, and thinking counts toward it). Detailed
+  test drawings now get 32,000, and a cut-off says so on the panel.
+- The comparison now runs Haiku in two pairs: normal thinking (medium) and
+  less (low), with each side's cost per usable drawing.
+- The detailed instructions push harder away from Earth-species
+  silhouettes. Live portraits are still unchanged.
+
 ## Update 5.88 — Alien Lab: detailed portrait instructions on trial (Oct 2026)
 No SQL. Part of 13i Core v0.1 (cutting portrait cost).
 - New `PORTRAIT_SYSTEM_DETAILED` in `app/api/alien/route.js`: anatomy that

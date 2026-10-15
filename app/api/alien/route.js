@@ -79,6 +79,7 @@ Draw the species described by the user as one detailed SVG portrait for a collec
 
 Anatomy - the most important part:
 - Invent the body from the traits, as biology that evolved somewhere else. Do NOT start from an Earth animal (no rabbits, tortoises, bats, cats, insects or fish with extra parts) and no humanoid unless the traits say so.
+- Even when the traits sound familiar (segments, many legs, a shell, wings), reinterpret them: the silhouette must not read as any recognisable Earth species. Ask what its world, gravity, light and food would make of that trait, and draw that.
 - No cartoon faces: no smiling mouths, no pair of round dot eyes, no "cute" proportions. Senses are organs shaped by the traits - sensor pits, eye clusters, slits, membranes, antennae-like filaments, or none at all.
 - Follow the traits literally: body plan, symmetry (radial, bilateral, none), number and kind of limbs, size, senses, how it moves and feeds. Count limbs carefully.
 - Show how it is built: joints, segments, plates, membranes, vents, fins, filaments, light organs, where muscle and shell meet.
@@ -241,8 +242,13 @@ async function suggestName(apiKey, answers) {
 
 // Streams newline-delimited JSON: {"progress":n} while drawing, then
 // {"svg":"..."} or {"error":"..."}.
-function drawPortrait(apiKey, answers, name, onDone, compare = null, detailed = false) {
+// Update 5.89: thinking counts toward max_tokens, so the detailed drawings get
+// twice the room (two of four were cut off at 16,000 in Update 5.88).
+const TEST_EFFORTS = ["low", "medium"];
+function drawPortrait(apiKey, answers, name, onDone, compare = null, detailed = false, effortLevel = null) {
   return streamSvg(apiKey, {
+    ...(detailed ? { maxTokens: 32000 } : {}),
+    ...(effortLevel ? { effortLevel } : {}),
     system: detailed ? PORTRAIT_SYSTEM_DETAILED : PORTRAIT_SYSTEM,
     content: `Draw this species.\n\n${describe(answers, name)}`,
     feature: compare ? "alien-portrait-test" : "alien-portrait",
@@ -321,7 +327,7 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   });
 }
 
-function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL(), report = false }) {
+function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL(), report = false, maxTokens = 16000, effortLevel = null }) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
@@ -336,9 +342,10 @@ function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PO
           headers: headers(apiKey),
           body: JSON.stringify({
             model,
-            max_tokens: 16000,
+            max_tokens: maxTokens,
             stream: true,
-            ...effort(model, "low"),
+            // an explicit level (test drawings only) applies to any model, Haiku included
+            ...(effortLevel ? { output_config: { effort: effortLevel } } : effort(model, "low")),
             fallbacks: "default",
             system,
             messages: [{ role: "user", content }],
@@ -388,6 +395,7 @@ function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PO
             output_tokens: Number(usage?.output_tokens) || 0,
             cost_usd: Number(estimateCost(served, usage || {}).toFixed(5)),
             chars: svg ? svg.length : 0,
+            cut_off: stopReason === "max_tokens",
           } : null;
           send(svg ? { svg, ...(facts ? { facts } : {}) } : { error: "That portrait didn't come out. Try generating again.", ...(facts ? { facts } : {}) });
         }
@@ -420,7 +428,7 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
-  const { action, answers, name, speciesId, model, detailed } = body || {};
+  const { action, answers, name, speciesId, model, detailed, effort: effortLevel } = body || {};
   if (action === "quota") {
     const sentinel = await isSentinel(supabase, user.id);
     const q = await drawingsToday(user.id);
@@ -442,7 +450,8 @@ export async function POST(request) {
     if (model !== undefined) {
       if (!sentinel) return Response.json({ error: "Only Sentinel-X can choose the model." }, { status: 403 });
       if (!COMPARE_MODELS.includes(model)) return Response.json({ error: `Model must be one of: ${COMPARE_MODELS.join(", ")}` }, { status: 400 });
-      return drawPortrait(apiKey, answers, name, null, model, detailed === true);
+      if (effortLevel !== undefined && !TEST_EFFORTS.includes(effortLevel)) return Response.json({ error: `effort must be one of: ${TEST_EFFORTS.join(", ")}` }, { status: 400 });
+      return drawPortrait(apiKey, answers, name, null, model, detailed === true, effortLevel || null);
     }
     if (!sentinel) {
       const q = await drawingsToday(user.id);
