@@ -3,6 +3,18 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.86 — Alien Lab: model comparison for Sentinel-X (Oct 2026)
+No SQL. Part of 13i Core v0.1 (cutting portrait cost).
+- Sentinel-X sees a **Model comparison** panel under the portrait in the
+  Alien Lab: one click draws the same species with Sonnet 5.5 (today's
+  model) and Haiku 5.5 side by side, with each drawing's time, tokens, SVG
+  size and cost. "Use this one on the card" puts either on the card to save.
+- `/api/alien` accepts an optional `model` on `portrait`, for Sentinel-X
+  only, from an allowlist (`COMPARE_MODELS`). Test drawings are logged in
+  `api_usage` as `alien-portrait-test` and bypass the daily limit.
+- Nothing changes for anyone else; production portraits still follow
+  `ALIEN_PORTRAIT_MODEL`.
+
 ## Update 5.85 — SpaceCore: Marsquakes, radiation and magma (Oct 2026)
 SQL: **docs/v5.85-spacecore-quakes.sql** (schema version 585). The game won't
 start on the site until it's run.

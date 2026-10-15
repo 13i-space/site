@@ -1,4 +1,4 @@
-import { recordClaudeUsage, foldStreamUsage } from "../../../lib/apiUsage";
+import { recordClaudeUsage, foldStreamUsage, estimateCost } from "../../../lib/apiUsage";
 import { createClient } from "../../../lib/supabaseServer";
 import { getSupabaseAdmin } from "../../../lib/supabaseAdmin";
 import { isSentinelUser } from "../../../lib/sentinel";
@@ -28,6 +28,9 @@ const effort = (model, level) => (/opus|sonnet|fable/.test(model) ? { output_con
 // Update 5.66 - a cap: each Kin gets this many drawings a day (Sentinel-X is exempt)
 const DAILY_DRAWINGS = Number(process.env.ALIEN_DAILY_LIMIT || 3);
 const API = "https://api.anthropic.com/v1/messages";
+// Update 5.86 - the model comparison: Sentinel-X may draw with any of these
+// to compare look and cost side by side. Nobody else can choose a model.
+const COMPARE_MODELS = ["claude-sonnet-5-5", "claude-haiku-5-5"];
 
 function headers(apiKey) {
   return {
@@ -206,8 +209,14 @@ async function suggestName(apiKey, answers) {
 
 // Streams newline-delimited JSON: {"progress":n} while drawing, then
 // {"svg":"..."} or {"error":"..."}.
-function drawPortrait(apiKey, answers, name, onDone) {
-  return streamSvg(apiKey, { system: PORTRAIT_SYSTEM, content: `Draw this species.\n\n${describe(answers, name)}`, feature: "alien-portrait", onDone });
+function drawPortrait(apiKey, answers, name, onDone, compare = null) {
+  return streamSvg(apiKey, {
+    system: PORTRAIT_SYSTEM,
+    content: `Draw this species.\n\n${describe(answers, name)}`,
+    feature: compare ? "alien-portrait-test" : "alien-portrait",
+    onDone,
+    ...(compare ? { model: compare, report: true } : {}),
+  });
 }
 
 // ─── the daily cap (Update 5.66) ───
@@ -280,13 +289,14 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   });
 }
 
-function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL() }) {
+function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL(), report = false }) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (obj) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
       let ticks = 0;
       const ping = setInterval(() => send({ progress: ++ticks }), 2000);
+      const started = Date.now();
       try {
         send({ progress: 0 });
         const res = await fetch(API, {
@@ -338,7 +348,16 @@ function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PO
           send(saved ? { svg, saved: true } : { error: "Repainted, but it couldn't be saved. Try again." });
         } else {
           if (svg && onDone) await onDone();
-          send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
+          // the comparison (Sentinel-X only) also gets what the drawing cost
+          const facts = report ? {
+            model: served,
+            seconds: Math.round((Date.now() - started) / 100) / 10,
+            input_tokens: Number(usage?.input_tokens) || 0,
+            output_tokens: Number(usage?.output_tokens) || 0,
+            cost_usd: Number(estimateCost(served, usage || {}).toFixed(5)),
+            chars: svg ? svg.length : 0,
+          } : null;
+          send(svg ? { svg, ...(facts ? { facts } : {}) } : { error: "That portrait didn't come out. Try generating again.", ...(facts ? { facts } : {}) });
         }
       } catch (e) {
         send({ error: "The connection dropped while drawing. Try again." });
@@ -369,11 +388,11 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
-  const { action, answers, name, speciesId } = body || {};
+  const { action, answers, name, speciesId, model } = body || {};
   if (action === "quota") {
     const sentinel = await isSentinel(supabase, user.id);
     const q = await drawingsToday(user.id);
-    return Response.json({ ...q, unlimited: sentinel || !q.counted });
+    return Response.json({ ...q, unlimited: sentinel || !q.counted, sentinel });
   }
   if (action === "repaint") {
     if (typeof speciesId !== "string") return Response.json({ error: "Expected { action: 'repaint', speciesId }" }, { status: 400 });
@@ -388,6 +407,11 @@ export async function POST(request) {
   if (action === "name") return suggestName(apiKey, answers);
   if (action === "portrait") {
     const sentinel = await isSentinel(supabase, user.id);
+    if (model !== undefined) {
+      if (!sentinel) return Response.json({ error: "Only Sentinel-X can choose the model." }, { status: 403 });
+      if (!COMPARE_MODELS.includes(model)) return Response.json({ error: `Model must be one of: ${COMPARE_MODELS.join(", ")}` }, { status: 400 });
+      return drawPortrait(apiKey, answers, name, null, model);
+    }
     if (!sentinel) {
       const q = await drawingsToday(user.id);
       if (q.counted && q.used >= q.limit) return Response.json({ error: `That's ${q.limit} creations today - the Lab's limit. It reopens at midnight (Central).`, quota: q }, { status: 429 });
