@@ -3,6 +3,12 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.91 — Alien Lab: comparison panel removed (Oct 2026)
+No SQL. With Haiku + the detailed instructions settled (5.90), the
+Sentinel-X model comparison and its test-only API options are gone, and
+the original portrait instructions are retired: `PORTRAIT_SYSTEM` is now
+the detailed set. Live portraits are unchanged from 5.90.
+
 ## Update 5.90 — Alien Lab: Haiku + detailed instructions for every portrait (Oct 2026)
 No SQL. 13i Core v0.1: portrait cost cut, quality up.
 - Chosen from the Sentinel-X comparison (5.86-5.89): every live portrait is

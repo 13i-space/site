@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../lib/supabaseBrowser";
-import ModelCompare from "./ModelCompare";
 import { ALIEN_QUESTIONS } from "../lib/alienQuestions";
 import { lyraReact } from "../lib/lyraReact";
 import { lyraLookAt } from "../lib/lyraMusic";
@@ -399,14 +398,6 @@ export default function AlienCreator({ loggedIn }) {
             </div>
           )}
           {portraitNote && <p className="mono" style={{ fontSize: 11, color: "#C97B6E", textAlign: "center", margin: "8px 0 0" }}>{portraitNote}</p>}
-          {/* Update 5.86: Sentinel-X only - the same species drawn by two models, side by side */}
-          {quota?.sentinel && saveStatus !== "done" && (
-            <ModelCompare
-              getAnswers={answersForClaude}
-              name={speciesName.trim()}
-              onUse={(svg) => { setPortrait(svg); setPortraitStatus("idle"); setLabPhase("reveal"); }}
-            />
-          )}
           {quota && !quota.unlimited && saveStatus !== "done" && (
             <p className="mono" style={{ fontSize: 11, color: outOfDrawings ? "#E9D29A" : "#6E76B8", textAlign: "center", margin: "8px 0 0" }}>
               {outOfDrawings ? `You've made ${quota.limit} today - the Lab's daily limit. It reopens at midnight (Central).` : `${quota.limit - quota.used} of ${quota.limit} creations left today${portrait ? " \u00b7 Generate again uses one" : ""}`}

@@ -1,4 +1,4 @@
-import { recordClaudeUsage, foldStreamUsage, estimateCost } from "../../../lib/apiUsage";
+import { recordClaudeUsage, foldStreamUsage } from "../../../lib/apiUsage";
 import { createClient } from "../../../lib/supabaseServer";
 import { getSupabaseAdmin } from "../../../lib/supabaseAdmin";
 import { isSentinelUser } from "../../../lib/sentinel";
@@ -30,9 +30,6 @@ const effort = (model, level) => (/opus|sonnet|fable/.test(model) ? { output_con
 // Update 5.66 - a cap: each Kin gets this many drawings a day (Sentinel-X is exempt)
 const DAILY_DRAWINGS = Number(process.env.ALIEN_DAILY_LIMIT || 3);
 const API = "https://api.anthropic.com/v1/messages";
-// Update 5.86 - the model comparison: Sentinel-X may draw with any of these
-// to compare look and cost side by side. Nobody else can choose a model.
-const COMPARE_MODELS = ["claude-sonnet-5-5", "claude-haiku-5-5"];
 
 function headers(apiKey) {
   return {
@@ -55,28 +52,12 @@ function describe(answers, name) {
 const NAME_SYSTEM = `You name alien species for 13i.space, a science-fiction universe with a restrained, literary tone.
 Given a species' traits, reply with one name for it and nothing else: one to three words, pronounceable, not Latin binomial, not a pun, no quotation marks, no explanation.`;
 
-const PORTRAIT_SYSTEM = `You are the illustrator for the Alien Lab on 13i.space, a science-fiction universe with a restrained, sophisticated look.
-Draw the species described by the user as a single SVG portrait.
-
-Style (Update 5.63 - solid colour):
-- viewBox="0 0 400 400", no width/height attributes
-- background: a full rect filled #0A0B1C (deep navy) first, then the creature's world behind it (its sun or suns, horizon, water, cave, sky - whatever the traits imply), in a group <g id="world">
-- the creature in a group <g id="creature">, PAINTED IN SOLID, OPAQUE COLOUR: every part of its body has an opaque fill (no fill-opacity or opacity below 1 on the creature's body), in a coherent palette that comes from its traits - its skin, shell, fur or membrane, its light, its world - with shading from opaque gradients (darker and lighter tones of the same colours), crisp outlines and a few bright highlights. Glows and light effects may be translucent; the body may not
-- it must read clearly as a solid creature against the dark background and against a bright sky
-- follow the traits literally: body plan, symmetry, number and kind of limbs, size (show scale against its surroundings), senses, and how it moves
-- if the creator describes its look in their own words, that description comes first: follow it closely (colours, features, markings, shape), within the traits
-- elegant and specific rather than cartoonish; no text, labels or captions anywhere
-
-Technical rules:
-- output only the SVG markup, starting with <svg and ending with </svg>, no markdown fences
-- use only basic shapes, paths, gradients and groups; no <script>, <foreignObject>, <image>, <style>, event attributes, or external references
-- keep it under 9000 characters`;
-
-// Update 5.88 - the detailed instructions, on trial in the model comparison
-// (Sentinel-X only). Aimed at the lab's own art: layered, finely rendered,
-// and anatomy that isn't an Earth animal with extras. Haiku is cheap enough
-// that a drawing two or three times longer still costs under a cent.
-const PORTRAIT_SYSTEM_DETAILED = `You are the creature illustrator for the Alien Lab on 13i.space, a science-fiction universe with a restrained, sophisticated, literary look. Its art is dark, layered and finely rendered - closer to a natural-history plate of a real organism from another world than to a cartoon.
+// Update 5.88/5.90 - the portrait instructions, chosen in a Sentinel-X
+// comparison of models and instructions (5.86-5.89). Aimed at the lab's own
+// art: layered, finely rendered, and anatomy that isn't an Earth animal with
+// extras. Haiku is cheap enough that a long, detailed drawing still costs
+// about half a cent.
+const PORTRAIT_SYSTEM = `You are the creature illustrator for the Alien Lab on 13i.space, a science-fiction universe with a restrained, sophisticated, literary look. Its art is dark, layered and finely rendered - closer to a natural-history plate of a real organism from another world than to a cartoon.
 Draw the species described by the user as one detailed SVG portrait for a collectible card.
 
 Anatomy - the most important part:
@@ -244,24 +225,16 @@ async function suggestName(apiKey, answers) {
 
 // Streams newline-delimited JSON: {"progress":n} while drawing, then
 // {"svg":"..."} or {"error":"..."}.
-// Update 5.89: thinking counts toward max_tokens, so the detailed drawings get
-// twice the room (two of four were cut off at 16,000 in Update 5.88).
-const TEST_EFFORTS = ["low", "medium"];
-function drawPortrait(apiKey, answers, name, onDone, compare = null, detailed = false, effortLevel = null) {
-  // Update 5.90: every live portrait uses the detailed instructions; Haiku
-  // draws at its normal thinking level (medium), chosen in the comparison.
-  if (!compare) {
-    detailed = true;
-    if (/haiku/.test(PORTRAIT_MODEL())) effortLevel = "medium";
-  }
+// Update 5.90: Haiku draws at its normal thinking level (medium). Thinking
+// counts toward max_tokens, so portraits get 32,000 (16,000 cut some off).
+function drawPortrait(apiKey, answers, name, onDone) {
   return streamSvg(apiKey, {
-    ...(detailed ? { maxTokens: 32000 } : {}),
-    ...(effortLevel ? { effortLevel } : {}),
-    system: detailed ? PORTRAIT_SYSTEM_DETAILED : PORTRAIT_SYSTEM,
+    system: PORTRAIT_SYSTEM,
     content: `Draw this species.\n\n${describe(answers, name)}`,
-    feature: compare ? "alien-portrait-test" : "alien-portrait",
+    feature: "alien-portrait",
     onDone,
-    ...(compare ? { model: compare, report: true } : {}),
+    maxTokens: 32000,
+    ...(/haiku/.test(PORTRAIT_MODEL()) ? { effortLevel: "medium" } : {}),
   });
 }
 
@@ -336,14 +309,13 @@ async function repaintPortrait(apiKey, supabase, userId, speciesId) {
   });
 }
 
-function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL(), report = false, maxTokens = 16000, effortLevel = null }) {
+function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PORTRAIT_MODEL(), maxTokens = 16000, effortLevel = null }) {
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (obj) => controller.enqueue(encoder.encode(JSON.stringify(obj) + "\n"));
       let ticks = 0;
       const ping = setInterval(() => send({ progress: ++ticks }), 2000);
-      const started = Date.now();
       try {
         send({ progress: 0 });
         const res = await fetch(API, {
@@ -353,7 +325,7 @@ function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PO
             model,
             max_tokens: maxTokens,
             stream: true,
-            // an explicit level (test drawings only) applies to any model, Haiku included
+            // an explicit level (Haiku portraits) applies to any model
             ...(effortLevel ? { output_config: { effort: effortLevel } } : effort(model, "low")),
             fallbacks: "default",
             system,
@@ -396,17 +368,7 @@ function streamSvg(apiKey, { system, content, feature, onSvg, onDone, model = PO
           send(saved ? { svg, saved: true } : { error: "Repainted, but it couldn't be saved. Try again." });
         } else {
           if (svg && onDone) await onDone();
-          // the comparison (Sentinel-X only) also gets what the drawing cost
-          const facts = report ? {
-            model: served,
-            seconds: Math.round((Date.now() - started) / 100) / 10,
-            input_tokens: Number(usage?.input_tokens) || 0,
-            output_tokens: Number(usage?.output_tokens) || 0,
-            cost_usd: Number(estimateCost(served, usage || {}).toFixed(5)),
-            chars: svg ? svg.length : 0,
-            cut_off: stopReason === "max_tokens",
-          } : null;
-          send(svg ? { svg, ...(facts ? { facts } : {}) } : { error: "That portrait didn't come out. Try generating again.", ...(facts ? { facts } : {}) });
+          send(svg ? { svg } : { error: "That portrait didn't come out. Try generating again." });
         }
       } catch (e) {
         send({ error: "The connection dropped while drawing. Try again." });
@@ -437,11 +399,11 @@ export async function POST(request) {
 
   let body;
   try { body = await request.json(); } catch { body = {}; }
-  const { action, answers, name, speciesId, model, detailed, effort: effortLevel } = body || {};
+  const { action, answers, name, speciesId } = body || {};
   if (action === "quota") {
     const sentinel = await isSentinel(supabase, user.id);
     const q = await drawingsToday(user.id);
-    return Response.json({ ...q, unlimited: sentinel || !q.counted, sentinel });
+    return Response.json({ ...q, unlimited: sentinel || !q.counted });
   }
   if (action === "repaint") {
     if (typeof speciesId !== "string") return Response.json({ error: "Expected { action: 'repaint', speciesId }" }, { status: 400 });
@@ -456,12 +418,6 @@ export async function POST(request) {
   if (action === "name") return suggestName(apiKey, answers);
   if (action === "portrait") {
     const sentinel = await isSentinel(supabase, user.id);
-    if (model !== undefined) {
-      if (!sentinel) return Response.json({ error: "Only Sentinel-X can choose the model." }, { status: 403 });
-      if (!COMPARE_MODELS.includes(model)) return Response.json({ error: `Model must be one of: ${COMPARE_MODELS.join(", ")}` }, { status: 400 });
-      if (effortLevel !== undefined && !TEST_EFFORTS.includes(effortLevel)) return Response.json({ error: `effort must be one of: ${TEST_EFFORTS.join(", ")}` }, { status: 400 });
-      return drawPortrait(apiKey, answers, name, null, model, detailed === true, effortLevel || null);
-    }
     if (!sentinel) {
       const q = await drawingsToday(user.id);
       if (q.counted && q.used >= q.limit) return Response.json({ error: `That's ${q.limit} creations today - the Lab's limit. It reopens at midnight (Central).`, quota: q }, { status: 429 });
