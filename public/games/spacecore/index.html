@@ -288,6 +288,12 @@ const isLock = t => t===LOCK||t===LOCKH;
 const POWER_T = new Set([WIRE,SOLAR,GEOTH,REACTOR,BATT,CHARGER,RIG]);
 const ROTATE = {[LOCK]:LOCKH, [LOCKH]:LOCK, [LAMP]:LAMPF, [LAMPF]:LAMP};
 const BASE_T = {[LOCKH]:LOCK, [LAMPF]:LAMP};
+// Update 5.85: surface building. The ground above the tunnels opens to builds up to
+// SURF_TOP, except a ring around Landing Site Alpha kept for the colony's Great Works.
+// The borer drives along the surface row in front of anything built there.
+const SURF_TOP = 2, RESERVE_R = 28;
+const reserved = x => Math.abs(x-(LANDER_X+1))<=RESERVE_R;
+const SURF_KIT = new Set([SOLAR, LAMPF, LAMP]);
 const SOLAR_DEPTH = 8, GEO_DEPTH = 40, BUILD_CAP = 1500, REACH = 6, NEAR = 8;
 const isRockT = t => (t>=REG&&t<=MET) || t===FILL || t===HOT;
 const RES = ['iron','silicon','ice','rare','food'];
@@ -529,7 +535,7 @@ function genWorld(){
   return w;
 }
 world = genWorld();
-const passable=(x,y)=>{const t=tile(x,y); if(t===AIR) return y===GY-1; return t===TUN||isLock(t)||isEquip(t);};
+const passable=(x,y)=>{const t=tile(x,y); if(y<GY) return y===GY-1; return t===TUN||isLock(t)||isEquip(t);};
 const diggable=isRockT;
 const N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
 const nearLava=(x,y)=>N8.some(([dx,dy])=>tile(x+dx,y+dy)===LAVA);
@@ -1437,7 +1443,18 @@ function buildCheck(x,y){
   if(b.id==='remove'){ if(t<10) return 'Pick something you built to remove it.'; if(own[i]!==1) return `That's ${ownerName(i)}'s build. Only they can remove it.`; return null; }
   if(b.id==='rotate'){ if(!ROTATE[t]) return 'Only airlocks and lamps turn.'; if(own[i]!==1) return `That's ${ownerName(i)}'s.`; return null; }
   if(b.id==='move'){ if(!isKit(itemByTile(t))) return 'Pick a piece of your equipment to move.'; if(own[i]!==1) return `That's ${ownerName(i)}'s. Only they can move it.`; return null; }
-  if(t===AIR) return 'The surface belongs to the colony. Build underground.';
+  if(y<GY){
+    if(t!==AIR) return 'Something is already built there.';
+    if(y<SURF_TOP) return "That's as high as the cranes reach.";
+    if(reserved(x)) return "The ground around Landing Site Alpha is reserved for the colony's Great Works. Build further out.";
+    const below=tile(x,y+1); if(below===AIR||below===TUN) return 'Surface builds need solid ground or another block under them.';
+    if(b.id==='fill'||b.id==='wire') return 'Backfill and wire only work underground.';
+    if(isKit(b)&&!SURF_KIT.has(b.tile)) return 'On the surface you can place blocks, solar panels and lamps. Machines go in sealed rooms underground.';
+    if(my.built>=BUILD_CAP) return `You've reached the build limit for one Kin (${BUILD_CAP} pieces). Remove something to build more.`;
+    if(isKit(b)&&!(S.inv[b.id]>0)) return `You have no ${b.n} in your kit. Craft one in the Fabricator.`;
+    if(!isKit(b)&&!canPay(costOf(b))) return `Not enough resources: ${costText(costOf(b))}.`;
+    return null;
+  }
   if(t!==TUN) return 'You can only build in open tunnel.';
   if(own[i]>=2) return `${ownerName(i)} dug that tunnel. Build in your own tunnels or in unclaimed caves.`;
   if(x===S.px&&y===S.py) return 'Your borer is in that spot. Move first.';
@@ -1462,7 +1479,7 @@ function tryBuild(x,y){
       if(t===RIG){ const i=S.rigs.findIndex(rg=>rg.x===x&&rg.y===y); if(i>=0){ for(const [r,v] of Object.entries(S.rigs[i].st)) if(v>=1) grant(r,v); flushGained(); S.rigs.splice(i,1);} }
       if(b.id==='remove') toast(`${src.n} back in your kit.`);
     } else if(src){ for(const [r,v] of Object.entries(costOf(src))) S.res[r]+=Math.floor(v/2); }
-    setTile(x,y,TUN); recomputePressure(); beep(300,.08,'sine',.04,200);
+    setTile(x,y,y<GY?AIR:TUN); recomputePressure(); beep(300,.08,'sine',.04,200);
     if(t===BATT&&S.cells){ delete S.cells[idx(x,y)]; }
     if(b.id==='move'&&isKit(src)){ sel=src.id; group='equip'; rot=!!BASE_T[t]; renderPalette(true); toast(`Picked up the ${src.n}. Tap where it should go.`); return; }
     renderPalette(true); return;
@@ -1698,7 +1715,7 @@ function drawGame(time,dt){
   cam.x+=(cx-cam.x)*Math.min(1,dt*8); cam.y+=(cy-cam.y)*Math.min(1,dt*8);
   ctx.fillStyle='#06060f'; ctx.fillRect(0,0,vw,vh);
   const gy=GY*T-cam.y; drawSky(gy);
-  const x0=Math.max(0,Math.floor(cam.x/T)), x1=Math.min(W-1,Math.ceil((cam.x+vw)/T)), y0=Math.max(GY,Math.floor(cam.y/T)), y1=Math.min(H-1,Math.ceil((cam.y+vh)/T));
+  const x0=Math.max(0,Math.floor(cam.x/T)), x1=Math.min(W-1,Math.ceil((cam.x+vw)/T)), y0=Math.max(0,Math.floor(cam.y/T)), y1=Math.min(H-1,Math.ceil((cam.y+vh)/T));
   const lights=[];
   for(let y=y0;y<=y1;y++) for(let x=x0;x<=x1;x++){
     const i=idx(x,y), t=world[i], sx=x*T-cam.x, sy=y*T-cam.y;
@@ -2577,7 +2594,7 @@ if(inFrame){ showWait('Contacting the colony…'); post({type:'ready'}); setTime
 else { phase='offline'; showWait('SpaceCore runs inside 13i.space. Open it from <a href="/create/spacecore">Create › SpaceCore</a> while signed in.'); }
 requestAnimationFrame(frame);
 // test hook for local harnesses only (the site never adds ?debug)
-if(/[?&]debug\b/.test(location.search)) window.__sc={get S(){return S;}, P, cam, my:()=>my, tile, own:(x,y)=>own[idx(x,y)], T:()=>T, stormNow, blackout, setNeeds:(o)=>Object.assign(S.needs,o), setPhase, noteQuake, crewLost, nearLava};
+if(/[?&]debug\b/.test(location.search)) window.__sc={get S(){return S;}, P, cam, my:()=>my, tile, own:(x,y)=>own[idx(x,y)], T:()=>T, stormNow, blackout, setNeeds:(o)=>Object.assign(S.needs,o), setPhase, noteQuake, crewLost, nearLava, buildCheck, tryBuild, setSel:(v)=>{sel=v;}};
 })();
 </script>
 </body>

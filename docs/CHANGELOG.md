@@ -25,6 +25,12 @@ start on the site until it's run.
   launch and landing replay, and training, kit, research and builds carry over.
 - Dashboard shows Crew lost and the time to the next Marsquake.
 - After a Marsquake, everyone gets a day-long +25% "Fractured rock" mining boost.
+- **Surface building, first slice**: blocks, solar panels and lamps can go on
+  the ground (rows 2-9), each needing solid ground or a block under it, and
+  never within 28 blocks of Landing Site Alpha (reserved for the Great Works,
+  checked in the game and in `spacecore_set_tiles`). The borer drives along
+  the surface in front of surface builds. Quakes never touch the surface.
+  Next: surface Great Works (launch tower, fuel storage, comms) and a bigger base.
 
 ## Update 5.84 — Season 1 Weeks 8 and 9: The Accord and The Ring (Oct 2026)
 No SQL.

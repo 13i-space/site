@@ -190,6 +190,10 @@ SQL: docs/v5.85-spacecore-quakes.sql (schema version 585).
 - **Crew loss**: `crewLost(cause)` ('rad' | 'lava'), `replacing`, `showLost()`,
   then the replay screens with replacement wording. `S.lost`, `S.crewNo`.
 
+- **Surface building**: `SURF_TOP` 2, `RESERVE_R` 28 around `LANDER_X+1`,
+  `SURF_KIT` = solar, lamps. `passable()` makes the whole surface row drivable.
+  Removing a surface piece sends tile 0, which the SQL turns into a delete.
+
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player
 could edit them. That's fine for Alpha. Before Beta, move mining and

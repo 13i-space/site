@@ -4,7 +4,8 @@
 -- Run once in Supabase (SQL Editor > New query > paste > Run).
 --
 -- What it changes:
---  1. The shared world accepts the Support strut (tile code 43).
+--  1. The shared world accepts the Support strut (tile code 43), and building
+--     on the surface (rows 2-9), outside the ring around Landing Site Alpha.
 --  2. spacecore_quake(): when a Marsquake is due, every dug tunnel (and backfill)
 --     that isn't braced collapses back to natural rock. Braced = within 2 blocks
 --     of anything built, or within 4 blocks of a Support strut. The first player
@@ -33,7 +34,18 @@ begin
   select count(*) into built from spacecore_tiles where owner = auth.uid() and t >= 10;
   for r in select * from jsonb_array_elements(p_tiles) loop
     nx := (r->>0)::int; ny := (r->>1)::int; nt := (r->>2)::int;
-    if nx < 1 or nx > 510 or ny < 10 or ny > 197 then continue; end if;
+    if nx < 1 or nx > 510 or ny < 2 or ny > 197 then continue; end if;
+    -- surface building (rows 2-9): never in the ring around Landing Site Alpha (x 225-281)
+    if ny < 10 and nx between 225 and 281 then continue; end if;
+    -- 0 = clearing your own surface build back to open air
+    if nt = 0 then
+      if ny < 10 then
+        delete from spacecore_tiles where x = nx and y = ny and owner = auth.uid();
+        if found then n := n + 1; end if;
+      end if;
+      continue;
+    end if;
+    if ny < 10 and nt < 10 then continue; end if;
     if not (nt in (1, 7) or nt between 10 and 16 or nt between 20 and 27 or nt between 30 and 43) then continue; end if;
     select * into cur from spacecore_tiles where x = nx and y = ny;
     if found and cur.owner is distinct from auth.uid() then
