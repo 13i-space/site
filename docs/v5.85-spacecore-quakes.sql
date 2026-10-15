@@ -4,8 +4,10 @@
 -- Run once in Supabase (SQL Editor > New query > paste > Run).
 --
 -- What it changes:
---  1. The shared world accepts the Support strut (tile code 43), and building
---     on the surface (rows 2-9), outside the ring around Landing Site Alpha.
+--  1. The shared world accepts the Support strut (43) and the Ladder (44), and
+--     building on the surface (rows 2-9), outside the colony ring (x 212-326).
+--  1b. Four new surface Great Works after the Observatory: Fuel Depot,
+--     Deep-Space Dish, Rover Garage and Landing Pads.
 --  2. spacecore_quake(): when a Marsquake is due, every dug tunnel (and backfill)
 --     that isn't braced collapses back to natural rock. Braced = within 2 blocks
 --     of anything built, or within 4 blocks of a Support strut. The first player
@@ -35,8 +37,8 @@ begin
   for r in select * from jsonb_array_elements(p_tiles) loop
     nx := (r->>0)::int; ny := (r->>1)::int; nt := (r->>2)::int;
     if nx < 1 or nx > 510 or ny < 2 or ny > 197 then continue; end if;
-    -- surface building (rows 2-9): never in the ring around Landing Site Alpha (x 225-281)
-    if ny < 10 and nx between 225 and 281 then continue; end if;
+    -- surface building (rows 2-9): never in the colony ring around Landing Site Alpha (x 212-326)
+    if ny < 10 and nx between 212 and 326 then continue; end if;
     -- 0 = clearing your own surface build back to open air
     if nt = 0 then
       if ny < 10 then
@@ -46,7 +48,7 @@ begin
       continue;
     end if;
     if ny < 10 and nt < 10 then continue; end if;
-    if not (nt in (1, 7) or nt between 10 and 16 or nt between 20 and 27 or nt between 30 and 43) then continue; end if;
+    if not (nt in (1, 7) or nt between 10 and 16 or nt between 20 and 27 or nt between 30 and 44) then continue; end if;
     select * into cur from spacecore_tiles where x = nx and y = ny;
     if found and cur.owner is distinct from auth.uid() then
       continue; -- someone else dug or built here: it stays theirs
@@ -66,6 +68,35 @@ begin
   end loop;
   return n;
 end $$;
+
+-- 2b. Four more Great Works (must match lib/spacecore.js and STAGES in the game)
+create or replace function spacecore_needs(p_stage int) returns jsonb
+language sql immutable as $$
+  select (array[
+    '{"iron":800,"silicon":500,"ice":200,"rare":0}'::jsonb,
+    '{"iron":2000,"silicon":1600,"ice":800,"rare":40}'::jsonb,
+    '{"iron":1800,"silicon":2400,"ice":1500,"rare":40}'::jsonb,
+    '{"iron":2800,"silicon":1800,"ice":2400,"rare":80}'::jsonb,
+    '{"iron":5000,"silicon":4000,"ice":2000,"rare":300}'::jsonb,
+    '{"iron":1500,"silicon":1200,"ice":0,"rare":60}'::jsonb,
+    '{"iron":1200,"silicon":2500,"ice":300,"rare":20}'::jsonb,
+    '{"iron":2500,"silicon":1500,"ice":500,"rare":80}'::jsonb,
+    '{"iron":1800,"silicon":1800,"ice":200,"rare":120}'::jsonb,
+    '{"iron":3000,"silicon":2500,"ice":1500,"rare":200}'::jsonb,
+    '{"iron":2000,"silicon":3000,"ice":800,"rare":150}'::jsonb,
+    '{"iron":2200,"silicon":1400,"ice":2500,"rare":60}'::jsonb,
+    '{"iron":1600,"silicon":2800,"ice":200,"rare":180}'::jsonb,
+    '{"iron":3000,"silicon":1500,"ice":300,"rare":100}'::jsonb,
+    '{"iron":2500,"silicon":3500,"ice":600,"rare":120}'::jsonb
+  ])[p_stage + 1]
+$$;
+
+create or replace function spacecore_stage_name(p_stage int) returns text
+language sql immutable as $$
+  select (array['Landing Base','Habitat Dome','Greenhouse Ring','Oxygen Plant','Launch Facility',
+    'Ship: Heat Shield','Base: Solar Farm','Ship: Cargo Bay','Base: Comms Tower','Ship: Ion Drive','Base: Observatory',
+    'Base: Fuel Depot','Base: Deep-Space Dish','Base: Rover Garage','Base: Landing Pads'])[p_stage + 1]
+$$;
 
 -- 3. Marsquakes ---------------------------------------------------------------
 create or replace function spacecore_quake() returns jsonb

@@ -281,8 +281,8 @@ const HEATER=30, SCRUB=31, SENSOR=32, REACTOR=33, CHARGER=34;
 // Update 5.61: power, comforts and rotated pieces
 const SOLAR=35, GEOTH=36, BATT=37, WIRE=38, GALLEY=39, BUNK=40, LOCKH=41, LAMPF=42;
 // Update 5.85: the support strut (saved), and magma (natural only, never saved)
-const BEAM=43, LAVA=8, HOT=9;
-const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER,SOLAR,GEOTH,BATT,WIRE,GALLEY,BUNK,LAMPF,BEAM]);
+const BEAM=43, LAVA=8, HOT=9, LADDER=44;
+const EQUIP_T = new Set([O2,GREEN,LAMP,RIG,HEATER,SCRUB,SENSOR,REACTOR,CHARGER,SOLAR,GEOTH,BATT,WIRE,GALLEY,BUNK,LAMPF,BEAM,LADDER]);
 const isEquip = t => EQUIP_T.has(t);
 const isLock = t => t===LOCK||t===LOCKH;
 const POWER_T = new Set([WIRE,SOLAR,GEOTH,REACTOR,BATT,CHARGER,RIG]);
@@ -291,9 +291,10 @@ const BASE_T = {[LOCKH]:LOCK, [LAMPF]:LAMP};
 // Update 5.85: surface building. The ground above the tunnels opens to builds up to
 // SURF_TOP, except a ring around Landing Site Alpha kept for the colony's Great Works.
 // The borer drives along the surface row in front of anything built there.
-const SURF_TOP = 2, RESERVE_R = 28;
-const reserved = x => Math.abs(x-(LANDER_X+1))<=RESERVE_R;
-const SURF_KIT = new Set([SOLAR, LAMPF, LAMP]);
+const SURF_TOP = 2, RESERVE_L = 212, RESERVE_R = 326;
+const reserved = x => x>=RESERVE_L&&x<=RESERVE_R;
+// solid = something you stand on and can't drive through (rock and blocks, not machines)
+const solidT = t => isRockT(t)||t===BED||t===LAVA||(t>=10&&!isEquip(t)&&!isLock(t));
 const SOLAR_DEPTH = 8, GEO_DEPTH = 40, BUILD_CAP = 1500, REACH = 6, NEAR = 8;
 const isRockT = t => (t>=REG&&t<=MET) || t===FILL || t===HOT;
 const RES = ['iron','silicon','ice','rare','food'];
@@ -366,6 +367,7 @@ const BLOCKS = [
   {id:'tglass', tile:TGLASS, n:'Tinted glass', cost:{silicon:2, iron:1}, d:'Amber glass.'},
   {id:'alloy', tile:ALLOY, n:'Alloy panel', cost:{iron:2, rare:1}, d:'Rare-metal alloy. Gold, and it shows.'},
   {id:'wire', tile:WIRE, n:'Wire', cost:{iron:1}, d:'Carries power between solar panels, batteries, chargers and drills. Only shows in Build mode.'},
+  {id:'ladder', tile:LADDER, n:'Ladder', cost:{iron:1}, d:'Climb it to get up onto your surface builds. Stack them as high as you need.'},
   {id:'strut', tile:BEAM, n:'Support strut', cost:{iron:2}, d:'Iron bracing. Tunnels within 4 blocks of a strut survive Marsquakes. Your borer drives straight through it.'},
   {id:'fill', tile:FILL, n:'Backfill', cost:{}, d:'Pack rock back into a tunnel you dug. Free.'},
   {id:'remove', tile:-1, n:'Remove', cost:{}, d:'Take back a block (half refund) or equipment (back to your kit).'},
@@ -399,12 +401,13 @@ const itemById = id => ITEMS.find(i=>i.id===id);
 const itemByTile = t => ITEMS.find(i=>i.tile===(BASE_T[t]||t));
 // Must match lib/spacecore.js and spacecore_needs() in docs/v5.39-spacecore.sql
 const STAGES = [
-  {n:'Landing Base', x:258, need:{iron:800, silicon:500, ice:200, rare:0}, pat:[
-    "......####......","....########....","..##ww####ww##..","..############..",
-    "################","#ww##########ww#","################","#..#........#..#"]},
-  {n:'Habitat Dome', x:268, need:{iron:2000, silicon:1600, ice:800, rare:40}, pat:[
-    ".....dddddd.....","...dddddddddd...","..dddddddddddd..",".dddddddddddddd.",
-    ".dddddddddddddd.","################","#ww##ww##ww##ww#","################"]},
+  {n:'Landing Base', x:257, need:{iron:800, silicon:500, ice:200, rare:0}, pat:[
+    ".......r..........",".......|..........",".....######.......","...##########.....",
+    "..##ww####ww##.pp.","..############.pp.","##################","#ww##ww####ww##ww#",
+    "##################","#..#..........#..#"]},
+  {n:'Habitat Dome', x:267, need:{iron:2000, silicon:1600, ice:800, rare:40}, pat:[
+    "........r.......","........|.......",".....dddddd.....","...dddddddddd...","..dddddddddddd..",
+    ".dddddddddddddd.",".dddddddddddddd.","################","#ww##ww##ww##ww#","################","##.##########.##"]},
   {n:'Greenhouse Ring', x:242, need:{iron:1800, silicon:2400, ice:1500, rare:40}, pat:[
     "..gggg..gggg..",".gggggggggggg.","gggggggggggggg","##############","#ww########ww#","##############"]},
   {n:'Oxygen Plant', x:278, need:{iron:2800, silicon:1800, ice:2400, rare:80}, pat:[
@@ -433,6 +436,15 @@ const STAGES = [
     ".....iii....","............","............","............"]},
   {n:'Base: Observatory', proj:'base', x:305, need:{iron:2000, silicon:3000, ice:800, rare:150}, pat:[
     "....dddd.p..","..dddddddd..",".dddddddddd.",".dddddddddd.","############","#ww######ww#","############"]},
+  // Update 5.85: more for the colony to build on the surface once the base is up
+  {n:'Base: Fuel Depot', proj:'base', x:293, need:{iron:2200, silicon:1400, ice:2500, rare:60}, pat:[
+    "..ff....ff..",".ffff..ffff.",".ffff..ffff.",".ffffppffff.",".ffff..ffff.","..||....||..","############","#ww##rr##ww#"]},
+  {n:'Base: Deep-Space Dish', proj:'base', x:237, need:{iron:1600, silicon:2800, ice:200, rare:180}, pat:[
+    "...rr...","e..||..e","ee.||.ee",".eeeeee.","..eeee..","...||...","...||...","..|..|..",".|....|.","########","#w####w#"]},
+  {n:'Base: Rover Garage', proj:'base', x:214, need:{iron:3000, silicon:1500, ice:300, rare:100}, pat:[
+    "..r..........r..","..############..",".##############.","##ww##oooo##ww##","######oooo######","######oooo######"]},
+  {n:'Base: Landing Pads', proj:'base', x:312, need:{iron:2500, silicon:3500, ice:600, rare:120}, pat:[
+    "r.......r.r.......r.","kkkyykkk.r.kkkyykkk.","####################"]},
 ];
 const MAIN_STAGES = 5;                       // Great Works 1-5 are the season's main objective
 STAGES.forEach(st => {
@@ -535,9 +547,11 @@ function genWorld(){
   return w;
 }
 world = genWorld();
-const passable=(x,y)=>{const t=tile(x,y); if(y<GY) return y===GY-1; return t===TUN||isLock(t)||isEquip(t);};
+const passable=(x,y)=>{const t=tile(x,y); if(y<GY) return y>=0&&!solidT(t); return t===TUN||isLock(t)||isEquip(t);};
 const diggable=isRockT;
 const N8=[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]];
+// on the surface you need something under you (or a ladder) to stay put
+const supported=(x,y)=> y>=GY-1 || solidT(tile(x,y+1)) || tile(x,y)===LADDER || tile(x,y+1)===LADDER;
 const nearLava=(x,y)=>N8.some(([dx,dy])=>tile(x+dx,y+dy)===LAVA);
 // lava that ends up against open space (a tunnel saved before the magma existed, or the
 // hole someone burned through) crusts over on the next load
@@ -566,7 +580,7 @@ function recomputePressure(){
       const x=c%W, y=(c/W)|0;
       for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]){
         const nx=x+dx, ny=y+dy, t=tile(nx,ny);
-        if(t===AIR){sealed=false;continue;}
+        if(t===AIR){ if(ny>=SURF_TOP&&ny<GY){ const ai=idx(nx,ny); if(!vis[ai]){vis[ai]=1;q.push(ai);} } else sealed=false; continue; }
         const ni=idx(nx,ny);
         if(interior(t)&&!vis[ni]){vis[ni]=1;q.push(ni);}
       }
@@ -1104,7 +1118,7 @@ function updateBorer(dt){
     if(!P.chargedNow){ P.chargedNow=true; S.charged++; checkMissions(); }
   }
   else if(atLander()){ P.charging='Lander'; S.bat=Math.min(cap,S.bat+dt*2.5); }
-  else if(S.py===GY-1&&!stormNow().active){ P.charging='Solar'; S.bat=Math.min(cap,S.bat+dt*.5); }
+  else if(S.py<GY&&!roomAt(S.px,S.py)&&!stormNow().active){ P.charging='Solar'; S.bat=Math.min(cap,S.bat+dt*.5); }
   if(!P.charging) P.chargedNow=false;
   tickGrids(dt,drawAt);
   if(S.bat/cap>.3) P.lowWarned=false;
@@ -1128,13 +1142,18 @@ function updatePlayer(dt){
     if(k>=1){ S.px=P.move.tx; S.py=P.move.ty; P.move=null; onArrive(); }
     return;
   }
+  if(S.py<GY-1&&!supported(S.px,S.py)){ P.drill=null; P.move={fx:S.px,fy:S.py,tx:S.px,ty:S.py+1,t:0,dur:.07}; return; }
   const d=curDir();
   if(!d){ P.drill=null; return; }
   const [dx,dy]=DV[d]; P.fx=dx; P.fy=dy;
-  const tx=S.px+dx, ty=S.py+dy;
+  let tx=S.px+dx, ty=S.py+dy;
+  if(ty<GY-1&&dy<0&&tile(S.px,S.py)!==LADDER&&tile(tx,ty)!==LADDER){ lyra("To get up there, build a Ladder (Build › Blocks). The borer climbs it, and steps up single blocks on its own.",{prio:1,key:'ladder',cool:300}); P.drill=null; return; }
+  // Terraria-style step: drive into a one-block ledge on the surface and you hop up onto it
+  if(dy===0&&ty<GY&&solidT(tile(tx,ty))&&tile(tx,ty)>=10&&ty-1>=0&&!solidT(tile(tx,ty-1))&&!solidT(tile(S.px,S.py-1))){
+    P.drill=null; P.move={fx:S.px,fy:S.py,tx,ty:ty-1,t:0,dur:.12}; return; }
   if(P.drill && (P.drill.x!==tx||P.drill.y!==ty)) P.drill=null;
   if(passable(tx,ty)){
-    const surface=ty===GY-1&&S.py===GY-1, empty=S.bat<=0;
+    const surface=ty<GY&&S.py<GY, empty=S.bat<=0;
     const dur=(empty?.4:surface?.055:.11)/needSlow()*(AB.dash.t&&!empty?.45:1);
     S.bat=Math.max(0,S.bat-(surface?.004:.02));
     P.move={fx:S.px,fy:S.py,tx,ty,t:0,dur}; return;
@@ -1170,7 +1189,7 @@ const LOW=15, BLACKOUT_S=60;
 let eatT=0;
 function nearKin(){ const now=Date.now(); return crews.some(c=>c.px!=null&&now-new Date(c.updated_at)<15*60000&&Math.max(Math.abs(c.px-S.px),Math.abs(c.py-S.py))<=20); }
 function needRates(){
-  const rm=roomAt(S.px,S.py), lander=atLander(), st=stormNow(), exposed=st.active&&S.py<GY+2&&!lander;
+  const rm=roomAt(S.px,S.py), lander=atLander(), st=stormNow(), exposed=st.active&&S.py<GY+2&&!lander&&!rm;
   const r={o2:-100/(30*60)*(hasRes('end1')?.7:1), food:-100/(60*60)*(hasRes('end2')?.7:1), mood:-100/(50*60)};
   if(rm) r.o2=4; else if(lander) r.o2=2;
   let up=0;
@@ -1246,7 +1265,7 @@ const RAD_SURF=100/(8*60), RAD_DECAY=100/(12*60);
 function radRate(){
   if(atLander()) return -RAD_DECAY*.5;
   const storm=stormNow().active?3:1;
-  if(S.py<GY) return RAD_SURF*storm;
+  if(S.py<GY) return roomAt(S.px,S.py)?0:RAD_SURF*storm;   // a sealed surface habitat holds your dose steady
   if(depthOf(S.py)<3) return RAD_SURF*.3*storm;
   const rm=roomAt(S.px,S.py); return -RAD_DECAY*(rm?(rm.shielded?3:2):1);
 }
@@ -1447,9 +1466,10 @@ function buildCheck(x,y){
     if(t!==AIR) return 'Something is already built there.';
     if(y<SURF_TOP) return "That's as high as the cranes reach.";
     if(reserved(x)) return "The ground around Landing Site Alpha is reserved for the colony's Great Works. Build further out.";
-    const below=tile(x,y+1); if(below===AIR||below===TUN) return 'Surface builds need solid ground or another block under them.';
-    if(b.id==='fill'||b.id==='wire') return 'Backfill and wire only work underground.';
-    if(isKit(b)&&!SURF_KIT.has(b.tile)) return 'On the surface you can place blocks, solar panels and lamps. Machines go in sealed rooms underground.';
+    if(x===S.px&&y===S.py) return 'Your borer is in that spot. Move first.';
+    if(b.id==='fill') return 'Backfill only works underground.';
+    if(isKit(b)){ if(b.tile===RIG) return 'Auto-drills go underground, against rock.'; if(![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const n=tile(x+dx,y+dy); return solidT(n)||n>=10;})) return 'Equipment has to attach to something: a wall, a floor or the ground.'; }
+    else if(![[1,0],[-1,0],[0,1],[0,-1]].some(([dx,dy])=>{const n=tile(x+dx,y+dy); return solidT(n)||n>=10;})) return 'Surface builds have to attach to the ground or to another block.';
     if(my.built>=BUILD_CAP) return `You've reached the build limit for one Kin (${BUILD_CAP} pieces). Remove something to build more.`;
     if(isKit(b)&&!(S.inv[b.id]>0)) return `You have no ${b.n} in your kit. Craft one in the Fabricator.`;
     if(!isKit(b)&&!canPay(costOf(b))) return `Not enough resources: ${costText(costOf(b))}.`;
@@ -1605,6 +1625,7 @@ function drawEquip(c,t,sx,sy,T,time,lit,extra){
   else if(t===BATT){ c.fillStyle='#3a3e68'; rr(c,sx+3*p,sy+3*p,10*p,12*p,1.5*p); c.fill(); c.fillStyle='#8a90cc'; c.fillRect(sx+6*p,sy+1.5*p,4*p,1.6*p); const f=extra==null?.6:extra; c.fillStyle='#14163A'; c.fillRect(sx+5*p,sy+5*p,6*p,8*p); c.fillStyle=f>.25?'#9CCB98':'#E2C27A'; c.fillRect(sx+5*p,sy+5*p+8*p*(1-f),6*p,8*p*f); }
   else if(t===GALLEY){ c.fillStyle='#4f5566'; c.fillRect(sx+2*p,sy+8*p,12*p,7*p); c.fillStyle='#2b2e5c'; c.fillRect(sx+3.5*p,sy+10*p,9*p,4*p); c.fillStyle='#c8ccd8'; c.fillRect(sx+3*p,sy+6.5*p,5*p,1.5*p); c.fillStyle='#8a90cc'; rr(c,sx+9*p,sy+4*p,4*p,4*p,1*p); c.fill(); if(lit){ c.strokeStyle='rgba(230,230,240,.4)'; c.lineWidth=1; c.beginPath(); const w=Math.sin(time*2)*p; c.moveTo(sx+11*p,sy+3.5*p); c.quadraticCurveTo(sx+11*p+w,sy+2*p,sx+11*p,sy+.5*p); c.stroke(); } }
   else if(t===BUNK){ c.fillStyle='#565B8F'; c.fillRect(sx+2*p,sy+3*p,1.4*p,12*p); c.fillRect(sx+12.6*p,sy+3*p,1.4*p,12*p); c.fillStyle='#454a82'; c.fillRect(sx+2*p,sy+6*p,12*p,1.6*p); c.fillRect(sx+2*p,sy+12.5*p,12*p,1.6*p); c.fillStyle='#B9C0FF'; c.fillRect(sx+3.4*p,sy+4.6*p,3*p,1.4*p); c.fillRect(sx+3.4*p,sy+11.1*p,3*p,1.4*p); c.fillStyle='#C97B6E'; c.fillRect(sx+6.6*p,sy+4.8*p,6*p,1.2*p); c.fillRect(sx+6.6*p,sy+11.3*p,6*p,1.2*p); }
+  else if(t===LADDER){ c.fillStyle='#8a90cc'; c.fillRect(sx+3*p,sy,1.6*p,16*p); c.fillRect(sx+11.4*p,sy,1.6*p,16*p); for(let k=0;k<4;k++) c.fillRect(sx+3*p,sy+(2+k*4)*p,10*p,1.4*p); }
   else if(t===BEAM){ c.fillStyle='#7a7fae'; c.fillRect(sx+2*p,sy,2.4*p,16*p); c.fillRect(sx+11.6*p,sy,2.4*p,16*p); c.fillRect(sx+2*p,sy,12*p,2.2*p); c.strokeStyle='#565B8F'; c.lineWidth=Math.max(1,1.4*p); c.beginPath(); c.moveTo(sx+4*p,sy+2*p); c.lineTo(sx+12*p,sy+15*p); c.moveTo(sx+12*p,sy+2*p); c.lineTo(sx+4*p,sy+15*p); c.stroke(); }
   else if(t===WIRE){ c.strokeStyle='#E2C27A'; c.lineWidth=Math.max(1.5,T*.08); c.beginPath(); c.moveTo(sx+4*p,sy+8*p); c.lineTo(sx+12*p,sy+8*p); c.moveTo(sx+8*p,sy+4*p); c.lineTo(sx+8*p,sy+12*p); c.stroke(); }
   else if(t===RIG){ const f=extra==null?.4:extra; c.strokeStyle='#8a90cc'; c.lineWidth=1.5; c.beginPath(); c.moveTo(sx+4*p,sy+15*p); c.lineTo(sx+8*p,sy+2*p); c.lineTo(sx+12*p,sy+15*p); c.moveTo(sx+5*p,sy+11*p); c.lineTo(sx+11*p,sy+11*p); c.stroke(); c.fillStyle='#E8CFC0'; c.save(); c.translate(sx+8*p,sy+8*p); c.rotate(time*4); c.fillRect(-2*p,-.6*p,4*p,1.2*p); c.restore(); if(extra!=null){ c.fillStyle='#1b1d3d'; c.fillRect(sx+13.5*p,sy+3*p,1.8*p,11*p); c.fillStyle=f>=.99?'#E8CFC0':'#9CCB98'; c.fillRect(sx+13.5*p,sy+3*p+11*p*(1-f),1.8*p,11*p*f);} }
@@ -1632,7 +1653,7 @@ function lockTarget(x,y){
 }
 function drawBuilt(t,sx,sy,x,y,time,dt){
   const i=idx(x,y);
-  if(SEETHRU.has(t)||isEquip(t)||isLock(t)) drawTunnel(sx,sy,x,y);
+  if(SEETHRU.has(t)||isEquip(t)||isLock(t)){ if(y>=GY) drawTunnel(sx,sy,x,y); else if(press[i]){ ctx.fillStyle='#2a2d55'; ctx.fillRect(sx,sy,T+.5,T+.5); } }
   if(t===WIRE){ if(mode==='build') drawWire(sx,sy,x,y); return; }
   if(isEquip(t)){
     const rm=press[i]?rooms[regionOf[i]]:null;
@@ -1654,15 +1675,49 @@ function drawBuilt(t,sx,sy,x,y,time,dt){
   } else drawMaterial(ctx,t,sx,sy,T,hash(x,y));
 }
 function drawStructure(st,prog,done,time){
-  const s=T/2, ox=st.x*T-cam.x, base=GY*T-cam.y, h=st.pat.length, n=done?st.cells.length:Math.floor(prog*st.cells.length);
-  if(ox>vw+T*8||ox+st.pat[0].length*s<-T) return null;
+  const s=T/2, ox=st.x*T-cam.x, base=GY*T-cam.y, h=st.pat.length, n=done?st.cells.length:Math.floor(prog*st.cells.length), wpx=st.pat[0].length*s;
+  if(ox>vw+T*8||ox+wpx<-T) return null;
+  if(done){ ctx.fillStyle='rgba(0,0,0,.28)'; ctx.beginPath(); ctx.ellipse(ox+wpx/2,base+s*.15,wpx*.62,s*.5,0,0,7); ctx.fill();
+    ctx.fillStyle='#6b5f6e'; ctx.fillRect(ox-s,base-s*.22,wpx+2*s,s*.22); ctx.fillStyle='rgba(232,207,192,.5)'; for(let k=0;k<=wpx/s+1;k+=2) ctx.fillRect(ox-s+k*s,base-s*.14,s*.5,s*.06); }
+  const has=(r,c)=>r>=0&&r<h&&c>=0&&c<st.pat[0].length&&st.pat[r][c]!=='.';
+  const glow=[];
   st.cells.forEach((c,i)=>{
-    const x=ox+c.c*s, y=base-(h-c.r)*s;
-    if(i<n){ let col; switch(c.ch){ case 'w': col=done?'#ffd9a8':'#2a2d55'; break; case 'd': col='rgba(167,207,224,.38)'; break; case 'g': col='rgba(156,203,152,.45)'; break; case 'p': col='#7a80bf'; break; case 'r': col=(done&&Math.sin(time*3)>0)?'#ff8f7a':'#C97B6E'; break; case 's': col=done?'#5a6fc4':'#3c4f8f'; break; case 'h': col='#d07a52'; break; case 'c': col='#8c93b8'; break; case 'i': col=done?`rgba(143,208,255,${.6+Math.sin(time*4)*.3})`:'#5a78a0'; break; case '|': col='#6a6f9c'; break; default: col=(c.r+c.c)%2?'#454a80':'#4d5290'; }
-      ctx.fillStyle=col; ctx.fillRect(x,y,s+.5,s+.5); }
-    else { ctx.strokeStyle='rgba(185,192,255,.16)'; ctx.lineWidth=1; ctx.strokeRect(x+.5,y+.5,s-1,s-1); }
+    const x=ox+c.c*s, y=base-(h-c.r)*s, hh=hash(st.x*31+c.c,c.r*17);
+    if(i>=n){ ctx.strokeStyle='rgba(185,192,255,.16)'; ctx.lineWidth=1; ctx.strokeRect(x+.5,y+.5,s-1,s-1); return; }
+    const top=!has(c.r-1,c.c), lft=!has(c.r,c.c-1), rgt=!has(c.r,c.c+1), shade=1-.35*(c.r/h);
+    switch(c.ch){
+      case 'w': ctx.fillStyle='#262948'; ctx.fillRect(x,y,s+.5,s+.5);
+        if(done){ const f=.75+.25*Math.sin(time*(1+(hh&3))+hh); ctx.fillStyle=`rgba(255,217,168,${f})`; ctx.fillRect(x+s*.18,y+s*.18,s*.64,s*.64); glow.push([x+s/2,y+s/2,s*1.6,'255,210,150',.35*f]); }
+        else { ctx.fillStyle='#2a2d55'; ctx.fillRect(x+s*.18,y+s*.18,s*.64,s*.64); } break;
+      case 'd': ctx.fillStyle=`rgba(167,207,224,${.28+.12*shade})`; ctx.fillRect(x,y,s+.5,s+.5);
+        if(top){ ctx.fillStyle='rgba(235,248,255,.55)'; ctx.fillRect(x,y,s+.5,s*.18); }
+        if(done&&(hh&7)===0){ ctx.fillStyle='rgba(255,226,184,.5)'; ctx.fillRect(x+s*.3,y+s*.5,s*.4,s*.3); } break;
+      case 'g': ctx.fillStyle='rgba(156,203,152,.42)'; ctx.fillRect(x,y,s+.5,s+.5); if(top){ ctx.fillStyle='rgba(225,255,220,.5)'; ctx.fillRect(x,y,s+.5,s*.16); }
+        ctx.fillStyle='rgba(90,160,90,.9)'; ctx.beginPath(); ctx.arc(x+s*(.3+((hh>>2)&3)*.12),y+s*.7,s*.18,0,7); ctx.fill(); if(done) glow.push([x+s/2,y+s/2,s*1.2,'170,240,160',.15]); break;
+      case 'r': { const on=done&&Math.sin(time*3+c.c)>0; ctx.fillStyle=on?'#ff8f7a':'#C97B6E'; ctx.beginPath(); ctx.arc(x+s/2,y+s/2,s*.38,0,7); ctx.fill(); if(on) glow.push([x+s/2,y+s/2,s*2.4,'255,120,100',.5]); break; }
+      case 'f': ctx.fillStyle=`rgb(${Math.round(222*shade+20)},${Math.round(214*shade+20)},${Math.round(206*shade+20)})`; ctx.fillRect(x,y,s+.5,s+.5);
+        if(lft){ ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(x,y,s*.2,s+.5); } if(rgt){ ctx.fillStyle='rgba(0,0,0,.2)'; ctx.fillRect(x+s*.8,y,s*.2,s+.5); }
+        if((c.r&3)===2){ ctx.fillStyle='#d07a52'; ctx.fillRect(x,y+s*.4,s+.5,s*.2); } break;
+      case 'e': ctx.fillStyle='#c9cdea'; ctx.fillRect(x,y,s+.5,s+.5); ctx.fillStyle='rgba(20,22,58,.25)'; ctx.fillRect(x,y+s*.6,s+.5,s*.4); break;
+      case 'k': ctx.fillStyle='#5d5868'; ctx.fillRect(x,y+s*.4,s+.5,s*.6); break;
+      case 'y': ctx.fillStyle='#5d5868'; ctx.fillRect(x,y+s*.4,s+.5,s*.6); ctx.fillStyle='#E2C27A'; ctx.fillRect(x,y+s*.5,s+.5,s*.18); break;
+      case 'o': ctx.fillStyle='#3a3e68'; ctx.fillRect(x,y,s+.5,s+.5); ctx.fillStyle=(c.c+c.r)%2?'#E2C27A':'#2a2d55'; ctx.fillRect(x,y+s*.35,s+.5,s*.3); break;
+      case 'p': ctx.fillStyle='#7a80bf'; ctx.fillRect(x+s*.25,y,s*.5,s+.5); ctx.fillStyle='rgba(255,255,255,.25)'; ctx.fillRect(x+s*.25,y,s*.12,s+.5); break;
+      case '|': ctx.fillStyle='#6a6f9c'; ctx.fillRect(x+s*.35,y,s*.3,s+.5); break;
+      case 's': ctx.fillStyle=done?'#2f4fa0':'#3c4f8f'; ctx.fillRect(x,y+s*.1,s+.5,s*.8); ctx.strokeStyle='rgba(185,192,255,.45)'; ctx.lineWidth=1; ctx.strokeRect(x+.5,y+s*.1+.5,s-1,s*.8-1); if(done&&(hh&3)===0){ ctx.fillStyle='rgba(255,255,255,.35)'; ctx.fillRect(x+s*.2,y+s*.2,s*.2,s*.2); } break;
+      case 'h': ctx.fillStyle='#d07a52'; ctx.fillRect(x,y,s+.5,s+.5); break;
+      case 'c': ctx.fillStyle='#8c93b8'; ctx.fillRect(x,y,s+.5,s+.5); break;
+      case 'i': ctx.fillStyle=done?`rgba(143,208,255,${.6+Math.sin(time*4)*.3})`:'#5a78a0'; ctx.fillRect(x,y,s+.5,s+.5); if(done) glow.push([x+s/2,y+s/2,s*2,'143,208,255',.4]); break;
+      default: { const b=(c.r+c.c)%2?[69,74,128]:[77,82,144], k=shade*.85+.15; ctx.fillStyle=`rgb(${b.map(v=>Math.round(v*k+18)).join(',')})`; ctx.fillRect(x,y,s+.5,s+.5);
+        if(top){ ctx.fillStyle='rgba(220,223,255,.38)'; ctx.fillRect(x,y,s+.5,s*.14); }
+        if(lft){ ctx.fillStyle='rgba(220,223,255,.14)'; ctx.fillRect(x,y,s*.12,s+.5); }
+        if(rgt){ ctx.fillStyle='rgba(0,0,0,.25)'; ctx.fillRect(x+s*.88,y,s*.12,s+.5); }
+        if((hh&15)===0){ ctx.fillStyle='rgba(20,22,58,.5)'; ctx.fillRect(x+s*.2,y+s*.45,s*.6,s*.08); } }
+    }
   });
-  return {cx:ox+st.pat[0].length*s/2, top:base-h*s, w:st.pat[0].length*s, last:n>0?st.cells[n-1]:null, ox, base, h};
+  if(glow.length){ ctx.save(); ctx.globalCompositeOperation='lighter'; for(const [gx,gy,gr,rgb,a] of glow){ const g=ctx.createRadialGradient(gx,gy,0,gx,gy,gr); g.addColorStop(0,`rgba(${rgb},${a})`); g.addColorStop(1,`rgba(${rgb},0)`); ctx.fillStyle=g; ctx.fillRect(gx-gr,gy-gr,gr*2,gr*2); } ctx.restore(); }
+  if(done&&st.n&&st.proj!=='ship'){ ctx.fillStyle='rgba(185,192,255,.55)'; ctx.font=`600 ${Math.max(7,T*.22)}px 'JetBrains Mono', monospace`; ctx.textAlign='center'; ctx.fillText(st.n.replace(/^(Base|Ship): /,'').toUpperCase(),ox+wpx/2,base+T*.55); ctx.textAlign='left'; }
+  return {cx:ox+wpx/2, top:base-h*s, w:wpx, last:n>0?st.cells[n-1]:null, ox, base, h};
 }
 function drawLander(){
   const ox=LANDER_X*T-cam.x, b=GY*T-cam.y, u=T/8;
@@ -1723,6 +1778,7 @@ function drawGame(time,dt){
     else if(t>=10){ drawBuilt(t,sx,sy,x,y,time,dt);
       if(t===LAMP||t===LAMPF) lights.push([sx+T/2,sy+T*.4,T*4.6,1]); else if(t===GEOTH||t===GALLEY) lights.push([sx+T/2,sy+T*.7,T*1.6,.6]); else if(t===SOLAR) lights.push([sx+T/2,sy+T/2,T*1.2,.45]); else if(t===O2&&press[i]) lights.push([sx+T/2,sy+T/2,T*3.4,.9]); else if(t===GREEN) lights.push([sx+T/2,sy+T/2,T*1.8,.7]); else if(t===RIG) lights.push([sx+T/2,sy+T/2,T*1.4,.6]);
       else if(t===HEATER&&press[i]) lights.push([sx+T/2,sy+T/2,T*2.6,.8]); else if(t===REACTOR) lights.push([sx+T/2,sy+T/2,T*3,.85]); else if(t===CHARGER) lights.push([sx+T/2,sy+T/2,T*1.4,.6]); else if(SEETHRU.has(t)&&press[i]) lights.push([sx+T/2,sy+T/2,T*1.1,.4]); }
+    else if(t===AIR&&press[i]){ ctx.fillStyle='#2a2d55'; ctx.fillRect(sx,sy,T+.5,T+.5); ctx.fillStyle='rgba(255,226,184,.05)'; ctx.fillRect(sx,sy+T*.85,T+.5,T*.15); lights.push([sx+T/2,sy+T/2,T*1.1,.4]); }
     else if(t!==AIR){ drawRock(t,sx,sy,x,y); if(t===LAVA) lights.push([sx+T/2,sy+T/2,T*2.4,.75]); else if(t===HOT&&(hash(x,y)&3)===0) lights.push([sx+T/2,sy+T/2,T*1.3,.3]); }
     if(t===TUN&&own[i]===0&&!seen[i]) continue;
     if(press[i] && t===TUN) lights.push([sx+T/2,sy+T/2,T*1.1,.45]);

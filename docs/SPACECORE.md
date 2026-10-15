@@ -190,9 +190,15 @@ SQL: docs/v5.85-spacecore-quakes.sql (schema version 585).
 - **Crew loss**: `crewLost(cause)` ('rad' | 'lava'), `replacing`, `showLost()`,
   then the replay screens with replacement wording. `S.lost`, `S.crewNo`.
 
-- **Surface building**: `SURF_TOP` 2, `RESERVE_R` 28 around `LANDER_X+1`,
-  `SURF_KIT` = solar, lamps. `passable()` makes the whole surface row drivable.
-  Removing a surface piece sends tile 0, which the SQL turns into a delete.
+- **Surface building**: `SURF_TOP` 2, colony ring `RESERVE_L..RESERVE_R`
+  (212-326, also in the SQL). `solidT()` = rock or a block; above ground
+  `passable()` is "not solid", and `supported()` (solid or ladder under you)
+  drives gravity in `updatePlayer`, plus ladder climbing and a one-block step.
+  `recomputePressure` floods enclosed surface AIR as room interior (reaching
+  row < `SURF_TOP` or 900 cells means open sky). LADDER = 44. Removing a
+  surface piece sends tile 0, which the SQL turns into a delete.
+- **Stages 11-14**: Fuel Depot, Deep-Space Dish, Rover Garage, Landing Pads.
+  New pattern chars: f tank, e dish, k/y pad, o garage door.
 
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player

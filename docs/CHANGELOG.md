@@ -25,12 +25,21 @@ start on the site until it's run.
   launch and landing replay, and training, kit, research and builds carry over.
 - Dashboard shows Crew lost and the time to the next Marsquake.
 - After a Marsquake, everyone gets a day-long +25% "Fractured rock" mining boost.
-- **Surface building, first slice**: blocks, solar panels and lamps can go on
-  the ground (rows 2-9), each needing solid ground or a block under it, and
-  never within 28 blocks of Landing Site Alpha (reserved for the Great Works,
-  checked in the game and in `spacecore_set_tiles`). The borer drives along
-  the surface in front of surface builds. Quakes never touch the surface.
-  Next: surface Great Works (launch tower, fuel storage, comms) and a bigger base.
+- **Surface building**, Terraria-style. Blocks, Ladders (new, 1 Iron) and
+  equipment go on the ground (rows 2-9), attached to the ground or another
+  block, outside the **colony ring** (x 212-326), which the game and
+  `spacecore_set_tiles` both keep clear for the Great Works. On the surface the
+  borer has gravity: it falls with nothing under it, climbs ladders, and steps
+  up single blocks on its own. Walls + an airlock + an O2 pump seal a
+  **surface habitat** (enclosed air counts as a room); inside, radiation holds
+  steady and storms can't reach you. Quakes never touch the surface.
+- **A more impressive base.** The Great Works renderer draws shaded hull panels
+  with edge highlights, glowing flickering windows, blinking beacons, glass
+  domes with highlights, a concrete apron, shadows and a name plate. The Landing
+  Base and Habitat Dome got taller art with antennas.
+- **Four new surface Great Works** after the Observatory: Fuel Depot,
+  Deep-Space Dish, Rover Garage and Landing Pads (in the game's STAGES,
+  lib/spacecore.js and the SQL).
 
 ## Update 5.84 — Season 1 Weeks 8 and 9: The Accord and The Ring (Oct 2026)
 No SQL.
