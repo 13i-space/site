@@ -10,7 +10,7 @@ import { castleMusic as music } from "../../lib/castle/music";
 
 const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 13)) * 1274126177; return ((h ^ (h >> 16)) >>> 0) / 4294967295; };
 
-export function Ending({ result, crowd, onDone }) {
+export function Ending({ result, crowd, onDone, myId = 0 }) {
   const ref = useRef(null);
   const [t, setT] = useState(0);
   const castle = result.winner === "castle";
@@ -23,7 +23,10 @@ export function Ending({ result, crowd, onDone }) {
     return () => stop();
   }, [castle]);
 
+  const crowdRef = useRef(crowd);
+  crowdRef.current = crowd;
   useEffect(() => {
+    const crowd = crowdRef.current;
     const cv = ref.current, g = cv.getContext("2d");
     let raf, lastQ = -1;
     const t0 = performance.now();
@@ -42,9 +45,9 @@ export function Ending({ result, crowd, onDone }) {
     };
     raf = requestAnimationFrame(loop);
     return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", size); };
-  }, [castle, crowd]);
+  }, [castle]);
 
-  const names = [bk, jester].filter(Boolean).map((v) => (v.human ? `${v.name} (you)` : v.name));
+  const names = [bk, jester].filter(Boolean).map((v) => (v.id === myId ? `${v.name} (you)` : v.name));
   return (
     <div style={{ position: "fixed", inset: 0, background: "#000", fontFamily: "Inter, system-ui, sans-serif" }}>
       <canvas ref={ref} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />

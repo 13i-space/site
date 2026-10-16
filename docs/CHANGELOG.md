@@ -3,6 +3,27 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.96 — Donaghy Castle for the whole family (Oct 2026)
+No SQL (Supabase Realtime broadcast and presence need no tables).
+- Real multiplayer: one person opens the castle gate and gets a 4-letter
+  code (or a link to send); everyone joins on their own laptop. The host's
+  laptop runs the castle and shares it 4 times a second; everyone moves
+  their own knight. Minimum 6 people: empty seats are filled with castle
+  folk at the press of a button. Practice joust while you wait.
+- Voice chat built in: join with one click, mic on/off (V), mute anyone,
+  speaking lights, and a host option for microphones only at meetings.
+  Laptop-to-laptop (WebRTC) with Google's free STUN server.
+- Meetings run for everyone together: the vote closes once every living
+  player has voted (or 45s), then everyone goes to the joust together.
+- Anyone who drops out is steered by the computer until they come back.
+- Ghosts' chores now really count (the chore window used to close on
+  ghosts).
+- The eerie music after captures is softer.
+- Six-player games have no Jester and a slower capture clock; the dark side
+  wins on numbers only when one honest person is left.
+- The end screen shows everyone's dominoes for the night.
+- New: `lib/castle/net.js`, `lib/castle/voice.js`, `components/castle/Room.js`.
+
 ## Update 5.95 — Murder in the Donaghy Castle (Oct 2026)
 No SQL. The family game is renamed and gets its third round of Paul's notes.
 - Renamed from "Lights Out at Donaghy Castle" (same /donaghy-castle link).

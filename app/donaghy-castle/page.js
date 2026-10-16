@@ -19,15 +19,15 @@ async function getPlayer() {
     if (!user) return null;
     const { data: profile } = await supabase.from("profiles").select("username").eq("id", user.id).maybeSingle();
     if (!isFamilyPlayer(profile?.username)) return null;
-    return profile.username;
+    return { username: profile.username, id: user.id };
   } catch {
     return null;
   }
 }
 
 export default async function DonaghyCastlePage() {
-  const username = await getPlayer();
-  if (!username) notFound();
-  const backHref = isSentinelUser(username) ? "/sentinel-x" : "/account";
-  return <DonaghyCastle playerName={username} backHref={backHref} />;
+  const player = await getPlayer();
+  if (!player) notFound();
+  const backHref = isSentinelUser(player.username) ? "/sentinel-x" : "/account";
+  return <DonaghyCastle playerName={player.username} pid={player.id} backHref={backHref} />;
 }

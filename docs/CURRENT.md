@@ -4,6 +4,10 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.96 (no SQL): Donaghy Castle is multiplayer - room codes, the
+  host's laptop runs the castle over Supabase Realtime, min 6 seats with
+  castle folk filling the rest, built-in voice chat (WebRTC), drop-out
+  takeover, ghosts' chores count. Details in docs/CASTLE.md.
 - Update 5.95 (no SQL): renamed "Murder in the Donaghy Castle"; crest on the
   Round Table, furnished rooms, new Black Knight/Jester schemes, moat boat
   ride, music that darkens per capture, domino scoring, ending scenes.

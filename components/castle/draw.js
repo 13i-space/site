@@ -143,7 +143,7 @@ function drawPerson(g, e, world, me, t) {
   if (e === me && me.role === "blackknight" && me.alive) {
     g.fillStyle = "rgba(170,20,30,0.25)"; g.beginPath(); g.arc(0, 0, 22 + Math.sin(t * 4) * 2, 0, 7); g.fill();
   }
-  const moving = e.human ? !!e.moving : e.path && e.path.length > 0 && !e.work;
+  const moving = e.human || !e.path ? !!e.moving : e.path.length > 0 && !e.work;
   g.scale(1.2, 1.2);
   // on your own screen you see yourself as what you really are
   let lk = L.look, costume = null;
@@ -374,8 +374,8 @@ export function visionPolygon(cx, cy, facing, cone, near, spread = 0.62, rays = 
   return pts;
 }
 
-export function drawFrame(g, dark, map, world, view, t) {
-  const me = world.entities[0];
+export function drawFrame(g, dark, map, world, view, t, myId = 0) {
+  const me = world.entities[myId];
   const { w, h, dpr } = view;
   const z = Math.max(1, Math.min(1.6, h / 640));
   const camX = Math.max(0, Math.min(W * TILE - w / z, me.x - w / z / 2));
@@ -418,8 +418,8 @@ export function drawFrame(g, dark, map, world, view, t) {
   }
 
   // where you clicked to walk
-  if (world.humanPath && world.humanPath.length) {
-    const end = world.humanPath[world.humanPath.length - 1];
+  if (me.hpath && me.hpath.length) {
+    const end = me.hpath[me.hpath.length - 1];
     g.strokeStyle = `rgba(255,224,138,${0.5 + Math.sin(t * 6) * 0.3})`; g.lineWidth = 2;
     g.beginPath(); g.arc(end.x, end.y, 9, 0, 7); g.stroke();
     g.beginPath(); g.arc(end.x, end.y, 3, 0, 7); g.stroke();
@@ -439,7 +439,7 @@ export function drawFrame(g, dark, map, world, view, t) {
   drawSheba(g, world.sheba, t, world.t);
   drawNana(g, world.nana, t);
   for (const e of order) drawPerson(g, e, world, me, t);
-  if (world.ride) drawBoat(g, me, world, t);
+  if (me.ride) drawBoat(g, me, world, t);
   else drawPerson(g, me, world, me, t);
   // marbles on the floor
   for (const m of world.marbles || []) {
@@ -461,7 +461,7 @@ export function drawFrame(g, dark, map, world, view, t) {
   };
   if (!world.lightsOut) for (const b of BRAZIERS) hole(b.x, b.y, 150 + Math.sin(t * 9 + b.x) * 6, 0.85);
   hole(FORGE_FIRE.x, FORGE_FIRE.y, 100 + Math.sin(t * 11) * 5, 0.8); // the forge fire never dies
-  if (world.ride) {
+  if (me.ride) {
     hole(me.x, me.y, 380, 0.9);
   } else if (!me.alive) {
     hole(me.x, me.y, 420, 0.75);
@@ -537,7 +537,7 @@ export function drawFrame(g, dark, map, world, view, t) {
   if (world.t - na.tootAt < 1.6 && Math.hypot(me.x - na.x, me.y - na.y) < TILE * 10) bubble(na.x, na.y - 6, na.puffs.length && na.puffs[na.puffs.length - 1].big ? "*PFFFRRRRT*" : "*toot*", "#7a9a3a");
 
   // a small arrow toward your nearest job, when it's off in the dark
-  const job = nextJob(world);
+  const job = me.alive || me.chores.some((c) => !me.done.includes(c)) ? nextJob(world, me.id) : null;
   if (job) {
     const dx = job.x - me.x, dy = job.y - me.y, d = Math.hypot(dx, dy);
     if (d > TILE * 3) {
@@ -551,10 +551,10 @@ export function drawFrame(g, dark, map, world, view, t) {
   }
 
   // the Torch of Truth's verdict
-  if (world.reveal) {
-    const e = world.entities[world.reveal.id];
-    const txt = { bk: "THE BLACK KNIGHT!", jester: "THE JESTER!", innocent: "INNOCENT" }[world.reveal.verdict];
-    const col = { bk: "#ff5a4a", jester: "#d18cff", innocent: "#8ef0a8" }[world.reveal.verdict];
+  if (me.reveal) {
+    const e = world.entities[me.reveal.id];
+    const txt = { bk: "THE BLACK KNIGHT!", jester: "THE JESTER!", innocent: "INNOCENT" }[me.reveal.verdict];
+    const col = { bk: "#ff5a4a", jester: "#d18cff", innocent: "#8ef0a8" }[me.reveal.verdict];
     g.save();
     g.strokeStyle = col; g.lineWidth = 3; g.globalAlpha = 0.6 + Math.sin(t * 10) * 0.3;
     g.beginPath(); g.arc(e.x, e.y, 22, 0, 7); g.stroke();
@@ -573,9 +573,9 @@ function hasLOSQuick(x1, y1, x2, y2) {
 }
 
 // ---------- the little map: rooms in their colours, your jobs, you ----------
-export function drawMiniMap(g, world, width) {
+export function drawMiniMap(g, world, width, myId = 0) {
   const s = width / W;
-  const me = world.entities[0];
+  const me = world.entities[myId];
   const k = g.canvas.width / width;
   g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, g.canvas.width, g.canvas.height);

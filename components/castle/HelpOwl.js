@@ -108,7 +108,7 @@ export function HelpOwl({ hud, open, setOpen }) {
             {tab === "keys" && (
               <p style={{ margin: 0 }}>
                 Click on the floor to walk there, or hold the mouse button and steer · arrows or WASD also walk · E: start a chore or repair, pet Sheba · hold E: trapdoor · R: report a helmet · B: ring the Great Bell (once a night, in the Great Hall) ·
-                Q: capture (Black Knight) / swap (Jester) · F: Torch of Truth (Knight) · 1, 2, 3: Black Knight sabotage and disguise · H: this owl · N: music · M: sound effects
+                Q: capture (Black Knight) / swap (Jester) · F: Torch of Truth (Knight) · 1, 2, 3: Black Knight sabotage and disguise · H: this owl · N: music · M: sound effects · V: your microphone on or off (in a family game)
               </p>
             )}
           </div>

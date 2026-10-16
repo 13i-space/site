@@ -104,7 +104,8 @@ export function VoteJoust({ accused, crowd, onDone }) {
       </div>
       {t > 7 && (
         <div style={{ position: "absolute", left: 0, right: 0, bottom: "5%", textAlign: "center" }}>
-          <button style={T.btn} onClick={onDone}>{guilty ? "See who lifts the Cup" : "Back to the castle"}</button>
+          {onDone ? <button style={T.btn} onClick={onDone}>{guilty ? "See who lifts the Cup" : "Back to the castle"}</button>
+            : <div style={{ ...T.sub, fontSize: 15 }}>{guilty ? "To the ending..." : "Back to the castle in a moment..."}</div>}
         </div>
       )}
     </div>

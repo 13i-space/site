@@ -1,7 +1,7 @@
 "use client";
 // The castle gate: build your knight, set up the night, or practise at the
 // tiltyard while you wait.
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ROLES } from "../../lib/castle/engine";
 import {
   TABARDS, TABARD_NAMES, HELMET_COLORS, HELMET_STYLES, WEAPONS, EMBLEMS, TRIMS, randomLook, saveLook,
@@ -39,7 +39,7 @@ export const L = {
   chip: { background: "#17142e", color: "#e7e1ff", border: "1px solid #3a3560", borderRadius: 999, padding: "5px 11px", fontSize: 12.5, cursor: "pointer" },
 };
 
-function KnightPreview({ look }) {
+export function KnightPreview({ look }) {
   const ref = useRef(null);
   const lookRef = useRef(look);
   lookRef.current = look;
@@ -110,15 +110,17 @@ export function KnightBuilder({ look, setLook }) {
   );
 }
 
-export function Lobby({ playerName, setName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref, openPractice }) {
+export function Lobby({ playerName, setName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref, openPractice, createRoom, joinRoom, initialCode = "" }) {
   const pts = cup.reduce((s, x) => s + x.points, 0);
+  const [code, setCode] = useState(initialCode);
+  const ready = code.length === 4;
   return (
     <div style={L.screen}>
       <div style={{ ...L.card, maxWidth: 1060, width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
           <CrestCanvas size={110} />
           <div>
-            <div className="mono" style={L.kicker}>THE DONAGHY FAMILY GAME · TEST NIGHT</div>
+            <div className="mono" style={L.kicker}>THE DONAGHY FAMILY GAME</div>
             <div style={L.big}>Murder in the Donaghy Castle</div>
           </div>
         </div>
@@ -137,15 +139,31 @@ export function Lobby({ playerName, setName, look, setLook, total, setTotal, rol
             <div style={{ marginTop: 8 }}><KnightBuilder look={look} setLook={setLook} /></div>
           </div>
           <div>
-            <div className="mono" style={{ ...L.kicker, color: "#f2dc9a" }}>2 · SET UP THE NIGHT</div>
-            <p style={{ ...L.p, color: "#a9a3c4", fontSize: 13 }}>
-              Tonight it&rsquo;s you against the castle folk, who are all computer players. The family version, with everyone on their own laptop, comes next.
-            </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "10px 0 14px" }}>
+            <div className="mono" style={{ ...L.kicker, color: "#f2dc9a" }}>2 · PLAY WITH THE FAMILY</div>
+            <div style={{ ...L.mini, borderColor: "#c9a227", marginTop: 10 }}>
+              <p style={{ ...L.p, fontSize: 13.5, marginTop: 0 }}>
+                One person opens the castle gate and gets a 4-letter code. Everyone else types that code here. Each of you plays on your own laptop, and you can all talk through your microphones.
+              </p>
+              <button style={L.btn} onClick={createRoom}>Open the castle gate</button>
+              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14, flexWrap: "wrap" }}>
+                <input
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))}
+                  onKeyDown={(e) => { if (e.key === "Enter" && ready) joinRoom(code); }}
+                  placeholder="CODE"
+                  aria-label="Game code"
+                  style={{ ...L.select, width: 120, marginTop: 0, fontSize: 20, letterSpacing: "6px", textAlign: "center", fontFamily: "ui-monospace, monospace" }}
+                />
+                <button style={{ ...L.ghostBtn, opacity: ready ? 1 : 0.5 }} disabled={!ready} onClick={() => joinRoom(code)}>Join with the code</button>
+              </div>
+            </div>
+
+            <div className="mono" style={{ ...L.kicker, color: "#f2dc9a", marginTop: 18 }}>OR A TEST NIGHT ON YOUR OWN</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "8px 0 10px" }}>
               <label>
                 <span className="mono" style={L.kicker}>PEOPLE IN THE CASTLE</span>
                 <select value={total} onChange={(e) => setTotal(+e.target.value)} style={L.select}>
-                  {[8, 9, 10, 11, 12].map((n) => <option key={n} value={n}>{n} (you + {n - 1})</option>)}
+                  {[6, 7, 8, 9, 10, 11, 12].map((n) => <option key={n} value={n}>{n} (you + {n - 1})</option>)}
                 </select>
               </label>
               <label>
@@ -155,24 +173,27 @@ export function Lobby({ playerName, setName, look, setLook, total, setTotal, rol
                 </select>
               </label>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {Object.entries(ROLES).map(([k, r]) => (
-                <div key={k} style={{ ...L.mini, borderColor: r.side === "dark" ? "#5a1520" : "#3a3560", padding: "8px 10px" }}>
-                  <div style={{ fontWeight: 600, color: r.side === "dark" ? "#ff9a85" : "#f2dc9a", fontSize: 13 }}>{r.name}</div>
-                  <div style={{ fontSize: 11.5, color: "#b9b3d6", marginTop: 3, lineHeight: 1.4 }}>{r.blurb}</div>
-                </div>
-              ))}
-            </div>
-            <div style={{ fontSize: 12.5, color: "#c9c3e6", lineHeight: 1.7, margin: "14px 0" }}>
-              <b style={{ color: "#f2dc9a" }}>Moving:</b> click where you want to go (or hold the mouse and steer), or arrows/WASD · <b>E</b> starts a chore · <b>R</b> report a helmet · <b>B</b> Great Bell ·
-              <b> Q F 1 2 3</b> role powers · <b>H</b> the owl (help) · <b>N</b> music · <b>M</b> sound effects
-            </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <button style={L.btn} onClick={start}>Enter the castle{playerName ? `, ${playerName}` : ""}</button>
+              <button style={L.ghostBtn} onClick={start}>Enter the castle alone</button>
               <button style={L.ghostBtn} onClick={openPractice}>Practice joust</button>
               <a href={backHref} style={{ color: "#8b95f6", fontSize: 13 }}>back to 13i.space</a>
             </div>
-            {cup.length > 0 && <div className="mono" style={{ marginTop: 12, fontSize: 11, color: "#c9a227" }}>DONAGHY CUP: {pts} PTS FROM {cup.length} NIGHT{cup.length === 1 ? "" : "S"}</div>}
+            <details style={{ marginTop: 14 }}>
+              <summary className="mono" style={{ ...L.kicker, cursor: "pointer" }}>THE ROLES</summary>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+                {Object.entries(ROLES).map(([k, r]) => (
+                  <div key={k} style={{ ...L.mini, borderColor: r.side === "dark" ? "#5a1520" : "#3a3560", padding: "8px 10px" }}>
+                    <div style={{ fontWeight: 600, color: r.side === "dark" ? "#ff9a85" : "#f2dc9a", fontSize: 13 }}>{r.name}</div>
+                    <div style={{ fontSize: 11.5, color: "#b9b3d6", marginTop: 3, lineHeight: 1.4 }}>{r.blurb}</div>
+                  </div>
+                ))}
+              </div>
+            </details>
+            <div style={{ fontSize: 12.5, color: "#c9c3e6", lineHeight: 1.7, margin: "14px 0 0" }}>
+              <b style={{ color: "#f2dc9a" }}>Moving:</b> click where you want to go (or hold the mouse and steer), or arrows/WASD · <b>E</b> starts a chore · <b>R</b> report a helmet · <b>B</b> Great Bell ·
+              <b> Q F 1 2 3 4</b> role powers · <b>H</b> the owl (help) · <b>N</b> music · <b>M</b> sound effects
+            </div>
+            {cup.length > 0 && <div className="mono" style={{ marginTop: 12, fontSize: 11, color: "#c9a227" }}>YOUR DONAGHY CUP DOMINOES: {pts} FROM {cup.length} NIGHT{cup.length === 1 ? "" : "S"}</div>}
           </div>
         </div>
       </div>

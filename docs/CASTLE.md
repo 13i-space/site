@@ -57,7 +57,7 @@ roots, so a medieval castle. Everyone plays for the **Donaghy Cup**.
 - Chores: `ChoreGame.js` (`CHORE_GAMES` maps each chore id to a game);
   the engine's `humanFinish` completes it. Passages are still hold-E.
 - Mouse walking: `setHumanTarget` in engine.js; camera kept on the view.
-- Vote clock: `VOTE_SECONDS` in DonaghyCastle.js.
+- Vote clock: `VOTE_SECONDS` in lib/castle/engine.js (since 5.96).
 
 ## Added in 5.95
 - Crest: `components/castle/crest.js` (drawn, not an image file).
@@ -79,11 +79,56 @@ Tuned with bot-only simulations (300 nights, human seat idle): roughly
 meetings. Main dials at the top of engine.js: CAPTURE_CD, TRUTH_CD,
 CHORES_EACH, and the computer voters' `trust` and 42-point threshold.
 
-## Next: real family multiplayer
-The world object is plain data stepped by `stepGame`, so the plan is one
-host browser running the engine and broadcasting state, with each family
-member's keys sent to it, over **Supabase Realtime** (already in use, so no
-new service). Needs: a lobby/room code, seats for real players with the
-remaining seats as computer players, per-player views (each sees only their
-own torchlight and role), meeting chat or just the video call, and a shared
-Donaghy Cup table in Supabase.
+## Family multiplayer (5.96)
+- **Rooms.** "Open the castle gate" makes a 4-letter code (no I or O) and
+  puts `?room=CODE` in the address, so the link can be sent as is; opening
+  that link goes straight to the gate. Who's there comes from Supabase
+  Realtime presence; the host's presence also carries the room settings
+  (seats, "microphones only at meetings").
+- **Host-authoritative.** The host's laptop runs the engine (`stepGame`,
+  `directorTick`) on a 33ms timer (a timer, not animation frames, so it
+  keeps going in a background tab) and broadcasts `snapshot(world)` every
+  250ms on channel `castle-CODE` (about 13KB at 12 seats). Everyone else
+  keeps a copy via `applySnapshot` and `glide` (smooth movement for others).
+- **Each player moves their own knight** (`moveSelf`, path-finding for mouse
+  clicks runs locally) and sends `pos` 4 times a second, only when it
+  changed (plus a 2s keepalive), to `castle-CODE-up` by `httpSend` (a plain
+  web request), so only the host receives it. Key presses, finished chores,
+  chat lines and votes go the same way as `act`. Teleports (swap, capture,
+  boat, meeting) bump `e.tp`, which tells a laptop to accept the jump.
+- **Per-player everything.** Toasts carry `to` (a seat) and sounds sit in
+  `world.sfx` with `to` or a place and radius; each laptop plays its own.
+  Meeting notebooks are per seat (`m.notebooks[id]`), results per seat
+  (`world.results[id]`).
+- **The director.** `phase` goes intro (everyone lights their torch, or 60s)
+  → play → meeting (lines appear 1.4s apart; the vote closes when every
+  living real player has voted or after 45s; tally 6s) → joust (9.8s) →
+  play, or ending. All laptops follow the host's phase.
+- **Dropping out.** A player missing from presence for 8s is steered by the
+  computer (`human = false`) and gets their seat back on return (same user
+  id). Someone arriving mid-night waits at the gate for the next one.
+  If the host's laptop goes quiet for 9s, players see a notice.
+- **Seats.** Minimum 6; empty seats are castle folk. Tabards are made
+  unique, and two people with the same name become "Name" and "Name II".
+- **Voice** (`lib/castle/voice.js`): WebRTC laptop to laptop (a mesh, fine
+  for a dozen people), with the room channel carrying the setup notes
+  (`v-hello`, `v-here`, `v-offer`, `v-answer`, `v-ice`, `v-bye`; the lower
+  id makes the call). Google's free STUN server helps laptops find each
+  other; no audio passes through any server. Very strict networks (some
+  offices) would need a TURN relay, which is not set up. Mic on/off (V),
+  mute anyone, a speaking light, and the host's meetings-only option.
+- **Testing:** add `?local=1` to the address and several tabs on one
+  computer play together over the browser's BroadcastChannel instead of
+  Supabase (each tab is its own player).
+- The test night alone ("Enter the castle alone") is the same code with no
+  network: you're the host of a room nobody else is in.
+- The Donaghy Cup is still kept per laptop (each player's own dominoes);
+  the end screen shows everyone's dominoes for the night. A shared all-time
+  table in Supabase would need a small table and policy.
+
+## Balance with fewer people (5.96)
+With 6 seats the Black Knight works alone (the Jester joins from 7), and
+the capture clock is slower in small castles (`captureCd`: 32s at 6, 48s
+at 7, 28s from 8). The dark side now wins on numbers only when one honest
+person is left free (the Jester can't capture). Bot-only sims, 300 nights
+each: 46% castle wins at 6, 42% at 7 and 8, 46% at 10.
