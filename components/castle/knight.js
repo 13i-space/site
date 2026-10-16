@@ -150,6 +150,8 @@ export function drawKnightSide(g, look, o = {}) {
   const helm = black ? "#1f1f27" : look.helmet;
   // leg in the stirrup
   g.fillStyle = armour; g.fillRect(-6, -40, 14, 32); g.fillRect(-2, -12, 16, 8);
+  g.fillStyle = shade(armour, 0.25); g.beginPath(); g.arc(3, -38, 5, 0, 7); g.fill(); g.fillRect(-5, -30, 3, 18);
+  g.fillStyle = "#c9a227"; g.fillRect(-2, -8, 16, 2);
   // body and tabard
   g.fillStyle = tab; g.fillRect(-12, -80, 26, 44);
   g.strokeStyle = trim; g.lineWidth = 2; g.strokeRect(-12, -80, 26, 44);
@@ -189,17 +191,27 @@ export function drawKnightSide(g, look, o = {}) {
   // lance, striped in the knight's colours
   if (lance) {
     g.save();
-    g.translate(-6, -64); g.rotate(0.06 + (o.lanceAim || 0) * 0.16);
-    g.fillStyle = black ? "#2a2a33" : "#e8dcb8"; g.fillRect(0, -3, 156, 6);
-    if (!black) { g.fillStyle = look.tabard; for (let i = 0; i < 6; i++) g.fillRect(20 + i * 22, -3, 10, 6); }
-    g.fillStyle = black ? "#2a2a33" : trim; g.beginPath(); g.moveTo(8, -12); g.lineTo(26, 0); g.lineTo(8, 12); g.fill();
+    g.translate(-6, -64); g.rotate(o.lanceAngle !== undefined ? o.lanceAngle : 0.06 + (o.lanceAim || 0) * 0.16);
+    // a long tapering lance, striped in the knight's colours
+    g.fillStyle = black ? "#2a2a33" : "#e8dcb8";
+    g.beginPath(); g.moveTo(-14, -4); g.lineTo(150, -1.5); g.lineTo(162, 0); g.lineTo(150, 1.5); g.lineTo(-14, 4); g.closePath(); g.fill();
+    if (!black) { g.fillStyle = look.tabard; for (let i = 0; i < 6; i++) { const x = 24 + i * 22, hw = 3.6 - i * 0.35; g.beginPath(); g.moveTo(x, -hw); g.lineTo(x + 10, -hw + 0.3); g.lineTo(x + 10, hw - 0.3); g.lineTo(x, hw); g.fill(); } }
+    g.fillStyle = black ? "#3a3a44" : "#c9ced8"; g.beginPath(); g.arc(160, 0, 2.6, 0, 7); g.fill();
+    // the vamplate (the steel guard over the hand)
+    g.fillStyle = black ? "#2a2a33" : trim; g.beginPath(); g.moveTo(8, -13); g.quadraticCurveTo(30, 0, 8, 13); g.closePath(); g.fill();
+    g.strokeStyle = "rgba(0,0,0,0.35)"; g.lineWidth = 1; g.stroke();
     g.restore();
+    // the arm couching the lance
+    g.fillStyle = armour; g.save(); g.translate(2, -74); g.rotate(0.5); g.fillRect(-4, 0, 9, 16); g.restore();
+    g.fillStyle = shade(armour, -0.2); g.beginPath(); g.arc(-1, -63, 5, 0, 7); g.fill();
   }
 }
 
 // front-on, for the crowd and the builder preview. Origin at the waist.
 export function drawKnightFront(g, look, o = {}) {
-  const { cheer = 0 } = o;
+  const { cheer = 0, costume = null } = o;
+  if (costume === "bk") look = { tabard: "#16161c", trim: "#b01020", helmet: "#24242c", helmetStyle: "greathelm", emblem: "plain", weapon: "longsword" };
+  if (costume === "jester") look = { tabard: "#7d3c98", trim: "#e9c64a", helmet: "#e9c64a", helmetStyle: "hood", emblem: "plain", weapon: "mace" };
   const arm = -0.3 - cheer * 1.9;
   g.strokeStyle = look.tabard; g.lineWidth = 6; g.lineCap = "round";
   for (const d of [-1, 1]) {
@@ -210,6 +222,17 @@ export function drawKnightFront(g, look, o = {}) {
   g.strokeStyle = look.trim; g.lineWidth = 1.5; g.stroke();
   drawEmblem(g, look.emblem, look.trim, 0, -12, 12);
   g.fillStyle = "#9aa0ad"; g.beginPath(); g.arc(-12, -25, 5, 0, 7); g.arc(12, -25, 5, 0, 7); g.fill();
+  if (costume === "jester") {
+    g.fillStyle = "#e9c64a"; g.beginPath(); g.moveTo(0, -26); g.lineTo(12, -26); g.lineTo(14, 6); g.lineTo(0, 6); g.closePath(); g.fill();
+    g.fillStyle = "#e3b98f"; g.beginPath(); g.arc(0, -38, 9, 0, 7); g.fill();
+    g.fillStyle = "#1b1406"; g.fillRect(-4, -40, 2, 2); g.fillRect(2, -40, 2, 2);
+    g.strokeStyle = "#8a1020"; g.lineWidth = 1.5; g.beginPath(); g.arc(0, -36, 4, 0.2, Math.PI - 0.2); g.stroke();
+    for (const [x, y, c] of [[-14, -54, "#7d3c98"], [0, -60, "#e9c64a"], [14, -54, "#7d3c98"]]) {
+      g.fillStyle = c; g.beginPath(); g.moveTo(-8, -44); g.quadraticCurveTo(x * 0.6, y + 6, x, y); g.quadraticCurveTo(x * 0.3, -46, 8, -44); g.closePath(); g.fill();
+      g.fillStyle = "#ffe08a"; g.beginPath(); g.arc(x, y, 3, 0, 7); g.fill();
+    }
+    return;
+  }
   const s = look.helmetStyle, hy = -38, c = look.helmet;
   if (s === "hood") {
     g.fillStyle = shade(look.tabard, -0.4); g.beginPath(); g.arc(0, hy, 11, 0, 7); g.fill();
@@ -226,6 +249,10 @@ export function drawKnightFront(g, look, o = {}) {
   if (s === "crown") { g.fillStyle = "#e9c64a"; g.fillRect(-9, hy - 12, 18, 4); for (let i = 0; i < 3; i++) { g.beginPath(); g.moveTo(-9 + i * 6, hy - 12); g.lineTo(-6 + i * 6, hy - 20); g.lineTo(-3 + i * 6, hy - 12); g.fill(); } }
   if (s === "horned") { g.strokeStyle = "#efe3c4"; g.lineWidth = 4; for (const d of [-1, 1]) { g.beginPath(); g.moveTo(d * 8, hy - 4); g.quadraticCurveTo(d * 20, hy - 6, d * 20, hy - 20); g.stroke(); } }
   if (s === "plumed") { g.fillStyle = look.trim; g.beginPath(); g.ellipse(0, hy - 16, 4, 9, 0, 0, 7); g.fill(); }
+  if (costume === "bk") {
+    g.fillStyle = "#ff3a2a"; g.fillRect(-6, hy - 2, 4, 3); g.fillRect(2, hy - 2, 4, 3);
+    g.fillStyle = "#b01020"; g.beginPath(); g.ellipse(0, hy - 18, 4, 9, 0, 0, 7); g.fill();
+  }
 }
 
 // a horse in caparison, side-on, facing +x (scale by dir)
@@ -242,15 +269,26 @@ export function drawHorse(g, ph, look, o = {}) {
     g.beginPath(); g.moveTo(lx, 10); g.lineTo(lx + Math.sin(a) * 26, 10 + Math.cos(a) * 26); g.lineTo(lx + Math.sin(a) * 26 + Math.sin(a * 1.6) * 20, 10 + Math.cos(a) * 26 + 20); g.stroke();
     g.fillStyle = "#222"; g.fillRect(lx + Math.sin(a) * 26 + Math.sin(a * 1.6) * 20 - 5, 10 + Math.cos(a) * 26 + 18, 10, 5);
   }
-  g.fillStyle = coat;
+  const body = g.createLinearGradient(0, -26, 0, 26);
+  body.addColorStop(0, shade(coat, 0.18)); body.addColorStop(1, shade(coat, -0.3));
+  g.fillStyle = body;
   g.beginPath(); g.ellipse(0, 0, 58, 26, 0, 0, 7); g.fill();
+  g.fillStyle = coat;
   g.beginPath(); g.moveTo(40, -10); g.lineTo(62, -50); g.lineTo(78, -56); g.lineTo(98, -32); g.lineTo(90, -22); g.lineTo(70, -34); g.lineTo(58, 6); g.closePath(); g.fill();
   // mane, eye, tail
   g.fillStyle = shade(coat, -0.4); g.beginPath(); g.moveTo(44, -14); g.lineTo(62, -52); g.lineTo(58, -50); g.lineTo(40, -12); g.fill();
   g.fillStyle = "#000"; g.beginPath(); g.arc(80, -44, 2, 0, 7); g.fill();
   g.strokeStyle = shade(coat, -0.3); g.lineWidth = 6; g.beginPath(); g.moveTo(-56, -8); g.quadraticCurveTo(-82, Math.sin(ph) * 8, -76, 32); g.stroke();
-  // chanfron (armour on the face)
+  // chanfron (armour on the face) with a plume, and an ear
+  g.fillStyle = shade(coat, -0.2); g.beginPath(); g.moveTo(70, -54); g.lineTo(74, -66); g.lineTo(78, -55); g.fill();
   g.fillStyle = black ? "#2a2a33" : "#b9bec9"; g.beginPath(); g.moveTo(66, -48); g.lineTo(80, -54); g.lineTo(96, -32); g.lineTo(88, -26); g.closePath(); g.fill();
+  g.strokeStyle = "rgba(255,255,255,0.35)"; g.lineWidth = 1; g.beginPath(); g.moveTo(70, -48); g.lineTo(90, -32); g.stroke();
+  g.fillStyle = black ? "#8a1020" : look.tabard;
+  g.beginPath(); g.moveTo(74, -54); g.quadraticCurveTo(70 + Math.sin(ph) * 3, -78, 60, -82); g.quadraticCurveTo(70, -70, 78, -54); g.fill();
+  // nostril and the reins back to the rider's hand
+  g.fillStyle = "#000"; g.beginPath(); g.arc(94, -31, 1.5, 0, 7); g.fill();
+  g.strokeStyle = "#3a2210"; g.lineWidth = 1.8; g.beginPath(); g.moveTo(90, -28); g.quadraticCurveTo(50, -10 + Math.sin(ph) * 2, 14, -40); g.stroke();
+  g.fillStyle = "#c9a227"; g.beginPath(); g.arc(90, -28, 2.2, 0, 7); g.fill();
   // caparison in the rider's colours, with the emblem
   g.fillStyle = cloth;
   g.beginPath(); g.moveTo(-52, -16); g.lineTo(48, -16); g.lineTo(54, 22); g.lineTo(38, 32); g.lineTo(20, 22); g.lineTo(2, 32); g.lineTo(-16, 22); g.lineTo(-34, 32); g.lineTo(-56, 20); g.closePath(); g.fill();

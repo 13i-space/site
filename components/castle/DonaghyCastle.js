@@ -1,5 +1,5 @@
 "use client";
-// Lights Out at Donaghy Castle - the family game (test build).
+// Murder in the Donaghy Castle - the family game (test build).
 // Everyone else at the castle is a computer player for now; the rules live
 // in lib/castle/engine.js and the drawing in components/castle/draw.js.
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -14,9 +14,10 @@ import { paintCastle, drawFrame, drawMiniMap } from "./draw";
 import { Lobby } from "./Lobby";
 import { VoteJoust, PracticeJoust } from "./Joust";
 import { HelpOwl } from "./HelpOwl";
+import { Ending } from "./Ending";
 import { ChoreGame } from "./ChoreGame";
 
-const CUP_KEY = "donaghy-cup-v1";
+const CUP_KEY = "donaghy-cup-v2"; // domino points (v1 was the old points)
 const MINI_W = 280, MINI_H = 203;
 const VOTE_SECONDS = 45;
 const NAME_KEY = "donaghy-name-v1";
@@ -92,8 +93,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     saveCup(list);
     setCup(list);
     setResult(w.result);
-    music.setMode("hall");
-    setPhase("over");
+    setPhase("ending");
   }, []);
 
   // music follows the phase
@@ -148,7 +148,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   // ---- keys ----
   useEffect(() => {
     const map = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", KeyE: "use", Space: "use" };
-    const one = { KeyR: "report", KeyB: "bell", KeyQ: "power", KeyF: "truth", Digit1: "sab1", Digit2: "sab2", Digit3: "disguise" };
+    const one = { KeyR: "report", KeyB: "bell", KeyQ: "power", KeyF: "truth", Digit1: "sab1", Digit2: "sab2", Digit3: "disguise", Digit4: "smoke" };
     const down = (ev) => {
       if (phaseRef.current !== "play") return;
       if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA")) return;
@@ -203,6 +203,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
           const h = hudInfo(w);
           setHud(h);
           music.setTension(h.tension);
+          music.setStage(h.captures);
           if (miniRef.current) drawMiniMap(miniRef.current.getContext("2d"), w, MINI_W);
         }
       }
@@ -298,6 +299,10 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     );
   }
 
+  if (phase === "ending" && result) {
+    const crowd = w.entities.filter((e) => !["blackknight", "jester"].includes(e.role)).map((e) => ({ look: e.look, name: e.name }));
+    return <Ending result={result} crowd={crowd} onDone={() => { music.setMode("hall"); setPhase("over"); }} />;
+  }
   if (phase === "over" && result) {
     return <Over {...{ w, result, cup, again: () => setPhase("lobby"), backHref }} />;
   }
@@ -378,8 +383,29 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
         </div>
       </div>
 
-      {/* chores list */}
-      <div style={{ ...S.hudBox, bottom: 12, left: 12, maxWidth: 260 }}>
+      {/* the Black Knight's capture clock */}
+      {hud.me.role === "blackknight" && hud.me.alive && (
+        <div style={{ ...S.hudBox, top: 128, left: "50%", transform: "translateX(-50%)", textAlign: "center", padding: "6px 16px", borderColor: hud.me.cd.capture > 0 ? "#5a1520" : "#ff5a4a", boxShadow: hud.me.cd.capture > 0 ? "none" : "0 0 18px rgba(255,80,60,0.45)" }}>
+          <div className="mono" style={{ fontSize: 10, letterSpacing: "1.5px", color: "#ffb4a2" }}>{hud.me.cd.capture > 0 ? "NEXT CAPTURE IN" : "CAPTURE READY: GET CLOSE, PRESS Q"}</div>
+          {hud.me.cd.capture > 0 && <div style={{ fontFamily: "Fraunces, Georgia, serif", fontStyle: "italic", fontSize: 30, color: "#ff8a70", lineHeight: 1.1 }}>{Math.ceil(hud.me.cd.capture)}</div>}
+        </div>
+      )}
+      {hud.frozen && <div style={{ position: "absolute", top: "42%", left: 0, right: 0, textAlign: "center", fontFamily: "Fraunces, Georgia, serif", fontStyle: "italic", fontSize: 30, color: "#ffe08a", textShadow: "0 2px 10px #000" }}>Whoops! Marbles!</div>}
+
+      {/* chores list, and for the Black Knight and Jester their schemes */}
+      <div style={{ ...S.hudBox, bottom: 12, left: 12, maxWidth: 290, maxHeight: "52vh", overflow: "auto" }}>
+        {hud.schemes.length > 0 && (
+          <div style={{ marginBottom: 8 }}>
+            <div className="mono" style={{ fontSize: 10.5, letterSpacing: "1.5px", color: "#ff9a85" }}>YOUR SCHEMES</div>
+            {hud.schemes.map((sc, i) => (
+              <div key={i} style={{ fontSize: 12, marginTop: 3, color: sc.goal ? "#ffb4a2" : sc.ready ? "#f2dc9a" : "#8d87ad" }}>
+                {sc.key && <b style={{ ...S.k, marginRight: 5 }}>{sc.key}</b>}{sc.label}
+                {!sc.goal && sc.key && <span style={{ color: sc.ready ? "#8ef0a8" : "#8d87ad" }}> · {sc.note || (sc.ready ? "ready" : `${sc.left}s`)}</span>}
+                {!sc.key && sc.note && <span style={{ color: "#8d87ad" }}> · {sc.note}</span>}
+              </div>
+            ))}
+          </div>
+        )}
         <button onClick={() => setShowChores(!showChores)} className="mono" style={{ ...S.tiny, border: 0, padding: 0, color: "#c9a227" }}>
           {hud.me.role === "blackknight" || hud.me.role === "jester" ? "PRETEND CHORES (DON'T COUNT)" : "YOUR CHORES"} · {left} LEFT {showChores ? "▾" : "▸"}
         </button>
@@ -415,7 +441,7 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
       )}
 
       {/* news */}
-      <div style={{ position: "absolute", top: 108, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", gap: 6, alignItems: "center", pointerEvents: "none", width: "min(560px, 90vw)" }}>
+      <div style={{ position: "absolute", top: 196, left: "50%", transform: "translateX(-50%)", display: "flex", flexDirection: "column", gap: 6, alignItems: "center", pointerEvents: "none", width: "min(560px, 90vw)" }}>
         {hud.lightsOut && <div style={{ ...S.toast, background: "rgba(80,10,10,0.85)", color: "#ffd0c4" }}>LIGHTS OUT · relight the torches at the Forge</div>}
         {hud.gate && <div style={{ ...S.toast, background: "rgba(60,40,10,0.85)", color: "#ffe2a8" }}>The portcullis is jammed · free it in the Gatehouse</div>}
         {!hud.me.alive && <div style={{ ...S.toast, background: "rgba(40,40,70,0.8)" }}>You&rsquo;re a ghost: you can&rsquo;t vote, but your chores still count</div>}
@@ -489,8 +515,8 @@ function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote, say,
             )) : <div style={{ fontSize: 12.5, color: "#8d87ad", marginTop: 6 }}>No captures yet.</div>}
             <div className="mono" style={{ ...S.kicker, marginTop: 16 }}>WHAT YOU SAW (LAST TWO MINUTES)</div>
             {m.notebook.length ? m.notebook.map((n, i) => (
-              <div key={i} style={{ fontSize: 12.5, color: n.saw ? "#ff9a85" : "#c9c3e6", marginTop: 5 }}>
-                {n.saw ? `You saw ${n.name} capture someone in the ${n.room}!` : `${n.name} · ${n.room} · ${n.ago}s ago`}
+              <div key={i} style={{ fontSize: 12.5, color: n.saw || n.growl ? "#ff9a85" : "#c9c3e6", marginTop: 5 }}>
+                {n.saw ? `You saw ${n.name} capture someone in the ${n.room}!` : n.growl ? `Sheba growled at ${n.name} in the ${n.room} (${n.ago}s ago)` : `${n.name} · ${n.room} · ${n.ago}s ago`}
               </div>
             )) : <div style={{ fontSize: 12.5, color: "#8d87ad", marginTop: 6 }}>You didn&rsquo;t see anyone.</div>}
           </div>
@@ -551,6 +577,22 @@ function Shield({ color, small }) {
 }
 
 // ---------- end of the night ----------
+function Domino({ a, b, title }) {
+  const pip = (n, ox) => {
+    const P = { 1: [[1, 1]], 2: [[0, 0], [2, 2]], 3: [[0, 0], [1, 1], [2, 2]], 4: [[0, 0], [2, 0], [0, 2], [2, 2]], 5: [[0, 0], [2, 0], [1, 1], [0, 2], [2, 2]], 6: [[0, 0], [0, 1], [0, 2], [2, 0], [2, 1], [2, 2]] }[n] || [];
+    return P.map(([x, y], i) => <circle key={ox + "-" + i} cx={ox + 5 + x * 6} cy={5 + y * 6} r="1.7" fill="#1b1406" />);
+  };
+  return (
+    <svg width="46" height="24" viewBox="0 0 46 24" role="img" aria-label={`${a}-${b} domino: ${title}`}>
+      <title>{title}</title>
+      <rect x="0.5" y="0.5" width="45" height="23" rx="4" fill="#f4f1e8" stroke="#1b1406" />
+      <line x1="23" y1="3" x2="23" y2="21" stroke="#1b1406" />
+      <g transform="translate(2 1)">{pip(a, 0)}</g>
+      <g transform="translate(25 1)">{pip(b, 0)}</g>
+    </svg>
+  );
+}
+
 function Over({ w, result, cup, again, backHref }) {
   const why = {
     joust: "The Black Knight was knocked from the saddle in the joust!",
@@ -583,22 +625,41 @@ function Over({ w, result, cup, again, backHref }) {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)", gap: 16 }} className="castle-meet-grid">
           <div>
-            <div className="mono" style={S.kicker}>YOUR POINTS TONIGHT</div>
-            {result.points.length ? result.points.map(([l, p]) => (
-              <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 13.5, color: "#e7e1ff", padding: "4px 0", borderBottom: "1px solid #24203e" }}><span>{l}</span><b>+{p}</b></div>
-            )) : <div style={{ fontSize: 13, color: "#8d87ad" }}>No points this time.</div>}
-            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, color: "#f2dc9a", padding: "8px 0" }}><span>Total</span><b>{result.total}</b></div>
+            <div className="mono" style={S.kicker}>YOUR DOMINOES TONIGHT</div>
+            {result.tiles.length ? (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, margin: "8px 0" }}>
+                {result.tiles.map((d, i) => <Domino key={i} a={d.a} b={d.b} title={d.label} />)}
+              </div>
+            ) : <div style={{ fontSize: 13, color: "#8d87ad", margin: "6px 0" }}>No dominoes this time.</div>}
+            {result.points.map(([l, p]) => (
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5, color: "#c9c3e6", padding: "3px 0", borderBottom: "1px solid #24203e" }}><span>{l[0].toUpperCase() + l.slice(1)}</span><b>{p} pips</b></div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 15, color: "#f2dc9a", padding: "8px 0" }}><span>Domino points</span><b>{result.total}</b></div>
           </div>
           <div style={{ ...S.mini, borderColor: "#c9a227", textAlign: "center" }}>
             <div style={{ fontSize: 30 }}>🏆</div>
             <div style={{ fontFamily: "Fraunces, Georgia, serif", fontStyle: "italic", fontSize: 20, color: "#f2dc9a" }}>The Donaghy Cup</div>
+            <div style={{ fontFamily: "Fraunces, Georgia, serif", fontStyle: "italic", fontSize: 16, color: "#e9c64a", margin: "6px 0" }}>&ldquo;The Cup stays in the family!&rdquo;</div>
             <div style={{ fontSize: 13, color: "#c9c3e6", marginTop: 6, lineHeight: 1.6 }}>
-              {pts} points from {cup.length} night{cup.length === 1 ? "" : "s"}<br />
+              {pts} domino points from {cup.length} night{cup.length === 1 ? "" : "s"}<br />
               {wins} won · best night {best}
             </div>
+            <div style={{ fontSize: 11.5, color: "#a9a3c4", marginTop: 6 }}>Most domino points at the end of the evening lifts the Cup.</div>
             <div style={{ fontSize: 11, color: "#8d87ad", marginTop: 6 }}>Kept on this computer for now. Family standings arrive with the real multiplayer build.</div>
           </div>
         </div>
+        {w.log.length > 0 && (
+          <details style={{ marginTop: 14 }} open>
+            <summary className="mono" style={{ ...S.kicker, cursor: "pointer" }}>THE STORY OF THE NIGHT (WHAT REALLY HAPPENED)</summary>
+            <div style={{ marginTop: 6, maxHeight: 200, overflow: "auto" }}>
+              {w.log.map((l, i) => (
+                <div key={i} style={{ fontSize: 12.5, color: "#d7d1ef", padding: "3px 0", borderBottom: "1px solid #1f1b38" }}>
+                  <span className="mono" style={{ color: "#8d87ad", marginRight: 8 }}>{clockText(l.t)}</span>{l.text}
+                </div>
+              ))}
+            </div>
+          </details>
+        )}
         <div style={{ display: "flex", gap: 12, alignItems: "center", marginTop: 16 }}>
           <button style={S.btn} onClick={again}>Another night</button>
           <a href={backHref} style={{ color: "#8b95f6", fontSize: 13 }}>back to 13i.space</a>

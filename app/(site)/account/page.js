@@ -167,7 +167,7 @@ export default async function AccountPage() {
           >
             <div className="mono" style={{ fontSize: 10, color: "#E9D29A", letterSpacing: "1.5px" }}>FAMILY ONLY &middot; PLAY FOR THE DONAGHY CUP</div>
             <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#F2E6C8", marginTop: 4 }}>
-              Lights Out at Donaghy Castle &rarr;
+              Murder in the Donaghy Castle &rarr;
             </div>
           </a>
         )}

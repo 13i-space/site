@@ -7,6 +7,19 @@ import {
   TABARDS, TABARD_NAMES, HELMET_COLORS, HELMET_STYLES, WEAPONS, EMBLEMS, TRIMS, randomLook, saveLook,
 } from "../../lib/castle/looks";
 import { drawKnightTop, drawKnightFront, drawKnightSide, drawHorse } from "./knight";
+import { drawCrestFull } from "./crest";
+
+export function CrestCanvas({ size = 130 }) {
+  const ref = useRef(null);
+  useEffect(() => {
+    const cv = ref.current, g = cv.getContext("2d"), dpr = Math.min(2, window.devicePixelRatio || 1);
+    cv.width = size * dpr; cv.height = size * 1.15 * dpr;
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.translate(size / 2, size * 0.6);
+    drawCrestFull(g, size);
+  }, [size]);
+  return <canvas ref={ref} style={{ width: size, height: size * 1.15, flexShrink: 0 }} aria-label="The Donaghy family arms" />;
+}
 
 const ROLE_OPTIONS = [
   ["random", "Surprise me"], ["squire", "Squire"], ["knight", "Knight"], ["locksmith", "Locksmith"],
@@ -102,8 +115,13 @@ export function Lobby({ playerName, setName, look, setLook, total, setTotal, rol
   return (
     <div style={L.screen}>
       <div style={{ ...L.card, maxWidth: 1060, width: "100%" }}>
-        <div className="mono" style={L.kicker}>THE DONAGHY FAMILY GAME · TEST NIGHT</div>
-        <div style={L.big}>Lights Out at Donaghy Castle</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
+          <CrestCanvas size={110} />
+          <div>
+            <div className="mono" style={L.kicker}>THE DONAGHY FAMILY GAME · TEST NIGHT</div>
+            <div style={L.big}>Murder in the Donaghy Castle</div>
+          </div>
+        </div>
         <p style={L.p}>
           Night has fallen on Donaghy Castle and the Black Knight walks the halls. Do your chores by torchlight,
           find the dropped helmets of the captured, ring the Great Bell, and send your suspect to the joust.

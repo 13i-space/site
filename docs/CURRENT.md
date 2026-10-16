@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.95 (no SQL): renamed "Murder in the Donaghy Castle"; crest on the
+  Round Table, furnished rooms, new Black Knight/Jester schemes, moat boat
+  ride, music that darkens per capture, domino scoring, ending scenes.
 - Update 5.94 (no SQL): Donaghy Castle round three - bigger castle, Round
   Table hall, Sheba and Nana, chores as mini-games, mouse walking, own name,
   costumes, vote clock, practice joust by speed and aim.

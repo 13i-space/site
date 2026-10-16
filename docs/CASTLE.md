@@ -1,4 +1,6 @@
-# Lights Out at Donaghy Castle
+# Murder in the Donaghy Castle
+
+(Called "Lights Out at Donaghy Castle" until Update 5.95.)
 
 The Donaghy family's game: outside 13i canon (a space reskin may come later).
 Paul's brief: the family playing together on laptops across several states;
@@ -57,9 +59,23 @@ roots, so a medieval castle. Everyone plays for the **Donaghy Cup**.
 - Mouse walking: `setHumanTarget` in engine.js; camera kept on the view.
 - Vote clock: `VOTE_SECONDS` in DonaghyCastle.js.
 
+## Added in 5.95
+- Crest: `components/castle/crest.js` (drawn, not an image file).
+- Schemes: `smokeBomb`, `falseAlarm`, `dropMarbles` in engine.js; smoke
+  blocks sight via `smokeBlocks`. `schemesFor` feeds the HUD list.
+- Sheba growls at the Black Knight (`world.growls`), a meeting clue.
+- Moat ride: `startRide`/`rideTick` in engine.js, drawn by `drawBoat`.
+- Music stages: `castleMusic.setStage(captures)`.
+- Dominoes: `result.tiles` (endGame). Endings: `components/castle/Ending.js`
+  with `playAnthem` (both tunes are original).
+- Night log: `world.log` via `logEvent`.
+- Deliberate choices: no hanging is shown (the march stops short), no
+  copyrighted song is played (Paul asked for Sweet Caroline; the endings
+  use original tunes), and the Cup screen line is original.
+
 ## Balance
 Tuned with bot-only simulations (300 nights, human seat idle): roughly
-45-55% castle wins (46% after 5.93 and 5.94, capture cooldown 28s; nights run longer on the bigger map), nights end after 2-3 minutes of simulated play plus
+45-55% castle wins (46% after 5.93 and 5.94, 47% after 5.95 with the new schemes and Sheba's growl clue; capture cooldown 28s), nights end after 2-3 minutes of simulated play plus
 meetings. Main dials at the top of engine.js: CAPTURE_CD, TRUTH_CD,
 CHORES_EACH, and the computer voters' `trust` and 42-point threshold.
 

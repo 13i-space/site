@@ -1,4 +1,4 @@
-// Lights Out at Donaghy Castle: everything drawn on the canvas - the
+// Murder in the Donaghy Castle: everything drawn on the canvas - the
 // castle (painted once to an offscreen canvas), the people, the torchlight
 // and the joust.
 import {
@@ -7,6 +7,7 @@ import {
 } from "../../lib/castle/map";
 import { look, nextJob } from "../../lib/castle/engine";
 import { drawKnightTop, drawKnightSide, drawKnightFront, drawHorse } from "./knight";
+import { drawCrest } from "./crest";
 
 // a stable pseudo-random number per tile, so the stonework doesn't shimmer
 const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 13)) * 1274126177; return ((h ^ (h >> 16)) >>> 0) / 4294967295; };
@@ -78,6 +79,7 @@ export function paintCastle() {
     g.fillStyle = "#9a9aa8"; g.beginPath(); g.arc(px + TILE - 9, py + 16, 2.5, 0, 7); g.fill();
   }
   paintGreatHall(g);
+  paintRoomDetails(g);
   // throne room carpet runner
   g.fillStyle = "#7a1d28"; g.fillRect(41 * TILE, 3 * TILE, 2 * TILE, 10 * TILE);
   g.fillStyle = "#c9a227"; g.fillRect(41 * TILE, 3 * TILE, 3, 10 * TILE); g.fillRect(43 * TILE - 3, 3 * TILE, 3, 10 * TILE);
@@ -159,6 +161,76 @@ function drawPerson(g, e, world, me, t) {
 const BK_LOOK = { tabard: "#16161c", trim: "#b01020", helmet: "#24242c", helmetStyle: "plumed", weapon: "longsword", emblem: "plain" };
 const JESTER_LOOK = { tabard: "#7d3c98", trim: "#e9c64a", helmet: "#e9c64a", helmetStyle: "hood", weapon: "mace", emblem: "plain" };
 
+// furniture and fittings so each room looks like what it is (painted once)
+function paintRoomDetails(g) {
+  const T = TILE;
+  const R = (x, y, w, h, c) => { g.fillStyle = c; g.fillRect(x * T, y * T, w * T, h * T); };
+  const C = (x, y, r, c) => { g.fillStyle = c; g.beginPath(); g.arc(x * T, y * T, r * T, 0, 7); g.fill(); };
+  const books = (x, y, w) => {
+    R(x, y, w, 0.9, "#3a2210");
+    for (let i = 0; i < w * 5; i++) { g.fillStyle = ["#7a1d28", "#1d3a7a", "#2e5a2e", "#8a6a2a", "#5a3a6a", "#a0522d"][Math.floor(hash(i, x * 7 + y) * 6)]; g.fillRect(x * T + 2 + i * 6.2, y * T + 3, 5, T * 0.9 - 6); }
+  };
+  // Library: shelves on three walls, a reading table and a rug
+  books(15, 2, 17); books(15, 11.1, 3); books(28, 11.1, 4);
+  for (let y = 3.5; y < 11; y += 2) { R(15, y, 0.9, 1.6, "#3a2210"); R(31.1, y, 0.9, 1.6, "#3a2210"); }
+  R(21, 6.5, 6, 3, "#5a1a2a"); R(21.2, 6.7, 5.6, 2.6, "#7a2a3a");
+  R(22, 7.2, 4, 1.6, "#5b3b20"); C(23, 8, 0.18, "#f2e6c8"); C(23, 7.8, 0.12, "#ffcf6a");
+  R(24.4, 7.5, 1, 0.7, "#e6d8b0"); // an open book
+  // North Tower: a spiral stair and arrow slits
+  C(10, 8, 2, "#2c3346");
+  for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2; g.strokeStyle = "#5a6f9a"; g.lineWidth = 2; g.beginPath(); g.moveTo(10 * T, 8 * T); g.lineTo(10 * T + Math.cos(a) * 2 * T, 8 * T + Math.sin(a) * 2 * T); g.stroke(); }
+  C(10, 8, 0.4, "#5a6f9a");
+  for (const x of [4, 8, 12]) R(x, 2, 0.25, 0.8, "#9ab0d8");
+  // Throne Room: a raised dais, pillars and tapestries
+  R(38, 2.2, 8, 3, "#4a3a2a"); R(38.4, 2.5, 7.2, 2.4, "#6b5a40");
+  for (const x of [36, 48]) for (const y of [5, 8, 11]) { C(x, y, 0.55, "#2a2a30"); C(x, y, 0.42, "#6a6878"); }
+  for (const x of [34, 47]) { R(x, 2.05, 2.5, 1.4, "#7a1d28"); R(x + 1, 2.3, 0.5, 0.9, "#e9c64a"); }
+  // Chapel: pews facing the altar, stained glass, a gold cross
+  for (let y = 6; y < 12; y += 1.5) { R(54.5, y, 4, 0.55, "#5b3b20"); R(60, y, 4, 0.55, "#5b3b20"); }
+  R(56, 2.4, 6, 1.2, "#e8dcb8"); R(58.8, 2.2, 0.4, 1.6, "#e9c64a"); R(58.4, 2.6, 1.2, 0.35, "#e9c64a");
+  for (let i = 0; i < 6; i++) R(53.5 + i * 2, 2, 1.2, 0.3, ["#c0392b", "#2e5fb8", "#e9c64a", "#2e8b57", "#8e44ad", "#c0392b"][i]);
+  // Armory: weapon racks, shields on the wall and a straw training dummy
+  for (let i = 0; i < 4; i++) { g.save(); g.translate((67 + i * 0.8) * T, 9 * T); g.strokeStyle = "#7a5a32"; g.lineWidth = 3; g.beginPath(); g.moveTo(0, 0); g.lineTo(0, 3 * T); g.stroke(); g.fillStyle = "#c9ced8"; g.beginPath(); g.moveTo(-4, 0); g.lineTo(0, -10); g.lineTo(4, 0); g.fill(); g.restore(); }
+  for (let i = 0; i < 4; i++) { C(68 + i * 2.2, 2.6, 0.45, ["#C0392B", "#2E5FB8", "#2E8B57", "#D4A017"][i]); C(68 + i * 2.2, 2.6, 0.15, "#e9c64a"); }
+  C(72, 8, 0.6, "#c9a54a"); R(71.9, 8.4, 0.2, 1.4, "#7a5a32"); R(71.3, 8.2, 1.4, 0.2, "#7a5a32");
+  // Kitchen: a great hearth, a long table of food, hanging pots, barrels and sacks
+  R(2, 22, 1.2, 5, "#2a2a30"); R(2.2, 22.6, 0.8, 3.8, "#5a1a0a"); C(2.6, 24.5, 0.5, "#e0682a"); C(2.6, 24.5, 0.25, "#ffd27a");
+  R(5.5, 26, 6, 1.4, "#6b4a26");
+  for (let i = 0; i < 7; i++) C(6 + i * 0.8, 26.7, 0.22, ["#c0392b", "#e9c64a", "#2e8b57", "#d9772b", "#8b5a2b", "#c0392b", "#9acd32"][i]);
+  for (const x of [5, 7, 9]) { C(x, 18.6, 0.35, "#2a2a30"); C(x, 18.6, 0.22, "#4a4a55"); }
+  for (const [x, y] of [[13, 31], [13.8, 31], [13, 32]]) { C(x, y, 0.4, "#6b4a26"); C(x, y, 0.3, "#7b5a36"); }
+  for (const [x, y] of [[3, 31], [4, 32]]) C(x, y, 0.45, "#e8dcb8");
+  // Forge: anvil, coal heap, tool rack, quench barrel
+  R(58, 26, 1.6, 0.8, "#3a3a44"); R(58.3, 26.8, 1, 0.6, "#2a2a30");
+  for (let i = 0; i < 9; i++) C(63 + hash(i, 3) * 2, 30 + hash(i, 4) * 2, 0.25, "#1a1a1e");
+  for (let i = 0; i < 5; i++) R(56 + i * 0.6, 18.1, 0.12, 1.2, "#8a8f9a");
+  C(63.5, 22, 0.55, "#4a2e14"); C(63.5, 22, 0.4, "#1d3a5a");
+  // Stables: stall dividers, horses resting, hay bales
+  for (let y = 18; y < 34; y += 3.2) R(74, y, 3, 0.2, "#5b3b20");
+  for (const y of [19.5, 25.9]) { g.fillStyle = "#6a4426"; g.beginPath(); g.ellipse(75.5 * T, y * T, 1.1 * T, 0.5 * T, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(74.4 * T, (y - 0.3) * T, 0.35 * T, 0.25 * T, 0, 0, 7); g.fill(); }
+  for (const [x, y] of [[68, 32], [69.2, 32], [68.6, 31]]) R(x, y, 1, 0.8, "#c9a54a");
+  // Dungeon: chains on the walls, straw and puddles
+  for (const x of [8, 11, 15]) for (let k = 0; k < 4; k++) C(x, 39.3 + k * 0.3, 0.1, "#7b7f8a");
+  for (const [x, y] of [[12, 49], [15, 45]]) { g.fillStyle = "#6a5a30"; g.beginPath(); g.ellipse(x * T, y * T, T, 0.5 * T, 0.3, 0, 7); g.fill(); }
+  for (const [x, y] of [[7, 43], [13, 51]]) { g.fillStyle = "rgba(90,120,170,0.35)"; g.beginPath(); g.ellipse(x * T, y * T, 0.8 * T, 0.4 * T, 0, 0, 7); g.fill(); }
+  // Wine Cellar: racks of barrels
+  for (let r = 0; r < 3; r++) for (let i = 0; i < 4; i++) { C(25 + i * 1.3, 45 + r * 1.8, 0.55, "#5b3b20"); C(25 + i * 1.3, 45 + r * 1.8, 0.35, "#7b5a36"); C(25 + i * 1.3, 45 + r * 1.8, 0.08, "#2a1a0d"); }
+  // Courtyard: a cobbled path, a fountain, trees and flower beds
+  R(42, 39, 2, 15, "#5a5a50");
+  C(43, 45, 1.8, "#6a6560"); C(43, 45, 1.4, "#2d5a7a"); C(43, 45, 0.3, "#9ab0d8");
+  for (const [x, y] of [[36, 42], [49, 42], [36, 51], [49, 51]]) { C(x, y + 0.2, 1.3, "rgba(0,0,0,0.25)"); C(x, y, 1.3, "#1f5a2a"); C(x - 0.3, y - 0.3, 0.8, "#2e7a3a"); }
+  for (let i = 0; i < 14; i++) C(34 + hash(i, 9) * 18, 40 + hash(i, 10) * 13, 0.12, ["#e9c64a", "#d46a9f", "#f2efe6", "#c0392b"][i % 4]);
+  // Gatehouse: guard benches, a weapon stand, murder holes overhead
+  R(55, 49, 4, 0.6, "#5b3b20"); R(60, 49, 4, 0.6, "#5b3b20");
+  for (let i = 0; i < 3; i++) for (let k = 0; k < 2; k++) C(58 + i * 1.5, 43 + k * 2, 0.18, "#1a1a1e");
+  // Well House: buckets, a coil of rope and a trough
+  for (const [x, y] of [[73, 41], [74, 42], [68, 48]]) { C(x, y, 0.35, "#6b4a26"); C(x, y, 0.25, "#2d5a7a"); }
+  g.strokeStyle = "#c9a54a"; g.lineWidth = 2; for (let k = 0; k < 4; k++) { g.beginPath(); g.arc(68 * T, 41 * T, (0.15 + k * 0.1) * T, 0, 7); g.stroke(); }
+  R(72, 47, 4, 0.8, "#5b3b20"); R(72.2, 47.15, 3.6, 0.5, "#2d5a7a");
+  // torch sconces along the galleries
+  for (let x = 6; x < 76; x += 8) for (const y of [14.05, 37.7]) { R(x, y, 0.3, 0.25, "#4a2e14"); C(x + 0.15, y + 0.1, 0.12, "#ffb43a"); }
+}
+
 function paintGreatHall(g) {
   // a long red carpet from door to door, and a great round rug under the table
   g.fillStyle = "#6a1822"; g.fillRect(33.6 * TILE, 18 * TILE, 2.8 * TILE, 16 * TILE);
@@ -188,12 +260,10 @@ function paintGreatHall(g) {
     g.fillStyle = "#d8cfae"; g.beginPath(); g.arc(px, py, 5, 0, 7); g.fill();
     g.fillStyle = "#b8902a"; g.beginPath(); g.arc(px + Math.cos(a) * 9, py + Math.sin(a) * 9, 2.5, 0, 7); g.fill();
   }
-  // the red-and-gold rose at the centre, with a great sword laid across it
-  g.fillStyle = "#c0392b"; g.beginPath(); g.arc(TABLE.x, TABLE.y, 18, 0, 7); g.fill();
-  g.fillStyle = "#e9c64a"; g.beginPath(); g.arc(TABLE.x, TABLE.y, 8, 0, 7); g.fill();
-  g.save(); g.translate(TABLE.x, TABLE.y); g.rotate(-0.6);
-  g.fillStyle = "#dde3ec"; g.fillRect(-34, -2.5, 52, 5); g.fillStyle = "#c9a227"; g.fillRect(16, -9, 4, 18); g.fillRect(20, -2, 12, 4);
-  g.restore();
+  // the Donaghy arms inlaid at the centre
+  g.fillStyle = "#3a2410"; g.beginPath(); g.arc(TABLE.x, TABLE.y, 40, 0, 7); g.fill();
+  g.strokeStyle = "#c9a227"; g.lineWidth = 2; g.beginPath(); g.arc(TABLE.x, TABLE.y, 40, 0, 7); g.stroke();
+  g.save(); g.translate(TABLE.x, TABLE.y + 1); drawCrest(g, 62); g.restore();
   // suits of armour on plinths along the walls
   for (const [x, y] of ARMOUR_STANDS) {
     const cx = x * TILE + 16, cy = y * TILE + 16, top = y < 25;
@@ -219,6 +289,22 @@ function paintGreatHall(g) {
     g.fillStyle = "#c2501e"; g.beginPath(); g.arc(b.x, b.y, 10, 0, 7); g.fill();
     g.fillStyle = "#ffcf6a"; g.beginPath(); g.arc(b.x, b.y, 5, 0, 7); g.fill();
   }
+}
+
+function drawBoat(g, me, world, t) {
+  g.save(); g.translate(me.x, me.y); g.rotate(me.facing);
+  // the wake
+  for (let i = 1; i < 6; i++) { g.strokeStyle = `rgba(160,190,230,${0.3 - i * 0.05})`; g.lineWidth = 2; g.beginPath(); g.arc(-18 - i * 9, 0, 6 + i * 4, -0.9, 0.9); g.stroke(); }
+  g.fillStyle = "#5b3b20"; g.beginPath(); g.ellipse(0, 0, 22, 10, 0, 0, 7); g.fill();
+  g.fillStyle = "#7b5a36"; g.beginPath(); g.ellipse(0, 0, 18, 7, 0, 0, 7); g.fill();
+  const row = Math.sin(t * 14) * 0.6;
+  g.strokeStyle = "#c9a54a"; g.lineWidth = 2.5;
+  for (const d of [-1, 1]) { g.beginPath(); g.moveTo(-2, d * 6); g.lineTo(-2 - Math.cos(row) * 10, d * (16 + Math.sin(row) * 4)); g.stroke(); }
+  g.scale(0.85, 0.85);
+  drawKnightTop(g, me.look, { facing: 0, torch: false, t });
+  g.restore();
+  g.font = "600 11px Inter, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "#fff3c4";
+  g.fillText("Rowing round the moat...", me.x, me.y - 24);
 }
 
 function drawSheba(g, sh, t, wt) {
@@ -353,7 +439,12 @@ export function drawFrame(g, dark, map, world, view, t) {
   drawSheba(g, world.sheba, t, world.t);
   drawNana(g, world.nana, t);
   for (const e of order) drawPerson(g, e, world, me, t);
-  drawPerson(g, me, world, me, t);
+  if (world.ride) drawBoat(g, me, world, t);
+  else drawPerson(g, me, world, me, t);
+  // marbles on the floor
+  for (const m of world.marbles || []) {
+    for (let i = 0; i < 9; i++) { g.fillStyle = ["#c0392b", "#2e5fb8", "#e9c64a", "#2e8b57"][i % 4]; g.beginPath(); g.arc(m.x + Math.cos(i * 2.4) * (6 + i * 2), m.y + Math.sin(i * 2.4) * (6 + i * 2), 2.6, 0, 7); g.fill(); }
+  }
 
   // ---- darkness ----
   dark.setTransform(1, 0, 0, 1, 0, 0);
@@ -370,7 +461,9 @@ export function drawFrame(g, dark, map, world, view, t) {
   };
   if (!world.lightsOut) for (const b of BRAZIERS) hole(b.x, b.y, 150 + Math.sin(t * 9 + b.x) * 6, 0.85);
   hole(FORGE_FIRE.x, FORGE_FIRE.y, 100 + Math.sin(t * 11) * 5, 0.8); // the forge fire never dies
-  if (!me.alive) {
+  if (world.ride) {
+    hole(me.x, me.y, 380, 0.9);
+  } else if (!me.alive) {
     hole(me.x, me.y, 420, 0.75);
   } else {
     const smith = me.role === "blacksmith" || me.role === "blackknight";
@@ -422,9 +515,26 @@ export function drawFrame(g, dark, map, world, view, t) {
     g.beginPath(); g.moveTo(x - 5, y - 24); g.lineTo(x, y - 17); g.lineTo(x + 5, y - 24); g.fill();
     g.fillStyle = "#2a1c12"; g.fillText(text, x, y - 31, 250);
   };
+  for (const c of world.smoke || []) {
+    const age = world.t - c.t0, fade = Math.min(1, (c.until - world.t) / 2) * Math.min(1, age * 2);
+    for (let i = 0; i < 16; i++) {
+      const a = i * 2.39 + age * 0.3, r = c.r * (0.25 + (i % 5) * 0.17);
+      g.fillStyle = `rgba(70,68,78,${0.55 * fade})`;
+      g.beginPath(); g.arc(c.x + Math.cos(a) * r, c.y + Math.sin(a) * r, c.r * 0.42, 0, 7); g.fill();
+    }
+  }
   const sh = world.sheba, na = world.nana;
+  if (world.t < (sh.growlUntil || 0) && Math.hypot(me.x - sh.x, me.y - sh.y) < TILE * 8) bubble(sh.x, sh.y, "Grrrrr...", "#8a1020");
   if (world.t < sh.barkUntil && Math.hypot(me.x - sh.x, me.y - sh.y) < TILE * 14) bubble(sh.x, sh.y, "Woof! Woof!", "#2a1c12");
-  if (na.say && world.t < na.sayUntil && Math.hypot(me.x - na.x, me.y - na.y) < TILE * 9) bubble(na.x, na.y - 6, na.say, "#8e44ad");
+  // Nana's toots: a little green puff, and a *toot* you can hear in the dark
+  for (const p of na.puffs) {
+    const k = (world.t - p.t) / 3;
+    for (let i = 0; i < (p.big ? 6 : 3); i++) {
+      g.fillStyle = `rgba(150,190,90,${0.35 * (1 - k)})`;
+      g.beginPath(); g.arc(p.x + Math.cos(i * 2.1) * 8 * (1 + k * 2), p.y + Math.sin(i * 2.1) * 8 * (1 + k * 2) - k * 14, (5 + k * 10) * (p.big ? 1.5 : 1), 0, 7); g.fill();
+    }
+  }
+  if (world.t - na.tootAt < 1.6 && Math.hypot(me.x - na.x, me.y - na.y) < TILE * 10) bubble(na.x, na.y - 6, na.puffs.length && na.puffs[na.puffs.length - 1].big ? "*PFFFRRRRT*" : "*toot*", "#7a9a3a");
 
   // a small arrow toward your nearest job, when it's off in the dark
   const job = nextJob(world);
@@ -491,6 +601,10 @@ export function drawMiniMap(g, world, width) {
     g.strokeStyle = "#1b1406"; g.lineWidth = 1;
     g.beginPath(); g.arc(st.tx * s + s / 2, st.ty * s + s / 2, 2.8, 0, 7); g.fill(); g.stroke();
   }
+  if (world.alarm && world.t < world.alarm.until) {
+    const r = ROOMS.find((x) => x.id === world.alarm.room);
+    if (r) { g.strokeStyle = `rgba(255,80,60,${0.6 + Math.sin(world.t * 10) * 0.4})`; g.lineWidth = 2; g.strokeRect(r.x * s, r.y * s, r.w * s, r.h * s); }
+  }
   { const b = stationById("bell"); g.fillStyle = "#e9c64a"; g.beginPath(); g.arc((b.tx + 0.5) * s, (b.ty + 0.5) * s, 2.2, 0, 7); g.fill(); }
   g.strokeStyle = "rgba(201,162,39,0.8)"; g.lineWidth = 1; g.beginPath(); g.arc((TABLE.x / TILE) * s, (TABLE.y / TILE) * s, (TABLE.r / TILE) * s, 0, 7); g.stroke();
   const px = (me.x / TILE) * s, py = (me.y / TILE) * s;
@@ -540,6 +654,15 @@ export function drawJoustScene(g, w, h, t, sc) {
     g.fillStyle = ["#6a3b3b", "#3b4f6a", "#4f6a3b", "#6a5a3b", "#5a3b6a"][i % 5];
     g.beginPath(); g.arc(cx, base + 4 * s + bob, 6.5 * s, 0, 7); g.fill();
   }
+  // striped canopies over the stands, on poles, with pennants
+  for (const [k, fx] of [[0, 0.14], [1, 0.285], [2, 0.575], [3, 0.715]]) {
+    const x0 = w * fx, cw = w * 0.145, cy = base - 54 * s;
+    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? "#7a1d28" : "#e8dcb8"; g.fillRect(x0 + (i * cw) / 8, cy, cw / 8 + 1, 22 * s); }
+    for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? "#7a1d28" : "#e8dcb8"; g.beginPath(); g.arc(x0 + ((i + 0.5) * cw) / 8, cy + 22 * s, cw / 16, 0, Math.PI); g.fill(); }
+    g.fillStyle = "#4a2e14"; g.fillRect(x0, cy, 3 * s, 70 * s); g.fillRect(x0 + cw - 3 * s, cy, 3 * s, 70 * s);
+    g.fillStyle = k % 2 ? "#1d3a7a" : "#c9a227"; g.beginPath(); g.moveTo(x0 + cw / 2, cy - 18 * s); g.lineTo(x0 + cw / 2 + 18 * s, cy - 13 * s + Math.sin(t * 6 + k) * 2 * s); g.lineTo(x0 + cw / 2, cy - 8 * s); g.fill();
+    g.fillStyle = "#4a2e14"; g.fillRect(x0 + cw / 2 - 1, cy - 20 * s, 2, 20 * s);
+  }
   // the royal box, with the Donaghy Cup on show
   g.fillStyle = "#4a1820"; g.fillRect(w * 0.44, base - 40 * s, w * 0.12, 40 * s);
   g.fillStyle = "#c9a227"; g.fillRect(w * 0.44, base - 44 * s, w * 0.12, 5 * s);
@@ -562,6 +685,8 @@ export function drawJoustScene(g, w, h, t, sc) {
   g.fillStyle = "#3b3021"; g.fillRect(0, base + 86 * s, w, h);
   g.fillStyle = "#4a3c28"; g.fillRect(0, ground - 70 * s, w, h);
   for (let i = 0; i < 60; i++) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(hash(i, 21) * w, ground - 60 * s + hash(i, 22) * 120 * s, 14 * s, 2 * s); }
+  g.strokeStyle = "rgba(255,230,180,0.05)"; g.lineWidth = 2 * s;
+  for (let i = 0; i < 9; i++) { g.beginPath(); g.moveTo(0, ground - 50 * s + i * 14 * s); g.lineTo(w, ground - 50 * s + i * 14 * s); g.stroke(); }
   // the family in the front row, each in their own colours
   const crowd = sc.crowd || [];
   const rowY = base + 74 * s;
@@ -632,7 +757,14 @@ export function drawJoustScene(g, w, h, t, sc) {
     g.save(); g.translate(x, y); g.scale(dir * s, s);
     drawHorse(g, ph, side.look, { black: side.black });
     g.translate(0, -18);
-    drawKnightSide(g, side.look, { black: side.black, lance: !(impact && sc.broken), lanceAim: side.aim || 0 });
+    // the practice joust aims the lance straight at the ring on the other knight's shield
+    let lanceAngle;
+    if (sc.reticle && dir > 0 && !impact) {
+      const bx = x - 6 * s, by = y + (-18 - 64) * s;
+      const tx = rx + 16 * s, ty = ground - 26 * s - 80 * s + sc.reticle.y * 46 * s;
+      lanceAngle = Math.max(-0.7, Math.min(0.7, Math.atan2(ty - by, Math.max(40 * s, tx - bx))));
+    }
+    drawKnightSide(g, side.look, { black: side.black, lance: !(impact && sc.broken), lanceAim: side.aim || 0, lanceAngle });
     g.restore();
   };
 

@@ -191,7 +191,7 @@ function SentinelView({ d }) {
       </p>
       <p style={{ textAlign: "center", marginTop: -6, marginBottom: 20 }}>
         {/* the family game, hidden; who can open it lives in lib/familyGame.js */}
-        <a href="/donaghy-castle" className="mono" style={styles.castleButton}>&#127984; LIGHTS OUT AT DONAGHY CASTLE &rarr;</a>
+        <a href="/donaghy-castle" className="mono" style={styles.castleButton}>&#127984; MURDER IN THE DONAGHY CASTLE &rarr;</a>
       </p>
 
       <VersionStrip />

@@ -16,9 +16,9 @@ function tipsFor(hud) {
   if (hud.gate && ROLES[r].side === "castle" && me.alive) tips.push({ key: "gate", hot: true, text: "The portcullis is jammed. Free it at the winch in the Gatehouse (hold E)." });
   if (r === "blackknight" && me.alive) {
     if (me.cd.capture <= 0) tips.push({ key: "bk-ready", hot: true, text: "Your capture is ready. Find someone on their own, walk until you're nearly touching, and press Q. Then slip away (a secret passage helps) before anyone finds the helmet." });
-    else tips.push({ key: "bk-wait", text: `Capture recharges in ${Math.ceil(me.cd.capture)}s. Meanwhile stand at a 'pretend chore' to look busy. Press 1 for Lights Out (everyone's torch shrinks), 2 to jam the portcullis, 3 to disguise yourself as someone else.` });
+    else tips.push({ key: "bk-wait", text: `Capture recharges in ${Math.ceil(me.cd.capture)}s. Meanwhile stand at a 'pretend chore' to look busy. Press 1 for Lights Out (everyone's torch shrinks), 2 to jam the portcullis, 3 to disguise yourself as someone else, 4 for a smoke bomb nobody can see through. Your schemes are listed bottom-left. Careful: Sheba growls at the Black Knight.` });
   }
-  if (r === "jester" && me.alive) tips.push({ key: "jester", text: `You'll pop out somewhere random in ${Math.ceil(me.cd.hop)}s. Q swaps places with the nearest person, once a round. Help the Black Knight: muddle the meetings and point at the innocent.` });
+  if (r === "jester" && me.alive) tips.push({ key: "jester", text: `You'll pop out somewhere random in ${Math.ceil(me.cd.hop)}s. Q swaps places with the nearest person, once a round. 1 fakes a scream in another room so people run the wrong way. 2 drops marbles that send people sprawling. Help the Black Knight: muddle the meetings and point at the innocent.` });
   if (r === "knight" && me.alive) tips.push({ key: "knight", text: me.cd.truth > 0 ? `Torch of Truth recharging (${Math.ceil(me.cd.truth)}s). When it's ready, face someone close and press F to see who they really are.` : "Your Torch of Truth is ready: face someone close and press F. It sees through the Black Knight's disguise." });
   if (r === "locksmith" && me.alive && hud.prisoners && !hud.freeUsed) tips.push({ key: "lock", hot: true, text: "Someone's locked in the dungeon cell. Go to the cell door in the Dungeon and hold E to free them (once a night)." });
   if (hud.job && me.alive) tips.push({ key: "job", text: `Your nearest job: ${hud.job.label} in the ${hud.job.room}. Follow the ${hud.job.urgent ? "red" : "gold"} arrow by your knight, or the dots on the map.` });
@@ -102,7 +102,7 @@ export function HelpOwl({ hud, open, setOpen }) {
                 <p style={{ margin: "0 0 8px" }}><b style={{ color: "#f2dc9a" }}>The castle wins</b> by finishing every chore, or by voting the Black Knight into the joust, where they&rsquo;re knocked off their horse.</p>
                 <p style={{ margin: "0 0 8px" }}><b style={{ color: "#ff9a85" }}>The Black Knight (and Jester) win</b> at midnight, or when there are no more honest folk free than there are of them.</p>
                 <p style={{ margin: "0 0 8px" }}>Clues: every dropped helmet tells you which room the captor came from (soot means the Forge, straw the Stables, and so on). In the meeting, compare that with where people say they were, and with what you saw yourself.</p>
-                <p style={{ margin: 0 }}>Secret passages, like in Clue: the trapdoors in the corner rooms join the North Tower to the Well House, and the Armory to the Dungeon. Stand on one and hold E.</p>
+                <p style={{ margin: 0 }}>Secret passages, like in Clue: the trapdoors in the corner rooms join the North Tower to the Well House, and the Armory to the Dungeon. Stand on one and hold E, and you&rsquo;ll row round the moat in a little boat and climb out in the opposite corner.</p>
               </>
             )}
             {tab === "keys" && (

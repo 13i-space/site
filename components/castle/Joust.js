@@ -30,6 +30,39 @@ const T = {
   ghostBtn: { background: "rgba(14,12,28,0.8)", color: "#f2e6c8", border: "1px solid #5a5390", borderRadius: 999, padding: "9px 18px", fontSize: 14, cursor: "pointer" },
 };
 
+// ---------- the prizes: a domino set for the winner, a fruitcake for the loser ----------
+export function DominoSet({ size = 120 }) {
+  return (
+    <svg width={size} height={size * 0.7} viewBox="0 0 120 84" aria-label="A domino set">
+      <rect x="4" y="30" width="112" height="50" rx="5" fill="#6b3a1e" stroke="#2a1608" strokeWidth="2" />
+      <rect x="8" y="34" width="104" height="42" rx="3" fill="#8a5a2e" />
+      {[0, 1, 2, 3, 4, 5].map((i) => (
+        <g key={i} transform={`translate(${14 + i * 16} ${i % 2 ? 6 : 12}) rotate(${i % 2 ? -8 : 6})`}>
+          <rect width="13" height="26" rx="2.5" fill="#f4f1e8" stroke="#1b1406" strokeWidth="1.2" />
+          <line x1="1.5" y1="13" x2="11.5" y2="13" stroke="#1b1406" strokeWidth="1" />
+          {Array.from({ length: (i % 3) + 1 }).map((_, k) => <circle key={"a" + k} cx={4 + k * 2.6} cy={4 + k * 2.6} r="1.3" fill="#1b1406" />)}
+          {Array.from({ length: ((i + 2) % 4) + 1 }).map((_, k) => <circle key={"b" + k} cx={4 + (k % 2) * 5} cy={17 + Math.floor(k / 2) * 5} r="1.3" fill="#1b1406" />)}
+        </g>
+      ))}
+      <text x="60" y="62" textAnchor="middle" fontFamily="Georgia, serif" fontSize="11" fill="#f2dc9a">DOMINOES</text>
+    </svg>
+  );
+}
+export function Fruitcake({ size = 120 }) {
+  return (
+    <svg width={size} height={size * 0.7} viewBox="0 0 120 84" aria-label="A fruitcake">
+      <ellipse cx="60" cy="74" rx="52" ry="7" fill="#d8d2c4" />
+      <path d="M14 36 Q60 22 106 36 L104 68 Q60 80 16 68 Z" fill="#6b3a1e" stroke="#2a1608" strokeWidth="2" />
+      <path d="M14 36 Q60 22 106 36 Q60 50 14 36 Z" fill="#8a4a22" />
+      {[[30, 52, "#c0392b"], [48, 60, "#2e8b57"], [70, 50, "#e9c64a"], [86, 60, "#c0392b"], [58, 44, "#2e8b57"], [38, 64, "#e9c64a"], [78, 66, "#2e8b57"]].map(([x, y, c], i) => (
+        <rect key={i} x={x} y={y} width="6" height="5" rx="1" fill={c} />
+      ))}
+      <path d="M40 30 Q60 18 80 30 Q70 36 60 33 Q50 36 40 30 Z" fill="#f4f1e8" opacity="0.9" />
+      <circle cx="60" cy="26" r="4" fill="#c0392b" />
+    </svg>
+  );
+}
+
 // ---------- the joust after a vote ----------
 export function VoteJoust({ accused, crowd, onDone }) {
   const ref = useRef(null);
@@ -64,7 +97,7 @@ export function VoteJoust({ accused, crowd, onDone }) {
               {guilty ? `${accused.name} WAS the Black Knight!` : `${accused.name} was not the Black Knight.`}
             </div>
             <div style={{ ...T.sub, fontSize: "clamp(14px, 2vw, 19px)", marginTop: 8 }}>
-              {guilty ? "The castle is saved! Raise the Donaghy Cup!" : jester ? `...but the cap and bells give them away: ${accused.name} was the Jester, in league with the Black Knight!` : `The shadow knight vanishes in smoke. ${accused.name} rides off into the night, out of the game.`}
+              {guilty ? `The castle is saved! ${accused.name} gets the fruitcake.` : jester ? `...but the cap and bells give them away: ${accused.name} was the Jester, in league with the Black Knight!` : `The shadow knight vanishes in smoke. ${accused.name} wins a domino set, and rides off into the night, out of the game.`}
             </div>
           </>
         ) : null}
@@ -115,7 +148,7 @@ export function PracticeJoust({ me, onExit }) {
         <div className="mono" style={{ fontSize: 10.5, letterSpacing: "1.5px", color: "#a9a3c4" }}>THE TILTYARD · WHILE EVERYONE GATHERS</div>
         <div style={{ ...T.title, fontSize: 34, color: "#f2dc9a", margin: "6px 0 8px" }}>Practice joust</div>
         <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#d7d1ef", margin: "0 0 14px" }}>
-          Three passes. <b>Spam Space</b> to spur your horse: the faster rider hits harder. Move the mouse up and down (or ↑ ↓) to aim your lance at the green spot on
+          The winner takes home a domino set. The loser gets the fruitcake. Three passes. <b>Spam Space</b> to spur your horse: the faster rider hits harder. Move the mouse up and down (or ↑ ↓) to aim your lance at the green spot on
           their bobbing shield. A dead-centre hit at speed unhorses them and wins outright; a hit on the shield breaks your lance for 2 points; a glancing blow is 1.
         </p>
         <div className="mono" style={{ fontSize: 10.5, letterSpacing: "1.5px", color: "#a9a3c4", marginBottom: 8 }}>CHALLENGE SOMEONE</div>
@@ -159,7 +192,7 @@ function Duel({ me, rival, crowd, onExit }) {
       if (e.code === "ArrowDown" || e.code === "KeyS") { e.preventDefault(); r.keys.down = true; }
     };
     const ku = (e) => { const r = st.current.run; if (e.code === "ArrowUp" || e.code === "KeyW") r.keys.up = false; if (e.code === "ArrowDown" || e.code === "KeyS") r.keys.down = false; };
-    const mm = (e) => { const r = st.current.run; if (r.impact) return; r.aim = Math.max(-1, Math.min(1, (e.clientY / window.innerHeight - 0.55) / 0.28)); };
+    const mm = (e) => { const r = st.current.run; if (r.impact) return; r.aim = Math.max(-1, Math.min(1, (e.clientY / window.innerHeight - 0.5) / 0.3)); };
     window.addEventListener("keydown", kd); window.addEventListener("keyup", ku); window.addEventListener("mousemove", mm);
     return () => { window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku); window.removeEventListener("mousemove", mm); };
   }, []);
@@ -235,6 +268,12 @@ function Duel({ me, rival, crowd, onExit }) {
         {view.over && (
           <div style={{ ...T.title, fontSize: "clamp(26px, 4.5vw, 44px)", marginTop: 10, color: view.over === "won" ? "#f2dc9a" : view.over === "lost" ? "#ff9a85" : "#e7dcc0" }}>
             {view.over === "won" ? "Victory! The crowd roars." : view.over === "lost" ? `${rival.name} takes the day.` : "A draw. Honour is satisfied."}
+          </div>
+        )}
+        {view.over && view.over !== "draw" && (
+          <div style={{ display: "inline-flex", gap: 22, marginTop: 10, background: "rgba(10,8,20,0.75)", border: "1px solid #c9a227", borderRadius: 12, padding: "10px 18px", alignItems: "center" }}>
+            <div style={{ textAlign: "center" }}><DominoSet size={110} /><div style={{ color: "#f2dc9a", fontSize: 13, fontWeight: 600 }}>{view.over === "won" ? me.name : rival.name} wins a domino set</div></div>
+            <div style={{ textAlign: "center" }}><Fruitcake size={110} /><div style={{ color: "#e7dcc0", fontSize: 13, fontWeight: 600 }}>{view.over === "won" ? rival.name : me.name} gets the fruitcake</div></div>
           </div>
         )}
       </div>

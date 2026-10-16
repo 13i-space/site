@@ -3,6 +3,34 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.95 — Murder in the Donaghy Castle (Oct 2026)
+No SQL. The family game is renamed and gets its third round of Paul's notes.
+- Renamed from "Lights Out at Donaghy Castle" (same /donaghy-castle link).
+- The Donaghy arms (gold shield, green mount, white boar, two red lions),
+  drawn in `components/castle/crest.js`, inlaid in the Round Table and
+  beside the title in the lobby.
+- Every room furnished: bookshelves, spiral stair, throne dais and pillars,
+  pews and stained glass, weapon racks, a kitchen hearth, anvil, stalls,
+  barrels, a courtyard fountain and trees, sconces in the galleries.
+- Black Knight: smoke bomb (4) nobody can see through; Jester: false alarm
+  (1, a scream from another room) and marbles (2, people slip). Computer
+  players use them too. Their powers are listed as "Your schemes", and the
+  Black Knight gets a big capture countdown.
+- Sheba growls at the Black Knight; whoever sees it can say so at a meeting.
+- Nana no longer talks: she just toots (green puff, sound included).
+- Secret passages are now a boat ride round the moat.
+- Music starts pleasant (major key, light tabor) and darkens with a brass
+  sting after every capture: minor key, drum, heartbeat, strings.
+- Scores are domino tiles (pips are the points); the Cup counts domino
+  points (localStorage `donaghy-cup-v2`).
+- Endings: the castle wins and the Black Knight and Jester are marched in
+  chains to the gallows on the hill (the scene stops there), or they win
+  and dance on the battlements with the Cup. Each with an original tune.
+- A "story of the night" on the last screen shows what really happened.
+- Practice joust: the lance now points at where you aim; more detail on
+  horses, knights and stands; the winner gets a domino set and the loser a
+  fruitcake (the vote joust hands them out too).
+
 ## Update 5.94 — Donaghy Castle: bigger castle, the Round Table, Sheba and Nana, real chores (Oct 2026)
 No SQL. Paul's second round of notes on the family game.
 - The castle is about a third bigger (80 x 58 tiles, `lib/castle/map.js`).
