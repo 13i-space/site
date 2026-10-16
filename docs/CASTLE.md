@@ -38,9 +38,19 @@ roots, so a medieval castle. Everyone plays for the **Donaghy Cup**.
   Truth catch 30, captures 10, win 50 (castle) / 60 (darkness). Totals are
   kept in localStorage (`donaghy-cup-v1`) until there's a shared table.
 
+## Added in 5.93
+- Knight builder (`Lobby.js`, `looks.js`, drawings in `knight.js`).
+- The castle owl help (`HelpOwl.js`): tips derived from `hudInfo`.
+- Music (`lib/castle/music.js`), tension from `hudInfo().tension`.
+- Secret passages (`PASSAGES` in map.js; pathfinding hops them).
+- Ghosts ignore walls (moveCircle / setGoal in engine.js).
+- Meeting chat: `sayInMeeting` in engine.js.
+- Joust scene (`drawJoustScene` in draw.js) used by the vote joust and the
+  practice joust (`Joust.js`). Practice record: localStorage `donaghy-duels-v1`.
+
 ## Balance
 Tuned with bot-only simulations (300 nights, human seat idle): roughly
-45-55% castle wins, nights end after 2-3 minutes of simulated play plus
+45-55% castle wins (46% after 5.93, capture cooldown 28s), nights end after 2-3 minutes of simulated play plus
 meetings. Main dials at the top of engine.js: CAPTURE_CD, TRUTH_CD,
 CHORES_EACH, and the computer voters' `trust` and 42-point threshold.
 

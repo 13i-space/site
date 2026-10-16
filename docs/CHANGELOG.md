@@ -3,6 +3,33 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.93 — Donaghy Castle: build your knight, the owl, music, passages, practice joust (Oct 2026)
+No SQL. Paul's first round of notes on the family game.
+- **Build your knight** in the lobby (`components/castle/Lobby.js`, looks in
+  `lib/castle/looks.js`): tabard and trim colours, emblem (St George's
+  cross, saltire...), helmet style and metal, weapon. Saved in the browser.
+  Knights are drawn in detail top-down, front-on and mounted
+  (`components/castle/knight.js`); computer players get random looks.
+- **The castle owl** (`components/castle/HelpOwl.js`, H key): a help
+  button that pops up the tip that matters now (how to capture, lights out,
+  a helmet nearby) and opens to the full rules, chores and keys.
+- Prompts for role powers ("Press Q: Capture Morag"), a gold arrow to your
+  nearest chore (red for sabotage), and "Next:" under the clock.
+- **Music** (`lib/castle/music.js`): drone, wind, lute and a war drum that
+  speeds up with tension (later in the night, after a capture, lights out).
+  Each player toggles music (N) and sound effects (M) separately.
+- Ghosts float through walls. **Secret passages** like Clue: trapdoors join
+  the North Tower and Well House, and the Armory and Dungeon (hold E).
+- Readability: near-black walls with a lit stone edge, warm sandstone
+  corridors, a colour per room; the minimap shows room colours and names.
+- **Meeting chat**: type into the meeting; names you mention count as an
+  accusation (or defence) and that person answers back.
+- **Joust**: knights in their own colours, tents, torches, the Donaghy Cup in
+  the royal box, and the rest of the castle cheering in the front row.
+- **Practice joust** from the lobby: three passes against a computer
+  challenger, timing your lance with Space. The waiting-room game for when
+  the family version is live.
+
 ## Update 5.92 — Lights Out at Donaghy Castle: the family game, test build (Oct 2026)
 No SQL. Outside 13i canon: the Donaghy family's own game.
 - Hidden page **/donaghy-castle** (full screen, outside the site layout).

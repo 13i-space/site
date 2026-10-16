@@ -2,16 +2,11 @@
 // castle (painted once to an offscreen canvas), the people, the torchlight
 // and the joust.
 import {
-  TILE, W, H, ROOMS, CORRIDORS, STATIONS, LOCKED, PORTCULLIS, BRAZIERS, CELL_AREA,
-  T_WALL, T_MOAT, tileAt, blocksSight,
+  TILE, W, H, ROOMS, CORRIDORS, STATIONS, LOCKED, PORTCULLIS, BRAZIERS, CELL_AREA, AREA_STYLE, PASSAGES,
+  T_WALL, T_MOAT, T_FLOOR, tileAt, blocksSight,
 } from "../../lib/castle/map";
-import { look } from "../../lib/castle/engine";
-
-const FLOORS = {
-  stone: ["#3a3a44", "#34343e"], wood: ["#4a3624", "#43301f"], carpet: ["#4a1f26", "#431b22"],
-  flag: ["#3d3a35", "#36332f"], straw: ["#5a4a26", "#524321"], dark: ["#26252c", "#212026"],
-  grass: ["#24402a", "#203a26"], corridor: ["#33323a", "#2e2d35"],
-};
+import { look, nextJob } from "../../lib/castle/engine";
+import { drawKnightTop, drawKnightSide, drawKnightFront, drawHorse } from "./knight";
 
 // a stable pseudo-random number per tile, so the stonework doesn't shimmer
 const hash = (x, y) => { let h = x * 374761393 + y * 668265263; h = (h ^ (h >> 13)) * 1274126177; return ((h ^ (h >> 16)) >>> 0) / 4294967295; };
@@ -26,30 +21,29 @@ export function paintCastle() {
     g.fillStyle = `rgba(90,120,170,${0.05 + hash(i, 7) * 0.08})`;
     g.fillRect(hash(i, 1) * cv.width, hash(i, 2) * cv.height, 6 + hash(i, 3) * 14, 1);
   }
+  // walls: near-black stone blocks
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const t = tileAt(x, y);
+    if (t === T_MOAT || t === T_FLOOR) continue;
     const px = x * TILE, py = y * TILE;
-    if (t === T_MOAT) continue;
-    if (t === T_WALL) {
-      g.fillStyle = "#1c1b22"; g.fillRect(px, py, TILE, TILE);
-      g.fillStyle = "#2a2932";
-      const off = (y % 2) * 8;
-      for (let r = 0; r < 2; r++) for (let c = -1; c < 2; c++) {
-        const bx = px + c * 16 + off + 1, by = py + r * 16 + 1;
-        g.fillStyle = `rgb(${38 + hash(x * 4 + c, y * 4 + r) * 14},${37 + hash(x * 4 + c, y * 4 + r) * 12},${46 + hash(x * 4 + c, y * 4 + r) * 12})`;
-        g.fillRect(Math.max(px, bx), by, Math.min(px + TILE, bx + 14) - Math.max(px, bx), 14);
-      }
-      continue;
+    g.fillStyle = "#101016"; g.fillRect(px, py, TILE, TILE);
+    const off = (y % 2) * 8;
+    for (let r = 0; r < 2; r++) for (let c = -1; c < 2; c++) {
+      const bx = px + c * 16 + off + 1, by = py + r * 16 + 1, k = hash(x * 4 + c, y * 4 + r);
+      g.fillStyle = `rgb(${24 + k * 12},${23 + k * 11},${30 + k * 12})`;
+      const x0 = Math.max(px, bx), x1 = Math.min(px + TILE, bx + 14);
+      if (x1 > x0) g.fillRect(x0, by, x1 - x0, 14);
     }
   }
   for (const r of [...CORRIDORS, ...ROOMS]) {
-    const [a, b] = FLOORS[r.floor];
+    const [a, b] = AREA_STYLE[r.id].tiles;
     for (let y = r.y; y < r.y + r.h; y++) for (let x = r.x; x < r.x + r.w; x++) {
       g.fillStyle = (x + y) % 2 ? a : b; g.fillRect(x * TILE, y * TILE, TILE, TILE);
       const n = hash(x, y);
       if (r.floor === "wood") { g.fillStyle = "rgba(0,0,0,0.18)"; g.fillRect(x * TILE, y * TILE + (n > 0.5 ? 15 : 31), TILE, 1); }
       else if (r.floor === "grass") { g.fillStyle = "rgba(80,140,80,0.25)"; for (let k = 0; k < 4; k++) g.fillRect(x * TILE + hash(x + k, y) * 30, y * TILE + hash(x, y + k) * 30, 1, 4); }
       else if (r.floor === "straw") { g.strokeStyle = "rgba(200,170,90,0.25)"; g.beginPath(); for (let k = 0; k < 3; k++) { const sx = x * TILE + hash(x + k, y) * 30, sy = y * TILE + hash(x, y + k) * 30; g.moveTo(sx, sy); g.lineTo(sx + 7, sy + 2); } g.stroke(); }
+      else if (r.floor === "corridor") { g.fillStyle = "rgba(0,0,0,0.16)"; g.fillRect(x * TILE, y * TILE + 15, TILE, 1); g.fillRect(x * TILE + ((y % 2) ? 8 : 24), y * TILE, 1, TILE); }
       else { g.strokeStyle = "rgba(0,0,0,0.22)"; g.strokeRect(x * TILE + 0.5, y * TILE + 0.5, TILE - 1, TILE - 1); }
     }
   }
@@ -57,7 +51,31 @@ export function paintCastle() {
   for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
     if (tileAt(x, y) !== 1) continue;
     const inArea = [...ROOMS, ...CORRIDORS].some((r) => x >= r.x && x < r.x + r.w && y >= r.y && y < r.y + r.h);
-    if (!inArea) { g.fillStyle = "#4b4438"; g.fillRect(x * TILE, y * TILE, TILE, TILE); }
+    if (!inArea) { g.fillStyle = "#8a7558"; g.fillRect(x * TILE, y * TILE, TILE, TILE); }
+  }
+  // a lit stone lip and a soft shadow wherever floor meets wall, so the
+  // walls stand out from every floor
+  const isWallish = (x, y) => { const t = tileAt(x, y); return t === T_WALL || t === T_MOAT; };
+  for (let y = 1; y < H - 1; y++) for (let x = 1; x < W - 1; x++) {
+    if (tileAt(x, y) !== T_FLOOR) continue;
+    const px = x * TILE, py = y * TILE;
+    if (isWallish(x, y - 1)) {
+      const gr = g.createLinearGradient(0, py, 0, py + 12); gr.addColorStop(0, "rgba(0,0,0,0.55)"); gr.addColorStop(1, "rgba(0,0,0,0)");
+      g.fillStyle = gr; g.fillRect(px, py, TILE, 12);
+      g.fillStyle = "#77738a"; g.fillRect(px, py - 4, TILE, 4);
+      g.fillStyle = "#a29db5"; g.fillRect(px, py - 4, TILE, 1);
+    }
+    if (isWallish(x, y + 1)) { g.fillStyle = "#4a4758"; g.fillRect(px, py + TILE, TILE, 3); }
+    if (isWallish(x - 1, y)) { g.fillStyle = "rgba(0,0,0,0.4)"; g.fillRect(px, py, 5, TILE); g.fillStyle = "#5e5a70"; g.fillRect(px - 3, py, 3, TILE); }
+    if (isWallish(x + 1, y)) { g.fillStyle = "rgba(0,0,0,0.25)"; g.fillRect(px + TILE - 4, py, 4, TILE); g.fillStyle = "#5e5a70"; g.fillRect(px + TILE, py, 3, TILE); }
+  }
+  // trapdoors to the secret passages
+  for (const p of PASSAGES) for (const [x, y] of [p.a, p.b]) {
+    const px = x * TILE, py = y * TILE;
+    g.fillStyle = "#3b2612"; g.fillRect(px + 3, py + 3, TILE - 6, TILE - 6);
+    g.strokeStyle = "#6b4a26"; g.lineWidth = 1;
+    for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(px + 3, py + 3 + i * 6.5); g.lineTo(px + TILE - 3, py + 3 + i * 6.5); g.stroke(); }
+    g.fillStyle = "#9a9aa8"; g.beginPath(); g.arc(px + TILE - 9, py + 16, 2.5, 0, 7); g.fill();
   }
   // the hall's long tables and the Great Bell
   g.fillStyle = "#5b3b20";
@@ -117,38 +135,20 @@ function drawPerson(g, e, world, me, t) {
   const ghost = !e.alive;
   g.save();
   g.translate(e.x, e.y);
-  if (ghost) g.globalAlpha = 0.38;
-  g.fillStyle = "rgba(0,0,0,0.35)"; g.beginPath(); g.ellipse(2, 5, 13, 8, 0, 0, 7); g.fill();
+  if (ghost) g.globalAlpha = 0.4;
+  g.fillStyle = "rgba(0,0,0,0.35)"; g.beginPath(); g.ellipse(2, 6, 15, 9, 0, 0, 7); g.fill();
   if (e === me && me.role === "blackknight" && me.alive) {
-    g.fillStyle = "rgba(170,20,30,0.25)"; g.beginPath(); g.arc(0, 0, 20 + Math.sin(t * 4) * 2, 0, 7); g.fill();
+    g.fillStyle = "rgba(170,20,30,0.25)"; g.beginPath(); g.arc(0, 0, 22 + Math.sin(t * 4) * 2, 0, 7); g.fill();
   }
-  g.rotate(e.facing);
-  // shoulders + tabard
-  g.fillStyle = shade(L.color, -0.35); g.beginPath(); g.ellipse(0, 0, 9, 13, 0, 0, 7); g.fill();
-  g.fillStyle = L.color; g.beginPath(); g.ellipse(1, 0, 7, 10, 0, 0, 7); g.fill();
-  // torch in the right hand
-  g.fillStyle = "#6b4a26"; g.fillRect(6, 7, 9, 3);
-  if (e.alive && !(world.lightsOut && e.role !== "blacksmith")) {
-    const f = 1 + Math.sin(t * 17 + e.id) * 0.15;
-    g.fillStyle = "rgba(255,170,60,0.9)"; g.beginPath(); g.arc(16, 8.5, 3.5 * f, 0, 7); g.fill();
-    g.fillStyle = "rgba(255,240,170,0.95)"; g.beginPath(); g.arc(16, 8.5, 1.6 * f, 0, 7); g.fill();
-  }
-  // helmet
-  g.fillStyle = "#b9bec9"; g.beginPath(); g.arc(1, 0, 6, 0, 7); g.fill();
-  g.fillStyle = "#6b707c"; g.fillRect(4, -3, 2, 6);
+  const moving = e.human ? !!e.moving : e.path && e.path.length > 0 && !e.work;
+  g.scale(1.2, 1.2);
+  drawKnightTop(g, L.look, { facing: e.facing, walk: e.walk || 0, moving, torch: e.alive && !(world.lightsOut && e.role !== "blacksmith"), t: t + e.id });
   g.restore();
-  if (ghost) g.globalAlpha = 0.45;
+  if (ghost) g.globalAlpha = 0.5;
   g.font = "600 11px Inter, system-ui, sans-serif"; g.textAlign = "center";
   g.fillStyle = e === me ? "#fff3c4" : "rgba(235,228,210,0.85)";
-  g.fillText(e === me ? `${L.name} (you)` : L.name, e.x, e.y - 20);
+  g.fillText(e === me ? `${L.name} (you)` : L.name, e.x, e.y - 22);
   g.globalAlpha = 1;
-}
-
-function shade(hex, amt) {
-  const n = parseInt(hex.slice(1), 16);
-  let r = n >> 16, gg = (n >> 8) & 255, b = n & 255;
-  const f = (v) => Math.max(0, Math.min(255, Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt)));
-  return `rgb(${f(r)},${f(gg)},${f(b)})`;
 }
 
 export function visionPolygon(cx, cy, facing, cone, near, spread = 0.62, rays = 180) {
@@ -278,12 +278,26 @@ export function drawFrame(g, dark, map, world, view, t) {
       const d = Math.hypot(e.x - me.x, e.y - me.y);
       if (d > 760) continue;
       if (!hasLOSQuick(me.x, me.y, e.x, e.y)) continue;
-      const tx = e.x + Math.cos(e.facing) * 16 - Math.sin(e.facing) * 8.5;
-      const ty = e.y + Math.sin(e.facing) * 16 + Math.cos(e.facing) * 8.5;
+      const tx = e.x + Math.cos(e.facing) * 15 + Math.sin(e.facing) * 9.5;
+      const ty = e.y + Math.sin(e.facing) * 15 - Math.cos(e.facing) * 9.5;
       const f = 1 + Math.sin(t * 15 + e.id * 3) * 0.2;
       const gr = g.createRadialGradient(tx, ty, 0, tx, ty, 16 * f);
       gr.addColorStop(0, "rgba(255,225,150,0.95)"); gr.addColorStop(0.4, "rgba(255,150,50,0.5)"); gr.addColorStop(1, "rgba(255,120,40,0)");
       g.fillStyle = gr; g.beginPath(); g.arc(tx, ty, 16 * f, 0, 7); g.fill();
+    }
+  }
+
+  // a small arrow toward your nearest job, when it's off in the dark
+  const job = nextJob(world);
+  if (job) {
+    const dx = job.x - me.x, dy = job.y - me.y, d = Math.hypot(dx, dy);
+    if (d > TILE * 3) {
+      const a = Math.atan2(dy, dx), r = 46;
+      g.save(); g.translate(me.x + Math.cos(a) * r, me.y + Math.sin(a) * r); g.rotate(a);
+      g.globalAlpha = 0.6 + Math.sin(t * 4) * 0.2;
+      g.fillStyle = job.urgent ? "#ff6a5a" : "#ffd27a";
+      g.beginPath(); g.moveTo(10, 0); g.lineTo(-5, -7); g.lineTo(-2, 0); g.lineTo(-5, 7); g.closePath(); g.fill();
+      g.restore();
     }
   }
 
@@ -309,191 +323,208 @@ function hasLOSQuick(x1, y1, x2, y2) {
   return true;
 }
 
-// ---------- minimap of where your chores are ----------
-export function drawMiniMap(g, world, size) {
-  const s = size / W;
+// ---------- the little map: rooms in their colours, your jobs, you ----------
+export function drawMiniMap(g, world, width) {
+  const s = width / W;
   const me = world.entities[0];
+  const k = g.canvas.width / width;
+  g.setTransform(1, 0, 0, 1, 0, 0);
   g.clearRect(0, 0, g.canvas.width, g.canvas.height);
-  g.fillStyle = "rgba(10,10,20,0.75)"; g.fillRect(0, 0, W * s, H * s);
-  for (const r of [...ROOMS, ...CORRIDORS]) { g.fillStyle = r.floor === "corridor" ? "#2f2e3a" : "#46434f"; g.fillRect(r.x * s, r.y * s, r.w * s, r.h * s); }
+  g.setTransform(k, 0, 0, k, 0, 0);
+  g.fillStyle = "rgba(8,8,16,0.85)"; g.fillRect(0, 0, W * s, H * s);
+  for (const r of [...CORRIDORS, ...ROOMS]) { g.fillStyle = AREA_STYLE[r.id].mini; g.fillRect(r.x * s, r.y * s, r.w * s, r.h * s); }
+  for (const p of PASSAGES) for (const [x, y] of [p.a, p.b]) { g.fillStyle = "#2a1a0d"; g.fillRect(x * s, y * s, s, s); }
+  g.textAlign = "center"; g.textBaseline = "middle"; g.font = "600 8px Inter, system-ui, sans-serif";
+  for (const r of ROOMS) {
+    const label = AREA_STYLE[r.id].short;
+    if (g.measureText(label).width > r.w * s - 2) continue;
+    const cx = (r.x + r.w / 2) * s, cy = (r.y + r.h / 2) * s;
+    g.fillStyle = "rgba(10,8,20,0.8)"; g.fillText(label, cx + 0.6, cy + 0.6);
+    g.fillStyle = "rgba(255,250,235,0.95)"; g.fillText(label, cx, cy);
+  }
   for (const st of STATIONS) {
     const mine = st.kind === "chore" && me.chores.includes(st.id) && !me.done.includes(st.id);
     const fix = (st.kind === "fixLights" && world.lightsOut) || (st.kind === "fixGate" && world.portcullisJammed);
     if (!mine && !fix) continue;
-    g.fillStyle = fix ? "#ff6a5a" : "#ffd27a";
-    g.fillRect(st.tx * s - 1.5, st.ty * s - 1.5, 4, 4);
+    g.fillStyle = fix ? "#ff4a3a" : "#ffe08a";
+    g.strokeStyle = "#1b1406"; g.lineWidth = 1;
+    g.beginPath(); g.arc(st.tx * s + s / 2, st.ty * s + s / 2, 2.8, 0, 7); g.fill(); g.stroke();
   }
-  g.fillStyle = "#c9a227"; g.fillRect(27 * s - 2, 20 * s - 2, 5, 5);
-  g.fillStyle = "#fff"; g.beginPath(); g.arc((me.x / TILE) * s, (me.y / TILE) * s, 3, 0, 7); g.fill();
+  g.fillStyle = "#e9c64a"; g.beginPath(); g.arc(27.5 * s, 20.5 * s, 2.2, 0, 7); g.fill();
+  const px = (me.x / TILE) * s, py = (me.y / TILE) * s;
+  g.fillStyle = me.color; g.strokeStyle = "#fff"; g.lineWidth = 1.5;
+  g.beginPath(); g.arc(px, py, 3.8, 0, 7); g.fill(); g.stroke();
 }
 
 // ---------- the joust ----------
-// p: { accusedName, accusedColor, guilty, jester }, t: seconds since start
-export function drawJoust(g, w, h, t, p) {
+// sc: { left: {look}, right: {look, black}, loser: "left"|"right"|null,
+//       broken: bool (lances shatter, nobody falls), unmask: bool,
+//       crowd: [{look, name, ghost}], reticle: {y, zone, locked} }
+// t: seconds since the pass began. The horses meet at IMPACT.
+export const IMPACT = 3.4;
+export function drawJoustScene(g, w, h, t, sc) {
   const s = Math.min(w / 1100, h / 650);
   g.setTransform(1, 0, 0, 1, 0, 0);
-  // sky
   const sky = g.createLinearGradient(0, 0, 0, h);
-  sky.addColorStop(0, "#070a1c"); sky.addColorStop(0.6, "#1b1f3e"); sky.addColorStop(1, "#2b2236");
+  sky.addColorStop(0, "#060919"); sky.addColorStop(0.55, "#1a1d3c"); sky.addColorStop(1, "#2b2236");
   g.fillStyle = sky; g.fillRect(0, 0, w, h);
-  for (let i = 0; i < 90; i++) { g.fillStyle = `rgba(255,255,255,${0.2 + hash(i, 9) * 0.6})`; g.fillRect(hash(i, 4) * w, hash(i, 5) * h * 0.5, 1.5, 1.5); }
+  for (let i = 0; i < 110; i++) { g.fillStyle = `rgba(255,255,255,${0.2 + hash(i, 9) * 0.6})`; g.fillRect(hash(i, 4) * w, hash(i, 5) * h * 0.42, 1.5, 1.5); }
+  { const mg = g.createRadialGradient(w * 0.93, h * 0.07, 20 * s, w * 0.93, h * 0.07, 90 * s); mg.addColorStop(0, "rgba(241,234,210,0.18)"); mg.addColorStop(1, "rgba(241,234,210,0)"); g.fillStyle = mg; g.beginPath(); g.arc(w * 0.93, h * 0.07, 90 * s, 0, 7); g.fill(); }
   g.fillStyle = "#f1ead2"; g.beginPath(); g.arc(w * 0.93, h * 0.07, 26 * s, 0, 7); g.fill();
-  // castle silhouette
+  const base = h * 0.47;
+  // the castle behind
   g.fillStyle = "#0c0d1a";
-  const base = h * 0.5;
-  g.fillRect(w * 0.1, base - 120 * s, w * 0.8, 120 * s);
-  for (let i = 0; i < 26; i++) g.fillRect(w * 0.1 + i * (w * 0.8 / 26), base - 132 * s, (w * 0.8 / 26) * 0.55, 14 * s);
-  for (const tx of [0.12, 0.45, 0.78]) { g.fillRect(w * tx, base - 210 * s, 70 * s, 210 * s); for (let i = 0; i < 4; i++) g.fillRect(w * tx + i * 19 * s, base - 224 * s, 11 * s, 14 * s); }
-  g.fillStyle = "rgba(255,190,90,0.7)";
-  for (const [fx, fy] of [[0.15, 150], [0.48, 160], [0.81, 140], [0.3, 70], [0.63, 80]]) g.fillRect(w * fx, base - fy * s, 6 * s, 10 * s);
-  // stands with the crowd
-  g.fillStyle = "#2a1c14"; g.fillRect(0, base - 10 * s, w, 60 * s);
-  for (let i = 0; i < 60; i++) {
-    const cx = (i + 0.5) * (w / 60), bob = Math.sin(t * 8 + i) * (t > 3.4 ? 4 : 1.5) * s;
+  g.fillRect(w * 0.12, base - 110 * s, w * 0.76, 110 * s);
+  for (let i = 0; i < 26; i++) g.fillRect(w * 0.12 + i * (w * 0.76 / 26), base - 122 * s, (w * 0.76 / 26) * 0.55, 13 * s);
+  for (const tx of [0.13, 0.46, 0.79]) { g.fillRect(w * tx, base - 200 * s, 70 * s, 200 * s); for (let i = 0; i < 4; i++) g.fillRect(w * tx + i * 19 * s, base - 213 * s, 11 * s, 13 * s); }
+  g.fillStyle = "rgba(255,190,90,0.75)";
+  for (const [fx, fy] of [[0.15, 150], [0.49, 160], [0.82, 140], [0.3, 70], [0.63, 80]]) g.fillRect(w * fx, base - fy * s, 6 * s, 10 * s);
+  // a striped pavilion at each end of the lists, in each knight's colours
+  const tent = (x, c1, c2) => {
+    g.save(); g.translate(x, base + 40 * s);
+    for (let i = 0; i < 6; i++) { g.fillStyle = i % 2 ? c1 : c2; g.beginPath(); g.moveTo(0, -90 * s); g.lineTo(-60 * s + i * 20 * s, 0); g.lineTo(-40 * s + i * 20 * s, 0); g.closePath(); g.fill(); }
+    g.fillStyle = "#e8dcb8"; g.fillRect(-1.5 * s, -112 * s, 3 * s, 24 * s);
+    g.fillStyle = c1; g.beginPath(); g.moveTo(1.5 * s, -112 * s); g.lineTo(24 * s, -105 * s + Math.sin(t * 5) * 2 * s); g.lineTo(1.5 * s, -98 * s); g.fill();
+    g.restore();
+  };
+  tent(w * 0.06, sc.left.look.tabard, "#e8dcb8");
+  tent(w * 0.94, sc.right.black ? "#141418" : sc.right.look.tabard, sc.right.black ? "#5a1018" : "#e8dcb8");
+  // the stands
+  g.fillStyle = "#2a1c14"; g.fillRect(w * 0.14, base - 6 * s, w * 0.72, 92 * s);
+  g.fillStyle = "#3a2618"; for (let r = 0; r < 3; r++) g.fillRect(w * 0.14, base + (8 + r * 26) * s, w * 0.72, 4 * s);
+  const cheer = t > IMPACT + 0.3;
+  for (let i = 0; i < 46; i++) {
+    const cx = w * 0.15 + (i + 0.5) * (w * 0.7 / 46), bob = Math.sin(t * 8 + i) * (cheer ? 4 : 1.2) * s;
     g.fillStyle = ["#6a3b3b", "#3b4f6a", "#4f6a3b", "#6a5a3b", "#5a3b6a"][i % 5];
-    g.beginPath(); g.arc(cx, base + 10 * s + bob, 7 * s, 0, 7); g.fill();
+    g.beginPath(); g.arc(cx, base + 4 * s + bob, 6.5 * s, 0, 7); g.fill();
   }
-  // banners
+  // the royal box, with the Donaghy Cup on show
+  g.fillStyle = "#4a1820"; g.fillRect(w * 0.44, base - 40 * s, w * 0.12, 40 * s);
+  g.fillStyle = "#c9a227"; g.fillRect(w * 0.44, base - 44 * s, w * 0.12, 5 * s);
+  g.save(); g.translate(w * 0.5, base - 14 * s);
+  g.fillStyle = "#e9c64a";
+  g.beginPath(); g.moveTo(-12 * s, -22 * s); g.quadraticCurveTo(-12 * s, -4 * s, 0, -2 * s); g.quadraticCurveTo(12 * s, -4 * s, 12 * s, -22 * s); g.closePath(); g.fill();
+  g.fillRect(-2.5 * s, -2 * s, 5 * s, 10 * s); g.fillRect(-8 * s, 8 * s, 16 * s, 4 * s);
+  g.strokeStyle = "#e9c64a"; g.lineWidth = 2.5 * s;
+  g.beginPath(); g.arc(-14 * s, -15 * s, 5 * s, 1.2, 5); g.stroke(); g.beginPath(); g.arc(14 * s, -15 * s, 5 * s, -1.9, 1.9); g.stroke();
+  g.restore();
+  // banners along the stands
   for (let i = 0; i < 7; i++) {
-    const bx = w * (0.07 + i * 0.145);
+    const bx = w * (0.15 + i * 0.115);
+    if (bx > w * 0.42 && bx < w * 0.56) continue;
     g.fillStyle = i % 2 ? "#7a1d28" : "#1d3a7a";
-    g.beginPath(); g.moveTo(bx, base - 10 * s); g.lineTo(bx + 26 * s, base - 10 * s); g.lineTo(bx + 26 * s, base + 30 * s); g.lineTo(bx + 13 * s, base + 20 * s); g.lineTo(bx, base + 30 * s); g.fill();
+    g.beginPath(); g.moveTo(bx, base - 6 * s); g.lineTo(bx + 22 * s, base - 6 * s); g.lineTo(bx + 22 * s, base + 26 * s); g.lineTo(bx + 11 * s, base + 18 * s); g.lineTo(bx, base + 26 * s); g.fill();
+    g.fillStyle = "#e9c64a"; g.fillRect(bx + 9 * s, base + 2 * s, 4 * s, 4 * s);
   }
-  // the lists
-  const ground = h * 0.86;
-  g.fillStyle = "#3b3021"; g.fillRect(0, base + 50 * s, w, h);
-  g.fillStyle = "#4a3c28"; g.fillRect(0, ground - 6 * s, w, h);
-  // far horse (shadow knight) rides behind the tilt barrier
-  const charge = Math.max(0, Math.min(1, (t - 1.0) / 2.4));
-  const ease = charge * charge * (3 - 2 * charge);
-  const impact = t >= 3.4;
-  const after = Math.max(0, t - 3.4);
-  const leftLoses = p.guilty;
-  const lx = impact ? w * 0.47 + after * 320 * s : -160 * s + ease * (w * 0.47 + 160 * s);
-  const rx = impact ? w * 0.53 - after * 320 * s : w + 160 * s - ease * (w * 0.47 + 160 * s);
-  const gallop = t * 14;
+  const ground = h * 0.88;
+  g.fillStyle = "#3b3021"; g.fillRect(0, base + 86 * s, w, h);
+  g.fillStyle = "#4a3c28"; g.fillRect(0, ground - 70 * s, w, h);
+  for (let i = 0; i < 60; i++) { g.fillStyle = "rgba(0,0,0,0.12)"; g.fillRect(hash(i, 21) * w, ground - 60 * s + hash(i, 22) * 120 * s, 14 * s, 2 * s); }
+  // the family in the front row, each in their own colours
+  const crowd = sc.crowd || [];
+  const rowY = base + 74 * s;
+  crowd.forEach((c, i) => {
+    const cx = w * 0.18 + (i + 0.5) * (w * 0.64 / Math.max(1, crowd.length));
+    const jump = cheer ? Math.abs(Math.sin(t * 7 + i)) * 6 * s : 0;
+    g.save(); g.translate(cx, rowY - jump); g.scale(s, s);
+    if (c.ghost) g.globalAlpha = 0.45;
+    drawKnightFront(g, c.look, { cheer: cheer ? 1 : 0 });
+    g.restore();
+    g.globalAlpha = 1;
+    g.fillStyle = "rgba(242,230,200,0.92)"; g.font = `600 ${Math.max(9, Math.round(11 * s))}px Inter, system-ui, sans-serif`; g.textAlign = "center";
+    g.fillText(c.name, cx, rowY + 20 * s);
+  });
+  for (const fx of [0.13, 0.87]) {
+    const x = w * fx, y = base + 30 * s, f = 1 + Math.sin(t * 13 + fx * 9) * 0.15;
+    g.fillStyle = "#4a2e14"; g.fillRect(x - 2 * s, y, 4 * s, 70 * s);
+    const gr = g.createRadialGradient(x, y, 0, x, y, 60 * s * f); gr.addColorStop(0, "rgba(255,200,110,0.5)"); gr.addColorStop(1, "rgba(255,150,60,0)");
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, 60 * s * f, 0, 7); g.fill();
+    g.fillStyle = "#ffcf6a"; g.beginPath(); g.ellipse(x, y - 4 * s, 5 * s, 9 * s * f, 0, 0, 7); g.fill();
+  }
 
+  const charge = Math.max(0, Math.min(1, (t - 1.0) / (IMPACT - 1.0)));
+  const ease = charge * charge * (3 - 2 * charge);
+  const impact = t >= IMPACT;
+  const after = Math.max(0, t - IMPACT);
+  const lx = impact ? w * 0.47 + after * 320 * s : -170 * s + ease * (w * 0.47 + 170 * s);
+  const rx = impact ? w * 0.53 - after * 320 * s : w + 170 * s - ease * (w * 0.47 + 170 * s);
+  const gallop = t * 14;
+  const dust = (x, y, dir) => {
+    if (charge <= 0 || after > 2) return;
+    for (let i = 0; i < 6; i++) {
+      const k = (t * 2 + i / 6) % 1;
+      g.fillStyle = `rgba(150,130,100,${0.25 * (1 - k)})`;
+      g.beginPath(); g.arc(x - dir * (40 + k * 90) * s, y + 40 * s - k * 16 * s, (6 + k * 16) * s, 0, 7); g.fill();
+    }
+  };
   const fall = (leftSide) => {
     const ft = Math.min(1, after / 1.0);
     const slide = Math.min(after, 1.1);
-    const fallX = leftSide ? w * 0.47 - slide * 70 * s : w * 0.53 + slide * 70 * s;
+    const fx = leftSide ? w * 0.47 - slide * 70 * s : w * 0.53 + slide * 70 * s;
     const baseY = leftSide ? ground + 2 * s : ground - 26 * s;
-    const fy = baseY + ft * ft * 70 * s - Math.sin(ft * Math.PI) * 50 * s;
-    if (!leftSide && after > 1.0) {
+    const fy = baseY + ft * ft * 34 * s - Math.sin(ft * Math.PI) * 50 * s;
+    const side = leftSide ? sc.left : sc.right;
+    if (side.black && after > 1.0) {
       // the shadow knight dissolves into smoke
       const k = Math.min(1, (after - 1.0) / 1.2);
       for (let i = 0; i < 22; i++) {
         g.fillStyle = `rgba(130,130,150,${0.4 * (1 - k)})`;
-        g.beginPath(); g.arc(fallX + (hash(i, 1) - 0.5) * 120 * s * k, fy - 40 * s - hash(i, 2) * 120 * s * k, (10 + hash(i, 3) * 20) * s, 0, 7); g.fill();
+        g.beginPath(); g.arc(fx + (hash(i, 1) - 0.5) * 120 * s * k, fy - 40 * s - hash(i, 2) * 120 * s * k, (10 + hash(i, 3) * 20) * s, 0, 7); g.fill();
       }
       return;
     }
-    g.save(); g.translate(fallX, fy); g.rotate((leftSide ? -1 : 1) * ft * 1.7);
-    drawRider(g, 0, 0, leftSide ? 1 : -1, s, leftSide ? p.accusedColor : "#111", !leftSide, leftSide && after > 0.35, 0, true);
+    g.save(); g.translate(fx, fy); g.rotate((leftSide ? -1 : 1) * ft * 1.7); g.scale(leftSide ? s : -s, s);
+    drawKnightSide(g, side.look, { black: side.black, unmasked: leftSide && sc.unmask && after > 0.35, lance: false });
+    g.restore();
+  };
+  const horseOnly = (x, y, dir, side, ph) => { g.save(); g.translate(x, y); g.scale(dir * s, s); drawHorse(g, ph, side.look, { black: side.black }); g.restore(); };
+  const rider = (x, y, dir, side, ph) => {
+    g.save(); g.translate(x, y); g.scale(dir * s, s);
+    drawHorse(g, ph, side.look, { black: side.black });
+    g.translate(0, -18);
+    drawKnightSide(g, side.look, { black: side.black, lance: !(impact && sc.broken) });
     g.restore();
   };
 
-  // far side of the barrier: the shadow knight
-  drawHorse(g, rx, ground - 26 * s, -1, gallop, "#111", s, "#1a1a1a");
-  if (!impact || leftLoses) drawRider(g, rx, ground - 26 * s, -1, s, "#111", true, false, 0);
-  else fall(false);
-  // tilt barrier
+  // far side of the barrier: the right-hand knight
+  dust(rx, ground - 26 * s, -1);
+  if (!impact || sc.loser !== "right") rider(rx, ground - 26 * s, -1, sc.right, gallop);
+  else { horseOnly(rx, ground - 26 * s, -1, sc.right, gallop); fall(false); }
   g.fillStyle = "#c9b48a"; g.fillRect(0, ground - 70 * s, w, 10 * s);
-  for (let i = 0; i < 30; i++) g.fillRect(i * (w / 30), ground - 70 * s, 6 * s, 52 * s);
-  // near side: the accused
-  drawHorse(g, lx, ground + 2 * s, 1, gallop + 1, p.accusedColor, s, "#5a3a22");
-  if (!impact || !leftLoses) drawRider(g, lx, ground + 2 * s, 1, s, p.accusedColor, false, false, 0);
-  else fall(true);
+  g.fillStyle = "#9a8560"; g.fillRect(0, ground - 61 * s, w, 2 * s);
+  for (let i = 0; i < 30; i++) { g.fillStyle = "#c9b48a"; g.fillRect(i * (w / 30), ground - 70 * s, 6 * s, 52 * s); }
+  // near side: the left-hand knight
+  dust(lx, ground + 2 * s, 1);
+  if (!impact || sc.loser !== "left") rider(lx, ground + 2 * s, 1, sc.left, gallop + 1);
+  else { horseOnly(lx, ground + 2 * s, 1, sc.left, gallop + 1); fall(true); }
 
   if (impact) {
-    // the visor flies off a guilty knight, showing black armour and red eyes
-    if (leftLoses) {
+    if (sc.loser === "left" && sc.unmask) {
       const ht = Math.min(1.6, after);
       const hx = w * 0.47 - ht * 160 * s, hy = ground - 90 * s - Math.sin(Math.min(1, ht / 1.2) * Math.PI) * 160 * s + Math.max(0, ht - 1.2) * 200 * s;
       g.save(); g.translate(hx, hy); g.rotate(ht * 9);
-      g.fillStyle = "#b9bec9"; g.beginPath(); g.arc(0, 0, 14 * s, Math.PI, 0); g.fill(); g.fillRect(-14 * s, 0, 28 * s, 6 * s);
+      g.fillStyle = sc.left.look.helmet; g.beginPath(); g.arc(0, 0, 14 * s, Math.PI, 0); g.fill(); g.fillRect(-14 * s, 0, 28 * s, 6 * s);
       g.restore();
     }
-    // splinters and the flash
-    if (after < 0.9) {
-      g.fillStyle = `rgba(255,250,220,${0.75 * (1 - after / 0.9)})`; g.fillRect(0, 0, w, h);
-      for (let i = 0; i < 24; i++) {
+    if (after < 0.9 && (sc.loser || sc.broken)) {
+      g.fillStyle = `rgba(255,250,220,${0.7 * (1 - after / 0.9)})`; g.fillRect(0, 0, w, h);
+      for (let i = 0; i < 26; i++) {
         const a = hash(i, 11) * Math.PI * 2, r = after * (200 + hash(i, 12) * 300) * s;
-        g.fillStyle = "#e6d3a5";
+        g.fillStyle = i % 3 ? "#e6d3a5" : sc.left.look.tabard;
         g.fillRect(w * 0.5 + Math.cos(a) * r, ground - 80 * s + Math.sin(a) * r * 0.6 + after * after * 300 * s, 10 * s, 3 * s);
       }
     }
   }
 
-  // words
-  g.textAlign = "center";
-  g.fillStyle = "#f2e6c8";
-  if (t < 3.4) {
-    g.font = `italic ${Math.round(44 * s)}px Fraunces, Georgia, serif`;
-    g.fillText("The Joust", w / 2, h * 0.13);
-    g.font = `600 ${Math.round(20 * s)}px Inter, system-ui, sans-serif`;
-    g.fillText(`${p.accusedName} rides against the Black Knight`, w / 2, h * 0.13 + 36 * s);
-    g.font = `500 ${Math.round(15 * s)}px Inter, system-ui, sans-serif`;
-    g.fillStyle = "#b9b1d6";
-    g.fillText("If they are the Black Knight, they'll be knocked from the saddle...", w / 2, h * 0.13 + 64 * s);
-  } else if (after > 1.3) {
-    g.font = `italic ${Math.round(46 * s)}px Fraunces, Georgia, serif`;
-    g.fillStyle = p.guilty ? "#ff8a70" : p.jester ? "#d18cff" : "#f2e6c8";
-    g.fillText(p.guilty ? `${p.accusedName} WAS the Black Knight!` : `${p.accusedName} was not the Black Knight.`, w / 2, h * 0.14);
-    g.font = `600 ${Math.round(18 * s)}px Inter, system-ui, sans-serif`;
-    g.fillStyle = "#e7dcc0";
-    const sub = p.guilty ? "The castle is saved! Raise the Donaghy Cup!" : p.jester ? `...but the cap and bells give them away: ${p.accusedName} was the Jester, in league with the Black Knight!` : `The shadow knight vanishes in smoke. ${p.accusedName} rides off into the night, out of the game.`;
-    g.fillText(sub, w / 2, h * 0.14 + 38 * s);
+  // the practice joust's aim: a ring sliding over the other knight's shield
+  if (sc.reticle && !impact) {
+    const sx = rx + 16 * s, sy = ground - 26 * s - 80 * s;
+    const yy = sy + sc.reticle.y * 46 * s;
+    g.strokeStyle = "rgba(255,240,180,0.4)"; g.lineWidth = 2 * s;
+    g.strokeRect(sx - 20 * s, sy - 46 * s, 40 * s, 92 * s);
+    g.fillStyle = "rgba(140,240,160,0.22)"; g.fillRect(sx - 20 * s, sy - sc.reticle.zone * 46 * s, 40 * s, sc.reticle.zone * 92 * s);
+    g.strokeStyle = sc.reticle.locked ? "#8ef0a8" : "#ffe08a"; g.lineWidth = 3 * s;
+    g.beginPath(); g.arc(sx, yy, 10 * s, 0, 7); g.stroke();
+    g.beginPath(); g.moveTo(sx - 20 * s, yy); g.lineTo(sx + 20 * s, yy); g.stroke();
   }
-}
-
-function drawHorse(g, x, y, dir, ph, cloth, s, coat) {
-  g.save(); g.translate(x, y); g.scale(dir * s, s);
-  const bob = Math.sin(ph) * 3;
-  g.translate(0, bob);
-  g.strokeStyle = coat; g.lineWidth = 9; g.lineCap = "round";
-  const legs = [[-38, 0.0], [-26, 1.6], [30, 3.1], [42, 4.7]];
-  for (const [lx, o] of legs) {
-    const a = Math.sin(ph + o) * 0.6;
-    g.beginPath(); g.moveTo(lx, 10); g.lineTo(lx + Math.sin(a) * 26, 10 + Math.cos(a) * 26); g.lineTo(lx + Math.sin(a) * 26 + Math.sin(a * 1.6) * 20, 10 + Math.cos(a) * 26 + 20); g.stroke();
-  }
-  g.fillStyle = coat;
-  g.beginPath(); g.ellipse(0, 0, 58, 26, 0, 0, 7); g.fill();
-  // neck and head
-  g.beginPath(); g.moveTo(40, -10); g.lineTo(62, -50); g.lineTo(78, -54); g.lineTo(96, -30); g.lineTo(88, -22); g.lineTo(70, -34); g.lineTo(58, 6); g.closePath(); g.fill();
-  // tail
-  g.strokeStyle = coat; g.lineWidth = 6; g.beginPath(); g.moveTo(-56, -8); g.quadraticCurveTo(-80, 0 + Math.sin(ph) * 6, -76, 30); g.stroke();
-  // caparison in the rider's colours
-  g.fillStyle = cloth;
-  g.beginPath(); g.moveTo(-50, -14); g.lineTo(46, -14); g.lineTo(52, 22); g.lineTo(36, 30); g.lineTo(20, 22); g.lineTo(2, 30); g.lineTo(-16, 22); g.lineTo(-34, 30); g.lineTo(-54, 20); g.closePath(); g.fill();
-  g.strokeStyle = "rgba(255,220,140,0.6)"; g.lineWidth = 2; g.stroke();
-  g.restore();
-}
-
-function drawRider(g, x, y, dir, s, color, black, unmasked, _r, falling) {
-  g.save(); g.translate(x, y); g.scale(dir * s, s);
-  // legs, body, shield, helmet
-  g.fillStyle = black ? "#16161c" : "#9aa0ad";
-  g.fillRect(-8, -40, 18, 30);
-  g.fillStyle = black ? "#0b0b10" : color; g.fillRect(-11, -78, 24, 42);
-  g.fillStyle = black ? "#22222a" : "#b9bec9";
-  g.beginPath(); g.arc(1, -92, 15, 0, 7); g.fill();
-  if (black || unmasked) {
-    g.fillStyle = "#0b0b10"; g.beginPath(); g.arc(1, -92, 14, 0, 7); g.fill();
-    g.fillStyle = "#ff3a2a"; g.fillRect(5, -96, 5, 3); g.fillRect(-4, -96, 5, 3);
-    if (black) { g.fillStyle = "#8a1020"; g.beginPath(); g.moveTo(-4, -106); g.quadraticCurveTo(-30, -126, -36, -96); g.quadraticCurveTo(-18, -108, -2, -100); g.fill(); }
-  } else {
-    g.fillStyle = "#3a3e48"; g.fillRect(4, -96, 12, 3);
-  }
-  // shield
-  g.fillStyle = black ? "#1d1d24" : color;
-  g.beginPath(); g.moveTo(-26, -76); g.lineTo(-6, -76); g.lineTo(-6, -50); g.quadraticCurveTo(-16, -36, -26, -50); g.closePath(); g.fill();
-  g.strokeStyle = black ? "#555" : "#e8dcb8"; g.lineWidth = 2; g.stroke();
-  // lance
-  if (!falling) {
-    g.strokeStyle = black ? "#2a2a33" : "#d9c9a0"; g.lineWidth = 6;
-    g.beginPath(); g.moveTo(-6, -66); g.lineTo(150, -54); g.stroke();
-    g.fillStyle = black ? "#2a2a33" : "#c9b48a"; g.beginPath(); g.moveTo(4, -76); g.lineTo(18, -60); g.lineTo(4, -54); g.fill();
-  }
-  g.restore();
 }

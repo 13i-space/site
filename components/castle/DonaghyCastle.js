@@ -4,17 +4,18 @@
 // in lib/castle/engine.js and the drawing in components/castle/draw.js.
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  createGame, stepGame, humanAction, hudInfo, resolveVotes, applyJoust, ROLES, GAME_SECONDS,
+  createGame, stepGame, humanAction, hudInfo, resolveVotes, applyJoust, sayInMeeting, ROLES, GAME_SECONDS,
 } from "../../lib/castle/engine";
 import { castleSound as snd } from "../../lib/castle/sound";
-import { paintCastle, drawFrame, drawMiniMap, drawJoust } from "./draw";
+import { castleMusic as music } from "../../lib/castle/music";
+import { loadLook, DEFAULT_LOOK } from "../../lib/castle/looks";
+import { paintCastle, drawFrame, drawMiniMap } from "./draw";
+import { Lobby } from "./Lobby";
+import { VoteJoust, PracticeJoust } from "./Joust";
+import { HelpOwl } from "./HelpOwl";
 
 const CUP_KEY = "donaghy-cup-v1";
-const ROLE_OPTIONS = [
-  ["random", "Surprise me"], ["squire", "Squire"], ["knight", "Knight"], ["locksmith", "Locksmith"],
-  ["blacksmith", "Blacksmith"], ["jester", "Jester"], ["blackknight", "Black Knight"],
-];
-const JOUST_SECONDS = 7.2;
+const MINI_W = 248, MINI_H = 176;
 
 function clockText(t) {
   const mins = 20 * 60 + (t / GAME_SECONDS) * 240;
@@ -29,21 +30,23 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const [phase, setPhase] = useState("lobby");
   const [total, setTotal] = useState(8);
   const [roleChoice, setRoleChoice] = useState("random");
+  const [look, setLook] = useState(DEFAULT_LOOK);
   const [hud, setHud] = useState(null);
   const [muted, setMuted] = useState(false);
+  const [musicOn, setMusicOn] = useState(true);
+  const [helpOpen, setHelpOpen] = useState(false);
   const [shown, setShown] = useState(0);
   const [vote, setVote] = useState(undefined);
   const [tally, setTally] = useState(null);
   const [joust, setJoust] = useState(null);
-  const [joustDone, setJoustDone] = useState(false);
   const [result, setResult] = useState(null);
   const [cup, setCup] = useState([]);
   const [showChores, setShowChores] = useState(true);
+  const [, setTick] = useState(0);
 
   const worldRef = useRef(null);
   const canvasRef = useRef(null);
   const miniRef = useRef(null);
-  const joustRef = useRef(null);
   const mapRef = useRef(null);
   const darkRef = useRef(null);
   const keys = useRef({});
@@ -51,12 +54,13 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
-  useEffect(() => { setCup(readCup()); }, []);
+  useEffect(() => { setCup(readCup()); setLook(loadLook()); setMusicOn(music.isEnabled()); }, []);
+  useEffect(() => () => music.stop(), []);
 
   const start = () => {
     snd.unlock();
     if (!mapRef.current) mapRef.current = paintCastle();
-    worldRef.current = createGame({ playerName, total, humanRole: roleChoice });
+    worldRef.current = createGame({ playerName, total, humanRole: roleChoice, playerLook: look });
     finished.current = false;
     // handy for testing on a local dev server only; never in the live build
     if (process.env.NODE_ENV !== "production") window.__castle = worldRef.current;
@@ -75,8 +79,20 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     saveCup(list);
     setCup(list);
     setResult(w.result);
+    music.setMode("hall");
     setPhase("over");
   }, []);
+
+  // music follows the phase
+  useEffect(() => {
+    if (phase === "play") music.setMode("night");
+    else if (phase === "meeting") music.setMode("hall");
+    else if (phase === "joust") music.setMode("quiet");
+    else if (phase === "lobby") music.stop();
+  }, [phase]);
+
+  const toggleMute = () => { const m = !muted; snd.setMuted(m); setMuted(m); };
+  const toggleMusic = () => { const on = !music.isEnabled(); music.setEnabled(on); setMusicOn(on); };
 
   // ---- keys ----
   useEffect(() => {
@@ -84,9 +100,12 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     const one = { KeyR: "report", KeyB: "bell", KeyQ: "power", KeyF: "truth", Digit1: "sab1", Digit2: "sab2", Digit3: "disguise" };
     const down = (ev) => {
       if (phaseRef.current !== "play") return;
+      if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA")) return;
       if (map[ev.code]) { keys.current[map[ev.code]] = true; ev.preventDefault(); }
       if (one[ev.code] && !ev.repeat) { humanAction(worldRef.current, one[ev.code]); ev.preventDefault(); }
       if (ev.code === "KeyM") { const m = !snd.isMuted(); snd.setMuted(m); setMuted(m); }
+      if (ev.code === "KeyN") { const on = !music.isEnabled(); music.setEnabled(on); setMusicOn(on); }
+      if (ev.code === "KeyH" && !ev.repeat) setHelpOpen((o) => !o);
     };
     const up = (ev) => { if (map[ev.code]) keys.current[map[ev.code]] = false; };
     const blur = () => { keys.current = {}; };
@@ -118,16 +137,16 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
       const w = worldRef.current;
       if (phaseRef.current === "play") {
         stepGame(w, keys.current, dt);
-        const me = w.entities[0];
-        if ((keys.current.up || keys.current.down || keys.current.left || keys.current.right) && now - stepAt > 330) { stepAt = now; snd.step(); }
+        if ((keys.current.up || keys.current.down || keys.current.left || keys.current.right) && w.entities[0].alive && now - stepAt > 330) { stepAt = now; snd.step(); }
         if (w.phase === "meeting") { keys.current = {}; setShown(0); setVote(undefined); setTally(null); setPhase("meeting"); }
         else if (w.phase === "over") { finish(); }
         if (now - hudAt > 100) {
           hudAt = now;
-          setHud(hudInfo(w));
-          if (miniRef.current) drawMiniMap(miniRef.current.getContext("2d"), w, 186);
+          const h = hudInfo(w);
+          setHud(h);
+          music.setTension(h.tension);
+          if (miniRef.current) drawMiniMap(miniRef.current.getContext("2d"), w, MINI_W);
         }
-        void me;
       }
       drawFrame(g, darkRef.current, mapRef.current, w, view, now / 1000);
       raf = requestAnimationFrame(loop);
@@ -138,12 +157,22 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
 
   // ---- meeting: lines appear one at a time ----
   const meeting = phase === "meeting" ? worldRef.current?.meeting : null;
+  const lineCount = meeting ? meeting.lines.length : 0;
   useEffect(() => {
     if (!meeting) return;
     if (shown >= meeting.lines.length) return;
     const id = setTimeout(() => setShown((n) => n + 1), shown === 0 ? 600 : 1500);
     return () => clearTimeout(id);
-  }, [meeting, shown]);
+  }, [meeting, shown, lineCount]);
+
+  const say = (text) => {
+    const w = worldRef.current;
+    const before = w.meeting.lines.length;
+    sayInMeeting(w, text);
+    // your own words show at once; the reply follows a moment later
+    setShown((n) => Math.max(n, before + 1));
+    setTick((x) => x + 1);
+  };
 
   const castVote = (target) => {
     const w = worldRef.current;
@@ -163,33 +192,10 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
       return;
     }
     const e = w.entities[accused];
-    setJoust({ id: accused, accusedName: e.name, accusedColor: e.color, guilty: e.role === "blackknight", jester: e.role === "jester" });
-    setJoustDone(false);
+    const crowd = w.entities.filter((x) => x !== e).map((x) => ({ look: x.look, name: x.human ? `${x.name} (you)` : x.name, ghost: !x.alive }));
+    setJoust({ id: accused, accused: { name: e.name, role: e.role, look: e.look }, crowd });
     setPhase("joust");
   };
-
-  // ---- the joust animation ----
-  useEffect(() => {
-    if (phase !== "joust" || !joust) return;
-    const cv = joustRef.current;
-    const g = cv.getContext("2d");
-    let raf; const t0 = performance.now();
-    const fired = {};
-    const size = () => { const dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; };
-    size();
-    window.addEventListener("resize", size);
-    const loop = (now) => {
-      const t = (now - t0) / 1000;
-      if (t > 1.0 && !fired.gallop) { fired.gallop = 1; snd.gallop(2.4); }
-      if (t > 3.4 && !fired.crash) { fired.crash = 1; snd.crash(); }
-      if (t > 4.6 && !fired.end) { fired.end = 1; if (joust.guilty) { snd.cheer(); snd.fanfare(); } else if (joust.jester) snd.honk(); else snd.groan(); }
-      if (t > JOUST_SECONDS && !fired.done) { fired.done = 1; setJoustDone(true); }
-      drawJoust(g, cv.width, cv.height, Math.min(t, 9), joust);
-      raf = requestAnimationFrame(loop);
-    };
-    raf = requestAnimationFrame(loop);
-    return () => { cancelAnimationFrame(raf); window.removeEventListener("resize", size); };
-  }, [phase, joust]);
 
   const afterJoust = () => {
     const w = worldRef.current;
@@ -198,10 +204,9 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     setPhase("play");
   };
 
-  const toggleMute = () => { const m = !muted; snd.setMuted(m); setMuted(m); };
-
   // ---------- screens ----------
-  if (phase === "lobby") return <Lobby {...{ playerName, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref }} />;
+  if (phase === "lobby") return <Lobby {...{ playerName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref }} openPractice={() => setPhase("practice")} />;
+  if (phase === "practice") return <PracticeJoust me={{ name: playerName, look }} onExit={() => setPhase("lobby")} />;
   const w = worldRef.current;
   const me = w?.entities[0];
 
@@ -210,7 +215,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     const allies = hud?.ally || [];
     return (
       <div style={S.screen}>
-        <div style={{ ...S.card, borderColor: r.side === "dark" ? "#8a1020" : "#c9a227", textAlign: "center", maxWidth: 520 }}>
+        <div style={{ ...S.card, borderColor: r.side === "dark" ? "#8a1020" : "#c9a227", textAlign: "center", maxWidth: 540 }}>
           <div className="mono" style={S.kicker}>{playerName.toUpperCase()}, TONIGHT YOU ARE</div>
           <div style={{ ...S.big, color: r.side === "dark" ? "#ff8a70" : "#f2dc9a" }}>the {r.name}</div>
           <p style={S.p}>{r.blurb}</p>
@@ -219,6 +224,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
               {r.keys.map(([k, l]) => <span key={k + l} style={S.keycap}><b>{k}</b> {l}</span>)}
             </div>
           )}
+          {me.role === "blackknight" && <p style={{ ...S.p, fontSize: 14 }}>To capture someone, walk right up to them (nearly touching) and press <b>Q</b>. Choose a moment when nobody else can see you.</p>}
           {allies.length > 0 && (
             <p style={{ ...S.p, color: "#ffb4a2" }}>
               Your secret partner: {allies.map((a) => `${a.name} (the ${a.role})`).join(", ")}.
@@ -227,7 +233,8 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
           <p style={{ ...S.p, fontSize: 13, color: "#a9a3c4" }}>
             {r.side === "dark" ? "The castle wins if they joust the Black Knight or finish every chore. You win if the castle runs out of honest folk, or the clock strikes midnight." : "Finish every chore, or find the Black Knight and send them to the joust, before midnight."}
           </p>
-          <button style={S.btn} onClick={() => { snd.unlock(); setPhase("play"); }}>Light your torch</button>
+          <p style={{ ...S.p, fontSize: 13, color: "#a9a3c4" }}>Stuck at any point? Click the owl in the corner, or press H.</p>
+          <button style={S.btn} onClick={() => { snd.unlock(); music.start(); setPhase("play"); }}>Light your torch</button>
         </div>
       </div>
     );
@@ -240,78 +247,20 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   return (
     <div style={{ position: "fixed", inset: 0, background: "#05060d", overflow: "hidden", fontFamily: "Inter, system-ui, sans-serif" }}>
       <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: phase === "joust" ? "none" : "block" }} />
-      {phase !== "joust" && hud && <Hud hud={hud} miniRef={miniRef} muted={muted} toggleMute={toggleMute} showChores={showChores} setShowChores={setShowChores} backHref={backHref} />}
+      {phase !== "joust" && hud && (
+        <Hud hud={hud} miniRef={miniRef} muted={muted} toggleMute={toggleMute} musicOn={musicOn} toggleMusic={toggleMusic} showChores={showChores} setShowChores={setShowChores} backHref={backHref} />
+      )}
+      {phase === "play" && hud && <HelpOwl hud={hud} open={helpOpen} setOpen={setHelpOpen} />}
       {phase === "meeting" && meeting && (
-        <Meeting w={w} m={meeting} shown={shown} setShown={setShown} vote={vote} castVote={castVote} tally={tally} afterVote={afterVote} />
+        <Meeting w={w} m={meeting} shown={shown} setShown={setShown} vote={vote} castVote={castVote} tally={tally} afterVote={afterVote} say={say} />
       )}
-      {phase === "joust" && (
-        <>
-          <canvas ref={joustRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
-          {joustDone && (
-            <div style={{ position: "absolute", left: 0, right: 0, bottom: "6%", textAlign: "center" }}>
-              <button style={S.btn} onClick={afterJoust}>{joust.guilty ? "See who lifts the Cup" : "Back to the castle"}</button>
-            </div>
-          )}
-        </>
-      )}
-    </div>
-  );
-}
-
-// ---------- lobby ----------
-function Lobby({ playerName, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref }) {
-  const pts = cup.reduce((s, x) => s + x.points, 0);
-  return (
-    <div style={S.screen}>
-      <div style={{ ...S.card, maxWidth: 720 }}>
-        <div className="mono" style={S.kicker}>THE DONAGHY FAMILY GAME · TEST NIGHT</div>
-        <div style={S.big}>Lights Out at Donaghy Castle</div>
-        <p style={S.p}>
-          Night has fallen on Donaghy Castle and the Black Knight walks the halls. Do your chores by torchlight,
-          find the dropped helmets of the captured, ring the Great Bell, and send your suspect to the joust.
-          If they&rsquo;re the Black Knight, they&rsquo;ll be knocked clean off their horse.
-        </p>
-        <p style={{ ...S.p, color: "#a9a3c4", fontSize: 13 }}>
-          Tonight it&rsquo;s you against the castle folk, who are all computer players. The real family version, with everyone on their own laptop, comes next.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 14, margin: "18px 0" }}>
-          <label style={S.label}>
-            <span className="mono" style={S.kicker}>PEOPLE IN THE CASTLE</span>
-            <select value={total} onChange={(e) => setTotal(+e.target.value)} style={S.select}>
-              {[8, 9, 10, 11, 12].map((n) => <option key={n} value={n}>{n} (you + {n - 1})</option>)}
-            </select>
-          </label>
-          <label style={S.label}>
-            <span className="mono" style={S.kicker}>YOUR ROLE (FOR TESTING)</span>
-            <select value={roleChoice} onChange={(e) => setRoleChoice(e.target.value)} style={S.select}>
-              {ROLE_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-            </select>
-          </label>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 10, marginBottom: 18 }}>
-          {Object.entries(ROLES).map(([k, r]) => (
-            <div key={k} style={{ ...S.mini, borderColor: r.side === "dark" ? "#5a1520" : "#3a3560" }}>
-              <div style={{ fontWeight: 600, color: r.side === "dark" ? "#ff9a85" : "#f2dc9a", fontSize: 14 }}>{r.name}</div>
-              <div style={{ fontSize: 12, color: "#b9b3d6", marginTop: 4, lineHeight: 1.45 }}>{r.blurb}</div>
-            </div>
-          ))}
-        </div>
-        <div style={{ fontSize: 13, color: "#c9c3e6", lineHeight: 1.7, marginBottom: 18 }}>
-          <b style={{ color: "#f2dc9a" }}>Controls:</b> arrows or WASD to walk · hold <b>E</b> at a glowing spot to do a chore ·
-          <b> R</b> next to a dropped helmet to report it · <b>B</b> at the Great Bell (once a night) · <b>Q</b>, <b>F</b>, <b>1 2 3</b> for role powers · <b>M</b> mute.
-        </div>
-        <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
-          <button style={S.btn} onClick={start}>Enter the castle, {playerName}</button>
-          <a href={backHref} style={{ color: "#8b95f6", fontSize: 13 }}>back to 13i.space</a>
-          {cup.length > 0 && <span className="mono" style={{ marginLeft: "auto", fontSize: 11, color: "#c9a227" }}>DONAGHY CUP: {pts} PTS FROM {cup.length} NIGHT{cup.length === 1 ? "" : "S"}</span>}
-        </div>
-      </div>
+      {phase === "joust" && joust && <VoteJoust accused={joust.accused} crowd={joust.crowd} onDone={afterJoust} />}
     </div>
   );
 }
 
 // ---------- HUD ----------
-function Hud({ hud, miniRef, muted, toggleMute, showChores, setShowChores, backHref }) {
+function Hud({ hud, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores, setShowChores, backHref }) {
   const r = ROLES[hud.me.role];
   const cdRow = (label, key, extra) => {
     const v = hud.me.cd[key];
@@ -352,14 +301,16 @@ function Hud({ hud, miniRef, muted, toggleMute, showChores, setShowChores, backH
           <div style={{ height: "100%", width: `${hud.secured * 100}%`, background: "linear-gradient(90deg,#c9a227,#f2dc9a)" }} />
         </div>
         <div className="mono" style={{ fontSize: 10, color: "#a9a3c4", marginTop: 3 }}>CASTLE CHORES {Math.round(hud.secured * 100)}%</div>
+        {hud.job && hud.me.alive && <div style={{ fontSize: 12, color: hud.job.urgent ? "#ff9a85" : "#f2dc9a", marginTop: 4 }}>Next: {hud.job.label} · {hud.job.room}</div>}
       </div>
 
       {/* minimap */}
       <div style={{ ...S.hudBox, top: 12, right: 12, padding: 8 }}>
-        <canvas ref={miniRef} width={186} height={132} style={{ display: "block", width: 186, height: 132 }} />
+        <canvas ref={miniRef} width={MINI_W * 2} height={MINI_H * 2} style={{ display: "block", width: MINI_W, height: MINI_H }} />
         <div className="mono" style={{ fontSize: 11, color: "#f2e6c8", marginTop: 6, textAlign: "center" }}>{hud.room.toUpperCase()}</div>
-        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
-          <button onClick={toggleMute} style={S.tiny}>{muted ? "sound off" : "sound on"}</button>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 6, marginTop: 6 }}>
+          <button onClick={toggleMusic} style={{ ...S.tiny, color: musicOn ? "#f2dc9a" : "#8d87ad" }} title="Music (N)">{musicOn ? "♪ music on" : "♪ music off"}</button>
+          <button onClick={toggleMute} style={{ ...S.tiny, color: muted ? "#8d87ad" : "#f2dc9a" }} title="Sound effects (M)">{muted ? "effects off" : "effects on"}</button>
           <a href={backHref} style={{ ...S.tiny, textDecoration: "none" }}>leave</a>
         </div>
       </div>
@@ -367,8 +318,9 @@ function Hud({ hud, miniRef, muted, toggleMute, showChores, setShowChores, backH
       {/* chores list */}
       <div style={{ ...S.hudBox, bottom: 12, left: 12, maxWidth: 260 }}>
         <button onClick={() => setShowChores(!showChores)} className="mono" style={{ ...S.tiny, border: 0, padding: 0, color: "#c9a227" }}>
-          {hud.me.role === "blackknight" || hud.me.role === "jester" ? "PRETEND CHORES" : "YOUR CHORES"} · {left} LEFT {showChores ? "▾" : "▸"}
+          {hud.me.role === "blackknight" || hud.me.role === "jester" ? "PRETEND CHORES (DON'T COUNT)" : "YOUR CHORES"} · {left} LEFT {showChores ? "▾" : "▸"}
         </button>
+        {showChores && <div style={{ fontSize: 11, color: "#8d87ad", margin: "3px 0 2px" }}>Gold dots on the map; walk there and hold E</div>}
         {showChores && hud.me.chores.map((c) => (
           <div key={c.id} style={{ fontSize: 12, color: c.done ? "#6d6890" : "#e7e1ff", textDecoration: c.done ? "line-through" : "none", marginTop: 3 }}>
             {c.label} <span style={{ color: "#8d87ad" }}>· {c.room}</span>
@@ -377,8 +329,9 @@ function Hud({ hud, miniRef, muted, toggleMute, showChores, setShowChores, backH
       </div>
 
       {/* what you can do right here */}
-      {(hud.ctx.station || hud.ctx.marker || hud.ctx.bell) && (
+      {(hud.ctx.station || hud.ctx.marker || hud.ctx.bell || hud.ctx.power) && (
         <div style={{ ...S.hudBox, bottom: 24, left: "50%", transform: "translateX(-50%)", textAlign: "center", minWidth: 280 }}>
+          {hud.ctx.power && <div style={{ color: hud.ctx.power.hot ? "#ff9a85" : "#a9a3c4", fontWeight: 600, marginBottom: 4 }}>Press <b style={S.k}>{hud.ctx.power.key}</b>: {hud.ctx.power.label}</div>}
           {hud.ctx.marker && <div style={{ color: "#ff9a85", fontWeight: 600 }}>A dropped helmet! Press <b style={S.k}>R</b> to report it</div>}
           {hud.ctx.bell && !hud.ctx.marker && <div style={{ color: "#f2dc9a" }}>Press <b style={S.k}>B</b> to ring the Great Bell</div>}
           {hud.ctx.station && (
@@ -406,7 +359,8 @@ function Hud({ hud, miniRef, muted, toggleMute, showChores, setShowChores, backH
 }
 
 // ---------- the meeting in the Great Hall ----------
-function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote }) {
+function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote, say }) {
+  const [draft, setDraft] = useState("");
   const me = w.entities[0];
   const lines = m.lines.slice(0, shown);
   const done = shown >= m.lines.length;
@@ -430,13 +384,26 @@ function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote }) {
                 <div key={i} style={{ display: "flex", gap: 10, padding: "7px 0", borderBottom: "1px solid #24203e", animation: "castleIn .35s ease" }}>
                   {e ? <Shield color={e.color} /> : <span style={{ width: 22, fontSize: 18, textAlign: "center" }}>{l.evidence ? "🔍" : "🔔"}</span>}
                   <div style={{ fontSize: 14, lineHeight: 1.5, color: l.who === null ? (l.evidence ? "#f2dc9a" : "#ffd0c4") : "#e7e1ff" }}>
-                    {e && <b style={{ color: e.color === "#E8E4D8" ? "#fff" : e.color, marginRight: 6 }}>{e.name}:</b>}
+                    {e && <b style={{ color: e.color === "#E8E4D8" ? "#fff" : e.color, marginRight: 6 }}>{e.human ? `${e.name} (you)` : e.name}:</b>}
                     {l.text}
                   </div>
                 </div>
               );
             })}
             {!done && <button style={{ ...S.tiny, marginTop: 10 }} onClick={() => setShown(m.lines.length)}>show everything</button>}
+            {me.alive && !tally && (
+              <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) { say(draft); setDraft(""); } }} style={{ display: "flex", gap: 8, marginTop: 12 }}>
+                <input
+                  value={draft}
+                  onChange={(e) => setDraft(e.target.value)}
+                  placeholder="Speak up: “I saw Hamish in the Forge!” or “Agnes is innocent”"
+                  maxLength={240}
+                  aria-label="Say something to the hall"
+                  style={{ flex: 1, minWidth: 0, background: "#14112a", color: "#f2e6c8", border: "1px solid #3a3560", borderRadius: 999, padding: "9px 14px", fontSize: 14 }}
+                />
+                <button type="submit" style={{ ...S.voteBtn, background: "#2a2450" }}>Say it</button>
+              </form>
+            )}
             <div ref={bottomRef} />
           </div>
           <div>

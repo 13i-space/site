@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.93 (no SQL): Donaghy Castle round two - knight builder, castle
+  owl help, tension music, secret passages, ghosts through walls, meeting
+  chat, joust in real colours with the crowd, practice joust in the lobby.
 - Update 5.92 (no SQL): Lights Out at Donaghy Castle, the family game, at the
   hidden /donaghy-castle (Sentinel accounts + Aaron, lib/familyGame.js).
   Button on Sentinel-X and on Aaron's Node. Test build: you plus computer
