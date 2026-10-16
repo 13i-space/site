@@ -189,6 +189,10 @@ function SentinelView({ d }) {
         {/* the look-lab previews are gated to Sentinel accounts in middleware.js */}
         <Link href="/preview" style={{ color: "#6E76B8" }}>look-lab previews &rarr;</Link>
       </p>
+      <p style={{ textAlign: "center", marginTop: -6, marginBottom: 20 }}>
+        {/* the family game, hidden; who can open it lives in lib/familyGame.js */}
+        <a href="/donaghy-castle" className="mono" style={styles.castleButton}>&#127984; LIGHTS OUT AT DONAGHY CASTLE &rarr;</a>
+      </p>
 
       <VersionStrip />
 
@@ -411,6 +415,7 @@ function ClaudeUsage({ c }) {
 
 const styles = {
   versionStrip: { display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 14, fontSize: 10.5, letterSpacing: "1px", color: "#6E76B8", margin: "-6px 0 18px" },
+  castleButton: { display: "inline-block", fontSize: 11, letterSpacing: "1.5px", color: "#1b1406", background: "linear-gradient(135deg, #F2DC9A, #C9A227)", borderRadius: 999, padding: "8px 16px", textDecoration: "none" },
   calButton: { marginLeft: "auto", fontSize: 10.5, letterSpacing: "1.5px", color: "#14163A", background: "linear-gradient(135deg, #E9D29A, #B9C0FF)", borderRadius: 999, padding: "7px 14px", textDecoration: "none" },
   week: { display: "grid", gridTemplateColumns: "repeat(7, minmax(0, 1fr))", gap: 8 },
   weekDay: { border: "1px solid #21244A", borderRadius: 6, padding: 10, minHeight: 90 },

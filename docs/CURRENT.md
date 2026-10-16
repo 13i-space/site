@@ -4,6 +4,10 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.92 (no SQL): Lights Out at Donaghy Castle, the family game, at the
+  hidden /donaghy-castle (Sentinel accounts + Aaron, lib/familyGame.js).
+  Button on Sentinel-X and on Aaron's Node. Test build: you plus computer
+  players; real multiplayer for the family is the next step (docs/CASTLE.md).
 - Update 5.84 (no SQL): Season 1 Weeks 8 (The Accord + TUTTI) and 9 (The Ring
   + RITORNELLO), all six pieces each; Seasons now 9 of 12 weeks built. Both
   interactives walked on every path; both games bot-tested for balance.

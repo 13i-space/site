@@ -3,6 +3,28 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.92 — Lights Out at Donaghy Castle: the family game, test build (Oct 2026)
+No SQL. Outside 13i canon: the Donaghy family's own game.
+- Hidden page **/donaghy-castle** (full screen, outside the site layout).
+  Only Sentinel accounts plus the names in `lib/familyGame.js` (Aaron) can
+  open it; everyone else gets the ordinary 404. Set FAMILY_GAME_USERNAMES in
+  Vercel to change the list without a code change.
+- Buttons: a gold "Lights Out at Donaghy Castle" button under the look-lab
+  link on Sentinel-X, and a "Family only" panel on the Node of anyone on
+  the family list who isn't a Sentinel account (Aaron).
+- Among Us-style hidden roles in a dark castle seen by torchlight: Squires,
+  Knight (Torch of Truth), Locksmith (locked doors, frees one prisoner),
+  Blacksmith (fixes sabotage, torch never goes out), Jester (random hops,
+  swap places, secretly helps), Black Knight (capture, Lights Out, jam the
+  portcullis, disguise, locked doors). Clue layer: each capture leaves
+  evidence of the room the captor came from; computer players give alibis,
+  sightings and catch lies. Votes go to a joust; the guilty are unhorsed.
+- Single-player test build: every other seat is a computer player. Rules in
+  `lib/castle/engine.js`, map in `lib/castle/map.js`, sound in
+  `lib/castle/sound.js`, drawing in `components/castle/draw.js`, screens in
+  `components/castle/DonaghyCastle.js`. See docs/CASTLE.md.
+- Donaghy Cup points are kept in the browser (localStorage) for now.
+
 ## Update 5.91 — Alien Lab: comparison panel removed (Oct 2026)
 No SQL. With Haiku + the detailed instructions settled (5.90), the
 Sentinel-X model comparison and its test-only API options are gone, and

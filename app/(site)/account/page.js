@@ -7,6 +7,7 @@ import ClaimUsername from "../../../components/ClaimUsername";
 import EditProfile from "../../../components/EditProfile";
 import { isSentinelUser } from "../../../lib/sentinel";
 import { isBriefUser } from "../../../lib/story/briefAccess";
+import { isFamilyPlayer } from "../../../lib/familyGame";
 import YourSpecies from "../../../components/YourSpecies";
 import FirstAssignment from "../../../components/FirstAssignment";
 import { gatherVisitor } from "../../../lib/visitorContext";
@@ -96,6 +97,8 @@ export default async function AccountPage() {
   // Aaron's Story of Self briefing (lib/story/briefAccess.js): a hidden panel
   // that only shows for the usernames listed there.
   const storyBrief = isBriefUser(profile?.username);
+  // The family game (lib/familyGame.js): a hidden button for the family only.
+  const familyGame = isFamilyPlayer(profile?.username) && !sentinel;
 
   // Both label and the game's own page, so a score in this list can link
   // straight back to where it was earned (same idea as the Stories Read
@@ -155,6 +158,18 @@ export default async function AccountPage() {
               Sentinel-X &rarr;
             </div>
           </Link>
+        )}
+        {familyGame && (
+          <a
+            href="/donaghy-castle"
+            className="panel"
+            style={{ display: "block", maxWidth: 420, margin: "0 auto 18px", borderColor: "#8a6a1e", background: "rgba(201,162,39,0.07)", textDecoration: "none" }}
+          >
+            <div className="mono" style={{ fontSize: 10, color: "#E9D29A", letterSpacing: "1.5px" }}>FAMILY ONLY &middot; PLAY FOR THE DONAGHY CUP</div>
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#F2E6C8", marginTop: 4 }}>
+              Lights Out at Donaghy Castle &rarr;
+            </div>
+          </a>
         )}
         {storyBrief && (
           <Link
