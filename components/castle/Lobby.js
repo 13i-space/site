@@ -97,7 +97,7 @@ export function KnightBuilder({ look, setLook }) {
   );
 }
 
-export function Lobby({ playerName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref, openPractice }) {
+export function Lobby({ playerName, setName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref, openPractice }) {
   const pts = cup.reduce((s, x) => s + x.points, 0);
   return (
     <div style={L.screen}>
@@ -112,6 +112,10 @@ export function Lobby({ playerName, look, setLook, total, setTotal, roleChoice, 
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1fr)", gap: 26, marginTop: 14 }} className="castle-lobby-grid">
           <div>
             <div className="mono" style={{ ...L.kicker, color: "#f2dc9a" }}>1 · BUILD YOUR KNIGHT</div>
+            <label style={{ display: "block", marginTop: 10 }}>
+              <span className="mono" style={L.kicker}>YOUR NAME IN THE CASTLE</span>
+              <input value={playerName} onChange={(e) => setName(e.target.value.slice(0, 20))} maxLength={20} placeholder="Sir Paul the Bold" style={{ ...L.select, marginTop: 6 }} />
+            </label>
             <div style={{ marginTop: 8 }}><KnightBuilder look={look} setLook={setLook} /></div>
           </div>
           <div>
@@ -142,11 +146,11 @@ export function Lobby({ playerName, look, setLook, total, setTotal, roleChoice, 
               ))}
             </div>
             <div style={{ fontSize: 12.5, color: "#c9c3e6", lineHeight: 1.7, margin: "14px 0" }}>
-              <b style={{ color: "#f2dc9a" }}>Keys:</b> arrows/WASD walk · hold <b>E</b> for chores and trapdoors · <b>R</b> report a helmet · <b>B</b> Great Bell ·
+              <b style={{ color: "#f2dc9a" }}>Moving:</b> click where you want to go (or hold the mouse and steer), or arrows/WASD · <b>E</b> starts a chore · <b>R</b> report a helmet · <b>B</b> Great Bell ·
               <b> Q F 1 2 3</b> role powers · <b>H</b> the owl (help) · <b>N</b> music · <b>M</b> sound effects
             </div>
             <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <button style={L.btn} onClick={start}>Enter the castle, {playerName}</button>
+              <button style={L.btn} onClick={start}>Enter the castle{playerName ? `, ${playerName}` : ""}</button>
               <button style={L.ghostBtn} onClick={openPractice}>Practice joust</button>
               <a href={backHref} style={{ color: "#8b95f6", fontSize: 13 }}>back to 13i.space</a>
             </div>

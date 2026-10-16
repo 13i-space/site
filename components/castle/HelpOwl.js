@@ -22,6 +22,7 @@ function tipsFor(hud) {
   if (r === "knight" && me.alive) tips.push({ key: "knight", text: me.cd.truth > 0 ? `Torch of Truth recharging (${Math.ceil(me.cd.truth)}s). When it's ready, face someone close and press F to see who they really are.` : "Your Torch of Truth is ready: face someone close and press F. It sees through the Black Knight's disguise." });
   if (r === "locksmith" && me.alive && hud.prisoners && !hud.freeUsed) tips.push({ key: "lock", hot: true, text: "Someone's locked in the dungeon cell. Go to the cell door in the Dungeon and hold E to free them (once a night)." });
   if (hud.job && me.alive) tips.push({ key: "job", text: `Your nearest job: ${hud.job.label} in the ${hud.job.room}. Follow the ${hud.job.urgent ? "red" : "gold"} arrow by your knight, or the dots on the map.` });
+  if (hud.ctx.pet) tips.push({ key: "sheba", text: "That's Sheba! Press E to give her a pet. One of the chores is feeding her: her bowl is in the Kitchen." });
   if (!tips.length) tips.push({ key: "idle", text: "All your chores are done. Keep your eyes open: note who you see where, and ring the Great Bell (B, in the Great Hall) if you're suspicious." });
   return tips;
 }
@@ -91,7 +92,7 @@ export function HelpOwl({ hud, open, setOpen }) {
             {tab === "chores" && (
               <>
                 <p style={{ margin: "0 0 8px" }}>Everyone on the castle&rsquo;s side has 8 chores spread around the castle. They&rsquo;re listed bottom-left, glow gold on the floor, show as gold dots on the little map, and the gold arrow next to your knight points to the nearest one.</p>
-                <p style={{ margin: "0 0 8px" }}>Walk to one and <b>hold E</b> for three seconds. When everybody&rsquo;s chores are done (the bar at the top), the castle wins. Ghosts&rsquo; chores still count.</p>
+                <p style={{ margin: "0 0 8px" }}>Walk to one and <b>press E</b> (or click the prompt). A small job opens: scrub, stir, pour, light candles, sharpen a sword, knead dough, carry hay, wind the clock... Some take longer than others, and the castle carries on around you while you work, so mind your back. Esc stops. When everybody&rsquo;s chores are done (the bar at the top), the castle wins. Ghosts&rsquo; chores still count.</p>
                 <p style={{ margin: "0 0 8px" }}>Red spots and a red arrow mean sabotage to fix: relight the torches at the Forge, or free the portcullis in the Gatehouse.</p>
                 <p style={{ margin: 0 }}>The Black Knight and the Jester have <i>pretend</i> chores: standing at them makes you look busy, but they don&rsquo;t count. Watch for someone who stands at a chore and the bar doesn&rsquo;t move.</p>
               </>
@@ -106,7 +107,7 @@ export function HelpOwl({ hud, open, setOpen }) {
             )}
             {tab === "keys" && (
               <p style={{ margin: 0 }}>
-                Arrows or WASD: walk · hold E: chore, repair, trapdoor · R: report a helmet · B: ring the Great Bell (once a night, in the Great Hall) ·
+                Click on the floor to walk there, or hold the mouse button and steer · arrows or WASD also walk · E: start a chore or repair, pet Sheba · hold E: trapdoor · R: report a helmet · B: ring the Great Bell (once a night, in the Great Hall) ·
                 Q: capture (Black Knight) / swap (Jester) · F: Torch of Truth (Knight) · 1, 2, 3: Black Knight sabotage and disguise · H: this owl · N: music · M: sound effects
               </p>
             )}

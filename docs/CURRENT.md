@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.94 (no SQL): Donaghy Castle round three - bigger castle, Round
+  Table hall, Sheba and Nana, chores as mini-games, mouse walking, own name,
+  costumes, vote clock, practice joust by speed and aim.
 - Update 5.93 (no SQL): Donaghy Castle round two - knight builder, castle
   owl help, tension music, secret passages, ghosts through walls, meeting
   chat, joust in real colours with the crowd, practice joust in the lobby.

@@ -3,6 +3,29 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.94 — Donaghy Castle: bigger castle, the Round Table, Sheba and Nana, real chores (Oct 2026)
+No SQL. Paul's second round of notes on the family game.
+- The castle is about a third bigger (80 x 58 tiles, `lib/castle/map.js`).
+- The Great Hall: a solid Round Table with twelve places and chairs, a round
+  rug, a red carpet door to door, twelve suits of armour on plinths, banners
+  and iron braziers. Meetings seat everyone around the table.
+- **Sheba**, the family's black dog with a white chest patch, roams the
+  halls, barks at passers-by (heard in the dark) and can be petted (E).
+  New chore: Feed Sheba (bowl in the Kitchen); she runs to eat.
+- **Nana** wanders the halls muttering, with the odd unreliable sighting.
+- **Chores are mini-games** (`components/castle/ChoreGame.js`): scrub/rub,
+  stir, pour without spilling, light candles and torches, sharpen and oil
+  on the beat, knead and pump, drag plates/hay/dinner, wind the clock and
+  pick the lock with arrow sequences. Lengths vary. Sabotage repairs and
+  the cell are mini-games too. The castle keeps running while you work.
+- Walk with the mouse: click to walk there, or hold and steer.
+- Choose your own name in the lobby. The Black Knight and Jester see
+  themselves in costume on their own screen.
+- Meetings have a 45-second vote clock (no vote = skip).
+- Minimap: every room labelled, and it can be hidden.
+- Practice joust: spam Space to spur (the faster rider hits harder), aim
+  the lance with the mouse or arrows at the bobbing shield.
+
 ## Update 5.93 — Donaghy Castle: build your knight, the owl, music, passages, practice joust (Oct 2026)
 No SQL. Paul's first round of notes on the family game.
 - **Build your knight** in the lobby (`components/castle/Lobby.js`, looks in

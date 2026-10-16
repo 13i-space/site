@@ -48,9 +48,18 @@ roots, so a medieval castle. Everyone plays for the **Donaghy Cup**.
 - Joust scene (`drawJoustScene` in draw.js) used by the vote joust and the
   practice joust (`Joust.js`). Practice record: localStorage `donaghy-duels-v1`.
 
+## Added in 5.94
+- Map 80 x 58; `TABLE` (solid round table), `ARMOUR_STANDS` (solid decor).
+- Sheba and Nana live in `world.sheba` / `world.nana` (engine.js), not in
+  `entities`, so they never vote, get captured or count in sightings.
+- Chores: `ChoreGame.js` (`CHORE_GAMES` maps each chore id to a game);
+  the engine's `humanFinish` completes it. Passages are still hold-E.
+- Mouse walking: `setHumanTarget` in engine.js; camera kept on the view.
+- Vote clock: `VOTE_SECONDS` in DonaghyCastle.js.
+
 ## Balance
 Tuned with bot-only simulations (300 nights, human seat idle): roughly
-45-55% castle wins (46% after 5.93, capture cooldown 28s), nights end after 2-3 minutes of simulated play plus
+45-55% castle wins (46% after 5.93 and 5.94, capture cooldown 28s; nights run longer on the bigger map), nights end after 2-3 minutes of simulated play plus
 meetings. Main dials at the top of engine.js: CAPTURE_CD, TRUTH_CD,
 CHORES_EACH, and the computer voters' `trust` and 42-point threshold.
 

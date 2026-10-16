@@ -5,6 +5,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   createGame, stepGame, humanAction, hudInfo, resolveVotes, applyJoust, sayInMeeting, ROLES, GAME_SECONDS,
+  humanContext, setHumanTarget, humanFinish,
 } from "../../lib/castle/engine";
 import { castleSound as snd } from "../../lib/castle/sound";
 import { castleMusic as music } from "../../lib/castle/music";
@@ -13,9 +14,12 @@ import { paintCastle, drawFrame, drawMiniMap } from "./draw";
 import { Lobby } from "./Lobby";
 import { VoteJoust, PracticeJoust } from "./Joust";
 import { HelpOwl } from "./HelpOwl";
+import { ChoreGame } from "./ChoreGame";
 
 const CUP_KEY = "donaghy-cup-v1";
-const MINI_W = 248, MINI_H = 176;
+const MINI_W = 280, MINI_H = 203;
+const VOTE_SECONDS = 45;
+const NAME_KEY = "donaghy-name-v1";
 
 function clockText(t) {
   const mins = 20 * 60 + (t / GAME_SECONDS) * 240;
@@ -43,6 +47,11 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const [cup, setCup] = useState([]);
   const [showChores, setShowChores] = useState(true);
   const [, setTick] = useState(0);
+  const [name, setName] = useState(playerName);
+  const [chore, setChore] = useState(null);
+  const [deadline, setDeadline] = useState(0);
+  const viewRef = useRef({ w: 0, h: 0, dpr: 1 });
+  const mouseHeld = useRef(false);
 
   const worldRef = useRef(null);
   const canvasRef = useRef(null);
@@ -54,13 +63,17 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const phaseRef = useRef(phase);
   phaseRef.current = phase;
 
-  useEffect(() => { setCup(readCup()); setLook(loadLook()); setMusicOn(music.isEnabled()); }, []);
+  useEffect(() => {
+    setCup(readCup()); setLook(loadLook()); setMusicOn(music.isEnabled());
+    try { const n = localStorage.getItem(NAME_KEY); if (n) setName(n); } catch { /* private window */ }
+  }, []);
+  const changeName = (n) => { setName(n); try { localStorage.setItem(NAME_KEY, n); } catch { /* private window */ } };
   useEffect(() => () => music.stop(), []);
 
   const start = () => {
     snd.unlock();
     if (!mapRef.current) mapRef.current = paintCastle();
-    worldRef.current = createGame({ playerName, total, humanRole: roleChoice, playerLook: look });
+    worldRef.current = createGame({ playerName: (name || playerName).trim().slice(0, 20) || playerName, total, humanRole: roleChoice, playerLook: look });
     finished.current = false;
     // handy for testing on a local dev server only; never in the live build
     if (process.env.NODE_ENV !== "production") window.__castle = worldRef.current;
@@ -94,6 +107,44 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const toggleMute = () => { const m = !muted; snd.setMuted(m); setMuted(m); };
   const toggleMusic = () => { const on = !music.isEnabled(); music.setEnabled(on); setMusicOn(on); };
 
+  const openChore = (ctx) => {
+    const w = worldRef.current;
+    if (!w || w.phase !== "play") return;
+    keys.current = {};
+    w.humanPath = [];
+    w.choreOpen = true;
+    setChore({ station: ctx.station, fake: !!ctx.fake });
+  };
+  const closeChore = () => { if (worldRef.current) worldRef.current.choreOpen = false; setChore(null); };
+  const doneChore = () => {
+    const w = worldRef.current;
+    if (chore) humanFinish(w, chore.station.id);
+    closeChore();
+  };
+
+  // ---- walking by mouse: click to walk there, or hold the button to steer ----
+  const mouseToWorld = (e) => {
+    const v = viewRef.current;
+    const r = canvasRef.current.getBoundingClientRect();
+    return { x: (e.clientX - r.left) / (v.z || 1) + (v.camX || 0), y: (e.clientY - r.top) / (v.z || 1) + (v.camY || 0) };
+  };
+  const steerAt = useRef(0);
+  const onCanvasDown = (e) => {
+    if (phaseRef.current !== "play" || e.button !== 0) return;
+    mouseHeld.current = true;
+    const p = mouseToWorld(e);
+    setHumanTarget(worldRef.current, p.x, p.y);
+  };
+  const onCanvasMove = (e) => {
+    if (!mouseHeld.current || phaseRef.current !== "play") return;
+    const now = performance.now();
+    if (now - steerAt.current < 120) return;
+    steerAt.current = now;
+    const p = mouseToWorld(e);
+    setHumanTarget(worldRef.current, p.x, p.y);
+  };
+  useEffect(() => { const u = () => { mouseHeld.current = false; }; window.addEventListener("mouseup", u); return () => window.removeEventListener("mouseup", u); }, []);
+
   // ---- keys ----
   useEffect(() => {
     const map = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", KeyE: "use", Space: "use" };
@@ -101,6 +152,12 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     const down = (ev) => {
       if (phaseRef.current !== "play") return;
       if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA")) return;
+      if (worldRef.current?.choreOpen) return;
+      if ((ev.code === "KeyE" || ev.code === "Space") && !ev.repeat) {
+        const ctx = humanContext(worldRef.current);
+        if (ctx.station && ctx.station.kind !== "passage") { ev.preventDefault(); openChore(ctx); return; }
+        if (!ctx.station && ctx.pet) { humanAction(worldRef.current, "pet"); ev.preventDefault(); return; }
+      }
       if (map[ev.code]) { keys.current[map[ev.code]] = true; ev.preventDefault(); }
       if (one[ev.code] && !ev.repeat) { humanAction(worldRef.current, one[ev.code]); ev.preventDefault(); }
       if (ev.code === "KeyM") { const m = !snd.isMuted(); snd.setMuted(m); setMuted(m); }
@@ -123,7 +180,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     const g = cv.getContext("2d");
     if (!darkRef.current) darkRef.current = document.createElement("canvas").getContext("2d");
     let raf, last = performance.now(), hudAt = 0, stepAt = 0;
-    const view = { w: 0, h: 0, dpr: 1 };
+    const view = viewRef.current;
     const resize = () => {
       const dpr = Math.min(2, window.devicePixelRatio || 1);
       view.w = cv.clientWidth; view.h = cv.clientHeight; view.dpr = dpr;
@@ -138,7 +195,8 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
       if (phaseRef.current === "play") {
         stepGame(w, keys.current, dt);
         if ((keys.current.up || keys.current.down || keys.current.left || keys.current.right) && w.entities[0].alive && now - stepAt > 330) { stepAt = now; snd.step(); }
-        if (w.phase === "meeting") { keys.current = {}; setShown(0); setVote(undefined); setTally(null); setPhase("meeting"); }
+        if (w.choreOpen && (w.phase !== "play" || !w.entities[0].alive)) { w.choreOpen = false; setChore(null); }
+        if (w.phase === "meeting") { keys.current = {}; setShown(0); setVote(undefined); setTally(null); setDeadline(Date.now() + VOTE_SECONDS * 1000); setPhase("meeting"); }
         else if (w.phase === "over") { finish(); }
         if (now - hudAt > 100) {
           hudAt = now;
@@ -205,8 +263,8 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   };
 
   // ---------- screens ----------
-  if (phase === "lobby") return <Lobby {...{ playerName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref }} openPractice={() => setPhase("practice")} />;
-  if (phase === "practice") return <PracticeJoust me={{ name: playerName, look }} onExit={() => setPhase("lobby")} />;
+  if (phase === "lobby") return <Lobby {...{ playerName: name, setName: changeName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref }} openPractice={() => setPhase("practice")} />;
+  if (phase === "practice") return <PracticeJoust me={{ name: name || playerName, look }} onExit={() => setPhase("lobby")} />;
   const w = worldRef.current;
   const me = w?.entities[0];
 
@@ -246,13 +304,14 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
 
   return (
     <div style={{ position: "fixed", inset: 0, background: "#05060d", overflow: "hidden", fontFamily: "Inter, system-ui, sans-serif" }}>
-      <canvas ref={canvasRef} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: phase === "joust" ? "none" : "block" }} />
+      <canvas ref={canvasRef} onMouseDown={onCanvasDown} onMouseMove={onCanvasMove} onContextMenu={(e) => e.preventDefault()} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: phase === "joust" ? "none" : "block", cursor: "crosshair" }} />
       {phase !== "joust" && hud && (
-        <Hud hud={hud} miniRef={miniRef} muted={muted} toggleMute={toggleMute} musicOn={musicOn} toggleMusic={toggleMusic} showChores={showChores} setShowChores={setShowChores} backHref={backHref} />
+        <Hud hud={hud} openChore={() => { const ctx = humanContext(w); if (ctx.station && ctx.station.kind !== "passage") openChore(ctx); }} pet={() => humanAction(w, "pet")} miniRef={miniRef} muted={muted} toggleMute={toggleMute} musicOn={musicOn} toggleMusic={toggleMusic} showChores={showChores} setShowChores={setShowChores} backHref={backHref} />
       )}
       {phase === "play" && hud && <HelpOwl hud={hud} open={helpOpen} setOpen={setHelpOpen} />}
+      {phase === "play" && chore && <ChoreGame station={chore.station} fake={chore.fake} onDone={doneChore} onClose={closeChore} />}
       {phase === "meeting" && meeting && (
-        <Meeting w={w} m={meeting} shown={shown} setShown={setShown} vote={vote} castVote={castVote} tally={tally} afterVote={afterVote} say={say} />
+        <Meeting w={w} m={meeting} shown={shown} setShown={setShown} vote={vote} castVote={castVote} tally={tally} afterVote={afterVote} say={say} deadline={deadline} />
       )}
       {phase === "joust" && joust && <VoteJoust accused={joust.accused} crowd={joust.crowd} onDone={afterJoust} />}
     </div>
@@ -260,7 +319,8 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
 }
 
 // ---------- HUD ----------
-function Hud({ hud, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores, setShowChores, backHref }) {
+function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores, setShowChores, backHref }) {
+  const [mapOpen, setMapOpen] = useState(true);
   const r = ROLES[hud.me.role];
   const cdRow = (label, key, extra) => {
     const v = hud.me.cd[key];
@@ -306,8 +366,11 @@ function Hud({ hud, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores
 
       {/* minimap */}
       <div style={{ ...S.hudBox, top: 12, right: 12, padding: 8 }}>
-        <canvas ref={miniRef} width={MINI_W * 2} height={MINI_H * 2} style={{ display: "block", width: MINI_W, height: MINI_H }} />
-        <div className="mono" style={{ fontSize: 11, color: "#f2e6c8", marginTop: 6, textAlign: "center" }}>{hud.room.toUpperCase()}</div>
+        <canvas ref={miniRef} width={MINI_W * 2} height={MINI_H * 2} style={{ display: mapOpen ? "block" : "none", width: MINI_W, height: MINI_H }} />
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: mapOpen ? 6 : 0 }}>
+          <span className="mono" style={{ fontSize: 11, color: "#f2e6c8" }}>{hud.room.toUpperCase()}</span>
+          <button onClick={() => setMapOpen(!mapOpen)} style={S.tiny} title="Show or hide the map">{mapOpen ? "hide map ▴" : "map ▾"}</button>
+        </div>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 6, marginTop: 6 }}>
           <button onClick={toggleMusic} style={{ ...S.tiny, color: musicOn ? "#f2dc9a" : "#8d87ad" }} title="Music (N)">{musicOn ? "♪ music on" : "♪ music off"}</button>
           <button onClick={toggleMute} style={{ ...S.tiny, color: muted ? "#8d87ad" : "#f2dc9a" }} title="Sound effects (M)">{muted ? "effects off" : "effects on"}</button>
@@ -320,7 +383,7 @@ function Hud({ hud, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores
         <button onClick={() => setShowChores(!showChores)} className="mono" style={{ ...S.tiny, border: 0, padding: 0, color: "#c9a227" }}>
           {hud.me.role === "blackknight" || hud.me.role === "jester" ? "PRETEND CHORES (DON'T COUNT)" : "YOUR CHORES"} · {left} LEFT {showChores ? "▾" : "▸"}
         </button>
-        {showChores && <div style={{ fontSize: 11, color: "#8d87ad", margin: "3px 0 2px" }}>Gold dots on the map; walk there and hold E</div>}
+        {showChores && <div style={{ fontSize: 11, color: "#8d87ad", margin: "3px 0 2px" }}>Gold dots on the map. Walk there and press E</div>}
         {showChores && hud.me.chores.map((c) => (
           <div key={c.id} style={{ fontSize: 12, color: c.done ? "#6d6890" : "#e7e1ff", textDecoration: c.done ? "line-through" : "none", marginTop: 3 }}>
             {c.label} <span style={{ color: "#8d87ad" }}>· {c.room}</span>
@@ -329,14 +392,20 @@ function Hud({ hud, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores
       </div>
 
       {/* what you can do right here */}
-      {(hud.ctx.station || hud.ctx.marker || hud.ctx.bell || hud.ctx.power) && (
+      {(hud.ctx.station || hud.ctx.marker || hud.ctx.bell || hud.ctx.power || hud.ctx.pet) && (
         <div style={{ ...S.hudBox, bottom: 24, left: "50%", transform: "translateX(-50%)", textAlign: "center", minWidth: 280 }}>
           {hud.ctx.power && <div style={{ color: hud.ctx.power.hot ? "#ff9a85" : "#a9a3c4", fontWeight: 600, marginBottom: 4 }}>Press <b style={S.k}>{hud.ctx.power.key}</b>: {hud.ctx.power.label}</div>}
           {hud.ctx.marker && <div style={{ color: "#ff9a85", fontWeight: 600 }}>A dropped helmet! Press <b style={S.k}>R</b> to report it</div>}
           {hud.ctx.bell && !hud.ctx.marker && <div style={{ color: "#f2dc9a" }}>Press <b style={S.k}>B</b> to ring the Great Bell</div>}
-          {hud.ctx.station && (
+          {hud.ctx.pet && !hud.ctx.station && <div style={{ color: "#f2e6c8", cursor: "pointer" }} onClick={pet}>Press <b style={S.k}>E</b>: pet Sheba</div>}
+          {hud.ctx.station && hud.ctx.station.kind !== "passage" && (
+            <button onClick={openChore} style={{ background: "transparent", border: 0, color: "#f2e6c8", fontSize: 14, cursor: "pointer", padding: 0 }}>
+              Press <b style={S.k}>E</b> (or click): {hud.ctx.label}{hud.ctx.fake ? " (pretend)" : ""}
+            </button>
+          )}
+          {hud.ctx.station && hud.ctx.station.kind === "passage" && (
             <>
-              <div style={{ color: "#f2e6c8" }}>Hold <b style={S.k}>E</b>: {hud.ctx.label}{hud.ctx.fake ? " (pretend)" : ""}</div>
+              <div style={{ color: "#f2e6c8" }}>Hold <b style={S.k}>E</b>: {hud.ctx.label}</div>
               <div style={{ height: 6, background: "#1c1a30", borderRadius: 3, marginTop: 6, overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${hud.work ? Math.min(100, (hud.work.p / hud.work.need) * 100) : 0}%`, background: "#f2dc9a" }} />
               </div>
@@ -359,8 +428,12 @@ function Hud({ hud, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores
 }
 
 // ---------- the meeting in the Great Hall ----------
-function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote, say }) {
+function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote, say, deadline }) {
   const [draft, setDraft] = useState("");
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const id = setInterval(() => setNow(Date.now()), 250); return () => clearInterval(id); }, []);
+  const left = Math.max(0, Math.ceil((deadline - now) / 1000));
+  useEffect(() => { if (!tally && deadline && now >= deadline) castVote(null); }, [now, deadline, tally]); // eslint-disable-line react-hooks/exhaustive-deps
   const me = w.entities[0];
   const lines = m.lines.slice(0, shown);
   const done = shown >= m.lines.length;
@@ -375,6 +448,7 @@ function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote, say 
         <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
           <div style={{ ...S.big, fontSize: 30 }}>The Great Bell tolls</div>
           <div className="mono" style={S.kicker}>MEETING IN THE GREAT HALL · ROUND {w.round}</div>
+          {!tally && <div className="mono" style={{ marginLeft: "auto", fontSize: 13, letterSpacing: "1px", color: left <= 10 ? "#ff8a70" : "#f2dc9a" }}>VOTE CLOSES IN {left}s</div>}
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.5fr) minmax(0, 1fr)", gap: 18, marginTop: 14 }} className="castle-meet-grid">
           <div style={{ minHeight: 220 }}>
@@ -458,7 +532,7 @@ function Meeting({ w, m, shown, setShown, vote, castVote, tally, afterVote, say 
               </div>
             </>
           )}
-          {vote === undefined && !tally && <div style={{ fontSize: 12, color: "#8d87ad", marginTop: 8 }}>The castle folk will vote once you have.</div>}
+          {vote === undefined && !tally && <div style={{ fontSize: 12, color: "#8d87ad", marginTop: 8 }}>The castle folk vote once you have. If the clock runs out first, you skip.</div>}
         </div>
       </div>
       <style>{`@keyframes castleIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}

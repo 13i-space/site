@@ -3,7 +3,7 @@
 // and the joust.
 import {
   TILE, W, H, ROOMS, CORRIDORS, STATIONS, LOCKED, PORTCULLIS, BRAZIERS, CELL_AREA, AREA_STYLE, PASSAGES,
-  T_WALL, T_MOAT, T_FLOOR, tileAt, blocksSight,
+  T_WALL, T_MOAT, T_FLOOR, T_TABLE, T_DECOR, tileAt, blocksSight, TABLE, ARMOUR_STANDS, FORGE_FIRE, WELL_POS, KITCHEN_BOWL, stationById,
 } from "../../lib/castle/map";
 import { look, nextJob } from "../../lib/castle/engine";
 import { drawKnightTop, drawKnightSide, drawKnightFront, drawHorse } from "./knight";
@@ -24,7 +24,7 @@ export function paintCastle() {
   // walls: near-black stone blocks
   for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
     const t = tileAt(x, y);
-    if (t === T_MOAT || t === T_FLOOR) continue;
+    if (t === T_MOAT || t === T_FLOOR || t === T_TABLE || t === T_DECOR) continue;
     const px = x * TILE, py = y * TILE;
     g.fillStyle = "#101016"; g.fillRect(px, py, TILE, TILE);
     const off = (y % 2) * 8;
@@ -77,12 +77,13 @@ export function paintCastle() {
     for (let i = 1; i < 4; i++) { g.beginPath(); g.moveTo(px + 3, py + 3 + i * 6.5); g.lineTo(px + TILE - 3, py + 3 + i * 6.5); g.stroke(); }
     g.fillStyle = "#9a9aa8"; g.beginPath(); g.arc(px + TILE - 9, py + 16, 2.5, 0, 7); g.fill();
   }
-  // the hall's long tables and the Great Bell
-  g.fillStyle = "#5b3b20";
-  g.fillRect(19 * TILE, 17 * TILE + 8, 6 * TILE, 18); g.fillRect(29 * TILE, 17 * TILE + 8, 6 * TILE, 18);
-  g.fillRect(19 * TILE, 23 * TILE + 6, 6 * TILE, 18); g.fillRect(29 * TILE, 23 * TILE + 6, 6 * TILE, 18);
+  paintGreatHall(g);
   // throne room carpet runner
-  g.fillStyle = "#7a1d28"; g.fillRect(33 * TILE, 3 * TILE, 2 * TILE, 7 * TILE);
+  g.fillStyle = "#7a1d28"; g.fillRect(41 * TILE, 3 * TILE, 2 * TILE, 10 * TILE);
+  g.fillStyle = "#c9a227"; g.fillRect(41 * TILE, 3 * TILE, 3, 10 * TILE); g.fillRect(43 * TILE - 3, 3 * TILE, 3, 10 * TILE);
+  // Sheba's bowl in the kitchen
+  g.fillStyle = "#6b3a1e"; g.beginPath(); g.ellipse(KITCHEN_BOWL.x, KITCHEN_BOWL.y + 10, 11, 7, 0, 0, 7); g.fill();
+  g.fillStyle = "#c9a227"; g.font = "bold 7px Inter, sans-serif"; g.textAlign = "center"; g.fillText("SHEBA", KITCHEN_BOWL.x, KITCHEN_BOWL.y + 12);
   // dungeon cell bars
   const c = CELL_AREA;
   g.strokeStyle = "#7b7f8a"; g.lineWidth = 3;
@@ -90,8 +91,8 @@ export function paintCastle() {
   for (let i = 0; i <= c.w * 2; i++) { g.beginPath(); g.moveTo(c.tx * TILE - 6 + i * 16, c.ty * TILE - 6); g.lineTo(c.tx * TILE - 6 + i * 16, c.ty * TILE - 2); g.stroke(); }
   g.lineWidth = 1;
   // the well
-  g.fillStyle = "#555"; g.beginPath(); g.arc(56.5 * TILE, 34.5 * TILE, 20, 0, Math.PI * 2); g.fill();
-  g.fillStyle = "#0d1a33"; g.beginPath(); g.arc(56.5 * TILE, 34.5 * TILE, 13, 0, Math.PI * 2); g.fill();
+  g.fillStyle = "#555"; g.beginPath(); g.arc(WELL_POS.x, WELL_POS.y, 20, 0, Math.PI * 2); g.fill();
+  g.fillStyle = "#0d1a33"; g.beginPath(); g.arc(WELL_POS.x, WELL_POS.y, 13, 0, Math.PI * 2); g.fill();
   // stations' props
   for (const s of STATIONS) drawProp(g, s);
   // room names, faint, painted into the floor
@@ -142,13 +143,127 @@ function drawPerson(g, e, world, me, t) {
   }
   const moving = e.human ? !!e.moving : e.path && e.path.length > 0 && !e.work;
   g.scale(1.2, 1.2);
-  drawKnightTop(g, L.look, { facing: e.facing, walk: e.walk || 0, moving, torch: e.alive && !(world.lightsOut && e.role !== "blacksmith"), t: t + e.id });
+  // on your own screen you see yourself as what you really are
+  let lk = L.look, costume = null;
+  if (e === me && me.alive && me.role === "blackknight") { lk = BK_LOOK; costume = "bk"; }
+  if (e === me && me.alive && me.role === "jester") { lk = { ...JESTER_LOOK, weapon: me.look.weapon }; costume = "jester"; }
+  drawKnightTop(g, lk, { costume, facing: e.facing, walk: e.walk || 0, moving, torch: e.alive && !(world.lightsOut && e.role !== "blacksmith"), t: t + e.id });
   g.restore();
   if (ghost) g.globalAlpha = 0.5;
   g.font = "600 11px Inter, system-ui, sans-serif"; g.textAlign = "center";
   g.fillStyle = e === me ? "#fff3c4" : "rgba(235,228,210,0.85)";
-  g.fillText(e === me ? `${L.name} (you)` : L.name, e.x, e.y - 22);
+  g.fillText(e === me ? (me.disguiseAs !== null ? `${me.name} (you, disguised as ${L.name})` : `${me.name} (you)`) : L.name, e.x, e.y - 22);
   g.globalAlpha = 1;
+}
+
+const BK_LOOK = { tabard: "#16161c", trim: "#b01020", helmet: "#24242c", helmetStyle: "plumed", weapon: "longsword", emblem: "plain" };
+const JESTER_LOOK = { tabard: "#7d3c98", trim: "#e9c64a", helmet: "#e9c64a", helmetStyle: "hood", weapon: "mace", emblem: "plain" };
+
+function paintGreatHall(g) {
+  // a long red carpet from door to door, and a great round rug under the table
+  g.fillStyle = "#6a1822"; g.fillRect(33.6 * TILE, 18 * TILE, 2.8 * TILE, 16 * TILE);
+  g.fillStyle = "#c9a227"; g.fillRect(33.6 * TILE, 18 * TILE, 3, 16 * TILE); g.fillRect(36.4 * TILE - 3, 18 * TILE, 3, 16 * TILE);
+  g.fillStyle = "#5a1420"; g.beginPath(); g.arc(TABLE.x, TABLE.y, TABLE.r + 52, 0, 7); g.fill();
+  g.strokeStyle = "#c9a227"; g.lineWidth = 4; g.beginPath(); g.arc(TABLE.x, TABLE.y, TABLE.r + 48, 0, 7); g.stroke();
+  g.lineWidth = 1.5; g.beginPath(); g.arc(TABLE.x, TABLE.y, TABLE.r + 40, 0, 7); g.stroke();
+  // the Round Table and its chairs
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    const cx = TABLE.x + Math.cos(a) * (TABLE.r + 14), cy = TABLE.y + Math.sin(a) * (TABLE.r + 14);
+    g.save(); g.translate(cx, cy); g.rotate(a);
+    g.fillStyle = "#3a2210"; g.fillRect(-6, -9, 14, 18); g.fillStyle = "#7a1d28"; g.fillRect(-4, -7, 9, 14);
+    g.restore();
+  }
+  g.fillStyle = "#2a1608"; g.beginPath(); g.arc(TABLE.x + 4, TABLE.y + 6, TABLE.r, 0, 7); g.fill();
+  const wood = g.createRadialGradient(TABLE.x - 20, TABLE.y - 20, 10, TABLE.x, TABLE.y, TABLE.r);
+  wood.addColorStop(0, "#8a5a2e"); wood.addColorStop(1, "#5a3818");
+  g.fillStyle = wood; g.beginPath(); g.arc(TABLE.x, TABLE.y, TABLE.r - 2, 0, 7); g.fill();
+  g.strokeStyle = "#c9a227"; g.lineWidth = 3; g.beginPath(); g.arc(TABLE.x, TABLE.y, TABLE.r - 8, 0, 7); g.stroke();
+  // the twelve places, like the old painted table at Winchester
+  for (let i = 0; i < 12; i++) {
+    const a = (i / 12) * Math.PI * 2;
+    g.fillStyle = i % 2 ? "#e8dcb8" : "#2e5a2e";
+    g.beginPath(); g.moveTo(TABLE.x, TABLE.y); g.arc(TABLE.x, TABLE.y, TABLE.r - 12, a, a + Math.PI / 6); g.closePath(); g.globalAlpha = 0.35; g.fill(); g.globalAlpha = 1;
+    const px = TABLE.x + Math.cos(a + Math.PI / 12) * (TABLE.r - 22), py = TABLE.y + Math.sin(a + Math.PI / 12) * (TABLE.r - 22);
+    g.fillStyle = "#d8cfae"; g.beginPath(); g.arc(px, py, 5, 0, 7); g.fill();
+    g.fillStyle = "#b8902a"; g.beginPath(); g.arc(px + Math.cos(a) * 9, py + Math.sin(a) * 9, 2.5, 0, 7); g.fill();
+  }
+  // the red-and-gold rose at the centre, with a great sword laid across it
+  g.fillStyle = "#c0392b"; g.beginPath(); g.arc(TABLE.x, TABLE.y, 18, 0, 7); g.fill();
+  g.fillStyle = "#e9c64a"; g.beginPath(); g.arc(TABLE.x, TABLE.y, 8, 0, 7); g.fill();
+  g.save(); g.translate(TABLE.x, TABLE.y); g.rotate(-0.6);
+  g.fillStyle = "#dde3ec"; g.fillRect(-34, -2.5, 52, 5); g.fillStyle = "#c9a227"; g.fillRect(16, -9, 4, 18); g.fillRect(20, -2, 12, 4);
+  g.restore();
+  // suits of armour on plinths along the walls
+  for (const [x, y] of ARMOUR_STANDS) {
+    const cx = x * TILE + 16, cy = y * TILE + 16, top = y < 25;
+    g.fillStyle = "#3c3a44"; g.fillRect(cx - 14, cy - 14, 28, 28);
+    g.fillStyle = "#57545f"; g.fillRect(cx - 14, cy - 14, 28, 4);
+    g.save(); g.translate(cx, cy); g.rotate(top ? Math.PI / 2 : -Math.PI / 2); g.scale(1.1, 1.1);
+    drawKnightTop(g, { tabard: "#8a8f9a", trim: "#c9a227", helmet: "#c9ced8", helmetStyle: (x + y) % 3 === 0 ? "plumed" : (x + y) % 3 === 1 ? "greathelm" : "horned", weapon: "spear", emblem: "plain" }, { torch: false, steel: "#c9ced8" });
+    g.restore();
+  }
+  // banners hung on the north and south walls, alternating red and blue
+  for (let x = 21; x < 49; x += 3) {
+    if (x >= 33 && x <= 36) continue;
+    for (const y of [17, 34]) {
+      const red = (x / 3) % 2 < 1;
+      const bx = x * TILE + 4, by = y === 17 ? 17 * TILE + 6 : 34 * TILE + 2;
+      g.fillStyle = red ? "#8a1d28" : "#1d3a7a"; g.fillRect(bx, by, 24, 22);
+      g.fillStyle = "#e9c64a"; g.fillRect(bx + 10, by + 4, 4, 14); g.fillRect(bx + 5, by + 8, 14, 4);
+    }
+  }
+  // iron braziers in the corners
+  for (const b of BRAZIERS) {
+    g.fillStyle = "#2a2a30"; g.beginPath(); g.arc(b.x, b.y, 15, 0, 7); g.fill();
+    g.fillStyle = "#c2501e"; g.beginPath(); g.arc(b.x, b.y, 10, 0, 7); g.fill();
+    g.fillStyle = "#ffcf6a"; g.beginPath(); g.arc(b.x, b.y, 5, 0, 7); g.fill();
+  }
+}
+
+function drawSheba(g, sh, t, wt) {
+  g.save(); g.translate(sh.x, sh.y);
+  g.fillStyle = "rgba(0,0,0,0.3)"; g.beginPath(); g.ellipse(2, 5, 16, 9, 0, 0, 7); g.fill();
+  g.rotate(sh.facing);
+  const leg = Math.sin(sh.run * 0.25) * 3;
+  g.fillStyle = "#121214";
+  for (const [lx, ly, o] of [[8, -6, 1], [8, 6, -1], [-8, -6, -1], [-8, 6, 1]]) { g.beginPath(); g.ellipse(lx + leg * o, ly, 3.5, 2.5, 0, 0, 7); g.fill(); }
+  // tail: wags hard when petted or eating
+  const wagging = wt < sh.wag || wt < sh.eating;
+  const tw = Math.sin(t * (wagging ? 22 : 6)) * (wagging ? 0.9 : 0.35);
+  g.strokeStyle = "#121214"; g.lineWidth = 3.5; g.lineCap = "round";
+  g.beginPath(); g.moveTo(-12, 0); g.quadraticCurveTo(-18, tw * 6, -22, tw * 10); g.stroke();
+  g.fillStyle = "#18181b"; g.beginPath(); g.ellipse(0, 0, 13, 7.5, 0, 0, 7); g.fill();
+  // her white chest patch
+  g.fillStyle = "#f2efe6"; g.beginPath(); g.ellipse(8, 0, 4.5, 3.5, 0, 0, 7); g.fill();
+  g.fillStyle = "#18181b"; g.beginPath(); g.arc(15, 0, 6, 0, 7); g.fill();
+  g.beginPath(); g.ellipse(20, 0, 4, 3, 0, 0, 7); g.fill();
+  g.fillStyle = "#0b0b0c"; g.beginPath(); g.ellipse(13, -5, 3.5, 2, -0.4, 0, 7); g.ellipse(13, 5, 3.5, 2, 0.4, 0, 7); g.fill();
+  g.fillStyle = "#000"; g.beginPath(); g.arc(23.5, 0, 1.6, 0, 7); g.fill();
+  g.fillStyle = "#c0392b"; g.fillRect(9, -6, 2, 12); // her collar
+  g.restore();
+  g.font = "600 10px Inter, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(235,228,210,0.8)";
+  g.fillText("Sheba", sh.x, sh.y - 16);
+}
+
+function drawNana(g, n, t) {
+  g.save(); g.translate(n.x, n.y);
+  g.fillStyle = "rgba(0,0,0,0.3)"; g.beginPath(); g.ellipse(2, 5, 13, 8, 0, 0, 7); g.fill();
+  g.rotate(n.facing);
+  const st = Math.sin(n.walk) * 2.5;
+  g.fillStyle = "#4a3a5a"; g.beginPath(); g.ellipse(st, -4, 3, 2.2, 0, 0, 7); g.ellipse(-st, 4, 3, 2.2, 0, 0, 7); g.fill();
+  // long skirt, purple shawl, cane
+  g.fillStyle = "#5a4a6a"; g.beginPath(); g.ellipse(-1, 0, 9, 11, 0, 0, 7); g.fill();
+  g.fillStyle = "#8e44ad"; g.beginPath(); g.ellipse(1, 0, 7, 10.5, 0, 0, 7); g.fill();
+  g.strokeStyle = "#e9c64a"; g.lineWidth = 1; g.beginPath(); g.ellipse(1, 0, 7, 10.5, 0, 0, 7); g.stroke();
+  g.strokeStyle = "#7a5a32"; g.lineWidth = 2.2; g.beginPath(); g.moveTo(2, 9); g.lineTo(14, 12); g.stroke();
+  // white hair in a bun
+  g.fillStyle = "#e9e6df"; g.beginPath(); g.arc(1, 0, 5.5, 0, 7); g.fill();
+  g.fillStyle = "#d6d2c8"; g.beginPath(); g.arc(-3, 0, 3, 0, 7); g.fill();
+  g.fillStyle = "#e3b98f"; g.beginPath(); g.arc(5, 0, 2.6, -1.3, 1.3); g.fill();
+  g.restore();
+  g.font = "600 10px Inter, system-ui, sans-serif"; g.textAlign = "center"; g.fillStyle = "rgba(235,228,210,0.8)";
+  g.fillText("Nana", n.x, n.y - 18);
 }
 
 export function visionPolygon(cx, cy, facing, cone, near, spread = 0.62, rays = 180) {
@@ -180,6 +295,7 @@ export function drawFrame(g, dark, map, world, view, t) {
   const camX = Math.max(0, Math.min(W * TILE - w / z, me.x - w / z / 2));
   const camY = Math.max(0, Math.min(H * TILE - h / z, me.y - h / z / 2));
   const setT = (c) => c.setTransform(dpr * z, 0, 0, dpr * z, -camX * dpr * z, -camY * dpr * z);
+  view.camX = camX; view.camY = camY; view.z = z; // for turning mouse clicks into castle positions
 
   g.setTransform(dpr, 0, 0, dpr, 0, 0);
   g.fillStyle = "#05060d"; g.fillRect(0, 0, w, h);
@@ -215,6 +331,14 @@ export function drawFrame(g, dark, map, world, view, t) {
     g.lineWidth = 1;
   }
 
+  // where you clicked to walk
+  if (world.humanPath && world.humanPath.length) {
+    const end = world.humanPath[world.humanPath.length - 1];
+    g.strokeStyle = `rgba(255,224,138,${0.5 + Math.sin(t * 6) * 0.3})`; g.lineWidth = 2;
+    g.beginPath(); g.arc(end.x, end.y, 9, 0, 7); g.stroke();
+    g.beginPath(); g.arc(end.x, end.y, 3, 0, 7); g.stroke();
+  }
+
   // dropped helmets
   for (const m of world.markers) {
     g.save(); g.translate(m.x, m.y); g.rotate(0.6);
@@ -226,6 +350,8 @@ export function drawFrame(g, dark, map, world, view, t) {
   // people: the living, and ghosts only if you're one of them
   const showGhosts = !me.alive;
   const order = world.entities.filter((e) => (e.alive || showGhosts) && e !== me).sort((a, b) => a.y - b.y);
+  drawSheba(g, world.sheba, t, world.t);
+  drawNana(g, world.nana, t);
   for (const e of order) drawPerson(g, e, world, me, t);
   drawPerson(g, me, world, me, t);
 
@@ -243,7 +369,7 @@ export function drawFrame(g, dark, map, world, view, t) {
     dark.fillStyle = gr; dark.beginPath(); dark.arc(x, y, r, 0, 7); dark.fill();
   };
   if (!world.lightsOut) for (const b of BRAZIERS) hole(b.x, b.y, 150 + Math.sin(t * 9 + b.x) * 6, 0.85);
-  hole(47 * TILE + 16, 16 * TILE + 16, 90 + Math.sin(t * 11) * 5, 0.8); // the forge fire never dies
+  hole(FORGE_FIRE.x, FORGE_FIRE.y, 100 + Math.sin(t * 11) * 5, 0.8); // the forge fire never dies
   if (!me.alive) {
     hole(me.x, me.y, 420, 0.75);
   } else {
@@ -286,6 +412,19 @@ export function drawFrame(g, dark, map, world, view, t) {
       g.fillStyle = gr; g.beginPath(); g.arc(tx, ty, 16 * f, 0, 7); g.fill();
     }
   }
+
+  // you can hear Sheba and Nana even when you can't see them
+  const bubble = (x, y, text, col) => {
+    g.font = "600 12px Inter, system-ui, sans-serif"; g.textAlign = "center";
+    const tw = Math.min(260, g.measureText(text).width + 16);
+    g.fillStyle = "rgba(250,244,226,0.95)"; g.strokeStyle = col; g.lineWidth = 1.5;
+    g.beginPath(); g.roundRect ? g.roundRect(x - tw / 2, y - 46, tw, 22, 9) : g.rect(x - tw / 2, y - 46, tw, 22); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(x - 5, y - 24); g.lineTo(x, y - 17); g.lineTo(x + 5, y - 24); g.fill();
+    g.fillStyle = "#2a1c12"; g.fillText(text, x, y - 31, 250);
+  };
+  const sh = world.sheba, na = world.nana;
+  if (world.t < sh.barkUntil && Math.hypot(me.x - sh.x, me.y - sh.y) < TILE * 14) bubble(sh.x, sh.y, "Woof! Woof!", "#2a1c12");
+  if (na.say && world.t < na.sayUntil && Math.hypot(me.x - na.x, me.y - na.y) < TILE * 9) bubble(na.x, na.y - 6, na.say, "#8e44ad");
 
   // a small arrow toward your nearest job, when it's off in the dark
   const job = nextJob(world);
@@ -337,7 +476,9 @@ export function drawMiniMap(g, world, width) {
   g.textAlign = "center"; g.textBaseline = "middle"; g.font = "600 8px Inter, system-ui, sans-serif";
   for (const r of ROOMS) {
     const label = AREA_STYLE[r.id].short;
-    if (g.measureText(label).width > r.w * s - 2) continue;
+    g.font = "600 8px Inter, system-ui, sans-serif";
+    if (g.measureText(label).width > r.w * s - 2) g.font = "600 6.5px Inter, system-ui, sans-serif";
+    if (g.measureText(label).width > r.w * s - 1) continue;
     const cx = (r.x + r.w / 2) * s, cy = (r.y + r.h / 2) * s;
     g.fillStyle = "rgba(10,8,20,0.8)"; g.fillText(label, cx + 0.6, cy + 0.6);
     g.fillStyle = "rgba(255,250,235,0.95)"; g.fillText(label, cx, cy);
@@ -350,7 +491,8 @@ export function drawMiniMap(g, world, width) {
     g.strokeStyle = "#1b1406"; g.lineWidth = 1;
     g.beginPath(); g.arc(st.tx * s + s / 2, st.ty * s + s / 2, 2.8, 0, 7); g.fill(); g.stroke();
   }
-  g.fillStyle = "#e9c64a"; g.beginPath(); g.arc(27.5 * s, 20.5 * s, 2.2, 0, 7); g.fill();
+  { const b = stationById("bell"); g.fillStyle = "#e9c64a"; g.beginPath(); g.arc((b.tx + 0.5) * s, (b.ty + 0.5) * s, 2.2, 0, 7); g.fill(); }
+  g.strokeStyle = "rgba(201,162,39,0.8)"; g.lineWidth = 1; g.beginPath(); g.arc((TABLE.x / TILE) * s, (TABLE.y / TILE) * s, (TABLE.r / TILE) * s, 0, 7); g.stroke();
   const px = (me.x / TILE) * s, py = (me.y / TILE) * s;
   g.fillStyle = me.color; g.strokeStyle = "#fff"; g.lineWidth = 1.5;
   g.beginPath(); g.arc(px, py, 3.8, 0, 7); g.fill(); g.stroke();
@@ -442,12 +584,20 @@ export function drawJoustScene(g, w, h, t, sc) {
     g.fillStyle = "#ffcf6a"; g.beginPath(); g.ellipse(x, y - 4 * s, 5 * s, 9 * s * f, 0, 0, 7); g.fill();
   }
 
-  const charge = Math.max(0, Math.min(1, (t - 1.0) / (IMPACT - 1.0)));
+  let charge = Math.max(0, Math.min(1, (t - 1.0) / (IMPACT - 1.0)));
   const ease = charge * charge * (3 - 2 * charge);
-  const impact = t >= IMPACT;
-  const after = Math.max(0, t - IMPACT);
-  const lx = impact ? w * 0.47 + after * 320 * s : -170 * s + ease * (w * 0.47 + 170 * s);
-  const rx = impact ? w * 0.53 - after * 320 * s : w + 170 * s - ease * (w * 0.47 + 170 * s);
+  let impact = t >= IMPACT;
+  let after = Math.max(0, t - IMPACT);
+  let lx = impact ? w * 0.47 + after * 320 * s : -170 * s + ease * (w * 0.47 + 170 * s);
+  let rx = impact ? w * 0.53 - after * 320 * s : w + 170 * s - ease * (w * 0.47 + 170 * s);
+  // the practice joust drives the horses itself: pL, pR are how far each has come (they meet at pL + pR = 1)
+  if (sc.pos) {
+    const span = w + 340 * s;
+    impact = sc.pos.impact; after = sc.pos.after || 0; charge = 1;
+    const meet = -170 * s + (sc.pos.meetL ?? sc.pos.pL) * span;
+    lx = impact ? meet - 0.03 * w + after * 320 * s : -170 * s + sc.pos.pL * span;
+    rx = impact ? meet + 0.03 * w - after * 320 * s : w + 170 * s - sc.pos.pR * span;
+  }
   const gallop = t * 14;
   const dust = (x, y, dir) => {
     if (charge <= 0 || after > 2) return;
@@ -482,7 +632,7 @@ export function drawJoustScene(g, w, h, t, sc) {
     g.save(); g.translate(x, y); g.scale(dir * s, s);
     drawHorse(g, ph, side.look, { black: side.black });
     g.translate(0, -18);
-    drawKnightSide(g, side.look, { black: side.black, lance: !(impact && sc.broken) });
+    drawKnightSide(g, side.look, { black: side.black, lance: !(impact && sc.broken), lanceAim: side.aim || 0 });
     g.restore();
   };
 
@@ -522,7 +672,8 @@ export function drawJoustScene(g, w, h, t, sc) {
     const yy = sy + sc.reticle.y * 46 * s;
     g.strokeStyle = "rgba(255,240,180,0.4)"; g.lineWidth = 2 * s;
     g.strokeRect(sx - 20 * s, sy - 46 * s, 40 * s, 92 * s);
-    g.fillStyle = "rgba(140,240,160,0.22)"; g.fillRect(sx - 20 * s, sy - sc.reticle.zone * 46 * s, 40 * s, sc.reticle.zone * 92 * s);
+    const zc = sy + (sc.reticle.zoneY || 0) * 46 * s;
+    g.fillStyle = "rgba(140,240,160,0.3)"; g.fillRect(sx - 20 * s, zc - sc.reticle.zone * 46 * s, 40 * s, sc.reticle.zone * 92 * s);
     g.strokeStyle = sc.reticle.locked ? "#8ef0a8" : "#ffe08a"; g.lineWidth = 3 * s;
     g.beginPath(); g.arc(sx, yy, 10 * s, 0, 7); g.stroke();
     g.beginPath(); g.moveTo(sx - 20 * s, yy); g.lineTo(sx + 20 * s, yy); g.stroke();

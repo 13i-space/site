@@ -91,7 +91,8 @@ function helmetTop(g, look, t) {
 
 // top-down; the figure faces +x before rotation
 export function drawKnightTop(g, look, o = {}) {
-  const { facing = 0, walk = 0, moving = false, torch = true, t = 0, steel = "#9aa0ad" } = o;
+  const { facing = 0, walk = 0, moving = false, torch = true, t = 0, costume = null } = o;
+  const steel = o.steel || (costume === "bk" ? "#2a2a33" : "#9aa0ad");
   g.save();
   g.rotate(facing);
   // boots
@@ -101,6 +102,11 @@ export function drawKnightTop(g, look, o = {}) {
   // cloak edge and tabard
   g.fillStyle = shade(look.tabard, -0.45); g.beginPath(); g.ellipse(-1, 0, 9, 13, 0, 0, 7); g.fill();
   g.fillStyle = look.tabard; g.beginPath(); g.ellipse(0.5, 0, 7.5, 11, 0, 0, 7); g.fill();
+  if (costume === "jester") {
+    // motley: half purple, half gold
+    g.fillStyle = "#e9c64a"; g.beginPath(); g.ellipse(0.5, 0, 7.5, 11, 0, Math.PI, Math.PI * 2); g.fill();
+    g.fillStyle = "#7d3c98"; for (let i = -1; i <= 1; i++) { g.beginPath(); g.moveTo(-3, i * 6 - 2); g.lineTo(0, i * 6); g.lineTo(-3, i * 6 + 2); g.lineTo(-6, i * 6); g.fill(); }
+  }
   g.strokeStyle = look.trim; g.lineWidth = 1; g.beginPath(); g.ellipse(0.5, 0, 7.5, 11, 0, 0, 7); g.stroke();
   drawEmblem(g, look.emblem, look.trim, 4, 0, 7);
   // weapon (right side) and torch (left)
@@ -115,7 +121,23 @@ export function drawKnightTop(g, look, o = {}) {
   g.fillStyle = steel;
   g.beginPath(); g.arc(0, -10, 4, 0, 7); g.arc(0, 10, 4, 0, 7); g.fill();
   g.fillStyle = shade(steel, 0.3); g.beginPath(); g.arc(-1, -11, 1.5, 0, 7); g.arc(-1, 9, 1.5, 0, 7); g.fill();
-  helmetTop(g, look, t);
+  if (costume === "jester") {
+    // a three-pointed cap with bells instead of a helmet
+    const sway = Math.sin(t * 4) * 0.15;
+    for (const [a, c] of [[Math.PI - 0.9 + sway, "#7d3c98"], [Math.PI + sway, "#e9c64a"], [Math.PI + 0.9 + sway, "#7d3c98"]]) {
+      g.fillStyle = c;
+      g.beginPath(); g.moveTo(1 + Math.cos(a - 0.5) * 5, Math.sin(a - 0.5) * 5); g.lineTo(1 + Math.cos(a) * 15, Math.sin(a) * 15); g.lineTo(1 + Math.cos(a + 0.5) * 5, Math.sin(a + 0.5) * 5); g.fill();
+      g.fillStyle = "#ffe08a"; g.beginPath(); g.arc(1 + Math.cos(a) * 15, Math.sin(a) * 15, 2.2, 0, 7); g.fill();
+    }
+    g.fillStyle = "#e3b98f"; g.beginPath(); g.arc(1, 0, 5.5, 0, 7); g.fill();
+    g.fillStyle = "#7d3c98"; g.beginPath(); g.arc(-1, 0, 5.5, Math.PI / 2, Math.PI * 1.5); g.fill();
+    g.fillStyle = "#c0392b"; g.beginPath(); g.arc(6, 0, 1.4, 0, 7); g.fill();
+  } else helmetTop(g, look, t);
+  if (costume === "bk") {
+    // glowing red eyes in the visor
+    g.fillStyle = `rgba(255,50,40,${0.75 + Math.sin(t * 5) * 0.25})`;
+    g.fillRect(5.5, -3, 2, 2); g.fillRect(5.5, 1, 2, 2);
+  }
   g.restore();
 }
 
@@ -167,7 +189,7 @@ export function drawKnightSide(g, look, o = {}) {
   // lance, striped in the knight's colours
   if (lance) {
     g.save();
-    g.translate(-6, -64); g.rotate(0.06);
+    g.translate(-6, -64); g.rotate(0.06 + (o.lanceAim || 0) * 0.16);
     g.fillStyle = black ? "#2a2a33" : "#e8dcb8"; g.fillRect(0, -3, 156, 6);
     if (!black) { g.fillStyle = look.tabard; for (let i = 0; i < 6; i++) g.fillRect(20 + i * 22, -3, 10, 6); }
     g.fillStyle = black ? "#2a2a33" : trim; g.beginPath(); g.moveTo(8, -12); g.lineTo(26, 0); g.lineTo(8, 12); g.fill();
