@@ -61,7 +61,9 @@ function playSfx(w, myId, lastRef) {
   lastRef.current = top;
 }
 
-export default function DonaghyCastle({ playerName = "You", backHref = "/account", pid: userId = "solo" }) {
+// guestCode: someone without a family account who arrived by an invite link
+// (?room=CODE). They can join that game, nothing else.
+export default function DonaghyCastle({ playerName = "You", backHref = "/account", pid: userId = "solo", guestCode = null }) {
   const [screen, setScreen] = useState("lobby"); // lobby, room, practice, game, over
   const [gphase, setGphase] = useState(null); // the castle's phase: intro, play, meeting, joust, ending
   const [total, setTotal] = useState(8);
@@ -83,7 +85,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const [notice, setNotice] = useState(null);
   const [voiceState, setVoiceState] = useState(null);
   const [hostLost, setHostLost] = useState(false);
-  const [initialCode, setInitialCode] = useState("");
+  const [initialCode, setInitialCode] = useState(guestCode || "");
   const [practiceFrom, setPracticeFrom] = useState("lobby");
   const viewRef = useRef({ w: 0, h: 0, dpr: 1 });
   const mouseHeld = useRef(false);
@@ -125,13 +127,20 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
       try { tab = sessionStorage.getItem("castle-tab"); if (!tab) { tab = Math.random().toString(36).slice(2, 7); sessionStorage.setItem("castle-tab", tab); } } catch { tab = Math.random().toString(36).slice(2, 7); }
       pidRef.current = `${userId}-${tab}`;
     }
+    if (guestCode) {
+      // a guest keeps the same id on this computer, so a reload gets their seat back
+      let gid = null;
+      try { gid = localStorage.getItem("donaghy-guest-id"); if (!gid) { gid = `guest-${Math.random().toString(36).slice(2, 10)}`; localStorage.setItem("donaghy-guest-id", gid); } } catch { gid = `guest-${Math.random().toString(36).slice(2, 10)}`; }
+      pidRef.current = q.get("local") ? `${gid}-${Math.random().toString(36).slice(2, 5)}` : gid;
+      return;
+    }
     const room = cleanCode(q.get("room"));
     if (room.length === 4) setInitialCode(room);
   }, [userId]);
   // arriving by a shared link: straight to the gate (once name and look are loaded)
   const autoJoined = useRef(false);
   useEffect(() => {
-    if (!initialCode || autoJoined.current) return;
+    if (!initialCode || autoJoined.current || guestCode) return;
     autoJoined.current = true;
     let wasHost = false;
     try { wasHost = sessionStorage.getItem(`castle-host-${initialCode}`) === "1"; } catch { /* private window */ }
@@ -545,7 +554,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   ) : null;
 
   // ---------- screens ----------
-  if (screen === "lobby") return <Lobby {...{ playerName: name, setName: changeName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start: startSolo, cup, backHref, createRoom, joinRoom, initialCode }} openPractice={() => { setPracticeFrom("lobby"); setScreen("practice"); }} />;
+  if (screen === "lobby") return <Lobby {...{ playerName: name, setName: changeName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start: startSolo, cup, backHref, createRoom, joinRoom, initialCode, guest: !!guestCode }} openPractice={() => { setPracticeFrom("lobby"); setScreen("practice"); }} />;
   if (screen === "practice") return <PracticeJoust me={{ name: name || playerName, look }} onExit={() => setScreen(practiceFrom)} />;
   if (screen === "room") {
     return (

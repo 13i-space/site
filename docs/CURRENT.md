@@ -4,6 +4,8 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.97 (no SQL): Donaghy Castle invite links work without an account
+  (guests can only join the game in the link).
 - Update 5.96 (no SQL): Donaghy Castle is multiplayer - room codes, the
   host's laptop runs the castle over Supabase Realtime, min 6 seats with
   castle folk filling the rest, built-in voice chat (WebRTC), drop-out

@@ -3,6 +3,14 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.97 — Invite links work for the family (Oct 2026)
+No SQL. The castle's invite link (/donaghy-castle?room=ABCD) now opens for
+anyone, no 13i account needed: they type a name, dress their knight and
+join that game (nothing else - no opening a gate or solo nights). Without
+a code the page is still a 404 for anyone not on the family list. Guests
+keep a stable id on their computer (localStorage `donaghy-guest-id`) so a
+reload gets their seat back.
+
 ## Update 5.96 — Donaghy Castle for the whole family (Oct 2026)
 No SQL (Supabase Realtime broadcast and presence need no tables).
 - Real multiplayer: one person opens the castle gate and gets a 4-letter

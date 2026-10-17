@@ -25,9 +25,15 @@ async function getPlayer() {
   }
 }
 
-export default async function DonaghyCastlePage() {
+export default async function DonaghyCastlePage({ searchParams }) {
   const player = await getPlayer();
-  if (!player) notFound();
+  if (!player) {
+    // an invite link (?room=ABCD) lets anyone join that one game, no account
+    // needed; without a code the page still doesn't exist
+    const code = String(searchParams?.room || "").toUpperCase();
+    if (/^[A-Z]{4}$/.test(code)) return <DonaghyCastle playerName="" guestCode={code} backHref="/" />;
+    notFound();
+  }
   const backHref = isSentinelUser(player.username) ? "/sentinel-x" : "/account";
   return <DonaghyCastle playerName={player.username} pid={player.id} backHref={backHref} />;
 }

@@ -110,7 +110,7 @@ export function KnightBuilder({ look, setLook }) {
   );
 }
 
-export function Lobby({ playerName, setName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref, openPractice, createRoom, joinRoom, initialCode = "" }) {
+export function Lobby({ playerName, setName, look, setLook, total, setTotal, roleChoice, setRoleChoice, start, cup, backHref, openPractice, createRoom, joinRoom, initialCode = "", guest = false }) {
   const pts = cup.reduce((s, x) => s + x.points, 0);
   const [code, setCode] = useState(initialCode);
   const ready = code.length === 4;
@@ -139,45 +139,64 @@ export function Lobby({ playerName, setName, look, setLook, total, setTotal, rol
             <div style={{ marginTop: 8 }}><KnightBuilder look={look} setLook={setLook} /></div>
           </div>
           <div>
-            <div className="mono" style={{ ...L.kicker, color: "#f2dc9a" }}>2 · PLAY WITH THE FAMILY</div>
-            <div style={{ ...L.mini, borderColor: "#c9a227", marginTop: 10 }}>
-              <p style={{ ...L.p, fontSize: 13.5, marginTop: 0 }}>
-                One person opens the castle gate and gets a 4-letter code. Everyone else types that code here. Each of you plays on your own laptop, and you can all talk through your microphones.
-              </p>
-              <button style={L.btn} onClick={createRoom}>Open the castle gate</button>
-              <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14, flexWrap: "wrap" }}>
-                <input
-                  value={code}
-                  onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))}
-                  onKeyDown={(e) => { if (e.key === "Enter" && ready) joinRoom(code); }}
-                  placeholder="CODE"
-                  aria-label="Game code"
-                  style={{ ...L.select, width: 120, marginTop: 0, fontSize: 20, letterSpacing: "6px", textAlign: "center", fontFamily: "ui-monospace, monospace" }}
-                />
-                <button style={{ ...L.ghostBtn, opacity: ready ? 1 : 0.5 }} disabled={!ready} onClick={() => joinRoom(code)}>Join with the code</button>
+            {guest ? (
+              <>
+                <div className="mono" style={{ ...L.kicker, color: "#f2dc9a" }}>2 · JOIN THE FAMILY GAME</div>
+                <div style={{ ...L.mini, borderColor: "#c9a227", marginTop: 10 }}>
+                  <p style={{ ...L.p, fontSize: 13.5, marginTop: 0 }}>
+                    You&rsquo;ve been invited to game <b style={{ letterSpacing: "3px", color: "#f2dc9a" }}>{code}</b>. Type your name, dress your knight, then step through the gate.
+                  </p>
+                  <button style={{ ...L.btn, opacity: ready && playerName.trim() ? 1 : 0.5 }} disabled={!ready || !playerName.trim()} onClick={() => joinRoom(code)}>
+                    {playerName.trim() ? `Join the game, ${playerName.trim()}` : "Type your name first"}
+                  </button>
+                </div>
+                <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap", marginTop: 14 }}>
+                  <button style={L.ghostBtn} onClick={openPractice}>Practice joust</button>
+                </div>
+              </>
+            ) : (
+              <>
+              <div className="mono" style={{ ...L.kicker, color: "#f2dc9a" }}>2 · PLAY WITH THE FAMILY</div>
+              <div style={{ ...L.mini, borderColor: "#c9a227", marginTop: 10 }}>
+                <p style={{ ...L.p, fontSize: 13.5, marginTop: 0 }}>
+                  One person opens the castle gate and gets a 4-letter code. Everyone else types that code here. Each of you plays on your own laptop, and you can all talk through your microphones.
+                </p>
+                <button style={L.btn} onClick={createRoom}>Open the castle gate</button>
+                <div style={{ display: "flex", gap: 8, alignItems: "center", marginTop: 14, flexWrap: "wrap" }}>
+                  <input
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.toUpperCase().replace(/[^A-Z]/g, "").slice(0, 4))}
+                    onKeyDown={(e) => { if (e.key === "Enter" && ready) joinRoom(code); }}
+                    placeholder="CODE"
+                    aria-label="Game code"
+                    style={{ ...L.select, width: 120, marginTop: 0, fontSize: 20, letterSpacing: "6px", textAlign: "center", fontFamily: "ui-monospace, monospace" }}
+                  />
+                  <button style={{ ...L.ghostBtn, opacity: ready ? 1 : 0.5 }} disabled={!ready} onClick={() => joinRoom(code)}>Join with the code</button>
+                </div>
               </div>
-            </div>
 
-            <div className="mono" style={{ ...L.kicker, color: "#f2dc9a", marginTop: 18 }}>OR A TEST NIGHT ON YOUR OWN</div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "8px 0 10px" }}>
-              <label>
-                <span className="mono" style={L.kicker}>PEOPLE IN THE CASTLE</span>
-                <select value={total} onChange={(e) => setTotal(+e.target.value)} style={L.select}>
-                  {[6, 7, 8, 9, 10, 11, 12].map((n) => <option key={n} value={n}>{n} (you + {n - 1})</option>)}
-                </select>
-              </label>
-              <label>
-                <span className="mono" style={L.kicker}>YOUR ROLE (FOR TESTING)</span>
-                <select value={roleChoice} onChange={(e) => setRoleChoice(e.target.value)} style={L.select}>
-                  {ROLE_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                </select>
-              </label>
-            </div>
-            <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-              <button style={L.ghostBtn} onClick={start}>Enter the castle alone</button>
-              <button style={L.ghostBtn} onClick={openPractice}>Practice joust</button>
-              <a href={backHref} style={{ color: "#8b95f6", fontSize: 13 }}>back to 13i.space</a>
-            </div>
+              <div className="mono" style={{ ...L.kicker, color: "#f2dc9a", marginTop: 18 }}>OR A TEST NIGHT ON YOUR OWN</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, margin: "8px 0 10px" }}>
+                <label>
+                  <span className="mono" style={L.kicker}>PEOPLE IN THE CASTLE</span>
+                  <select value={total} onChange={(e) => setTotal(+e.target.value)} style={L.select}>
+                    {[6, 7, 8, 9, 10, 11, 12].map((n) => <option key={n} value={n}>{n} (you + {n - 1})</option>)}
+                  </select>
+                </label>
+                <label>
+                  <span className="mono" style={L.kicker}>YOUR ROLE (FOR TESTING)</span>
+                  <select value={roleChoice} onChange={(e) => setRoleChoice(e.target.value)} style={L.select}>
+                    {ROLE_OPTIONS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                  </select>
+                </label>
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+                <button style={L.ghostBtn} onClick={start}>Enter the castle alone</button>
+                <button style={L.ghostBtn} onClick={openPractice}>Practice joust</button>
+                <a href={backHref} style={{ color: "#8b95f6", fontSize: 13 }}>back to 13i.space</a>
+              </div>
+              </>
+            )}
             <details style={{ marginTop: 14 }}>
               <summary className="mono" style={{ ...L.kicker, cursor: "pointer" }}>THE ROLES</summary>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
