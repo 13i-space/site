@@ -52,9 +52,9 @@ export default function SpaceCoreNode({ player, colony }) {
 
   return (
     <div className="panel">
-      <div className="mono node-label">SPACECORE &middot; MARS</div>
+      <div className="mono node-label">SPACECORE &middot; {s.site === "beta" ? "OLYMPUS MONS" : "MARS"}</div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-        <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF" }}>Level {s.level || 1} crew</span>
+        <span style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF" }}>Level {s.level || 1} crew{s.crewNo > 1 ? ` \u00b7 #${s.crewNo}` : ""}</span>
         {s.unspent ? <span className="mono" style={{ fontSize: 11, color: "#E8CFC0" }}>{s.unspent} point{s.unspent > 1 ? "s" : ""} to spend</span> : null}
       </div>
 

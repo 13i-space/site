@@ -16,11 +16,15 @@ import { SPACECORE_TIME_SCALE } from "../lib/spacecore";
 //   save       -> upsert spacecore_players
 //   tiles      -> spacecore_set_tiles (dug tunnels / built blocks)
 //   sync       -> spacecore_sync (adds your mining to the Commons) -> world (colony, new tiles, crews, news, boosts)
-//   contribute -> spacecore_contribute -> contributed
+//   contribute -> spacecore_contribute (Alpha) or spacecore_contribute2 (Beta works, the Expedition) -> contributed
+//   site       -> reload the game for the other site (Update 5.98: Olympus Mons)
+//   quake      -> spacecore_quake -> quaked (the whole world reloaded)
 // Needs docs/v5.39-spacecore.sql, then the later SpaceCore SQL files up to docs/v5.61-spacecore-survival.sql.
 
 const GAME = "spacecore";
-const SCHEMA_VERSION = 585; // spacecore_version() in docs/v5.85-spacecore-quakes.sql
+const SCHEMA_VERSION = 598; // spacecore_version() in docs/v5.98-spacecore-expansion.sql
+// Beta (Olympus Mons) tiles live in the same table, shifted right by this much.
+const SITE_OFF = { alpha: 0, beta: 1024 };
 const DAY = 86400000;
 const BOOST_REFRESH = 5 * 60000;
 
@@ -53,10 +57,11 @@ async function siteBoosts(supabase, uid) {
   return out.filter((b) => b.pct > 0);
 }
 
-async function loadAllTiles(supabase) {
+async function loadAllTiles(supabase, site = "alpha") {
   const rows = [];
+  const off = SITE_OFF[site] || 0;
   for (let from = 0; from < 100000; from += 1000) {
-    const { data, error } = await supabase.from("spacecore_tiles").select("x, y, t, owner, updated_at").order("y").order("x").range(from, from + 999);
+    const { data, error } = await supabase.from("spacecore_tiles").select("x, y, t, owner, updated_at").gte("x", off).lt("x", off + 1024).order("y").order("x").range(from, from + 999);
     if (error) throw error;
     rows.push(...(data || []));
     if (!data || data.length < 1000) break;
@@ -68,6 +73,7 @@ export default function SpaceCoreGame() {
   const [status, setStatus] = useState("loading"); // loading | signedout | nousername | nosetup | outdated | ready
   const [pseudo, setPseudo] = useState(false);
   const frameRef = useRef(null);
+  const [site, setSite] = useState("alpha");
   const wrapRef = useRef(null);
   const ctx = useRef({});
 
@@ -142,10 +148,11 @@ export default function SpaceCoreGame() {
     const { supabase, user } = c;
     try {
       if (msg.type === "ready") {
+        c.site = msg.site === "beta" ? "beta" : "alpha";
         const [{ data: player }, { data: colony }, tiles, cl, boosts] = await Promise.all([
           supabase.from("spacecore_players").select("state").eq("user_id", user.id).maybeSingle(),
           supabase.from("spacecore_colony").select("*").eq("id", 1).maybeSingle(),
-          loadAllTiles(supabase),
+          loadAllTiles(supabase, c.site),
           crewsAndLog(),
           loadBoosts(true),
         ]);
@@ -156,7 +163,7 @@ export default function SpaceCoreGame() {
           user: { username: c.username, sentinel: isSentinelUser(c.username) },
           state: player?.state || null,
           colony,
-          tiles: tiles.map((t) => [t.x, t.y, t.t, ownerIndex(t.owner)]),
+          tiles: tiles.map((t) => [t.x - (SITE_OFF[c.site] || 0), t.y, t.t, ownerIndex(t.owner)]),
           owners: c.names,
           crews: cl.crews,
           log: cl.log,
@@ -175,15 +182,16 @@ export default function SpaceCoreGame() {
         send({ type: "saved", ok: !error, error: error?.message || null });
       } else if (msg.type === "tiles") {
         if (Array.isArray(msg.changes) && msg.changes.length) {
-          const changes = msg.changes.slice(0, 500);
+          const off = SITE_OFF[c.site] || 0;
+          const changes = msg.changes.slice(0, 500).map(([x, y, t]) => [x + off, y, t]);
           const { data, error } = await supabase.rpc("spacecore_set_tiles", { p_tiles: changes });
-          send({ type: "tilesSaved", sent: changes.length, saved: error ? 0 : data || 0, error: error?.message || null, changes: error ? changes : undefined });
+          send({ type: "tilesSaved", sent: changes.length, saved: error ? 0 : data || 0, error: error?.message || null, changes: error ? msg.changes.slice(0, 500) : undefined });
         }
       } else if (msg.type === "sync") {
         const mined = msg.mined && typeof msg.mined === "object" ? msg.mined : {};
         const [{ data: colony }, { data: fresh }, cl, boosts] = await Promise.all([
           supabase.rpc("spacecore_sync", { p_mined: mined }),
-          supabase.from("spacecore_tiles").select("x, y, t, owner, updated_at").gt("updated_at", c.lastTileAt || "1970-01-01T00:00:00Z").order("updated_at").limit(1000),
+          supabase.from("spacecore_tiles").select("x, y, t, owner, updated_at").gte("x", SITE_OFF[c.site] || 0).lt("x", (SITE_OFF[c.site] || 0) + 1024).gt("updated_at", c.lastTileAt || "1970-01-01T00:00:00Z").order("updated_at").limit(1000),
           crewsAndLog(),
           loadBoosts(false),
         ]);
@@ -193,7 +201,7 @@ export default function SpaceCoreGame() {
           type: "world",
           colony,
           myMined: mined,
-          tiles: (fresh || []).map((t) => [t.x, t.y, t.t, ownerIndex(t.owner)]),
+          tiles: (fresh || []).map((t) => [t.x - (SITE_OFF[c.site] || 0), t.y, t.t, ownerIndex(t.owner)]),
           owners: c.names,
           crews: cl.crews,
           log: cl.log,
@@ -203,13 +211,19 @@ export default function SpaceCoreGame() {
         // a Marsquake is due (or another crew already set it off): run it once on the
         // server, then reload the whole world, because collapsed tunnels are deletions
         const { data: result } = await supabase.rpc("spacecore_quake");
-        const tiles = await loadAllTiles(supabase);
+        const tiles = await loadAllTiles(supabase, c.site);
         c.lastTileAt = tiles.reduce((m, t) => (t.updated_at > m ? t.updated_at : m), "1970-01-01T00:00:00Z");
-        send({ type: "quaked", result: result || null, tiles: tiles.map((t) => [t.x, t.y, t.t, ownerIndex(t.owner)]), owners: c.names });
+        send({ type: "quaked", result: result || null, tiles: tiles.map((t) => [t.x - (SITE_OFF[c.site] || 0), t.y, t.t, ownerIndex(t.owner)]), owners: c.names });
       } else if (msg.type === "contribute") {
-        const { data, error } = await supabase.rpc("spacecore_contribute", { p_res: msg.res, p_amount: msg.amount });
-        if (error) send({ type: "contributed", res: msg.res, accepted: 0, error: error.message });
-        else send({ type: "contributed", res: msg.res, accepted: data?.accepted || 0, completed: !!data?.completed, colony: data?.colony });
+        const { data, error } = msg.site
+          ? await supabase.rpc("spacecore_contribute2", { p_site: msg.site, p_res: msg.res, p_amount: msg.amount })
+          : await supabase.rpc("spacecore_contribute", { p_res: msg.res, p_amount: msg.amount });
+        if (error) send({ type: "contributed", site: msg.site, res: msg.res, accepted: 0, error: error.message });
+        else send({ type: "contributed", site: msg.site, res: msg.res, accepted: data?.accepted || 0, completed: !!data?.completed, colony: data?.colony });
+      } else if (msg.type === "site") {
+        // travelling (or arriving on the wrong site's page): reload the game for that site
+        setSite(msg.site === "beta" ? "beta" : "alpha");
+        return;
       } else if (msg.type === "lyraReact") {
         // the site's Lyra feels it too: a flinch at an overheating drill, a
         // droop at a low battery, a burst when a Great Work is finished
@@ -220,7 +234,7 @@ export default function SpaceCoreGame() {
         setPseudo((p) => !p);
       }
     } catch (err) {
-      if (msg.type === "contribute") send({ type: "contributed", res: msg.res, accepted: 0, error: "the colony didn't answer" });
+      if (msg.type === "contribute") send({ type: "contributed", site: msg.site, res: msg.res, accepted: 0, error: "the colony didn't answer" });
     }
   }, [send, ownerIndex, refreshCrewNames, loadBoosts, crewsAndLog]);
 
@@ -278,7 +292,8 @@ export default function SpaceCoreGame() {
       <div ref={wrapRef} className="panel game-frame" style={{ padding: 0, overflow: "hidden", background: "#06060f" }}>
         <iframe
           ref={frameRef}
-          src="/games/spacecore/index.html"
+          key={site}
+          src={site === "beta" ? "/games/spacecore/index.html?site=beta" : "/games/spacecore/index.html"}
           title="SpaceCore"
           allow="fullscreen"
           style={{ width: "100%", height: "82vh", minHeight: 540, border: "none", display: "block" }}

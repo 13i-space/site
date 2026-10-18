@@ -3,6 +3,42 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 5.98 — SpaceCore: Olympus Mons, the Expedition, processing, modules, perks (Oct 2026)
+SQL: **docs/v5.98-spacecore-expansion.sql** (schema version 598; needs 5.85 first; safe to
+re-run; changes nobody's progress). Plan: claude/spacecore-audit-plan.md in the Project.
+- **Great Works leave lasting perks** (`PERKS`, `perk(i)`), listed in Dashboard › Colony:
+  lander charges 2×, Habitat Dome shelters the surface inside the colony ring, colony rations,
+  O₂ lasts longer, heat shields, +50% solar, bigger drill holds, +20% scan, cheaper Dash,
+  5-minute storm warnings, cheaper Fuel, +2% Commons, faster rovers, kinder crew loss.
+- **Colony roll and titles**: top givers to the current work, all-time givers, deepest
+  digs, "built by" credits (from each crew's `summary.givenBy`), titles on the crew card
+  and over ghost borers. `spacecore_crews()` now returns `stats`.
+- **Missions**: chapters 2-5 (18 new, 35 in all) continue after the tutorial: struts,
+  ladders, surface shelter, 200 m, hot rock, rebuilding after a quake, the colony call,
+  research; then Smelter, Steel, Circuits, a module, Fuel; then the Expedition and Beta.
+  Daily colony calls now run alongside chapter 2+ missions.
+- **Processing**: Smelter (45) and Electrolyser (46) on a powered grid let the Fabricator
+  make Steel, Circuits and Fuel (`GOODS`, `S.made`). New resources show in the bar once held.
+- **Borer modules** (`MODS`, `S.mods`): Drill head Mk II/III, Cell pack, Radiation shield,
+  Heat sink, Climbing claws.
+- **Shelter by cover**: radiation now checks rock or blocks overhead (`coverAbove`) as well
+  as depth; underground at Alpha it behaves exactly as before.
+- **Sync fix**: mining stays in `S.unsynced` until the colony confirms it.
+- **Olympus Mons (Beta)**: `?site=beta` loads a 512×300 world (`genBeta`): plain and camp,
+  the basal scarp, the flank, summit plateau and caldera, lava tubes up the flank, a magma
+  chamber. Per-column ground (`SURF`, `gTop`, `aboveGround`) replaces the fixed surface row
+  in the movement, building, radiation and storm rules (identical at Alpha). Sulfur and
+  Obsidian replace ice and rare-metal veins there; Obsidian block (47). Radiation outside
+  rises with altitude. Beta tiles are stored at x + 1024 in `spacecore_tiles`.
+- **The Expedition** (colony `expedition` column, `spacecore_contribute2('exp')`): opens with
+  the Launch Facility; 300 Steel, 400 Fuel, 80 Circuits, 200 Food. Funded → the convoy road
+  (15 Fuel). **Beta works** (`BSTAGES`, `beta_stage`/`beta_have`): Beta Camp, Tube Habitat,
+  Sulfur Works, Summit Relay, Caldera Observatory, each with a perk; Beta Camp unlocks the
+  **Hopper** (3 Fuel). Travel saves, plays the convoy/Hopper scene and the host reloads the
+  game for the other site. Positions (`S.at`), battery charge (`S.cellsAt`), explored map
+  (`seen`/`seenB`), rigs and wrecks are kept per site; drills at the other site keep running
+  at their last known rate.
+
 ## Update 5.97 — Invite links work for the family (Oct 2026)
 No SQL. The castle's invite link (/donaghy-castle?room=ABCD) now opens for
 anyone, no 13i account needed: they type a name, dress their knight and

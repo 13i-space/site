@@ -200,9 +200,29 @@ SQL: docs/v5.85-spacecore-quakes.sql (schema version 585).
 - **Stages 11-14**: Fuel Depot, Deep-Space Dish, Rover Garage, Landing Pads.
   New pattern chars: f tank, e dish, k/y pad, o garage door.
 
+## Update 5.98: Olympus Mons and the long game
+SQL: docs/v5.98-spacecore-expansion.sql (schema version 598). See CHANGELOG 5.98 for the list.
+- **Sites**: `SITES`/`SITE` at the top of the game, chosen by `?site=`. The host keeps
+  `site` state, keys the iframe on it, and offsets Beta tiles by `SITE_OFF.beta` (1024) on
+  load, sync, save and quake. The game posts `site` to ask for a reload (travel, or a save
+  that belongs to the other site). `S.site`, `S.at`, `S.cellsAt`, `S.seenB`, `rg.site`,
+  `S.wreck.site`, `onSite()`, `crewHere()`.
+- **Ground**: `SURF[x]` is the first natural rock row in each column (GY everywhere at
+  Alpha). Use `gTop(x)` / `aboveGround(x,y)` for anything about the surface; `GY` is the
+  datum (Beta's plain) and `depthOf` still measures from it.
+- **Colony**: `C.bstage`, `C.bhave`, `C.exp`. Beta works live in `BSTAGES` and SQL
+  `spacecore_beta_needs` / `spacecore_beta_name`; the Expedition's needs are `EXP_NEED` and
+  are repeated in `spacecore_contribute2`. Append only, never insert.
+- **Perks**: `PERKS[i]`/`perk(i)` (Alpha stages), `BPERKS[i]`/`bperk(i)` (Beta).
+- **Goods and modules**: `GOODS` (in `ITEMS`, queued like equipment, need `machineReady`),
+  `MODS`/`hasMod`. `RES2` lists the newer resources (not part of the Commons).
+- Test hook additions on `window.__sc`: `setColony`, `C`, `travel`, `gTop`, `SITE`, `perk`,
+  `bperk`, `radRate`, `coverAbove`, `machineReady`, `fitMod`, `craft`, `advance`,
+  `checkMissions`, `MISSIONS`, `renderDash`, `collectRigs`, `rollHTML`.
+
 ## Alpha trust note
 Resource totals live in each player's own saved state, so a determined player
-could edit them. That's fine for Alpha. Before Beta, move mining and
+could edit them. The same goes for the Expedition and Beta works (5.98). That's fine for Alpha. Before Beta, move mining and
 contributions to server-checked functions.
 
 ## Open questions
