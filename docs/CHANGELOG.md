@@ -3,7 +3,22 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
-## Update 5.98 — SpaceCore: Olympus Mons, the Expedition, processing, modules, perks (Oct 2026)
+## Update 5.99 — XenoKlash joins the arcade (Oct 2026)
+SQL: **docs/v5.99-xenoklash-progress.sql** (new table `xk_progress`, RLS: own row only).
+- **XenoKlash: Galactic Gladiators** at /games/xenoklash, the fourth cabinet in The Arcade
+  (new attract screen `xk` in GamesArcade), open to everyone. Five fighters (Kharn, Vess, Luma,
+  Sypher, plus Rhakka unlocked by a first tournament win), boss Voraxx, practice / versus /
+  tournament, five home arenas, two music tracks, Zarvox announcer.
+- Runs as `public/games/xenoklash.html` inside IframeGame. The game posts `play` when a match
+  starts and `score` (tournament points) after each tournament win, so best score and the daily
+  leaderboard work like the other iframe games.
+- Unlock progress: the game asks the page for it on load (`progress-request`) and sends it after
+  a tournament win (`progress`); `components/XenoKlashGame.js` reads/writes `xk_progress`.
+  Progress earned signed-out on a device is pushed up when the Kin signs in there.
+- Registered everywhere games are listed: Node (account) scores, Sentinel-X, Lyra's game
+  instructions and visitor context, site search, the Play page, sign-up panel, Lyra's site map.
+
+ — SpaceCore: Olympus Mons, the Expedition, processing, modules, perks (Oct 2026)
 SQL: **docs/v5.98-spacecore-expansion.sql** (schema version 598; needs 5.85 first; safe to
 re-run; changes nobody's progress). Plan: claude/spacecore-audit-plan.md in the Project.
 - **Great Works leave lasting perks** (`PERKS`, `perk(i)`), listed in Dashboard › Colony:

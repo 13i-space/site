@@ -17,6 +17,7 @@ const GAME_NAMES = {
   "nemesis-command": "NEMESIS Command",
   "asteroid-belt": "Asteroid Belt",
   "13i-vs-nemesis": "13i vs NEMESIS",
+  xenoklash: "XenoKlash",
   "deep-signal": "13i: The Deep Signal",
   sixteen: "SIXTEEN",
   tacet: "TACET",
