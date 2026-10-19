@@ -94,6 +94,7 @@ The Alien Lab: 17 questions about a species' world and body, then 100 Physical, 
 
 Games:
 - NEMESIS Command, Asteroid Belt, 13i vs NEMESIS: arcade games, each with a daily leaderboard.
+- XenoKlash: a one-on-one alien fighting game (five gladiators, a tournament ending in the boss Voraxx, Rhakka the Wreck Hermit unlocked by winning it), with a tournament-score leaderboard. A game, not canon.
 ${storyGames}
 
 Music - 36 tracks across three albums, 100% human-created, one released each month from April 6, 2027:

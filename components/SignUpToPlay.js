@@ -32,7 +32,7 @@ export default function SignUpToPlay({ title, next }) {
       <div className="mono" style={{ fontSize: 10, letterSpacing: "2px", color: "#8B95F6", marginBottom: 10 }}>FOR THE KIN</div>
       <div className="wordmark" style={{ fontSize: 26, color: "#DCDFFF", marginBottom: 10 }}>{title ? `Sign up to play ${title}` : "Sign up to play"}</div>
       <p style={{ color: "#8A8FBF", fontSize: 14, lineHeight: 1.6, margin: "0 0 22px" }}>
-        NEMESIS Command, Asteroid Belt and 13i vs NEMESIS are open to everyone. The rest of the games are for the Kin: it&rsquo;s free, and your scores, records and progress follow you.
+        NEMESIS Command, Asteroid Belt, 13i vs NEMESIS and XenoKlash are open to everyone. The rest of the games are for the Kin: it&rsquo;s free, and your scores, records and progress follow you.
       </p>
       <div style={{ display: "flex", gap: 10, justifyContent: "center", flexWrap: "wrap" }}>
         <Link href={signUpHref(next)} className="mono" style={btn(true)}>Create a free account</Link>

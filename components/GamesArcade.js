@@ -17,6 +17,7 @@ const ARCADE = [
   { href: "/games/nemesis-command", title: "NEMESIS Command", art: "nemesis", color: "#E87C6E", tag: "arcade", blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic." },
   { href: "/games/asteroid-belt", title: "Asteroid Belt", art: "asteroids", color: "#B9C0FF", tag: "arcade", blurb: "Clear the belt, and watch for the mining ship's twelve tungsten rods." },
   { href: "/games/13i-vs-nemesis", title: "13i vs NEMESIS", art: "defend", color: "#8B95F6", tag: "arcade", blurb: "Defend Earth across five zones of approach, with weapons and countermeasures." },
+  { href: "/games/xenoklash", title: "XenoKlash", art: "xk", color: "#FF8A3D", tag: "fighting", blurb: "Alien gladiators, one on one. Climb the tournament, face Voraxx, unlock the Wreck Hermit." },
 ];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
 
@@ -54,6 +55,18 @@ export function GameScreen({ art, color }) {
           <circle cx="80" cy="100" r="34" fill="none" stroke={c} strokeWidth="1" />
           {[46, 58, 70].map((r, i) => <circle key={r} cx="80" cy="100" r={r} fill="none" stroke={c} strokeWidth="0.6" strokeDasharray="2 4" opacity={0.6 - i * 0.15} />)}
           {[0, 1, 2].map((i) => <circle key={i} className="gs-fall" style={{ animationDelay: `${i * 0.9}s`, "--x": `${40 + i * 38}px` }} r="2.6" fill="#E87C6E" />)}
+        </svg>
+      );
+    case "xk":
+      return (
+        <svg {...common}>
+          <circle cx="80" cy="34" r="14" fill="none" stroke="#B9C0FF" strokeWidth="0.8" opacity="0.5" />
+          <path d="M28 88 L36 62 L30 48 L42 40 L52 46 L60 40 L56 56 L48 60 L50 88" fill="none" stroke={c} strokeWidth="1.4" />
+          <path d="M60 40 L66 30 M42 40 L38 30" stroke={c} strokeWidth="1.4" />
+          <path d="M132 88 L126 64 L134 52 L128 40 L116 44 L104 40 L108 54 L116 60 L112 88" fill="none" stroke="#C07CFF" strokeWidth="1.4" />
+          <path d="M128 40 C140 30 146 36 150 26 M128 44 C142 40 148 46 154 40" fill="none" stroke="#C07CFF" strokeWidth="1" />
+          <g className="gs-blip"><path d="M80 50 L84 44 L82 52 L90 50 L82 56 L84 64 L78 56 L70 58 L76 52 L72 44 Z" fill="#FFE2A0" /></g>
+          <line x1="12" y1="88" x2="148" y2="88" stroke={c} strokeWidth="0.6" opacity="0.5" />
         </svg>
       );
     case "tacet":
@@ -273,7 +286,7 @@ export default function GamesArcade() {
         <div className="ga-hero-text">
           <div className="mono ga-kicker">play &middot; the arcade</div>
           <h1 className="ga-title">Games</h1>
-          <p className="ga-lede">Arcade classics from the NEMESIS files, and a game hidden in every short story. Read a story, unlock its game.</p>
+          <p className="ga-lede">Arcade classics from the NEMESIS files, an alien fighting tournament, and a game hidden in every short story. Read a story, unlock its game.</p>
           <button className="ga-coin" onClick={() => router.push(playable[Math.floor(Math.random() * playable.length)])}>
             <span className="ga-coin-slot" aria-hidden="true" /> Insert coin &middot; random game
           </button>

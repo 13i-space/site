@@ -4,6 +4,15 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 5.99 (SQL: docs/v5.99-xenoklash-progress.sql): XenoKlash, the alien
+  fighting game, is the fourth arcade cabinet at /games/xenoklash (open to
+  everyone, like the other three). Standalone file public/games/xenoklash.html
+  in IframeGame: plays, tournament scores, best score and the daily
+  leaderboard use the usual tables (game = 'xenoklash'). Unlock progress
+  (tournaments won -> Voraxx + Rhakka) saves to xk_progress through
+  components/XenoKlashGame.js; until the SQL runs, or signed out, it stays in
+  that browser. The game's source of truth is the XenoKlash artifact; the
+  site copy differs only in its 13i.space bridge and Rhakka being earned.
 - Update 5.97 (no SQL): Donaghy Castle invite links work without an account
   (guests can only join the game in the link).
 - Update 5.96 (no SQL): Donaghy Castle is multiplayer - room codes, the
