@@ -108,6 +108,7 @@ export default async function AccountPage() {
     "asteroid-belt": { label: "Asteroid Belt", href: "/games/asteroid-belt" },
     "13i-vs-nemesis": { label: "13i vs NEMESIS", href: "/games/13i-vs-nemesis" },
     xenoklash: { label: "XenoKlash", href: "/games/xenoklash" },
+    xenokart: { label: "XenoKart", href: "/games/xenokart" },
     "deep-signal": { label: "13i: The Deep Signal", href: "/games/deep-signal" },
     sixteen: { label: "SIXTEEN", href: "/games/sixteen" },
     tacet: { label: "TACET", href: "/games/tacet" },

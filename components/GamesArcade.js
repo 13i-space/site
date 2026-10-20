@@ -14,10 +14,10 @@ import { useSignedIn, signUpHref } from "./SignUpToPlay";
 //     story has been opened (lib/storyGames.js)
 
 const ARCADE = [
-  { href: "/games/nemesis-command", title: "NEMESIS Command", art: "nemesis", color: "#E87C6E", tag: "arcade", blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic." },
   { href: "/games/asteroid-belt", title: "Asteroid Belt", art: "asteroids", color: "#B9C0FF", tag: "arcade", blurb: "Clear the belt, and watch for the mining ship's twelve tungsten rods." },
-  { href: "/games/13i-vs-nemesis", title: "13i vs NEMESIS", art: "defend", color: "#8B95F6", tag: "arcade", blurb: "Defend Earth across five zones of approach, with weapons and countermeasures." },
-  { href: "/games/xenoklash", title: "XenoKlash", art: "xk", color: "#FF8A3D", tag: "fighting", blurb: "Alien gladiators, one on one. Climb the tournament, face Voraxx, unlock the Wreck Hermit." },
+  { href: "/games/nemesis-command", title: "NEMESIS Command", art: "nemesis", color: "#E87C6E", tag: "arcade", blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic." },
+  { href: "/games/xenoklash", title: "XenoKlash", art: "xk", color: "#FF8A3D", tag: "fighting", blurb: "Alien gladiators, one on one. Win the tournament, beat Voraxx, unlock the Wreck Hermit." },
+  { href: "/games/xenokart", title: "XenoKart", art: "kart", color: "#5FF0DC", tag: "racing", blurb: "Alien kart racing across four worlds. Drift, glide the Skyway, take the Grand Prix." },
 ];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
 
@@ -58,15 +58,90 @@ export function GameScreen({ art, color }) {
         </svg>
       );
     case "xk":
+      // Kharn and Vess mid-clash in the Rift Colosseum, fighting-game health bars overhead
       return (
         <svg {...common}>
-          <circle cx="80" cy="34" r="14" fill="none" stroke="#B9C0FF" strokeWidth="0.8" opacity="0.5" />
-          <path d="M28 88 L36 62 L30 48 L42 40 L52 46 L60 40 L56 56 L48 60 L50 88" fill="none" stroke={c} strokeWidth="1.4" />
-          <path d="M60 40 L66 30 M42 40 L38 30" stroke={c} strokeWidth="1.4" />
-          <path d="M132 88 L126 64 L134 52 L128 40 L116 44 L104 40 L108 54 L116 60 L112 88" fill="none" stroke="#C07CFF" strokeWidth="1.4" />
-          <path d="M128 40 C140 30 146 36 150 26 M128 44 C142 40 148 46 154 40" fill="none" stroke="#C07CFF" strokeWidth="1" />
-          <g className="gs-blip"><path d="M80 50 L84 44 L82 52 L90 50 L82 56 L84 64 L78 56 L70 58 L76 52 L72 44 Z" fill="#FFE2A0" /></g>
-          <line x1="12" y1="88" x2="148" y2="88" stroke={c} strokeWidth="0.6" opacity="0.5" />
+          <defs>
+            <radialGradient id="gsxk-floor"><stop offset="0" stopColor={c} stopOpacity="0.35" /><stop offset="1" stopColor={c} stopOpacity="0" /></radialGradient>
+            <linearGradient id="gsxk-k" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#FFB07A" /><stop offset="1" stopColor="#6A2E14" /></linearGradient>
+            <linearGradient id="gsxk-v" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#DAFF8E" /><stop offset="1" stopColor="#24563A" /></linearGradient>
+          </defs>
+          <path d="M0 68 Q80 56 160 68 L160 100 L0 100 Z" fill="#0A0B22" />
+          {[22, 51, 80, 109, 138].map((x, i) => (
+            <g key={x}>
+              <path d={`M${x - 11} 66 L${x - 11} 52 Q${x} 40 ${x + 11} 52 L${x + 11} 66`} fill="none" stroke="#B9C0FF" strokeWidth="0.6" opacity="0.22" />
+              <circle className="gs-blip" style={{ animationDelay: `${i * 0.35}s` }} cx={x} cy="49" r="1.3" fill="#E9D29A" />
+            </g>
+          ))}
+          <ellipse cx="80" cy="82" rx="76" ry="11" fill="url(#gsxk-floor)" />
+          <rect x="8" y="7" width="60" height="4" rx="1" fill="#1A1D40" /><rect x="8" y="7" width="41" height="4" rx="1" fill={c} />
+          <rect x="92" y="7" width="60" height="4" rx="1" fill="#1A1D40" /><rect x="105" y="7" width="47" height="4" rx="1" fill="#B8FF5A" />
+          <text x="80" y="12" textAnchor="middle" fontSize="6.5" fill="#E9D29A" fontFamily="monospace" fontWeight="700" letterSpacing="1">VS</text>
+          <g className="gs-lunge-l">
+            <path d="M40 49 L35 35 L44 46 Z M46 45 L45 31 L51 43 Z M52 46 L56 35 L56 47 Z" fill="#C890FF" opacity="0.9" />
+            <path d="M40 52 L31 60 L35 64 L44 57 Z" fill="url(#gsxk-k)" />
+            <path d="M40 72 L37 84 L46 84 L46 72 Z M52 72 L54 84 L62 84 L58 72 Z" fill="url(#gsxk-k)" />
+            <path d="M36 72 Q31 58 39 48 Q48 41 57 48 Q63 57 59 72 Z" fill="url(#gsxk-k)" stroke="#FFB07A" strokeWidth="0.5" />
+            <path d="M42 56 L47 61 L45 66 M51 52 L53 58" fill="none" stroke="#FF7A2A" strokeWidth="0.9" />
+            <path d="M55 51 L68 50 L68 57 L56 58 Z" fill="url(#gsxk-k)" />
+            <path d="M67 47.5 L75 48 L75.5 58 L67 59 Z" fill="#8A4A2A" stroke="#FFB07A" strokeWidth="0.5" />
+            <path d="M50 46 Q50 37 56 37 Q63 38 62 46 Q59 50 52 49 Z" fill="url(#gsxk-k)" />
+            <circle cx="57" cy="42.5" r="1.3" fill="#FFE070" /><circle cx="60.5" cy="42.5" r="1.1" fill="#FFE070" />
+          </g>
+          <g className="gs-lunge-r">
+            <path className="gs-buzz" d="M112 53 Q134 40 142 51 Q128 57 114 57 Z M113 56 Q132 54 138 63 Q124 63 114 60 Z" fill="#CFFFE0" opacity="0.28" />
+            <ellipse cx="121" cy="71" rx="11" ry="5" transform="rotate(-18 121 71)" fill="url(#gsxk-v)" />
+            <path d="M108 72 L102 84 M112 72 L117 84 M117 70 L127 84" stroke="#9BE07A" strokeWidth="1.2" fill="none" />
+            <path d="M104 73 Q101 60 106 49 L112 49 Q115 60 112 73 Z" fill="url(#gsxk-v)" stroke="#DAFF8E" strokeWidth="0.5" />
+            <path d="M105 54 L95 50 L91 46" stroke="#9BE07A" strokeWidth="1.6" fill="none" />
+            <path d="M91 46 Q83 39 78 48 Q85 44 92 49 Z" fill="#F4FFD0" />
+            <path d="M107 59 L97 61" stroke="#9BE07A" strokeWidth="1.4" fill="none" />
+            <path d="M97 61 Q89 62 86 69 Q92 65 98 63 Z" fill="#F4FFD0" />
+            <path d="M100 44 L115 42 L108 53 Z" fill="url(#gsxk-v)" />
+            <circle cx="103.5" cy="45" r="2.3" fill="#E8FF9A" /><circle cx="111.5" cy="44" r="2.3" fill="#E8FF9A" />
+            <path d="M106 42 Q102 32 95 30 M110 42 Q113 31 121 28" stroke="#9BE07A" strokeWidth="0.7" fill="none" />
+          </g>
+          <g className="gs-clash">
+            <path d="M77 50 L80 42 L80.5 49 L88 46 L82 51.5 L88 57 L80 54 L77 61 L76 53.5 L68 55 L74 50 L69 44 Z" fill="#FFE2A0" />
+            <circle cx="77.5" cy="50.5" r="9" fill="none" stroke="#FFE2A0" strokeWidth="0.6" />
+          </g>
+        </svg>
+      );
+    case "kart":
+      // chase cam down a glowing track: kerbs and lane lines rushing past, a rival ahead, an item cube
+      return (
+        <svg {...common}>
+          <defs>
+            <linearGradient id="gsk-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#0E0C2C" /><stop offset="1" stopColor="#4A2546" /></linearGradient>
+            <linearGradient id="gsk-road" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#141836" /><stop offset="1" stopColor="#22284E" /></linearGradient>
+          </defs>
+          <rect width="160" height="47" fill="url(#gsk-sky)" />
+          {[[14, 8], [36, 20], [58, 6], [104, 12], [150, 30], [92, 26]].map(([x, y], i) => <circle key={i} className="gs-blip" style={{ animationDelay: `${i * 0.4}s` }} cx={x} cy={y} r="0.7" fill="#fff" />)}
+          <circle cx="128" cy="20" r="9" fill="#FFD6AA" opacity="0.9" />
+          <ellipse cx="128" cy="20" rx="15" ry="3" fill="none" stroke="#FFD6AA" strokeWidth="0.7" opacity="0.6" transform="rotate(-14 128 20)" />
+          <path d="M0 47 L40 41 L64 45 L96 42 L124 44 L160 40 L160 47 Z" fill="#1A1238" />
+          <rect y="47" width="160" height="53" fill="#0C0A1E" />
+          <path d="M71 47 L89 47 L160 100 L0 100 Z" fill="url(#gsk-road)" />
+          <path className="gs-road" d="M71 47 L0 100" stroke="#FF7A4A" strokeWidth="2.6" strokeDasharray="4 4" />
+          <path className="gs-road" d="M89 47 L160 100" stroke="#FF7A4A" strokeWidth="2.6" strokeDasharray="4 4" />
+          <path className="gs-road" d="M80 47 L80 100" stroke={c} strokeWidth="1.2" strokeDasharray="3 6" />
+          <path className="gs-road" d="M76 47 L52 100 M84 47 L108 100" stroke={c} strokeWidth="0.5" strokeDasharray="2 7" opacity="0.5" />
+          <g className="gs-spin" style={{ transformOrigin: "63px 60px", animationDuration: "3s" }}><rect x="59.5" y="56.5" width="7" height="7" fill={c} fillOpacity="0.25" stroke="#B9FFF4" strokeWidth="0.7" /></g>
+          <g className="gs-rival">
+            <rect x="86" y="55" width="10" height="4" rx="1.5" fill="#C07CFF" />
+            <circle cx="91" cy="54.5" r="1.8" fill="#E8D0FF" />
+            <path d="M88.5 59 L90 62 L91.5 59 Z M91 59 L92.5 62 L94 59 Z" fill="#7FF0FF" className="gs-flame" />
+          </g>
+          <g className="gs-drift">
+            <path d="M58 92 L64 79 L96 79 L102 92 Z" fill="#2A2E52" stroke={c} strokeWidth="0.8" />
+            <path d="M55 88 L60 82 L63 92 Z M105 88 L100 82 L97 92 Z" fill="#3A3F6E" />
+            <ellipse cx="80" cy="78" rx="8" ry="6" fill="#FF8A3D" />
+            <circle cx="77" cy="74" r="1.4" fill="#1A0E08" /><circle cx="83" cy="74" r="1.4" fill="#1A0E08" />
+            <path d="M75 72 L72 66 M85 72 L88 66" stroke="#FF8A3D" strokeWidth="1" />
+            <rect x="64" y="86" width="5" height="2" fill="#FF5A5A" /><rect x="91" y="86" width="5" height="2" fill="#FF5A5A" />
+            <path className="gs-flame" d="M70 92 L74 100 L78 92 Z M82 92 L86 100 L90 92 Z" fill="#7FF0FF" />
+          </g>
+          <path className="gs-speed" d="M8 60 L0 66 M152 60 L160 66 M18 74 L4 86 M142 74 L156 86" stroke="#fff" strokeWidth="0.6" opacity="0.5" />
         </svg>
       );
     case "tacet":
@@ -286,7 +361,7 @@ export default function GamesArcade() {
         <div className="ga-hero-text">
           <div className="mono ga-kicker">play &middot; the arcade</div>
           <h1 className="ga-title">Games</h1>
-          <p className="ga-lede">Arcade classics from the NEMESIS files, an alien fighting tournament, and a game hidden in every short story. Read a story, unlock its game.</p>
+          <p className="ga-lede">Arcade classics from the NEMESIS files, an alien fighting tournament, an alien Grand Prix, and a game hidden in every short story. Read a story, unlock its game.</p>
           <button className="ga-coin" onClick={() => router.push(playable[Math.floor(Math.random() * playable.length)])}>
             <span className="ga-coin-slot" aria-hidden="true" /> Insert coin &middot; random game
           </button>
@@ -297,7 +372,7 @@ export default function GamesArcade() {
         <h2>The arcade</h2>
         <span className="mono">{ARCADE.length} cabinets &middot; always open</span>
       </div>
-      <div className="ga-grid">
+      <div className="ga-grid ga-grid-4">
         {ARCADE.map((g, i) => <Cabinet key={g.href} {...g} i={i} />)}
       </div>
 

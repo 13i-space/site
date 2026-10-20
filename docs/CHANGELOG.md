@@ -3,6 +3,24 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.00 — XenoKart joins the arcade (Oct 2026)
+SQL: **docs/v6.00-xenokart-progress.sql** (new table `xkart_progress`, RLS: own row only).
+- **XenoKart: Grand Prix of the Worlds** at /games/xenokart replaces 13i vs NEMESIS in The Arcade
+  (new attract screen `kart`). Six XenoKlash racers (Voraxx unlocked by winning on Rift class),
+  four tracks (Wreck Tide Rally, Crystal Abyss Run, Hive Spire Climb, Nebula Skyway with its
+  launch-and-glide gap), single races or a four-race Grand Prix with points and a medal stand.
+- Runs as `public/games/xenokart.html` inside IframeGame; three.js r128 is self-hosted at
+  `public/games/lib/three.r128.min.js`. The game posts `play` at each race start and `score` after a
+  single race (place points + time bonus, times 1 / 1.5 / 2 by class) or after a whole Grand Prix
+  (sum of its races, plus a champion bonus).
+- Progress: `progress-request` on load, `progress` after each race; `components/XenoKartGame.js`
+  reads/writes `xkart_progress` (unlocked, best_laps per track, gp_wins).
+- Arcade reordered: Asteroid Belt, NEMESIS Command, XenoKlash, XenoKart. `.ga-grid-4` keeps the four
+  cabinets equal in size (4 / 2 / 1 columns). New XenoKlash cabinet screen (Kharn vs Vess mid-clash).
+- 13i vs NEMESIS: page and scores kept, removed from the arcade and the "open to everyone" copy.
+- Registered: Node scores, Sentinel-X, Lyra's game help and visitor context, site search, Play
+  page, sign-up panel, Lyra's site map.
+
 ## Update 5.99 — XenoKlash joins the arcade (Oct 2026)
 SQL: **docs/v5.99-xenoklash-progress.sql** (new table `xk_progress`, RLS: own row only).
 - **XenoKlash: Galactic Gladiators** at /games/xenoklash, the fourth cabinet in The Arcade
