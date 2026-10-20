@@ -18,7 +18,7 @@ export default function ArtifactsHub() {
       subtitle="objects recovered from inside the story"
       line="Things 13i brought back, or found still running. Handle them carefully. Some of them answer."
       items={items}
-      next={{ line: "Want something faster?", href: "/games", label: "Go to the Games" }}
+      next={{ line: "Want something faster?", href: "/games", label: "Go to the Arcade" }}
     />
   );
 }

@@ -21,7 +21,7 @@ const STOPS = [
   {
     key: "play", href: "/play", title: "Play", verb: "step inside it",
     line: "Speak with 13i. Play the games its records left behind. Make its choices.",
-    places: [["The Oracle", "/oracle"], ["Games", "/games"], ["Artifacts", "/artifacts"], ["Interactive Stories", "/assignments/interactive"]],
+    places: [["The Oracle", "/oracle"], ["Arcade", "/games"], ["Artifacts", "/artifacts"], ["Interactive Stories", "/assignments/interactive"]],
     color: "#B9C0FF",
   },
   {
