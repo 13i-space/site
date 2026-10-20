@@ -3,6 +3,28 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.01 — XenoWing joins the arcade; Games becomes the Arcade (Oct 2026)
+SQL: **docs/v6.01-xenowing-progress.sql** (new table `xwing_progress`, RLS: own row only).
+- **XenoWing** at /games/xenowing replaces NEMESIS Command in the arcade (new cabinet screen `wing`).
+  A flight game with chase and cockpit views, flown by the Rave's four aliens: Ixxen (Lab skimmer,
+  plasma cannons, homing missiles), Ilu (Pearl bubble-skiff, spark sprayer, glitter swarm), Qeth
+  (Crownwing, filament lances, orb nova) and Varrow (Wishbarge, four-gun bursts, four-eye volley),
+  each with its own ship, cockpit, arms, sounds and stats. Five missions on five worlds: The Spore
+  Bloom (Qorrath), The Specimen Thief (the storm reefs of Ulos), The Dark Relays (the glass spires
+  of Thren), Thirteen Turnings (the moon dunes of Vey) and The Methane Wyrm (Kharos), the final
+  boss. Each win unlocks the next pilot and mission. Easy / Normal / Hard; per-view handling
+  (Smooth / Normal / Sharp); locks and enemy fire need line of sight.
+- Runs as `public/games/xenowing.html` inside IframeGame (three.js r128 self-hosted). Posts `play`
+  at each launch and `score` at each mission or patrol end; `progress-request` on load and
+  `progress` after each mission win; `components/XenoWingGame.js` reads/writes `xwing_progress`
+  (unlocked pilots, missions done, difficulties that beat the wyrm).
+- Arcade order: Asteroid Belt, XenoKlash, XenoWing, XenoKart. NEMESIS Command keeps its page and
+  scores but is no longer listed (like 13i vs NEMESIS).
+- **Games renamed Arcade**: Play menu, Play page card, /games heading and page title, site search,
+  launch journey, Lyra lines and canon. The route stays /games. A new "Other Games to Play" heading
+  sits above SpaceCore, Interactive Stories, Universe Quiz and Aliens of the Galaxy.
+- Registered: Node scores, Sentinel-X, Lyra's game help and visitor context, site search, sign-up panel.
+
 ## Update 6.00 — XenoKart joins the arcade (Oct 2026)
 SQL: **docs/v6.00-xenokart-progress.sql** (new table `xkart_progress`, RLS: own row only).
 - **XenoKart: Grand Prix of the Worlds** at /games/xenokart replaces 13i vs NEMESIS in The Arcade

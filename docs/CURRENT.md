@@ -4,6 +4,16 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.01 (SQL: docs/v6.01-xenowing-progress.sql): XenoWing, the flight
+  game with the Rave's four aliens, replaces NEMESIS Command in the arcade at
+  /games/xenowing (open to everyone). Arcade order: Asteroid Belt, XenoKlash,
+  XenoWing, XenoKart. "Games" is now called the Arcade everywhere a visitor
+  sees it (route unchanged: /games), with an "Other Games to Play" heading over
+  SpaceCore, Interactive Stories, Universe Quiz and Aliens of the Galaxy.
+  Standalone file public/games/xenowing.html in IframeGame; progress via
+  components/XenoWingGame.js and table xwing_progress. The game's source of
+  truth is the XenoWing artifact; copy it in (swapping the three.js CDN tag for
+  /games/lib/three.r128.min.js and adding a doctype/head) when it changes.
 - Update 6.00 (SQL: docs/v6.00-xenokart-progress.sql): XenoKart, the alien
   kart racer, replaces 13i vs NEMESIS in the arcade at /games/xenokart (open to
   everyone). Arcade order is now Asteroid Belt, NEMESIS Command, XenoKlash,

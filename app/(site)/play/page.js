@@ -2,7 +2,7 @@ import ModeLanding from "../../../components/ModeLanding";
 
 const items = [
   { href: "/oracle", emblem: "oracle", title: "The Oracle", blurb: "Speak to 13i directly. You are not talking to one voice.", tags: ["ask anything"] },
-  { href: "/games", emblem: "games", title: "Games", blurb: "Asteroid Belt, NEMESIS Command, XenoKlash, XenoKart, and Short Story Games.", tags: ["leaderboards", "story games"] },
+  { href: "/games", emblem: "games", title: "Arcade", blurb: "Asteroid Belt, XenoKlash, XenoWing, XenoKart, and Short Story Games.", tags: ["leaderboards", "story games"] },
   { href: "/artifacts", emblem: "artifacts", title: "Artifacts", blurb: "The Wish Engine, the Cryptex and the Listening Well: objects that answer back.", tags: ["3 artifacts", "sound on"] },
   { href: "/assignments/interactive", emblem: "interactive", title: "Interactive Stories", blurb: "Be 13i: Choose the Story Decisions in a Visual Novel.", tags: ["4 stories", "5 records each"] },
 ];

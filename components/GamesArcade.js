@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { STORY_GAMES, openedStories } from "../lib/storyGames";
 import { useSignedIn, signUpHref } from "./SignUpToPlay";
 
-// The Games hub as an arcade (Update 5.58):
+// The Arcade (Update 5.58; called Games until Update 6.01):
 //   - a warm-up toy in the hero: rocks drift across the sky; click them
 //   - "insert coin": a random game you can play right now
 //   - a cabinet per game, each with its own little attract-mode screen
@@ -15,8 +15,8 @@ import { useSignedIn, signUpHref } from "./SignUpToPlay";
 
 const ARCADE = [
   { href: "/games/asteroid-belt", title: "Asteroid Belt", art: "asteroids", color: "#B9C0FF", tag: "arcade", blurb: "Clear the belt, and watch for the mining ship's twelve tungsten rods." },
-  { href: "/games/nemesis-command", title: "NEMESIS Command", art: "nemesis", color: "#E87C6E", tag: "arcade", blurb: "Aim and fire. A fast, arcade take on NEMESIS's threat-elimination logic." },
   { href: "/games/xenoklash", title: "XenoKlash", art: "xk", color: "#FF8A3D", tag: "fighting", blurb: "Alien gladiators, one on one. Win the tournament, beat Voraxx, unlock the Wreck Hermit." },
+  { href: "/games/xenowing", title: "XenoWing", art: "wing", color: "#6FE3C8", tag: "flying", blurb: "Fly Ixxen, Ilu, Qeth and Varrow from the Rave across five worlds, chase or cockpit view, and take down the Methane Wyrm." },
   { href: "/games/xenokart", title: "XenoKart", art: "kart", color: "#5FF0DC", tag: "racing", blurb: "Alien kart racing across four worlds. Drift, glide the Skyway, take the Grand Prix." },
 ];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
@@ -105,6 +105,37 @@ export function GameScreen({ art, color }) {
             <path d="M77 50 L80 42 L80.5 49 L88 46 L82 51.5 L88 57 L80 54 L77 61 L76 53.5 L68 55 L74 50 L69 44 Z" fill="#FFE2A0" />
             <circle cx="77.5" cy="50.5" r="9" fill="none" stroke="#FFE2A0" strokeWidth="0.6" />
           </g>
+        </svg>
+      );
+    case "wing":
+      // chase cam over a canyon at night: aurora, a gold ring coming up, the skimmer banking, plasma bolts, a stinger
+      return (
+        <svg {...common}>
+          <defs>
+            <linearGradient id="gsw-sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#06071A" /><stop offset="1" stopColor="#3A2A5A" /></linearGradient>
+            <linearGradient id="gsw-aur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor={c} stopOpacity="0" /><stop offset="0.6" stopColor={c} stopOpacity="0.45" /><stop offset="1" stopColor={c} stopOpacity="0" /></linearGradient>
+            <linearGradient id="gsw-wing" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stopColor="#2A3170" /><stop offset="0.5" stopColor="#1A1F52" /><stop offset="1" stopColor="#2A3170" /></linearGradient>
+          </defs>
+          <rect width="160" height="100" fill="url(#gsw-sky)" />
+          <g className="gs-aurora">{[20, 44, 70, 98, 124].map((x, i) => <rect key={x} x={x} y="0" width="9" height={30 + (i % 2) * 10} fill="url(#gsw-aur)" />)}</g>
+          {[[12, 10], [52, 6], [88, 14], [140, 8], [150, 26]].map(([x, y], i) => <circle key={i} className="gs-blip" style={{ animationDelay: `${i * 0.5}s` }} cx={x} cy={y} r="0.7" fill="#fff" />)}
+          <path d="M0 100 L0 40 L22 34 L38 46 L58 50 L68 52 L60 100 Z" fill="#2A2238" />
+          <path d="M160 100 L160 36 L134 30 L118 44 L100 50 L92 52 L100 100 Z" fill="#241C32" />
+          <path d="M58 50 L68 52 L60 100 L40 100 Z M102 50 L92 52 L100 100 L120 100 Z" fill="#1A1626" />
+          <path d="M68 52 L92 52 L100 100 L60 100 Z" fill="#0E1A22" />
+          <path className="gs-road" d="M80 52 L80 100" stroke={c} strokeWidth="0.6" strokeDasharray="2 6" opacity="0.5" />
+          <g className="gs-ring"><ellipse cx="80" cy="44" rx="9" ry="10" fill="none" stroke="#E9D29A" strokeWidth="1.6" /><ellipse cx="80" cy="44" rx="6.5" ry="7.5" fill="none" stroke={c} strokeWidth="0.5" /></g>
+          <g className="gs-sting"><path d="M118 24 l4 -2 l4 2 l-4 1.4 Z" fill="#FF5A3A" /><circle cx="122" cy="23.4" r="2.6" fill="#FF5A3A" opacity="0.25" /></g>
+          <line className="gs-bolt" x1="72" y1="66" x2="74" y2="58" stroke="#8FFFE6" strokeWidth="1.2" />
+          <line className="gs-bolt" style={{ animationDelay: ".12s" }} x1="88" y1="66" x2="86" y2="58" stroke="#8FFFE6" strokeWidth="1.2" />
+          <g className="gs-bank">
+            <path d="M80 64 C72 66 62 72 50 80 L56 82 C64 78 72 76 78 76 Z M80 64 C88 66 98 72 110 80 L104 82 C96 78 88 76 82 76 Z" fill="url(#gsw-wing)" stroke={c} strokeWidth="0.6" />
+            <path d="M52 80 L62 76 M108 80 L98 76" stroke="#E9D29A" strokeWidth="0.7" />
+            <ellipse cx="80" cy="72" rx="4.6" ry="9" fill="#1E2460" stroke="#8FE6FF" strokeWidth="0.5" />
+            <ellipse cx="80" cy="67" rx="2.4" ry="3.4" fill="#C8F0FF" opacity="0.5" />
+            <circle cx="74" cy="80" r="1.8" fill={c} className="gs-flame" /><circle cx="86" cy="80" r="1.8" fill={c} className="gs-flame" />
+          </g>
+          <path className="gs-speed" d="M6 70 L0 76 M154 70 L160 76 M16 86 L4 96 M144 86 L156 96" stroke="#fff" strokeWidth="0.5" opacity="0.4" />
         </svg>
       );
     case "kart":
@@ -360,8 +391,8 @@ export default function GamesArcade() {
         <WarmUp />
         <div className="ga-hero-text">
           <div className="mono ga-kicker">play &middot; the arcade</div>
-          <h1 className="ga-title">Games</h1>
-          <p className="ga-lede">Arcade classics from the NEMESIS files, an alien fighting tournament, an alien Grand Prix, and a game hidden in every short story. Read a story, unlock its game.</p>
+          <h1 className="ga-title">Arcade</h1>
+          <p className="ga-lede">Arcade classics from the NEMESIS files, an alien fighting tournament, a flight across five worlds with the Rave&rsquo;s four aliens, an alien Grand Prix, and a game hidden in every short story. Read a story, unlock its game.</p>
           <button className="ga-coin" onClick={() => router.push(playable[Math.floor(Math.random() * playable.length)])}>
             <span className="ga-coin-slot" aria-hidden="true" /> Insert coin &middot; random game
           </button>
@@ -387,6 +418,10 @@ export default function GamesArcade() {
         {story.map((g, i) => <Cabinet key={g.key} {...g} i={i} />)}
       </div>
 
+      <div className="ga-row-head">
+        <h2>Other Games to Play</h2>
+        <span className="mono">elsewhere on 13i.space</span>
+      </div>
       <div className="ga-more">
         <Link href="/create/spacecore" className="ga-more-card"><span className="ga-more-title">SpaceCore</span><span className="mono">dig into Mars with everyone &rarr;</span></Link>
         <Link href="/assignments/interactive" className="ga-more-card"><span className="ga-more-title">Interactive Stories</span><span className="mono">make 13i&rsquo;s choices &rarr;</span></Link>

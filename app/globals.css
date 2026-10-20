@@ -1886,6 +1886,17 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 @keyframes gs-rival { 0%,100% { transform: translateX(-3px) scale(1); } 50% { transform: translateX(3px) scale(.9); } }
 .gs-speed { animation: gs-blip .5s linear infinite; }
 @media (prefers-reduced-motion: reduce) { .gs-lunge-l, .gs-lunge-r, .gs-clash, .gs-buzz, .gs-road, .gs-flame, .gs-drift, .gs-rival, .gs-speed { animation: none; } .gs-clash { opacity: 1; } }
+.gs-bank { transform-origin: 80px 72px; animation: gs-bank 3.6s ease-in-out infinite; }
+@keyframes gs-bank { 0%,100% { transform: rotate(-9deg) translateX(-5px); } 50% { transform: rotate(9deg) translateX(5px); } }
+.gs-ring { transform-origin: 80px 44px; animation: gs-ring 2.2s ease-in infinite; }
+@keyframes gs-ring { 0% { transform: scale(.35); opacity: 0; } 20% { opacity: 1; } 100% { transform: scale(2.6); opacity: 0; } }
+.gs-bolt { animation: gs-bolt .45s linear infinite; }
+@keyframes gs-bolt { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-24px); opacity: 0; } }
+.gs-sting { transform-origin: 122px 24px; animation: gs-sting 2.4s ease-in-out infinite; }
+@keyframes gs-sting { 0%,100% { transform: translate(0,0); } 50% { transform: translate(-14px,6px); } }
+.gs-aurora { animation: gs-aurora 5s ease-in-out infinite alternate; }
+@keyframes gs-aurora { to { transform: translateX(6px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .gs-bank, .gs-ring, .gs-bolt, .gs-sting, .gs-aurora { animation: none; } .gs-ring { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .ga-cab, .gs-sweep, .gs-spin, .gs-blip, .gs-rock, .gs-ship, .gs-shot, .gs-fall, .gs-ripple, .gs-wave, .gs-limb, .gs-beam, .gs-msg, .gs-bend { animation: none; stroke-dashoffset: 0; } }
 
 /* ── Artifact pages (Update 5.58) ── */
