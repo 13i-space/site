@@ -4,6 +4,18 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.00 (SQL: docs/v6.00-xenokart-progress.sql): XenoKart, the alien
+  kart racer, replaces 13i vs NEMESIS in the arcade at /games/xenokart (open to
+  everyone). Arcade order is now Asteroid Belt, NEMESIS Command, XenoKlash,
+  XenoKart, in a fixed 4/2/1-column grid so every cabinet is the same size;
+  XenoKlash has a new cabinet screen. Standalone file public/games/xenokart.html
+  (three.js r128 self-hosted at public/games/lib/three.r128.min.js) in
+  IframeGame: plays, scores (single race, or a whole Grand Prix) and the daily
+  leaderboard use the usual tables (game = 'xenokart'). Voraxx unlock, best lap
+  per track and Grand Prix wins save to xkart_progress through
+  components/XenoKartGame.js. 13i vs NEMESIS still plays at its old address but
+  is no longer listed. The game's source of truth is the XenoKart artifact; the
+  site copy differs only in its 13i.space bridge and self-hosted three.js.
 - Update 5.99 (SQL: docs/v5.99-xenoklash-progress.sql): XenoKlash, the alien
   fighting game, is the fourth arcade cabinet at /games/xenoklash (open to
   everyone, like the other three). Standalone file public/games/xenoklash.html
