@@ -17,7 +17,7 @@ const ARCADE = [
   { href: "/games/asteroid-belt", title: "Asteroid Belt", art: "asteroids", color: "#B9C0FF", tag: "arcade", blurb: "Clear the belt, and watch for the mining ship's twelve tungsten rods." },
   { href: "/games/xenoklash", title: "XenoKlash", art: "xk", color: "#FF8A3D", tag: "fighting", blurb: "Alien gladiators, one on one. Win the tournament, beat Voraxx, unlock the Wreck Hermit." },
   { href: "/games/xenowing", title: "XenoWing", art: "wing", color: "#6FE3C8", tag: "flying", blurb: "Fly Ixxen, Ilu, Qeth and Varrow from the Rave across five worlds, chase or cockpit view, and take down the Methane Wyrm." },
-  { href: "/games/xenokart", title: "XenoKart", art: "kart", color: "#5FF0DC", tag: "racing", blurb: "Alien kart racing across four worlds. Drift, glide the Skyway, take the Grand Prix." },
+  { href: "/games/xenokart", title: "XenoKart", art: "kart", color: "#5FF0DC", tag: "racing", blurb: "Alien kart racing across five worlds. Drift, glide the Skyway, dodge Kharn's geysers, take the Grand Prix." },
 ];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
 

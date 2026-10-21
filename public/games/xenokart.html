@@ -312,6 +312,9 @@ function makeShard(){const g=G(),b=G();g.add(b);const m=new THREE.MeshStandardMa
 function makeHoney(){const g=G();const m=new THREE.MeshStandardMaterial({color:0xFFB020,emissive:0x6A3A00,transparent:true,opacity:.88,roughness:.1,metalness:.1});
   const b=mesh(new THREE.SphereGeometry(1.2,14,10,0,TAU,0,Math.PI/2),m,null,null,[1.2,.5,1.2],g);for(let i=0;i<5;i++){const a=i/5*TAU;mesh(new THREE.SphereGeometry(.4,8,6),m,[Math.cos(a)*1.4,0,Math.sin(a)*1.4],null,[1,.4,1],g)}
   mesh(new THREE.SphereGeometry(.25,8,6),new THREE.MeshBasicMaterial({color:0xFFF0B0}),[.3,.45,.2],null,null,g);mesh(new THREE.CircleGeometry(1.9,16),new THREE.MeshBasicMaterial({color:0xFFB020,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false}),[0,.04,0],[-Math.PI/2,0,0],null,g);g.userData.bell=b;return g}
+function makeEmber(){const g=G(),b=G();b.position.y=1;g.add(b);mesh(new THREE.DodecahedronGeometry(.8,0),M(0x2A1410,{r:.9,flat:true,e:0x6A1A04}),null,null,null,b);
+  for(let i=0;i<5;i++)mesh(new THREE.SphereGeometry(.22,5,4),new THREE.MeshBasicMaterial({color:0xFFB040}),[rnd(-.6,.6),rnd(-.4,.6),rnd(-.6,.6)],null,null,b);
+  b.add(glowSprite("rgba(255,120,40,.9)",5));mesh(new THREE.CircleGeometry(1.6,16),new THREE.MeshBasicMaterial({color:0xFF5A20,transparent:true,opacity:.35,blending:THREE.AdditiveBlending,depthWrite:false}),[0,.05,0],[-Math.PI/2,0,0],null,g);g.userData.bell=b;return g}
 function makeStar(){const g=G(),b=G();b.position.y=1.1;g.add(b);mesh(new THREE.OctahedronGeometry(.7,0),new THREE.MeshBasicMaterial({color:0xFFE8B0}),null,null,null,b);
   for(let i=0;i<6;i++){const a=i/6*TAU;mesh(new THREE.ConeGeometry(.18,1.1,4),new THREE.MeshBasicMaterial({color:i%2?0xFF8AD8:0x9FF8FF}),[Math.cos(a)*.8,0,Math.sin(a)*.8],[0,0,0],null,b).lookAt(Math.cos(a)*5,1.1,Math.sin(a)*5)}
   b.add(glowSprite("rgba(255,200,240,.9)",5));mesh(new THREE.CircleGeometry(1.6,16),new THREE.MeshBasicMaterial({color:0xFF8AD8,transparent:true,opacity:.3,blending:THREE.AdditiveBlending,depthWrite:false}),[0,.05,0],[-Math.PI/2,0,0],null,g);g.userData.bell=b;return g}
@@ -336,7 +339,7 @@ function furniture(T){
     mesh(new THREE.PlaneGeometry(HW*2+10,2),new THREE.MeshBasicMaterial({map:ck}),[0,12,.75],null,null,g);mesh(new THREE.PlaneGeometry(HW*2,1.4),new THREE.MeshBasicMaterial({map:ck}),[0,.08,0],[-Math.PI/2,0,0],null,g);
     for(const s of[-1,1])mesh(new THREE.SphereGeometry(.5,8,6),new THREE.MeshBasicMaterial({color:T.road.cap}),[s*(HW+5),12.6,0],null,null,g);g.position.copy(a.p);g.rotation.y=a.y;TRACKG.add(g)}}
 
-/* ================= the four worlds ================= */
+/* ================= the five worlds ================= */
 const TRACKS=[
  {id:"tide",name:"Wreck Tide Rally",short:"Wreck Tide",blurb:"Moonrise over a beach of crashed starships",k:.82,ky:1.1,
   cp:[[0,0,0],[2,1,-120],[14,3,-230],[72,7,-312],[170,13,-334],[252,17,-284],[292,18,-196],[262,16,-122],[192,12,-112],[132,8,-58],[160,5,12],[226,7,72],[252,2,170],[196,1,244],[84,2,266],[-30,3,232],[-92,2,150],[-74,1,62]],
@@ -446,7 +449,50 @@ const TRACKS=[
     /* corridor of light rings near the start */
     for(let i=0;i<7;i++){const a=tAt(fS(.07)+i*14),r=mesh(new THREE.TorusGeometry(a.w+2,.35,8,36),new THREE.MeshBasicMaterial({color:glowC[i%4]}),null,null,null,TRACKG);r.position.copy(a.p).add(V3(0,1,0));r.rotation.y=a.y}
     const dust=motes(400,0xE8C8FF,.5,.6,70);
-    return{update(dt,RC){dust(dt,RC.t);vortex.rotation.z+=dt*.25;gal.rotateZ(dt*.004);for(const rg of RINGS){rg.g.rotation.z+=dt*1.5}}}}}
+    return{update(dt,RC){dust(dt,RC.t);vortex.rotation.z+=dt*.25;gal.rotateZ(dt*.004);for(const rg of RINGS){rg.g.rotation.z+=dt*1.5}}}}},
+ {id:"magma",name:"Magma Core Descent",short:"Magma Core",blurb:"Down the crater of Kharn's home volcano: magma geysers, rolling boulders and a lava tube",k:.85,ky:1,
+  cp:[[0,0,0],[0,6,-120],[40,16,-220],[130,28,-280],[230,38,-270],[300,46,-200],[320,50,-100],[290,44,-10],[230,32,40],[220,20,120],[260,12,200],[200,6,270],[100,2,280],[0,0,250],[-70,0,170],[-80,0,80],[-40,0,20]],
+  sky:{top:[.03,.01,.01],mid:[.16,.05,.04],hor:[.48,.16,.07],glow:[.9,.32,.08],stars:.2},fog:[0x2A0E08,.0034],light:{hemi:[0xFFB08A,0x2A0A04,.8],key:[0xFFB070,1.2],rim:[0xFF5A20,.8]},
+  sea:{y:-6,deep:[.3,.05,0],glow:[1,.5,.1],amp:.35,spd:.35,stk:0},road:{base:"#1A1414",tile:[62,44,40],lane:"rgba(255,150,70,.9)",edgeA:"#FF5A20",edgeB:"#2E2420",stain:"255,90,32",cap:0xFF8A40,skirt:0x2A1A14,post:0x3A2A20},
+  pads:[[.08,0],[.27,4],[.6,-4],[.9,0]],boxes:[.05,.17,.32,.5,.64,.78,.94],haz:[[.14,-4],[.15,4],[.42,0],[.71,-4],[.72,4],[.86,-2]],kicks:[{f:.30}],
+  hazard:makeEmber,hazName:"Scorched!",rampCol:0x3A2420,rampStripe:0xFF7A30,gantry:0x4A2A1A,song:{root:[41.2,49,46.25,36.71],ch:[[329.6,392,493.9],[392,466.2,587.3],[370,440,554.4],[293.7,349.2,440]]},
+  build(){terrain({cA:0x1A1214,cB:0x5A2A1A,cC:0x0A0606,dune:1.2,span:16,hill:[40,-30,460,.05],rough:.9,spike:30});
+    /* the volcano itself, lava running down it, a smoke column, and Kharn's stone ancestors watching the road */
+    const B=MINIPTS,cx=(B.x0+B.x1)/2,cz=(B.z0+B.z1)/2,VX=cx-80,VZ=cz-760;
+    mesh(new THREE.ConeGeometry(420,360,40,1,true),M(0x2A1A16,{r:.95,flat:true}),[VX,160,VZ],null,null,TRACKG);
+    const crater=glowSprite("rgba(255,110,40,.9)",520);crater.position.set(VX,350,VZ);TRACKG.add(crater);
+    const lf=document.createElement("canvas");lf.width=32;lf.height=256;{const g=lf.getContext("2d");for(let y=0;y<256;y+=4){g.fillStyle=`rgb(255,${80+Math.random()*120|0},${20+Math.random()*30|0})`;g.fillRect(0,y,32,4)}}
+    const lft=new THREE.CanvasTexture(lf);lft.wrapT=THREE.RepeatWrapping;const falls=[];
+    for(let i=0;i<5;i++){const a=-.9+i*.45,m=mesh(new THREE.PlaneGeometry(26,380),new THREE.MeshBasicMaterial({map:lft,transparent:true,opacity:.85,side:THREE.DoubleSide,fog:false}),null,null,null,TRACKG);
+      m.position.set(VX+Math.sin(a)*215,170,VZ+Math.cos(a)*215);m.lookAt(VX+Math.sin(a)*600,170,VZ+Math.cos(a)*600);m.rotateX(-.86);falls.push(m)}
+    const SMK=[];for(let i=0;i<10;i++){const sp=glowSprite("rgba(40,26,24,.6)",120);sp.material.blending=THREE.NormalBlending;TRACKG.add(sp);SMK.push({sp,i})}
+    const statue=(x,z,ry)=>{const g=G(),st=M(0x2E2622,{r:.9,flat:true}),cr=new THREE.MeshBasicMaterial({color:0xFF7A30});mesh(new THREE.BoxGeometry(14,18,10),st,[0,22,0],null,null,g);mesh(new THREE.DodecahedronGeometry(6,0),st,[2,36,2],null,null,g);
+      for(const s of[-1,1]){mesh(new THREE.BoxGeometry(6,22,6),st,[s*11,18,2],[0,0,s*.2],null,g);mesh(new THREE.DodecahedronGeometry(5,0),st,[s*13,6,4],null,null,g);mesh(new THREE.BoxGeometry(5,14,5),st,[s*4,6,0],null,null,g)}
+      for(let i=0;i<6;i++)mesh(new THREE.BoxGeometry(.5,rnd(4,9),.5),cr,[rnd(-6,6),rnd(16,28),5.1],[0,0,rnd(-.6,.6)],null,g);for(const s of[-1,1])mesh(new THREE.SphereGeometry(.9,6,4),new THREE.MeshBasicMaterial({color:0xFFE070}),[s*2,37,7.5],null,null,g);
+      g.position.set(x,-4,z);g.rotation.y=ry;TRACKG.add(g)};
+    {const a=tAt(fS(.02));for(const s of[-1,1]){const p=a.p.clone().add(a.r.clone().multiplyScalar(s*(a.w+16)));statue(p.x,p.z,a.y+Math.PI)}}
+    for(let i=0;i<5;i++){const [x,z]=farPt(70,160,420);statue(x,z,rnd(0,TAU))}
+    rocks(130,0x1E1618,8,46);flora(110,[0xFF5A20,0xFFB040,0xFF8A40],0x2A1A14,5,26);arches([.12,.5,.88],0x2A1E1A,0xFF7A30);
+    tunnel(.62,.70,M(0x2A1814,{r:.9,ds:true,flat:true,e:0x3A0E04}),0xFF7A30,19,M(0x3A2420,{m:.2}));
+    /* magma geysers on the road: they rumble, then erupt and throw karts into the air */
+    const gap=(a,b)=>((a-b+L/2)%L+L)%L-L/2;let rc=null;
+    const GEY=[[.22,-3],[.46,3],[.555,-2],[.83,2.5]].map(([f,d],i)=>{const s0=fS(f),a=tAt(s0),p=a.p.clone().add(a.r.clone().multiplyScalar(d));
+      const disc=mesh(new THREE.CircleGeometry(3.2,18),new THREE.MeshBasicMaterial({color:0xFF5A20,transparent:true,opacity:.5}),null,[-Math.PI/2,0,0],null,TRACKG);disc.position.copy(p).add(V3(0,.18,0));
+      const ring=mesh(new THREE.TorusGeometry(3.3,.35,6,20),M(0x2A1A16,{r:.9}),null,[-Math.PI/2,0,0],null,TRACKG);ring.position.copy(p).add(V3(0,.2,0));
+      const col=mesh(new THREE.CylinderGeometry(1.6,3,1,12,1,true),new THREE.MeshBasicMaterial({color:0xFF8A30,transparent:true,opacity:.75,blending:THREE.AdditiveBlending,depthWrite:false,side:THREE.DoubleSide}),null,null,null,TRACKG);col.visible=false;
+      return{s:s0,d,p,disc,col,ph:i*1.25,on:false}});
+    /* boulders rolling side to side across the road */
+    const BOU=[.36,.665,.76].map((f,i)=>{const m=mesh(new THREE.IcosahedronGeometry(2.6,1),M(0x3A2622,{r:.9,flat:true,e:0x4A1204}),null,null,null,TRACKG);return{s:fS(f),ph:i*2.1,m,d:0}});
+    const embers=motes(600,0xFF7A30,.5,-2.6,70);
+    return{update(dt,RC){rc=RC;embers(dt,RC.t);lft.offset.y=(lft.offset.y+dt*.25)%1;crater.material.opacity=.75+.25*Math.sin(RC.t*1.7);
+        for(const s of SMK){const k=((RC.t*.05+s.i/10)%1);s.sp.position.set(VX+k*60,360+k*420,VZ+k*30);s.sp.scale.setScalar(120+k*260);s.sp.material.opacity=.6*(1-k)}
+        for(const g of GEY){const c=(RC.t+g.ph)%5,warn=c>3&&c<3.8;g.on=c>=3.8;g.disc.material.opacity=g.on?.95:warn?.5+.45*Math.abs(Math.sin(RC.t*20)):.35;g.col.visible=g.on;
+          if(g.on){const k=Math.sin((c-3.8)/1.2*Math.PI);g.col.scale.set(1,30*k+1,1);g.col.position.copy(g.p).add(V3(0,15*k,0));if(Math.random()<.7)emit(g.p.clone().add(V3(rnd(-1,1),rnd(1,20*k),rnd(-1,1))),{x:rnd(-4,4),y:rnd(8,20),z:rnd(-4,4)},COL.lava,1.4,.9,18)}
+          else if(warn&&Math.random()<.3)emit(g.p.clone().add(V3(0,.5,0)),{x:rnd(-2,2),y:rnd(2,6),z:rnd(-2,2)},COL.lava,.8,.5,10)}
+        for(const b of BOU){const a=tAt(b.s),nd=Math.sin(RC.t*.75+b.ph)*(a.w-2.8);b.m.rotation.z-=(nd-b.d)/2.6;b.d=nd;b.m.position.copy(a.p).add(a.r.clone().multiplyScalar(nd)).add(V3(0,2.6,0))}},
+      racer(r,sp,dt){if(r.air||!rc)return;
+        for(const g of GEY)if(g.on&&Math.abs(gap(sp,g.s))<3.4&&Math.abs(r.d-g.d)<3.4){r.air=true;r.hopping=false;r.drift=0;r.driftT=0;r.vh=15;r.v*=.85;if(r===rc.me){toast("Geyser!");sfx.boost()}break}
+        for(const b of BOU)if(Math.abs(gap(sp,b.s))<3.2&&Math.abs(r.d-b.d)<3.6&&!(r.bouT>rc.t)){r.bouT=rc.t+1.5;hitRacer(r,rc);if(r===rc.me)toast("Boulder!");break}}}}}
 ];
 
 function loadTrack(i){if(TI===i&&TRACKG)return;TI=i;const T=TRACK=TRACKS[i];
