@@ -96,7 +96,7 @@ The Arcade (called Games until Update 6.01; still at /games):
 - Asteroid Belt: an arcade game with a daily leaderboard. (NEMESIS Command and 13i vs NEMESIS still play at their old addresses but are no longer in the arcade.)
 - XenoKlash: a one-on-one alien fighting game (five gladiators, a tournament ending in the boss Voraxx, Rhakka the Wreck Hermit unlocked by winning it), with a tournament-score leaderboard. A game, not canon.
 - XenoWing: a flight game, chase view or cockpit view, flown by the four aliens of the Rave - Ixxen in the Lab skimmer, then Ilu, Qeth and Varrow, each unlocked by winning the mission before. Five missions across five worlds (the Qorrath Expanse, the storm reefs of Ulos, the glass spires of Thren, the moon dunes of Vey, and Kharos the methane moon), ending with the Methane Wyrm; Easy, Normal and Hard; a score leaderboard. A game, not canon.
-- XenoKart: an alien kart racer with the XenoKlash cast (six racers, Voraxx unlocked on the fastest class) across four worlds - Wreck Tide Rally, Crystal Abyss Run, Hive Spire Climb and Nebula Skyway - as single races or a four-race Grand Prix with a medal stand, with a score leaderboard. A game, not canon.
+- XenoKart: an alien kart racer with the XenoKlash cast (six racers, Voraxx unlocked on the fastest class) across five worlds - Wreck Tide Rally, Crystal Abyss Run, Hive Spire Climb, Nebula Skyway and Magma Core Descent (Kharn's home volcano, with geysers and rolling boulders) - as single races or a five-race Grand Prix with a medal stand, with a score leaderboard. A game, not canon.
 ${storyGames}
 
 Music - 36 tracks across three albums, 100% human-created, one released each month from April 6, 2027:

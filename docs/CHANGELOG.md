@@ -9,6 +9,9 @@ every small edit. Newest at the top.
   "next", and tells the game (message `music`) to quiet its own music. Remembered per browser.
 - **XenoKart**: steering pinned bottom-left, A / S / DRIFT / GAS pinned bottom-right.
 - **XenoKlash**: a ULT button on touch screens (A and S together, the ultimate in one tap).
+- **XenoKart: Magma Core Descent**, a fifth track and Kharn's home: a climb up a volcano's crater rim and
+  a descent through a lava tube, with magma geysers that rumble then throw karts into the air, boulders
+  rolling across the road, a lava sea, stone colossi and rising embers. The Grand Prix is now five races.
 - Game files are loaded with a version tag (`?v=6.03`) so phones pick up updates instead of an old copy.
 - **Home screen app**: `app/manifest.js` (display fullscreen) and Apple web-app metadata, so 13i added
   to an iPhone home screen opens without Safari's address bar.
