@@ -25,7 +25,9 @@ export default function FullscreenButton({ targetRef }) {
     const el = targetRef.current;
     if (!el) return;
     el.classList.toggle("pseudo-fullscreen", pseudo);
+    document.body.classList.toggle("game-full", pseudo);
     document.body.style.overflow = pseudo ? "hidden" : "";
+    if (pseudo) window.scrollTo(0, 0);
     const onKey = (e) => { if (e.key === "Escape") setPseudo(false); };
     if (pseudo) window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -64,14 +66,14 @@ export default function FullscreenButton({ targetRef }) {
 
   return (
     <>
-      <button onClick={toggle} className="mono" style={style}>
+      <button onClick={toggle} className="mono fs-btn" style={style}>
         {isFull || pseudo ? "Exit fullscreen" : "Fullscreen"}
       </button>
       {pseudo && (
         <button
           onClick={() => setPseudo(false)}
           className="mono"
-          style={{ ...style, position: "fixed", top: 10, right: 10, zIndex: 1001, background: "rgba(10,11,28,0.9)" }}
+          style={{ ...style, position: "fixed", top: "max(6px, env(safe-area-inset-top, 0px))", left: "50%", transform: "translateX(-50%)", zIndex: 1001, background: "rgba(10,11,28,0.75)", padding: "3px 9px", fontSize: 10 }}
         >
           Exit fullscreen
         </button>

@@ -35,6 +35,12 @@ export default function IframeGame({ game, src, title, note = "click the game to
       if (Number.isFinite(x) && Number.isFinite(y)) playerTwoAt(r.left + x, r.top + y, !!msg.firing);
       return;
     }
+    if (msg.type === "fullscreen") {
+      // the game's own full-screen button: inside an iframe it can't go full screen itself (and iPhone Safari
+      // can't at all), so the page does it - real full screen where allowed, otherwise filling the window
+      wrapRef.current?.querySelector(".fs-btn")?.click();
+      return;
+    }
     if (msg.type === "play") recordGamePlay(game);
     if (msg.type === "score") {
       const score = Math.round(Number(msg.score));
@@ -46,6 +52,12 @@ export default function IframeGame({ game, src, title, note = "click the game to
       recordDailyScore(game, score).then(() => setRefreshKey((k) => k + 1));
     }
   }, [game]);
+
+  // on phones and tablets Lyra steps aside on game pages: she covers the touch controls
+  useEffect(() => {
+    document.body.classList.add("iframe-game");
+    return () => document.body.classList.remove("iframe-game", "game-full");
+  }, []);
 
   useEffect(() => {
     window.addEventListener("message", onMessage);

@@ -3,6 +3,21 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.02 — The arcade on phones (Oct 2026)
+- **Full screen from inside the game**: XenoKlash, XenoWing and XenoKart's own full-screen buttons now
+  ask the page (IframeGame, message `fullscreen`) to do it, so they work on iPhone Safari: real full screen
+  where the browser allows it, otherwise the game fills the window (pseudo-fullscreen, exit button top centre).
+- **Lyra steps aside** on iframe game pages on touch screens, and whenever a game fills the window
+  (`.lyra-root`, body classes `iframe-game` / `game-full`).
+- **XenoKlash**: d-pad at the very bottom-left, A S D W SPC bottom-right; special-move chips and meters
+  move to the top on touch; compact fighter select on short (landscape phone) screens.
+- **XenoWing**: touch controls (it had none): thumbstick bottom-left; W/S throttle, BST, F and FIRE
+  bottom-right; VIEW, H, TILT and pause up top; gauges and radar move to the top; optional tilt
+  steering (asks for motion access on iPhone). Compact title and briefing on short screens.
+- **XenoKart**: steering on the left; A, S, DRIFT and GAS as a 2x2 block on the right; compact racer
+  select on short screens.
+- All three show "turn your phone sideways" when held upright on a touch screen.
+
 ## Update 6.01 — XenoWing joins the arcade; Games becomes the Arcade (Oct 2026)
 SQL: **docs/v6.01-xenowing-progress.sql** (new table `xwing_progress`, RLS: own row only).
 - **XenoWing** at /games/xenowing replaces NEMESIS Command in the arcade (new cabinet screen `wing`).

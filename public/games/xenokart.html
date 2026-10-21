@@ -102,10 +102,19 @@ kbd.w{min-width:54px}
 h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,52px);margin:6px 0;text-wrap:balance}
 .lead{color:#C9CFF2;max-width:60ch;margin:6px auto 0;line-height:1.55}
 /* touch */
-.touch{position:fixed;inset:auto 0 0 0;padding:0 max(16px,env(safe-area-inset-left,0px)) calc(14px + env(safe-area-inset-bottom,0px));display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none}
+.touch{position:fixed;inset:auto 0 0 0;padding:0 max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px));display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:6}
 .touch .grp{display:flex;gap:10px;pointer-events:auto}
 .touch button{width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:rgba(10,14,40,.6);color:#fff;font-family:var(--f-mono);font-weight:700;font-size:13px}
 .touch button.on{background:rgba(95,240,220,.35)}
+.touch .steer button{width:72px;height:72px;font-size:18px}
+.touch .acts{display:grid;grid-template-columns:repeat(2,64px);grid-template-rows:repeat(2,64px);gap:10px}
+.touch .acts .dr{border-color:#B98CFF;color:#D8C2FF;font-size:11px}.touch .acts .gas{border-color:#5FF0DC;color:#5FF0DC;font-size:12px}
+.rot{display:none;position:fixed;left:50%;top:42%;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(6,5,26,.82);border:1px solid rgba(185,192,255,.3);color:#B9C0FF;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;z-index:40;white-space:nowrap}
+@media (orientation:portrait){body.tdev .rot{display:block}}
+/* short screens (a phone held sideways): compact menus */
+@media (max-height:520px){.ov{padding-top:8px;padding-bottom:8px}.logo{font-size:clamp(34px,7vw,56px);margin:2px 0}.grid{grid-template-columns:repeat(6,minmax(0,1fr))!important;gap:6px;margin:8px 0}
+  .rc{padding:5px 5px 7px}.rc canvas{aspect-ratio:1.15}.rc h3{font-size:14px}.rc .bars,.rc .ride{display:none}}
+
 @media (prefers-reduced-motion:reduce){.center.pop,.slot.roll svg{animation:none}}
 </style>
 </head>
@@ -153,9 +162,10 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,52px);m
     <div class="row"><button class="go" id="podAgain">New Grand Prix</button><button class="go ghost" id="podMenu">Change racer</button></div></div>
 </div>
 
+<div class="rot">↻ turn your phone sideways</div>
 <div class="touch" id="touch" hidden>
-  <div class="grp"><button data-k="left" aria-label="Steer left">◀</button><button data-k="right" aria-label="Steer right">▶</button></div>
-  <div class="grp"><button data-k="item" aria-label="Use item">A</button><button data-k="abil" aria-label="Ability">S</button><button data-k="drift" aria-label="Drift">DRIFT</button><button data-k="gas" aria-label="Gas" class="on">GAS</button></div>
+  <div class="grp steer"><button data-k="left" aria-label="Steer left">◀</button><button data-k="right" aria-label="Steer right">▶</button></div>
+  <div class="grp acts"><button data-k="item" aria-label="Use item">A</button><button data-k="abil" aria-label="Ability">S</button><button data-k="drift" class="dr" aria-label="Drift">DRIFT</button><button data-k="gas" aria-label="Gas" class="on gas">GAS</button></div>
 </div>
 
 <script src="/games/lib/three.r128.min.js"></script>
@@ -786,10 +796,10 @@ const press=(k,on)=>{if(on&&!K[k])K[k+"P"]=true;K[k]=on};
 addEventListener("keydown",e=>{if(e.code==="KeyP"||e.code==="Escape"){if(race&&!race.over)togglePause();e.preventDefault();return}if(e.code==="KeyF"&&!e.repeat){toggleFS();return}const k=KM[e.code];if(k){press(k,true);if(race)e.preventDefault()}});
 addEventListener("keyup",e=>{const k=KM[e.code];if(k)press(k,false)});
 addEventListener("blur",()=>{for(const k in K)K[k]=false;if(race&&!race.over&&!race.paused)togglePause()});
-const touchDev=matchMedia("(pointer:coarse)").matches;
+const touchDev=matchMedia("(pointer:coarse)").matches;if(touchDev)document.body.classList.add("tdev");
 document.querySelectorAll("#touch button").forEach(b=>{const k=b.dataset.k;b.addEventListener("pointerdown",e=>{e.preventDefault();audioInit();if(k==="gas"){K.gasT=!K.gasT;b.classList.toggle("on",K.gasT);return}press(k,true);b.classList.add("on")});const up=()=>{if(k==="gas")return;press(k,false);b.classList.remove("on")};b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up)});
 K.gasT=true;
-function toggleFS(){const d=document,el=d.documentElement;try{if(!(d.fullscreenElement||d.webkitFullscreenElement)){const f=el.requestFullscreen||el.webkitRequestFullscreen;if(f){const r=f.call(el);if(r&&r.catch)r.catch(()=>{})}}else{const x=d.exitFullscreen||d.webkitExitFullscreen;if(x)x.call(d)}}catch(e){}}
+function toggleFS(){if(window.parent&&window.parent!==window){try{window.parent.postMessage({source:"xenokart",type:"fullscreen"},window.location.origin)}catch(e){}return}const d=document,el=d.documentElement;try{if(!(d.fullscreenElement||d.webkitFullscreenElement)){const f=el.requestFullscreen||el.webkitRequestFullscreen;if(f){const r=f.call(el);if(r&&r.catch)r.catch(()=>{})}}else{const x=d.exitFullscreen||d.webkitExitFullscreen;if(x)x.call(d)}}catch(e){}}
 
 /* ================= race state ================= */
 const CLS=[{n:"Cruise",k:.78},{n:"Grand",k:1},{n:"Rift",k:1.17}];
