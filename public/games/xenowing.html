@@ -94,6 +94,24 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,50px);m
 .mc.done .mn{color:var(--gold)}.mc.fin{background:linear-gradient(180deg,rgba(90,255,176,.2),rgba(30,10,40,.7));border-color:rgba(90,255,176,.45)}.mc.fin .mn{color:#5AFFB0}
 .finale{max-width:620px;margin:0 auto 18px}.fin4{display:flex;gap:10px;justify-content:center;margin-bottom:10px}.fin4 canvas{width:88px;height:88px;border-radius:14px;border:1px solid rgba(233,210,154,.4)}.finale p{color:#D2D8F4;font-size:15px;line-height:1.55;margin:0}
 @media (max-width:560px){.fin4 canvas{width:64px;height:64px}}
+/* touch: a thumbstick bottom-left, weapons and throttle bottom-right, the gauges move to the top */
+.tc{position:fixed;inset:auto 0 0 0;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:6;padding:0 max(12px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.stick{width:132px;height:132px;border-radius:50%;border:1px solid rgba(143,230,255,.35);background:radial-gradient(circle,rgba(111,227,200,.12),rgba(6,10,30,.45));position:relative;pointer-events:auto;touch-action:none}
+.stick .knob{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(143,230,255,.35);border:1px solid rgba(255,255,255,.5)}
+.tb{display:grid;grid-template-columns:50px 60px 84px;grid-template-rows:60px 84px;gap:8px;align-items:center;justify-items:center;pointer-events:auto}
+.tb button,.ttop button{border:1px solid rgba(143,230,255,.35);background:rgba(6,10,30,.55);color:#fff;font-family:var(--f-mono);font-weight:700;font-size:12px;border-radius:50%;touch-action:none;padding:0}
+.tb button{width:60px;height:60px}.tb .th{width:50px;height:56px;border-radius:12px;font-size:11px}.tb .fire{width:84px;height:84px}.tb .fire{border-color:var(--teal);color:var(--teal);font-size:14px}.tb .sec{border-color:var(--gold);color:var(--gold)}
+.tb button.on,.ttop button.on{background:rgba(111,227,200,.4)}
+.ttop{display:flex;gap:6px}.ttop button{width:38px;height:30px;border-radius:9px;font-size:10px;letter-spacing:.06em}
+.rot{display:none;position:fixed;left:50%;top:42%;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(6,10,30,.8);border:1px solid var(--line);color:var(--cyan);font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;z-index:40;white-space:nowrap}
+@media (orientation:portrait){body.tdev .rot{display:block}}
+body.tdev .g-l,body.tdev .keys,body.tdev .lead{display:none}
+body.tdev .g-r{top:calc(50px + env(safe-area-inset-top,0px));bottom:auto;transform:scale(.6);transform-origin:top right;align-items:flex-start}
+body.tdev .mis{max-width:40vw;font-size:10px}body.tdev .mis .mo{font-size:11px}
+body.tdev .comms{font-size:11px;top:calc(46px + env(safe-area-inset-top,0px));max-width:46vw}
+body.tdev .top{left:max(16px,env(safe-area-inset-left,0px));transform:none;top:calc(52px + env(safe-area-inset-top,0px));font-size:10px;gap:10px}body.tdev .top b{font-size:13px}
+@media (max-height:520px){.ov{padding-top:8px;padding-bottom:8px}.logo{font-size:clamp(34px,7vw,56px)!important;margin:2px 0}.sub{margin:0 0 6px}.pilots{gap:8px;margin:2px 0 8px}.pc{width:calc(25% - 8px);padding:6px;gap:6px}.pc canvas{width:40px;height:40px}.pc p,.pc .s{display:none}.pc .pips{gap:4px;font-size:8px}.pc b{font-size:16px}.mc{padding:6px 8px}.mc b{font-size:13px}.mc .mw{display:none}h2{font-size:24px!important}.objs{line-height:1.5;font-size:13px;margin-bottom:10px}.lead{font-size:13px;margin-bottom:10px}.reward canvas{width:70px;height:70px}.stats{margin:6px 0 10px}}
+body.tdev .box{width:min(820px,100%)}body.tdev .logo{font-size:clamp(40px,8vw,90px)}
 </style>
 </head>
 <body>
@@ -104,10 +122,15 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,50px);m
 <div id="hud" hidden>
   <div class="mis" id="mission"><div id="misT">Free patrol</div><div class="mo" id="misO"></div></div>
   <div class="top"><span>score <b id="score">0</b></span><span>threats <b id="threats">0</b></span></div>
-  <div class="tr"><button class="fsb" id="fsB" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><div class="view" id="viewLbl">Chase view · C</div></div>
+  <div class="tr"><div class="ttop" id="ttop" hidden><button data-t="view" aria-label="Chase or cockpit view">VIEW</button><button data-t="handle" aria-label="Handling">H</button><button data-t="tilt" id="tiltB" aria-label="Tilt to steer">TILT</button><button data-t="pause" aria-label="Pause">II</button></div><button class="fsb" id="fsB" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button><div class="view" id="viewLbl">Chase view · C</div></div>
   <div class="g-l"><div class="row" style="gap:12px;align-items:flex-end"><div class="thr"><i id="thrB"></i></div><div><div class="lbl">speed</div><div class="big" id="spd">0<small>m/s</small></div><div class="lbl" style="margin-top:8px">altitude</div><div class="big" id="alt">0<small>m</small></div></div></div></div>
   <div class="g-r"><div class="bars"><div class="lbl">shields</div><div class="bar"><i id="shB"></i></div><div class="lbl">hull</div><div class="bar"><i id="huB"></i></div><div class="lbl">boost</div><div class="bar"><i id="boB"></i></div><div class="lbl" id="misL">missiles ●●●●●●</div></div><canvas id="radar" width="300" height="300"></canvas></div>
 </div>
+<div class="tc" id="tc" hidden>
+  <div class="stick" id="stick" aria-label="Steer: drag to pitch and roll"><div class="knob" id="knob"></div></div>
+  <div class="tb"><button class="th" data-k="thrUp" aria-label="Throttle up">W ▲</button><button data-k="boost" aria-label="Boost">BST</button><span></span><button class="th" data-k="thrDn" aria-label="Throttle down">S ▼</button><button class="sec" data-k="missile" aria-label="Secondary weapon">F</button><button class="fire" data-k="fire" aria-label="Fire">FIRE</button></div>
+</div>
+<div class="rot">↻ turn your phone sideways</div>
 <div class="comms" id="comms" hidden></div>
 <div class="warnbig" id="warnbig" hidden>PULL UP</div>
 
@@ -161,11 +184,12 @@ const V3=(x,y,z)=>new THREE.Vector3(x||0,y||0,z||0);
 
 /* ================= renderer ================= */
 const R=new THREE.WebGLRenderer({canvas:$("gl"),antialias:true,logarithmicDepthBuffer:true,powerPreference:"high-performance"});
-R.setPixelRatio(Math.min(1.5,devicePixelRatio||1));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
+const TDEV=matchMedia("(pointer: coarse)").matches;if(TDEV)document.body.classList.add("tdev");
+R.setPixelRatio(Math.min(TDEV?1.25:1.5,devicePixelRatio||1));R.outputEncoding=THREE.sRGBEncoding;R.toneMapping=THREE.ACESFilmicToneMapping;R.toneMappingExposure=1.05;
 const scene=new THREE.Scene();const FOGC=new THREE.Color(0x7A5A86);scene.fog=new THREE.FogExp2(FOGC,.00026);
 const cam=new THREE.PerspectiveCamera(66,1,.05,30000);
 const H2=$("hud2d"),hx=H2.getContext("2d");let W=1,H=1;
-function resize(){W=innerWidth;H=innerHeight;const d=Math.min(1.5,devicePixelRatio||1);R.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();H2.width=W*d;H2.height=H*d;hx.setTransform(d,0,0,d,0,0)}
+function resize(){W=innerWidth;H=innerHeight;const d=Math.min(TDEV?1.25:1.5,devicePixelRatio||1);R.setSize(W,H,false);cam.aspect=W/H;cam.updateProjectionMatrix();H2.width=W*d;H2.height=H*d;hx.setTransform(d,0,0,d,0,0)}
 addEventListener("resize",resize);resize();
 const hemi=new THREE.HemisphereLight(0xC8B0F0,0x1A3A38,.75);scene.add(hemi);
 const sun=new THREE.DirectionalLight(0xFFC8A0,1.35);sun.position.set(-3000,2200,4000);scene.add(sun);
@@ -992,7 +1016,7 @@ function autopilot(dt){axes();const sz=_f.z>=0?1:-1,ahead=P.pos.z+380*sz,tx=CANX
   const loc=to.clone().applyQuaternion(P.q.clone().invert()),bank=Math.atan2(-_r.y,_u.y),wantBank=clamp(-loc.x*2.2,-.95,.95);
   return{pitch:clamp(loc.y*3.5,-1,1),roll:clamp((wantBank-bank)*2.5,-1,1),yaw:0,thr:.6,fire:false,boost:false}}
 function flight(dt){const g=game;let I;
-  if(g.attract||P.auto){I=autopilot(dt);if(P.auto){I.fire=K.fire;I.thr=.6}}else{const inv=store.inv?-1:1;I={pitch:((K.up?1:0)-(K.down?1:0))*inv,roll:(K.right?1:0)-(K.left?1:0),yaw:(K.yawR?1:0)-(K.yawL?1:0),fire:K.fire,boost:K.boost&&g.boost>1}}
+  if(g.attract||P.auto){I=autopilot(dt);if(P.auto){I.fire=K.fire;I.thr=.6}}else{const inv=store.inv?-1:1;I={pitch:clamp((K.up?1:0)-(K.down?1:0)+TS.py+(TILT.on?TILT.py:0),-1,1)*inv,roll:clamp((K.right?1:0)-(K.left?1:0)+TS.rx+(TILT.on?TILT.rx:0),-1,1),yaw:(K.yawR?1:0)-(K.yawL?1:0),fire:K.fire,boost:K.boost&&g.boost>1}}
   if(!g.attract){if(K.thrUp)P.thr=Math.min(1,P.thr+dt*.6);if(K.thrDn)P.thr=Math.max(0,P.thr-dt*.6)}else P.thr=I.thr;
   const HC=handling(),k=1-Math.exp(-dt*HC.s);P.pi=lerp(P.pi,I.pitch,k);P.ri=lerp(P.ri,I.roll,k);P.yi=lerp(P.yi,I.yaw,k);
   _q.setFromAxisAngle(V3(1,0,0),-P.pi*1.56*HC.r*PIL.pitch*dt);P.q.multiply(_q);
@@ -1226,9 +1250,9 @@ function musicStart(){if(MUS.timer||!A.ctx)return;MUS.next=A.ctx.currentTime+.1;
 
 /* ================= flow ================= */
 let lastMode="mission";
-function toggleFS(){const d=document,el=d.documentElement;try{if(!(d.fullscreenElement||d.webkitFullscreenElement)){const f=el.requestFullscreen||el.webkitRequestFullscreen;if(f){const r=f.call(el);if(r&&r.catch)r.catch(()=>{})}}else{const x=d.exitFullscreen||d.webkitExitFullscreen;if(x)x.call(d)}}catch(e){}}
+function toggleFS(){if(window.parent&&window.parent!==window){bridge.send({type:"fullscreen"});return}const d=document,el=d.documentElement;try{if(!(d.fullscreenElement||d.webkitFullscreenElement)){const f=el.requestFullscreen||el.webkitRequestFullscreen;if(f){const r=f.call(el);if(r&&r.catch)r.catch(()=>{})}}else{const x=d.exitFullscreen||d.webkitExitFullscreen;if(x)x.call(d)}}catch(e){}}
 function setSound(on){store.sound=on;save();if(A.m)A.m.gain.setTargetAtTime(on?.8:0,A.ctx.currentTime,.05)}
-function begin(mode){audioInit();lastMode=mode;DF=DIFFS[store.diff??1];loadWorld(mode==="mission"?MS.world:PIL.home);newGame(mode);for(const id of["title","over","brief","pause"])$(id).hidden=true;$("hud").hidden=false;ship.visible=true;viewLabel();bridge.send({type:"play"});
+function begin(mode){audioInit();lastMode=mode;DF=DIFFS[store.diff??1];loadWorld(mode==="mission"?MS.world:PIL.home);newGame(mode);for(const id of["title","over","brief","pause"])$(id).hidden=true;$("hud").hidden=false;$("tc").hidden=!TDEV;$("ttop").hidden=!TDEV;ship.visible=true;viewLabel();bridge.send({type:"play"});
   comms(mode==="patrol"?`Free patrol over ${WORLDS[PIL.home].name}: waves until the ${PIL.ship} goes down. C for the cockpit, H for handling.`:`Launching from the ${MS.base}. C puts you in ${PIL.name}'s seat, H changes the handling.`)}
 function showOver(won){const g=game;if(!g||g.attract)return;const mission=g.mode==="mission",key=mission?(MID==="m1"?"bestM":"best_"+MID):"best";if(g.score>(store[key]||0)){store[key]=g.score;save()}
   const tm=Math.round(g.t),mm=Math.floor(tm/60)+":"+String(tm%60).padStart(2,"0"),stat=a=>a.map(([k,v])=>`<div><b>${v}</b><span>${k}</span></div>`).join("");let fresh=null;
@@ -1244,12 +1268,12 @@ function showOver(won){const g=game;if(!g||g.attract)return;const mission=g.mode
     $("overS").innerHTML=stat([["score",g.score],[mission?"objective":"waves",mission?`${clamp(g.obj+1,1,MISSION.length)} / ${MISSION.length}`:g.wave],["threats down",g.kills],["difficulty",DF.n]])}
   bridge.send({type:"score",score:g.score});
   $("reward").hidden=!fresh;$("flyNext").hidden=!fresh;$("flyNext").dataset.next=fresh?fresh.next:"";$("flyNext").dataset.pilot=fresh&&fresh.pilot||"";$("again").classList.toggle("ghost",!!fresh);
-  $("cont").hidden=!(mission&&!won);$("again").textContent=mission?(won?"Fly it again":"Restart mission"):"Fly again";$("over").hidden=false;$("hud").hidden=true;$("comms").hidden=true;$("warnbig").hidden=true;(fresh?$("flyNext"):$("cont").hidden?$("again"):$("cont")).focus({preventScroll:true})}
+  $("cont").hidden=!(mission&&!won);$("again").textContent=mission?(won?"Fly it again":"Restart mission"):"Fly again";$("over").hidden=false;$("hud").hidden=true;$("tc").hidden=true;$("comms").hidden=true;$("warnbig").hidden=true;(fresh?$("flyNext"):$("cont").hidden?$("again"):$("cont")).focus({preventScroll:true})}
 function continueMission(){const g=game;g.over=false;g.failMsg=null;g.hull=100;g.shield=100;g.boost=100;g.lowWarn=0;g.deaths++;g.score=Math.max(0,g.score-500);ship.visible=true;const gy=Math.max(height(P.pos.x,P.pos.z),0);P.pos.y=Math.max(P.pos.y,gy+170);
   if(QORB&&QORB.dead){QORB.dead=false;QORB.hp=60;QORB.g.visible=true;g.orbOn=g.qw<=3}
-  const e=new THREE.Euler().setFromQuaternion(P.q,"YXZ");P.q.setFromEuler(new THREE.Euler(0,e.y,0,"YXZ"));P.v=80;for(const b of EBOLTS){b.life=0;b.m.visible=false}$("over").hidden=true;$("hud").hidden=false;comms(`A spare ${PIL.ship} from the ${MS.base}. ${PIL.name} is back in the air.`)}
+  const e=new THREE.Euler().setFromQuaternion(P.q,"YXZ");P.q.setFromEuler(new THREE.Euler(0,e.y,0,"YXZ"));P.v=80;for(const b of EBOLTS){b.life=0;b.m.visible=false}$("over").hidden=true;$("hud").hidden=false;$("tc").hidden=!TDEV;comms(`A spare ${PIL.ship} from the ${MS.base}. ${PIL.name} is back in the air.`)}
 function togglePause(){if(!game||game.attract||!$("over").hidden)return;game.paused=!game.paused;$("pause").hidden=!game.paused;if(game.paused)$("resume").focus({preventScroll:true})}
-function toTitle(){newGame("attract");ship.visible=true;for(const id of["hud","over","pause","brief","warnbig","comms"])$(id).hidden=true;$("title").hidden=false;if(view==="cockpit")toggleView();buildTitle()}
+function toTitle(){newGame("attract");ship.visible=true;for(const id of["hud","over","pause","brief","warnbig","comms","tc"])$(id).hidden=true;$("title").hidden=false;if(view==="cockpit")toggleView();buildTitle()}
 function openBrief(id){audioInit();setMission(id);$("briefEye").textContent=`Mission ${MS.n} · Briefing · ${WORLDS[MS.world].name}`;$("briefH").textContent=MS.title;$("briefLead").textContent=MS.lead;
   $("briefObjs").innerHTML=MS.objs.map(([s,u])=>`<li${u?' class="unk"':""}>${s}</li>`).join("");$("briefPilot").textContent=`Pilot: ${PIL.name} · ${PIL.ship} · ${DIFFS[store.diff??1].n}`;
   for(const id2 of["title","over"])$(id2).hidden=true;$("brief").hidden=false;$("launch").focus({preventScroll:true})}
@@ -1304,6 +1328,19 @@ $("flyNext").onclick=e=>{const d=e.currentTarget.dataset;if(d.pilot)setPilot(d.p
 $("patrol").onclick=()=>begin("patrol");$("again").onclick=()=>begin(lastMode);$("cont").onclick=continueMission;$("toTitleB").onclick=toTitle;$("resume").onclick=togglePause;$("quit").onclick=()=>{game.paused=false;toTitle()};
 $("fsT").onclick=toggleFS;$("fsB").onclick=e=>{e.currentTarget.blur();toggleFS()};
 document.querySelectorAll("#inv button").forEach(b=>{b.setAttribute("aria-pressed",String(+b.dataset.v===store.inv));b.onclick=()=>{store.inv=+b.dataset.v;save();document.querySelectorAll("#inv button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)))}});
+/* touch controls: thumbstick (pitch and roll), hold buttons, top buttons, optional tilt steering */
+const TS={rx:0,py:0,id:null},TILT={on:false,rx:0,py:0,r0:null,p0:null};
+{const st=$("stick"),kn=$("knob"),R0=56,mv=e=>{const b=st.getBoundingClientRect();let dx=e.clientX-(b.left+b.width/2),dy=e.clientY-(b.top+b.height/2);const l=Math.hypot(dx,dy);if(l>R0){dx*=R0/l;dy*=R0/l}kn.style.transform=`translate(${dx}px,${dy}px)`;TS.rx=dx/R0;TS.py=-dy/R0};
+  st.addEventListener("pointerdown",e=>{e.preventDefault();audioInit();TS.id=e.pointerId;try{st.setPointerCapture(e.pointerId)}catch(_){}mv(e)});st.addEventListener("pointermove",e=>{if(e.pointerId===TS.id)mv(e)});
+  const end=e=>{if(e.pointerId!==TS.id)return;TS.id=null;TS.rx=TS.py=0;kn.style.transform=""};st.addEventListener("pointerup",end);st.addEventListener("pointercancel",end);st.addEventListener("lostpointercapture",end)}
+document.querySelectorAll(".tb button").forEach(b=>{const k=b.dataset.k;b.addEventListener("pointerdown",e=>{e.preventDefault();audioInit();try{b.setPointerCapture(e.pointerId)}catch(_){}b.classList.add("on");if(!K[k])K[k+"P"]=true;K[k]=true});
+  const up=()=>{b.classList.remove("on");K[k]=false};b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("lostpointercapture",up)});
+function onTilt(e){if(e.beta==null)return;const a=(screen.orientation&&screen.orientation.angle)??window.orientation??0;let r0,p0;if(a===90){r0=e.beta;p0=-e.gamma}else if(a===-90||a===270){r0=-e.beta;p0=e.gamma}else{r0=e.gamma;p0=e.beta}
+  if(TILT.r0===null){TILT.r0=r0;TILT.p0=p0}TILT.rx=clamp((r0-TILT.r0)/22,-1,1);TILT.py=clamp(-(p0-TILT.p0)/18,-1,1)}
+function setTilt(on){TILT.on=on;TILT.r0=null;$("tiltB").classList.toggle("on",on);if(on){addEventListener("deviceorientation",onTilt);comms("Tilt steering on: hold the phone how you like and tilt from there. Tap TILT again to turn it off.")}else{removeEventListener("deviceorientation",onTilt);TILT.rx=TILT.py=0;comms("Tilt steering off. The thumbstick still works.")}}
+document.querySelectorAll(".ttop button").forEach(b=>b.addEventListener("click",e=>{e.currentTarget.blur();const t=b.dataset.t;if(!game||game.attract)return;
+  if(t==="view")toggleView();else if(t==="handle")cycleHandling();else if(t==="pause")togglePause();
+  else if(t==="tilt"){if(TILT.on){setTilt(false);return}const D=window.DeviceOrientationEvent;if(D&&typeof D.requestPermission==="function")D.requestPermission().then(s=>s==="granted"?setTilt(true):comms("Tilt needs motion access. The thumbstick still works.")).catch(()=>comms("Tilt isn't available here. The thumbstick still works."));else if(D)setTilt(true);else comms("This device has no tilt sensor.")}}));
 /* 13i.space bridge: the page hosting this iframe records plays and scores, and keeps progress (pilots, missions) in Supabase */
 const bridge={send(m){try{if(window.parent&&window.parent!==window)window.parent.postMessage(Object.assign({source:"xenowing"},m),window.location.origin)}catch(e){}}};
 function sendProgress(){bridge.send({type:"progress",progress:{unlocked:Object.keys(store.unl).filter(k=>store.unl[k]),done:Object.keys(store.done).filter(k=>store.done[k]),beat:Object.keys(store.beat||{})}})}

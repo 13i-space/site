@@ -732,7 +732,7 @@ export default function LyraCompanion() {
   const text = line || (loggedIn ? TIPS.find((t) => pathname?.startsWith(t.prefix))?.text || DEFAULT_TIP : "I'm Lyra. Sign in and I'll start remembering what you've found here.");
 
   return (
-    <div style={styles.wrap} onMouseEnter={onEnter} onMouseLeave={onLeave}>
+    <div className="lyra-root" style={styles.wrap} onMouseEnter={onEnter} onMouseLeave={onLeave}>
       {open && (
         <div className="lyra-panel" style={styles.panel} role="dialog" aria-label="Lyra" onMouseDown={claim}>
           <div style={styles.panelHeader}>

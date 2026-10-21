@@ -2560,3 +2560,8 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 @media (max-width: 900px) { .shop-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .shop-hero { grid-template-columns: 1fr; } }
 @media (max-width: 560px) { .shop-grid, .shop-grid[data-n="2"] { grid-template-columns: 1fr; } .shop-grid[data-n="1"] .shop-card { flex-direction: column; } .shop-grid[data-n="1"] .shop-stage { width: 100%; } .shop-grid[data-n="1"] .shop-card-body { padding: 16px 16px 18px; } }
 @media (prefers-reduced-motion: reduce) { .shop-pulse { animation: none; } .shop-card, .shop-card:hover { transition: none; transform: none; } }
+
+/* Update 6.02: Lyra steps aside for iframe games on touch screens, and whenever a game fills the window */
+@media (pointer: coarse) { body.iframe-game .lyra-root { display: none !important; } }
+body.game-full .lyra-root { display: none !important; }
+.game-frame.pseudo-fullscreen { overflow: hidden; height: 100dvh; }
