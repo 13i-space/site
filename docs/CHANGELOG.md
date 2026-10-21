@@ -3,6 +3,15 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.05 — 13i songs while you play; phone fixes (Oct 2026)
+- **Play 13i songs instead**: under XenoKlash, XenoWing and XenoKart, a "♫ play 13i songs instead" button.
+  The page (IframeGame, prop `songs`) plays all three albums in random order with "now playing" and
+  "next", and tells the game (message `music`) to quiet its own music. Remembered per browser.
+- **XenoKart**: steering pinned bottom-left, A / S / DRIFT / GAS pinned bottom-right.
+- **XenoKlash**: a ULT button on touch screens (A and S together, the ultimate in one tap).
+- Game files are loaded with a version tag (`?v=6.03`) so phones pick up updates instead of an old copy.
+- **Home screen app**: `app/manifest.js` (display fullscreen) and Apple web-app metadata, so 13i added
+  to an iPhone home screen opens without Safari's address bar.
 ## Update 6.04 — Signing in to the castle (Oct 2026)
 No SQL. /donaghy-castle used to show the ordinary 404 to anyone signed out,
 so Aaron opening the link on a browser where he wasn't signed in got

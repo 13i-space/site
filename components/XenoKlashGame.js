@@ -63,5 +63,5 @@ export default function XenoKlashGame() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  return <IframeGame game={GAME} src="/games/xenoklash.html" title="XenoKlash" note="click the game to give it the keyboard · arrows move · A S D W · Space special · P pauses" />;
+  return <IframeGame game={GAME} songs src="/games/xenoklash.html?v=6.03" title="XenoKlash" note="click the game to give it the keyboard · arrows move · A S D W · Space special · P pauses" />;
 }

@@ -5,6 +5,8 @@ import "./globals.css";
 // share the default card drawn by app/og/route.js.
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://13i.space"),
+  // Update 6.03: added to an iPhone home screen, 13i opens without Safari's address bar (best for the games)
+  appleWebApp: { capable: true, title: "13i", statusBarStyle: "black-translucent" },
   title: "13i",
   description: "A signal, translated. Launching April 6, 2027.",
   openGraph: {

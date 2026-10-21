@@ -107,6 +107,8 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,52px);m
 .touch button{width:64px;height:64px;border-radius:50%;border:1px solid var(--line);background:rgba(10,14,40,.6);color:#fff;font-family:var(--f-mono);font-weight:700;font-size:13px}
 .touch button.on{background:rgba(95,240,220,.35)}
 .touch .steer button{width:72px;height:72px;font-size:18px}
+.touch .steer{position:fixed;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.touch .acts{position:fixed;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(10px + env(safe-area-inset-bottom,0px))}
 .touch .acts{display:grid;grid-template-columns:repeat(2,64px);grid-template-rows:repeat(2,64px);gap:10px}
 .touch .acts .dr{border-color:#B98CFF;color:#D8C2FF;font-size:11px}.touch .acts .gas{border-color:#5FF0DC;color:#5FF0DC;font-size:12px}
 .rot{display:none;position:fixed;left:50%;top:42%;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(6,5,26,.82);border:1px solid rgba(185,192,255,.3);color:#B9C0FF;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;z-index:40;white-space:nowrap}
@@ -787,7 +789,9 @@ function musicStep(s,t){const a=A.ctx,st=s%16,bar=Math.floor(s/16)%4;if(st%4===0
   {const o=a.createOscillator(),f=a.createBiquadFilter(),g=a.createGain();o.type="sawtooth";o.frequency.value=SONG.root[bar]*(st%4===2?2:1);f.type="lowpass";f.frequency.setValueAtTime(500,t);f.frequency.exponentialRampToValueAtTime(140,t+.1);g.gain.setValueAtTime(.2,t);g.gain.exponentialRampToValueAtTime(.001,t+.11);o.connect(f).connect(g).connect(A.mus);o.start(t);o.stop(t+.13)}
   tone(SONG.ch[bar][[0,1,2,1][st%4]]*(st>=8?2:1),.12,"triangle",.035,0,t,A.mus);if(st===0)for(const n of SONG.ch[bar])tone(n/2,1.8,"sawtooth",.012,0,t,A.mus)}
 function musicStart(){if(!A.ctx||MUS.timer)return;MUS.next=A.ctx.currentTime+.05;const spb=60/132/4;MUS.timer=setInterval(()=>{while(MUS.next<A.ctx.currentTime+.12){musicStep(MUS.step++,MUS.next);MUS.next+=spb}},25)}
-function musicGain(v){if(A.mus)A.mus.gain.setTargetAtTime(v,A.ctx.currentTime,.3)}
+/* 13i songs: when the page is playing 13i's songs, the game's own music goes quiet */
+var EXTMUS=false,MGV=0;addEventListener("message",e=>{if(e.origin!==window.location.origin)return;const d=e.data||{};if(d.source==="13i"&&d.type==="music"){EXTMUS=!!d.on;musicGain(MGV)}});
+function musicGain(v){MGV=v;if(A.mus)A.mus.gain.setTargetAtTime(EXTMUS?0:v,A.ctx.currentTime,.3)}
 function setSound(on){store.sound=on;save();if(A.m)A.m.gain.setTargetAtTime(on?.8:0,A.ctx.currentTime,.05);$("sndWave").style.opacity=on?1:.15}
 
 /* ================= input ================= */

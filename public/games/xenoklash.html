@@ -154,6 +154,7 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(28px,5vw,44px);m
 .acts{display:grid;grid-template-columns:repeat(3,56px);grid-template-rows:repeat(2,56px);gap:8px;pointer-events:auto}
 .acts button{border-radius:50%;font-size:15px}
 .acts .sp{border-color:var(--warm);color:var(--warm);font-size:11px}
+.acts .ult{border-color:#FFD36A;color:#FFD36A;font-size:11px;background:rgba(80,60,10,.45)}
 .pad button.on,.acts button.on{background:rgba(139,149,246,.45)}
 .rot{display:none;position:fixed;left:50%;top:42%;transform:translateX(-50%);padding:8px 14px;border-radius:999px;background:rgba(6,5,26,.82);border:1px solid rgba(185,192,255,.3);color:#B9C0FF;font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;pointer-events:none;z-index:40;white-space:nowrap}
 @media (orientation:portrait){body.tdev .rot{display:block}}
@@ -225,7 +226,7 @@ body.tdev .hint{bottom:auto;top:30%}body.tdev .ctl{display:none}
 
 <div class="touch" id="touch" hidden>
   <div class="pad"><span></span><button data-k="up" aria-label="Jump">▲</button><span></span><button data-k="left" aria-label="Left">◀</button><button data-k="down" aria-label="Crouch">▼</button><button data-k="right" aria-label="Right">▶</button></div>
-  <div class="acts"><button data-k="A" aria-label="Attack">A</button><button data-k="S" aria-label="Sweep">S</button><button data-k="D" aria-label="Block">D</button><button data-k="W" class="sp" aria-label="Signature move">W</button><button data-k="SP" class="sp" aria-label="Special">SPC</button></div>
+  <div class="acts"><button data-k="A" aria-label="Attack">A</button><button data-k="S" aria-label="Sweep">S</button><button data-k="D" aria-label="Block">D</button><button data-k="W" class="sp" aria-label="Signature move">W</button><button data-k="SP" class="sp" aria-label="Special">SPC</button><button data-k="ULT" class="ult" aria-label="Ultimate (A and S together)">ULT</button></div>
 </div>
 
 <div class="ov clear" id="title">
@@ -381,7 +382,9 @@ function musicStep2(s,t){const a=A.ctx,st=s%16,bar=Math.floor(s/16)%4,lv=G?G.hea
 }
 function musicSong(k){MUS.song=k;MUS.spb=60/(k?124:140)/4;MUS.step=0}
 function musicStart(){if(!A.ctx||MUS.timer)return;MUS.next=A.ctx.currentTime+.05;MUS.timer=setInterval(()=>{while(MUS.next<A.ctx.currentTime+.12){(MUS.song?musicStep2:musicStep)(MUS.step++,MUS.next);MUS.next+=MUS.spb}},25)}
-function musicGain(v){if(A.mus)A.mus.gain.setTargetAtTime(v,A.ctx.currentTime,.25)}
+/* 13i songs: when the page is playing 13i's songs, the game's own music goes quiet */
+var EXTMUS=false,MGV=0;addEventListener("message",e=>{if(e.origin!==window.location.origin)return;const d=e.data||{};if(d.source==="13i"&&d.type==="music"){EXTMUS=!!d.on;musicGain(MGV)}});
+function musicGain(v){MGV=v;if(A.mus)A.mus.gain.setTargetAtTime(EXTMUS?0:v,A.ctx.currentTime,.25)}
 function setSound(on){store.sound=on;save();if(A.m)A.m.gain.setTargetAtTime(on?.85:0,A.ctx.currentTime,.05);$("sOn").style.display=on?"":"none";$("sOff").style.display=on?"none":"";if(!on&&"speechSynthesis" in window)speechSynthesis.cancel()}
 $("bSnd").onclick=e=>{e.currentTarget.blur();setSound(!store.sound)};setSound(store.sound);
 if("speechSynthesis" in window){loadVoices();speechSynthesis.onvoiceschanged=loadVoices}else loadVoices();
@@ -1354,8 +1357,8 @@ function releaseAll(){for(const kk in SL.held)SL.held[kk]=false}
 addEventListener("blur",()=>{releaseAll();if(G&&G.phase!=="paused"&&G.phase!=="end")togglePause()});
 document.addEventListener("visibilitychange",()=>{if(document.hidden){releaseAll();if(G&&G.phase!=="paused"&&G.phase!=="end")togglePause()}});
 document.querySelectorAll(".touch button").forEach(b=>{const k=b.dataset.k;
-  b.addEventListener("pointerdown",e=>{e.preventDefault();audioInit();b.classList.add("on");press(k,true);try{b.setPointerCapture(e.pointerId)}catch(_){}});
-  const up=()=>{b.classList.remove("on");press(k,false)};b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("lostpointercapture",up)});
+  b.addEventListener("pointerdown",e=>{e.preventDefault();audioInit();b.classList.add("on");if(k==="ULT"){press("A",true);press("S",true)}else press(k,true);try{b.setPointerCapture(e.pointerId)}catch(_){}});
+  const up=()=>{b.classList.remove("on");if(k==="ULT"){press("A",false);press("S",false)}else press(k,false)};b.addEventListener("pointerup",up);b.addEventListener("pointercancel",up);b.addEventListener("lostpointercapture",up)});
 function readIn(){const fr=G.frame,r={left:!!SL.held.left,right:!!SL.held.right,up:!!SL.held.up,down:!!SL.held.down,D:!!SL.held.D};
   for(const b of["A","S","SP","W","up","D"])r[b+"p"]=SL.buf[b]!=null&&fr-SL.buf[b]<=7;r.tapL=SL.buf.left===fr-1;r.tapR=SL.buf.right===fr-1;return r}
 function consume(f,b){if(!f.cpu)SL.buf[b]=null}
