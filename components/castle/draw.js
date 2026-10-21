@@ -6,6 +6,7 @@ import {
   T_WALL, T_MOAT, T_FLOOR, T_TABLE, T_DECOR, tileAt, blocksSight, TABLE, ARMOUR_STANDS, FORGE_FIRE, WELL_POS, KITCHEN_BOWL, stationById,
 } from "../../lib/castle/map";
 import { look, nextJob } from "../../lib/castle/engine";
+import { WEAPONS } from "../../lib/castle/clues";
 import { drawKnightTop, drawKnightSide, drawKnightFront, drawHorse } from "./knight";
 import { drawCrest } from "./crest";
 
@@ -425,9 +426,20 @@ export function drawFrame(g, dark, map, world, view, t, myId = 0) {
     g.beginPath(); g.arc(end.x, end.y, 3, 0, 7); g.stroke();
   }
 
-  // dropped helmets
+  // the weapon stands: this round's weapon has left an empty one
+  for (const wp of WEAPONS) drawWeaponStand(g, wp, wp.id === world.weapon);
+  // the Donaghy Claymore glints in its hiding place, for anyone close with a light
+  const cl = world.claymore;
+  if (cl && !cl.used && cl.holder === null) {
+    const d = Math.hypot(cl.x - me.x, cl.y - me.y);
+    if (d < TILE * 4.5) drawClaymoreGlint(g, cl.x, cl.y, t, Math.min(1, (TILE * 4.5 - d) / (TILE * 2)));
+  }
+
+  // dropped helmets: only once found (the Black Knight knows where theirs lie)
   for (const m of world.markers) {
+    if (!m.found && me.role !== "blackknight") continue;
     g.save(); g.translate(m.x, m.y); g.rotate(0.6);
+    if (!m.found) g.globalAlpha = 0.45;
     g.fillStyle = "#9aa0ad"; g.beginPath(); g.arc(0, 0, 8, Math.PI, 0); g.fill(); g.fillRect(-8, 0, 16, 4);
     g.fillStyle = world.entities[m.victimId].color; g.fillRect(-3, -12, 6, 5);
     g.restore();
@@ -466,9 +478,10 @@ export function drawFrame(g, dark, map, world, view, t, myId = 0) {
   } else if (!me.alive) {
     hole(me.x, me.y, 420, 0.75);
   } else {
-    const smith = me.role === "blacksmith" || me.role === "blackknight";
+    const lantern = !!me.powerups?.lantern;
+    const smith = me.role === "blacksmith" || me.role === "blackknight" || lantern;
     const out = world.lightsOut && !smith;
-    const f = 1 + Math.sin(t * 13) * 0.025;
+    const f = (1 + Math.sin(t * 13) * 0.025) * (lantern ? 1.4 : 1);
     const cone = (out ? 95 : 300) * f, near = (out ? 42 : 72) * f;
     const poly = visionPolygon(me.x, me.y, me.facing, cone, near);
     const gr = dark.createRadialGradient(me.x, me.y, 0, me.x, me.y, cone);
@@ -570,6 +583,40 @@ function hasLOSQuick(x1, y1, x2, y2) {
   const dx = x2 - x1, dy = y2 - y1, d = Math.hypot(dx, dy), n = Math.ceil(d / 12);
   for (let i = 1; i < n; i++) if (blocksSight(Math.floor((x1 + (dx * i) / n) / TILE), Math.floor((y1 + (dy * i) / n) / TILE))) return false;
   return true;
+}
+
+// a wooden stand with its weapon (or an empty hook)
+function drawWeaponStand(g, wp, empty) {
+  const x = wp.stand[0] * TILE + TILE / 2, y = wp.stand[1] * TILE + TILE / 2;
+  g.save(); g.translate(x, y);
+  g.fillStyle = "rgba(0,0,0,0.3)"; g.beginPath(); g.ellipse(2, 13, 13, 5, 0, 0, 7); g.fill();
+  g.fillStyle = "#5b3b20"; g.fillRect(-12, 9, 24, 5); g.fillRect(-2, -14, 4, 25);
+  g.fillStyle = "#7b5a36"; g.fillRect(-9, -14, 18, 3);
+  g.fillStyle = "#c9a54a"; g.fillRect(-1, -11, 2, 3); // the hook
+  if (!empty) drawWeaponIcon(g, wp.id, 1);
+  else { g.strokeStyle = "rgba(255,120,100,0.55)"; g.setLineDash([3, 3]); g.lineWidth = 1.5; g.strokeRect(-10, -12, 20, 22); g.setLineDash([]); }
+  g.restore();
+}
+export function drawWeaponIcon(g, id, k = 1) {
+  g.save(); g.scale(k, k);
+  const steel = "#c9ced8", wood = "#7a5a32", dark = "#2a2a30";
+  if (id === "dagger") { g.fillStyle = steel; g.beginPath(); g.moveTo(0, -12); g.lineTo(3, 2); g.lineTo(-3, 2); g.fill(); g.fillStyle = "#c9a54a"; g.fillRect(-6, 2, 12, 2.5); g.fillStyle = wood; g.fillRect(-1.5, 4.5, 3, 6); }
+  else if (id === "axe") { g.fillStyle = wood; g.fillRect(-1.5, -12, 3, 23); g.fillStyle = steel; g.beginPath(); g.moveTo(1, -11); g.quadraticCurveTo(12, -8, 10, 2); g.quadraticCurveTo(6, -3, 1, -2); g.fill(); }
+  else if (id === "mace") { g.fillStyle = wood; g.fillRect(-1.5, -4, 3, 15); g.fillStyle = dark; g.beginPath(); g.arc(0, -7, 5.5, 0, 7); g.fill(); g.fillStyle = steel; for (let i = 0; i < 6; i++) { const a = i * 1.047; g.beginPath(); g.arc(Math.cos(a) * 6, -7 + Math.sin(a) * 6, 1.6, 0, 7); g.fill(); } }
+  else if (id === "candlestick") { g.fillStyle = "#5a5a64"; g.fillRect(-1.5, -8, 3, 16); g.fillRect(-6, 8, 12, 3); g.fillRect(-5, -9, 10, 2); g.fillStyle = "#efe6cc"; g.fillRect(-2, -14, 4, 5); g.fillStyle = "#ffcf6a"; g.beginPath(); g.ellipse(0, -16, 1.6, 2.6, 0, 0, 7); g.fill(); }
+  else if (id === "rope") { g.strokeStyle = "#c9a54a"; g.lineWidth = 2.2; for (let k2 = 0; k2 < 3; k2++) { g.beginPath(); g.ellipse(0, -2, 8 - k2 * 2, 9 - k2 * 2, 0, 0, 7); g.stroke(); } g.beginPath(); g.moveTo(0, 7); g.lineTo(3, 12); g.stroke(); }
+  else if (id === "goblet") { g.fillStyle = "#c9a227"; g.beginPath(); g.moveTo(-7, -10); g.lineTo(7, -10); g.quadraticCurveTo(6, -1, 0, 0); g.quadraticCurveTo(-6, -1, -7, -10); g.fill(); g.fillRect(-1.2, 0, 2.4, 7); g.fillRect(-5, 7, 10, 2.5); g.fillStyle = "#5a1a3a"; g.fillRect(-6, -10, 12, 2.5); g.fillStyle = "#7ad06a"; g.beginPath(); g.arc(3, -12, 1.5, 0, 7); g.fill(); }
+  g.restore();
+}
+function drawClaymoreGlint(g, x, y, t, a) {
+  g.save(); g.translate(x, y); g.globalAlpha = a;
+  g.rotate(-0.5);
+  g.fillStyle = "#c9ced8"; g.fillRect(-1.5, -16, 3, 22); g.fillStyle = "#c9a54a"; g.fillRect(-7, 5, 14, 2.5); g.fillStyle = "#5b3b20"; g.fillRect(-1.5, 7, 3, 7);
+  const k = (Math.sin(t * 4) + 1) / 2;
+  g.rotate(0.5);
+  g.fillStyle = `rgba(255,250,220,${0.5 + k * 0.5})`;
+  g.beginPath(); for (let i = 0; i < 8; i++) { const r = i % 2 ? 2 : 7 + k * 4, an = i * Math.PI / 4 + t; g.lineTo(-6 + Math.cos(an) * r, -12 + Math.sin(an) * r); } g.closePath(); g.fill();
+  g.restore();
 }
 
 // ---------- the little map: rooms in their colours, your jobs, you ----------
@@ -798,16 +845,33 @@ export function drawJoustScene(g, w, h, t, sc) {
     }
   }
 
-  // the practice joust's aim: a ring sliding over the other knight's shield
+  // the practice joust's target: a bullseye painted on the other knight's
+  // shield (it bobs with the horse), and your lance-tip crosshair, which sits
+  // exactly where your mouse is
   if (sc.reticle && !impact) {
+    const unit = 46 * s;
     const sx = rx + 16 * s, sy = ground - 26 * s - 80 * s;
-    const yy = sy + sc.reticle.y * 46 * s;
-    g.strokeStyle = "rgba(255,240,180,0.4)"; g.lineWidth = 2 * s;
-    g.strokeRect(sx - 20 * s, sy - 46 * s, 40 * s, 92 * s);
-    const zc = sy + (sc.reticle.zoneY || 0) * 46 * s;
-    g.fillStyle = "rgba(140,240,160,0.3)"; g.fillRect(sx - 20 * s, zc - sc.reticle.zone * 46 * s, 40 * s, sc.reticle.zone * 92 * s);
-    g.strokeStyle = sc.reticle.locked ? "#8ef0a8" : "#ffe08a"; g.lineWidth = 3 * s;
-    g.beginPath(); g.arc(sx, yy, 10 * s, 0, 7); g.stroke();
-    g.beginPath(); g.moveTo(sx - 20 * s, yy); g.lineTo(sx + 20 * s, yy); g.stroke();
+    sc.aimFrame = { sy, unit }; // the Duel turns the mouse position into aim with this
+    const zc = sy + (sc.reticle.zoneY || 0) * unit;
+    const R = (sc.reticle.R || 0.75) * unit;
+    const ring = (r, c) => { g.fillStyle = c; g.beginPath(); g.arc(sx, zc, r, 0, 7); g.fill(); };
+    g.save();
+    g.shadowColor = "rgba(0,0,0,0.6)"; g.shadowBlur = 8 * s;
+    ring(R, "rgba(232,220,184,0.92)");
+    g.shadowBlur = 0;
+    ring(R * 0.62, "rgba(192,57,43,0.95)");
+    ring(R * 0.3, "rgba(233,198,74,1)");
+    g.strokeStyle = "rgba(27,20,6,0.6)"; g.lineWidth = 1.5 * s;
+    for (const k of [1, 0.62, 0.3]) { g.beginPath(); g.arc(sx, zc, R * k, 0, 7); g.stroke(); }
+    g.restore();
+    const yy = sy + sc.reticle.y * unit;
+    const d = Math.abs(yy - zc) / R;
+    const col = d < 0.3 ? "#8ef0a8" : d < 0.62 ? "#ffe08a" : d < 1 ? "#ffd0a0" : "#ff8a70";
+    g.strokeStyle = "rgba(0,0,0,0.6)"; g.lineWidth = 6 * s;
+    g.beginPath(); g.moveTo(sx - R - 18 * s, yy); g.lineTo(sx - R * 0.35, yy); g.moveTo(sx + R * 0.35, yy); g.lineTo(sx + R + 18 * s, yy); g.stroke();
+    g.strokeStyle = col; g.lineWidth = 3 * s;
+    g.beginPath(); g.moveTo(sx - R - 18 * s, yy); g.lineTo(sx - R * 0.35, yy); g.moveTo(sx + R * 0.35, yy); g.lineTo(sx + R + 18 * s, yy); g.stroke();
+    g.beginPath(); g.arc(sx, yy, 7 * s, 0, 7); g.stroke();
+    g.fillStyle = col; g.beginPath(); g.arc(sx, yy, 2.5 * s, 0, 7); g.fill();
   }
 }

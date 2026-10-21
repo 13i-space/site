@@ -4,6 +4,9 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.03 (no SQL): Donaghy Castle plays like Clue - weapons, clue cards
+  from chores, hidden helmets, sealed who/weapon/room accusations with a
+  dramatic reveal, power-ups, the Donaghy Claymore, bullseye joust.
 - Update 6.01 (SQL: docs/v6.01-xenowing-progress.sql): XenoWing, the flight
   game with the Rave's four aliens, replaces NEMESIS Command in the arcade at
   /games/xenowing (open to everyone). Arcade order: Asteroid Belt, XenoKlash,

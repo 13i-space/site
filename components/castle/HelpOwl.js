@@ -10,6 +10,9 @@ function tipsFor(hud) {
   if (!me.alive) {
     tips.push({ key: "ghost", text: "You're a ghost now. You can float straight through walls, and your chores still count toward the castle's bar. You can't vote, but you can watch." });
   }
+  if (hud.ctx.claymore === "take") tips.push({ key: "claymore", hot: true, text: "The Donaghy Claymore! Press E to take it up. It strikes once, at anyone, and if it's the Black Knight the castle wins on the spot. Strike an innocent and you've helped the darkness..." });
+  if (hud.claymore) tips.push({ key: "claymore-held", text: "You carry the Donaghy Claymore. Walk right up to someone and press G to strike. One blow only. Nobody else knows you have it (unless you tell them)." });
+  if (me.alive && hud.missing?.some((m) => !m.found)) tips.push({ key: "missing", hot: true, text: "Someone has gone missing and nobody knows where. Do your chores: each one turns up a clue card for its room (a struggle there or not) and a weapon. A chore in the right room finds the helmet. Press C for your Detective's Notebook." });
   if (hud.ctx.marker && me.alive) tips.push({ key: "helmet", hot: true, text: "That's a dropped helmet: someone was captured here. Press R to report it and call everyone to the Great Hall." });
   if (hud.ctx.power?.hot) tips.push({ key: "power-" + hud.ctx.power.key, hot: true, text: `Press ${hud.ctx.power.key}: ${hud.ctx.power.label}.` });
   if (hud.lightsOut && ROLES[r].side === "castle" && me.alive) tips.push({ key: "lights", hot: true, text: "The Black Knight has put the lights out! Follow the red arrow to the Forge and hold E at the fire to relight every torch." });
@@ -93,6 +96,7 @@ export function HelpOwl({ hud, open, setOpen }) {
               <>
                 <p style={{ margin: "0 0 8px" }}>Everyone on the castle&rsquo;s side has 8 chores spread around the castle. They&rsquo;re listed bottom-left, glow gold on the floor, show as gold dots on the little map, and the gold arrow next to your knight points to the nearest one.</p>
                 <p style={{ margin: "0 0 8px" }}>Walk to one and <b>press E</b> (or click the prompt). A small job opens: scrub, stir, pour, light candles, sharpen a sword, knead dough, carry hay, wind the clock... Some take longer than others, and the castle carries on around you while you work, so mind your back. Esc stops. When everybody&rsquo;s chores are done (the bar at the top), the castle wins. Ghosts&rsquo; chores still count.</p>
+                <p style={{ margin: "0 0 8px" }}><b style={{ color: "#f2dc9a" }}>Every chore is a clue card</b>, like being shown a card in Clue: was there a struggle in that room this round, and one weapon that&rsquo;s accounted for (or, if the room has a weapon stand, whether it&rsquo;s empty). It all goes in your Detective&rsquo;s Notebook (C). Six weapons stand in six rooms: the Dagger (Kitchen), Battle-Axe (Armory), Mace (Gatehouse), Iron Candlestick (Chapel), Rope (Stables) and Poisoned Goblet (Wine Cellar). The Black Knight&rsquo;s weapon this round leaves its stand empty.</p>
                 <p style={{ margin: "0 0 8px" }}>Red spots and a red arrow mean sabotage to fix: relight the torches at the Forge, or free the portcullis in the Gatehouse.</p>
                 <p style={{ margin: 0 }}>The Black Knight and the Jester have <i>pretend</i> chores: standing at them makes you look busy, but they don&rsquo;t count. Watch for someone who stands at a chore and the bar doesn&rsquo;t move.</p>
               </>
@@ -101,14 +105,16 @@ export function HelpOwl({ hud, open, setOpen }) {
               <>
                 <p style={{ margin: "0 0 8px" }}><b style={{ color: "#f2dc9a" }}>The castle wins</b> by finishing every chore, or by voting the Black Knight into the joust, where they&rsquo;re knocked off their horse.</p>
                 <p style={{ margin: "0 0 8px" }}><b style={{ color: "#ff9a85" }}>The Black Knight (and Jester) win</b> at midnight, or when there are no more honest folk free than there are of them.</p>
-                <p style={{ margin: "0 0 8px" }}>Clues: every dropped helmet tells you which room the captor came from (soot means the Forge, straw the Stables, and so on). In the meeting, compare that with where people say they were, and with what you saw yourself.</p>
+                <p style={{ margin: "0 0 8px" }}><b style={{ color: "#f2dc9a" }}>At every meeting you make an accusation, like the end of Clue:</b> who, with what weapon, in what room. Who you name decides the joust. Name the weapon and you get Swift Boots (faster) next round; name the room and you get the Owl&rsquo;s Lantern (a bigger torch that the dark can&rsquo;t put out); both, and the Raven brings you a free clue card. All three right and you&rsquo;ve solved the whole murder: big dominoes at the end.</p>
+                <p style={{ margin: "0 0 8px" }}><b style={{ color: "#f2dc9a" }}>The Donaghy Claymore</b> is hidden somewhere in the castle each night (look for a glint). Anyone but the Black Knight can take it up and strike once, at anyone. Slay the Black Knight and the castle wins on the spot.</p>
+                <p style={{ margin: "0 0 8px" }}>Clues: a captured person&rsquo;s helmet lies hidden until someone does a chore in that room, trips over it, or saw it happen. A found helmet tells you which room the captor came from (soot means the Forge, straw the Stables, and so on), and its marks narrow the weapon down to two (a cut strap, a dent, or no mark at all). In the meeting, compare that with where people say they were, and with what you saw yourself.</p>
                 <p style={{ margin: 0 }}>Secret passages, like in Clue: the trapdoors in the corner rooms join the North Tower to the Well House, and the Armory to the Dungeon. Stand on one and hold E, and you&rsquo;ll row round the moat in a little boat and climb out in the opposite corner.</p>
               </>
             )}
             {tab === "keys" && (
               <p style={{ margin: 0 }}>
                 Click on the floor to walk there, or hold the mouse button and steer · arrows or WASD also walk · E: start a chore or repair, pet Sheba · hold E: trapdoor · R: report a helmet · B: ring the Great Bell (once a night, in the Great Hall) ·
-                Q: capture (Black Knight) / swap (Jester) · F: Torch of Truth (Knight) · 1, 2, 3: Black Knight sabotage and disguise · H: this owl · N: music · M: sound effects · V: your microphone on or off (in a family game)
+                Q: capture (Black Knight) / swap (Jester) · F: Torch of Truth (Knight) · 1, 2, 3, 4: Black Knight sabotage and disguise · E by the Claymore: take it · G: strike with the Claymore · C: your Detective&rsquo;s Notebook · H: this owl · N: music · M: sound effects · V: your microphone on or off (in a family game)
               </p>
             )}
           </div>

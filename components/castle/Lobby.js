@@ -125,9 +125,10 @@ export function Lobby({ playerName, setName, look, setLook, total, setTotal, rol
           </div>
         </div>
         <p style={L.p}>
-          Night has fallen on Donaghy Castle and the Black Knight walks the halls. Do your chores by torchlight,
-          find the dropped helmets of the captured, ring the Great Bell, and send your suspect to the joust.
-          If they&rsquo;re the Black Knight, they&rsquo;ll be knocked clean off their horse.
+          Night has fallen on Donaghy Castle and the Black Knight walks the halls. Do your chores by torchlight and each one
+          turns up a clue. Like Clue: who did it, with what, and where? Seal your accusation in the Great Hall and send your
+          suspect to the joust. If they&rsquo;re the Black Knight, they&rsquo;ll be knocked clean off their horse. And somewhere in the
+          castle the Donaghy Claymore lies hidden, with one blow in it.
         </p>
         <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.1fr) minmax(0, 1fr)", gap: 26, marginTop: 14 }} className="castle-lobby-grid">
           <div>
@@ -210,7 +211,7 @@ export function Lobby({ playerName, setName, look, setLook, total, setTotal, rol
             </details>
             <div style={{ fontSize: 12.5, color: "#c9c3e6", lineHeight: 1.7, margin: "14px 0 0" }}>
               <b style={{ color: "#f2dc9a" }}>Moving:</b> click where you want to go (or hold the mouse and steer), or arrows/WASD · <b>E</b> starts a chore · <b>R</b> report a helmet · <b>B</b> Great Bell ·
-              <b> Q F 1 2 3 4</b> role powers · <b>H</b> the owl (help) · <b>N</b> music · <b>M</b> sound effects
+              <b> Q F 1 2 3 4</b> role powers · <b>C</b> your Detective's Notebook · <b>G</b> strike with the Claymore · <b>H</b> the owl (help) · <b>N</b> music · <b>M</b> sound effects
             </div>
             {cup.length > 0 && <div className="mono" style={{ marginTop: 12, fontSize: 11, color: "#c9a227" }}>YOUR DONAGHY CUP DOMINOES: {pts} FROM {cup.length} NIGHT{cup.length === 1 ? "" : "S"}</div>}
           </div>

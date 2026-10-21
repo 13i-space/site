@@ -132,3 +132,39 @@ the capture clock is slower in small castles (`captureCd`: 32s at 6, 48s
 at 7, 28s from 8). The dark side now wins on numbers only when one honest
 person is left free (the Jester can't capture). Bot-only sims, 300 nights
 each: 46% castle wins at 6, 42% at 7 and 8, 46% at 10.
+
+## The Clue side (6.03)
+- **The crime.** Every capture has a weapon (`world.weapon`, one per round,
+  changed in `applyJoust`, never one of the last three) and a place
+  (`placeOf`: a room, or "the galleries" for the four corridors). Weapons
+  and their stands live in `lib/castle/clues.js`.
+- **Hidden helmets.** `marker.found` starts false. Found by a chore in that
+  room (`clueCard`), by walking within a tile (`stumbleTick`, host only), or
+  by a witness. Only found helmets are drawn, reportable (R by it or anywhere
+  in its room) and spoken about in the meeting; the Black Knight sees their
+  own faintly.
+- **Clue cards.** `clueCard(world, e, place, source)` on every chore by a
+  living player (and the Raven's free card). Real players' cards travel in
+  the snapshot (`e.cards`); `deduce()` in Notebook.js turns them into the
+  sheet's struck-through lines. Computer players sometimes mention theirs.
+- **Accusations.** `castVote(world, eid, target, weapon, place)`. The meeting
+  holds `crime` (secret until resolved; `hasCrime` tells laptops whether to
+  show the weapon and room questions). `judgeCase` scores weapon and room
+  (any capture's place counts), hands out `powerups` for the next round
+  (cleared at the next verdict) and keeps `caseLog`. Who-right is never
+  shown until the end (it would give the Black Knight away). The Black
+  Knight and Jester see the same form but earn nothing from it.
+- **The reveal.** Court.js runs it from `m.revealMs`: seals break at 420ms
+  each, then the case cards, then the verdict; the host waits `m.tallyMs`
+  (sized to the number of votes) before the joust.
+- **Power-ups.** boots: `BOOTS` speed in `moveSelf`; lantern: wider sight in
+  `sightRange` and the torch cone in draw.js; raven: a free card.
+- **The Claymore.** `world.claymore {x, y, where, holder, used}`; E takes it
+  (`ctx.claymore`, "heavy" for the Black Knight), G strikes (`strikeTarget`,
+  any living person in reach). The victim is out for good. Dropped where a
+  holder is captured; re-hidden if the holder is jousted. Computer players
+  pick it up when they walk over it and use it only when sure (Knight's
+  torch, or a witnessed capture, so a disguise can fool them); a computer
+  Jester uses it on someone alone.
+- **Balance** (bot-only, 200 nights each): castle wins 47% at 6 seats, 42%
+  at 7 and 8. The bots don't earn power-ups, so real players do better.

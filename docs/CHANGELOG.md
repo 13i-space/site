@@ -3,6 +3,36 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.03 — Donaghy Castle becomes a game of Clue (Oct 2026)
+No SQL. After the family's first nights, Paul's notes:
+- Who, with what, where: six period weapons (Dagger, Battle-Axe, Mace, Iron
+  Candlestick, Rope, Poisoned Goblet), each on a stand in its own room. The
+  Black Knight carries one per round and its stand stands empty; a new one
+  each round.
+- Every chore is a clue card (`lib/castle/clues.js`): a struggle in that
+  room this round or not, and one weapon accounted for (or the room's own
+  stand, empty or not). Cards fill the new Detective's Notebook (C), a Clue
+  sheet with your own ✗ ? ★ marks.
+- Captured people's helmets now lie hidden until someone does a chore in
+  that room, trips over one, or saw the capture. Everyone hears who has gone
+  missing; nobody knows where. A found helmet's marks narrow the weapon to
+  two. The captured no longer see who took them.
+- Meetings are a moment: the Great Bell tolls, the Court sits for 60s with a
+  burning candle and a heartbeat at the end, and everyone seals an
+  accusation: "I accuse ___ with ___ in ___." The seals are broken one by
+  one, the case cards are turned over (weapon and room revealed, who stays
+  secret), then the verdict and the joust.
+- Name the weapon: Swift Boots (25% faster next round). Name the room:
+  Owl's Lantern (bigger torch, even in Lights Out). Both: the Raven brings a
+  free clue card. All three right: "solved the whole murder", 5|5 domino.
+- The Donaghy Claymore: hidden in one of nine spots each night (it
+  glints). Anyone but the Black Knight can take it (E) and strike once (G).
+  Slay the Black Knight and the castle wins on the spot (6|6 domino).
+- Practice joust: a real bullseye (gold, red, white) on the other knight's
+  shield, and a crosshair that sits exactly where your mouse is.
+- New files: `lib/castle/clues.js`, `components/castle/Court.js`,
+  `components/castle/Notebook.js`.
+
 ## Update 6.02 — The arcade on phones (Oct 2026)
 - **Full screen from inside the game**: XenoKlash, XenoWing and XenoKart's own full-screen buttons now
   ask the page (IframeGame, message `fullscreen`) to do it, so they work on iPhone Safari: real full screen

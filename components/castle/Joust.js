@@ -120,15 +120,8 @@ const DUEL_KEY = "donaghy-duels-v1";
 function readDuels() { try { return JSON.parse(localStorage.getItem(DUEL_KEY) || '{"won":0,"lost":0}'); } catch { return { won: 0, lost: 0 }; } }
 function saveDuels(d) { try { localStorage.setItem(DUEL_KEY, JSON.stringify(d)); } catch { /* private window */ } }
 
-// how well a lance landed: 3 unhorsed, 2 shield struck (lance breaks), 1 glancing, 0 miss
-function strike(offset, zone) {
-  const a = Math.abs(offset);
-  if (a < zone * 0.4) return 3;
-  if (a < zone) return 2;
-  if (a < 0.55) return 1;
-  return 0;
-}
-const STRIKE_WORDS = ["missed", "a glancing blow", "a square hit on the shield", "UNHORSED them"];
+// where the lance landed on the bullseye: gold centre 3, red ring 2, white ring 1, off the target 0
+const STRIKE_WORDS = ["missed the target", "the white ring: a glancing blow", "the red ring: lance shattered on the shield", "BULLSEYE: UNHORSED them"];
 
 export function PracticeJoust({ me, onExit }) {
   const [rival, setRival] = useState(null);
@@ -149,8 +142,8 @@ export function PracticeJoust({ me, onExit }) {
         <div className="mono" style={{ fontSize: 10.5, letterSpacing: "1.5px", color: "#a9a3c4" }}>THE TILTYARD · WHILE EVERYONE GATHERS</div>
         <div style={{ ...T.title, fontSize: 34, color: "#f2dc9a", margin: "6px 0 8px" }}>Practice joust</div>
         <p style={{ fontSize: 14.5, lineHeight: 1.6, color: "#d7d1ef", margin: "0 0 14px" }}>
-          The winner takes home a domino set. The loser gets the fruitcake. Three passes. <b>Spam Space</b> to spur your horse: the faster rider hits harder. Move the mouse up and down (or ↑ ↓) to aim your lance at the green spot on
-          their bobbing shield. A dead-centre hit at speed unhorses them and wins outright; a hit on the shield breaks your lance for 2 points; a glancing blow is 1.
+          The winner takes home a domino set. The loser gets the fruitcake. Three passes. <b>Spam Space</b> to spur your horse: the faster rider hits harder. Your lance tip follows your mouse
+          (or ↑ ↓): keep it on the bullseye painted on their bobbing shield. The gold centre at speed unhorses them and wins outright; the red ring shatters your lance for 2 points; the white ring is a glancing blow for 1.
         </p>
         <div className="mono" style={{ fontSize: 10.5, letterSpacing: "1.5px", color: "#a9a3c4", marginBottom: 8 }}>CHALLENGE SOMEONE</div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8 }}>
@@ -175,12 +168,12 @@ function Duel({ me, rival, crowd, onExit }) {
   const blank = () => ({ start: performance.now(), pL: 0, pR: 0, energy: 0, aim: 0, shieldY: 0, impact: false, impactAt: 0, meetL: 0, resolved: false, fired: {}, keys: {} });
   const st = useRef({ pass: 1, myPts: 0, theirPts: 0, run: blank() });
   const [view, setView] = useState({ pass: 1, msg: null, myPts: 0, theirPts: 0, over: null, energy: 0, phase: "ready" });
-  const scene = useRef({ left: { look: me.look, aim: 0 }, right: { look: rival.look }, loser: null, broken: false, crowd, reticle: { y: 0, zone: 0.22, zoneY: 0 }, pos: { pL: 0, pR: 0, impact: false } });
+  const scene = useRef({ left: { look: me.look, aim: 0 }, right: { look: rival.look }, loser: null, broken: false, crowd, reticle: { y: 0, R: 0.8, zoneY: 0 }, pos: { pL: 0, pR: 0, impact: false } });
 
   const newPass = () => {
     st.current.run = blank();
     const sc = scene.current;
-    sc.loser = null; sc.broken = false; sc.pos = { pL: 0, pR: 0, impact: false }; sc.reticle = { y: 0, zone: 0.24 - st.current.pass * 0.02, zoneY: 0 };
+    sc.loser = null; sc.broken = false; sc.pos = { pL: 0, pR: 0, impact: false }; sc.reticle = { y: st.current.run.aim, R: 0.86 - st.current.pass * 0.06, zoneY: 0 };
     setView((v) => ({ ...v, pass: st.current.pass, msg: null, phase: "ready" }));
   };
 
@@ -193,7 +186,14 @@ function Duel({ me, rival, crowd, onExit }) {
       if (e.code === "ArrowDown" || e.code === "KeyS") { e.preventDefault(); r.keys.down = true; }
     };
     const ku = (e) => { const r = st.current.run; if (e.code === "ArrowUp" || e.code === "KeyW") r.keys.up = false; if (e.code === "ArrowDown" || e.code === "KeyS") r.keys.down = false; };
-    const mm = (e) => { const r = st.current.run; if (r.impact) return; r.aim = Math.max(-1, Math.min(1, (e.clientY / window.innerHeight - 0.5) / 0.3)); };
+    // the crosshair goes exactly where the mouse is (converted to the canvas's own pixels)
+    const mm = (e) => {
+      const r = st.current.run, f = scene.current.aimFrame, cv = ref.current;
+      if (r.impact || !f || !cv) return;
+      const rect = cv.getBoundingClientRect();
+      const py = (e.clientY - rect.top) * (cv.height / rect.height);
+      r.aim = Math.max(-2.2, Math.min(2.2, (py - f.sy) / f.unit));
+    };
     window.addEventListener("keydown", kd); window.addEventListener("keyup", ku); window.addEventListener("mousemove", mm);
     return () => { window.removeEventListener("keydown", kd); window.removeEventListener("keyup", ku); window.removeEventListener("mousemove", mm); };
   }, []);
@@ -206,13 +206,14 @@ function Duel({ me, rival, crowd, onExit }) {
     if (!r.impact && t > 1.2) {
       if (!r.fired.go) { r.fired.go = 1; setView((v) => ({ ...v, phase: "charge" })); }
       r.energy = Math.max(0, r.energy - dt * 0.75);
-      if (r.keys.up) r.aim = Math.max(-1, r.aim - dt * 2.2);
-      if (r.keys.down) r.aim = Math.min(1, r.aim + dt * 2.2);
+      if (r.keys.up) r.aim = Math.max(-2.2, r.aim - dt * 1.8);
+      if (r.keys.down) r.aim = Math.min(2.2, r.aim + dt * 1.8);
       const vL = 0.06 + r.energy * 0.34;
       const vR = 0.1 + rival.skill * 0.17 + Math.sin(t * 1.7) * 0.02;
       r.vL = vL; r.vR = vR;
       r.pL += vL * dt; r.pR += vR * dt;
-      r.shieldY = Math.sin(t * (2.2 + vR * 9)) * 0.6;
+      // the shield bobs with the gallop: steady enough to follow, never still
+      r.shieldY = Math.sin(t * (1.4 + vR * 2.5)) * 0.55 + Math.sin(t * 3.1) * 0.08;
       if (Math.floor(t * 3) !== r.gal) { r.gal = Math.floor(t * 3); snd.gallop(0.35); }
       if (r.pL + r.pR >= 1) { r.impact = true; r.impactAt = now; r.meetL = r.pL / (r.pL + r.pR); }
     }
@@ -221,10 +222,11 @@ function Duel({ me, rival, crowd, onExit }) {
     sc.pos = { pL: r.pL, pR: r.pR, impact: r.impact, after: r.impact ? (now - r.impactAt) / 1000 : 0, meetL: r.meetL };
     if (r.impact && !r.resolved) {
       r.resolved = true;
-      const zone = sc.reticle.zone;
+      const R = sc.reticle.R;
       const share = r.vL / (r.vL + r.vR);
-      const err = Math.abs(r.aim - r.shieldY);
-      let mine = err < zone * 0.5 ? (share >= 0.42 ? 3 : 2) : err < zone ? 2 : err < 0.5 ? 1 : 0;
+      const err = Math.abs(r.aim - r.shieldY) / R;
+      // a bullseye needs some speed behind it to unhorse anyone
+      let mine = err < 0.3 ? (share >= 0.42 ? 3 : 2) : err < 0.62 ? 2 : err < 1 ? 1 : 0;
       const theirErr = Math.random() * (1.2 - rival.skill);
       let theirs = theirErr < 0.12 ? (share <= 0.58 ? 3 : 2) : theirErr < 0.25 ? 2 : theirErr < 0.5 ? 1 : 0;
       S0.myPts += mine; S0.theirPts += theirs;
@@ -250,7 +252,7 @@ function Duel({ me, rival, crowd, onExit }) {
   const again = () => { Object.assign(st.current, { pass: 1, myPts: 0, theirPts: 0 }); setView({ pass: 1, msg: null, myPts: 0, theirPts: 0, over: null, energy: 0, phase: "ready" }); newPass(); };
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "#000", fontFamily: "Inter, system-ui, sans-serif", cursor: "ns-resize" }}>
+    <div style={{ position: "fixed", inset: 0, background: "#000", fontFamily: "Inter, system-ui, sans-serif", cursor: view.phase === "done" ? "default" : "none" }}>
       <canvas ref={ref} style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }} />
       <div style={{ position: "absolute", top: "3%", left: 0, right: 0, textAlign: "center", pointerEvents: "none", padding: "0 16px" }}>
         <div style={{ ...T.title, fontSize: "clamp(24px, 4vw, 40px)" }}>{me.name} vs {rival.name}</div>
@@ -258,7 +260,7 @@ function Duel({ me, rival, crowd, onExit }) {
         {view.phase === "ready" && <div style={{ ...T.title, fontSize: 30, marginTop: 8, color: "#ffe08a" }}>Ready...</div>}
         {view.phase === "charge" && (
           <div style={{ marginTop: 8 }}>
-            <div style={{ color: "#ffe08a", fontSize: 17, fontWeight: 700, textShadow: "0 2px 8px #000" }}>SPAM SPACE to spur your horse! Move the mouse up and down (or ↑ ↓) to aim your lance at the green.</div>
+            <div style={{ color: "#ffe08a", fontSize: 17, fontWeight: 700, textShadow: "0 2px 8px #000" }}>SPAM SPACE to spur your horse! Keep your crosshair (your mouse, or ↑ ↓) on the gold bullseye.</div>
             <div style={{ width: 260, height: 12, margin: "8px auto 0", background: "rgba(0,0,0,0.6)", border: "1px solid #c9a227", borderRadius: 6, overflow: "hidden" }}>
               <div style={{ width: `${view.energy * 100}%`, height: "100%", background: "linear-gradient(90deg,#c9a227,#ff8a3a)" }} />
             </div>

@@ -23,6 +23,9 @@ import { VoteJoust, PracticeJoust } from "./Joust";
 import { HelpOwl } from "./HelpOwl";
 import { Ending } from "./Ending";
 import { ChoreGame } from "./ChoreGame";
+import { Meeting, Shield } from "./Court";
+import { Notebook, WeaponIcon, placeName } from "./Notebook";
+import { weaponById, POWERUPS } from "../../lib/castle/clues";
 
 const CUP_KEY = "donaghy-cup-v2"; // domino points (v1 was the old points)
 const MINI_W = 280, MINI_H = 203;
@@ -87,6 +90,10 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   const [hostLost, setHostLost] = useState(false);
   const [initialCode, setInitialCode] = useState(guestCode || "");
   const [practiceFrom, setPracticeFrom] = useState("lobby");
+  const [bookOpen, setBookOpen] = useState(false);
+  const [marks, setMarks] = useState({});
+  const [cardPop, setCardPop] = useState(null);
+  const setMark = (k, v) => setMarks((m) => ({ ...m, [k]: v }));
   const viewRef = useRef({ w: 0, h: 0, dpr: 1 });
   const mouseHeld = useRef(false);
 
@@ -159,7 +166,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     sfxSeq.current = w.seq || 0;
     lastSnapAt.current = performance.now();
     keys.current = {};
-    setChore(null); setMyVote(undefined); setHostLost(false); setNotice(null);
+    setChore(null); setMyVote(undefined); setHostLost(false); setNotice(null); setMarks({}); setCardPop(null);
     setHud(hudInfo(w, myIdRef.current));
     setGphase(w.phase);
     setScreen("game");
@@ -234,7 +241,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     if (d.a === "ready") markReady(w, eid);
     else if (d.a === "finish") humanFinish(w, eid, d.sid);
     else if (d.a === "say") sayInMeeting(w, eid, d.text);
-    else if (d.a === "vote") engineVote(w, eid, d.target);
+    else if (d.a === "vote") engineVote(w, eid, d.target, d.weapon, d.place);
     else humanAction(w, eid, d.a);
   }
   // a key press or click: the host does it, everyone else asks the host
@@ -394,7 +401,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   openChoreRef.current = openChore;
   useEffect(() => {
     const map = { ArrowUp: "up", KeyW: "up", ArrowDown: "down", KeyS: "down", ArrowLeft: "left", KeyA: "left", ArrowRight: "right", KeyD: "right", KeyE: "use", Space: "use" };
-    const one = { KeyR: "report", KeyB: "bell", KeyQ: "power", KeyF: "truth", Digit1: "sab1", Digit2: "sab2", Digit3: "disguise", Digit4: "smoke" };
+    const one = { KeyR: "report", KeyB: "bell", KeyQ: "power", KeyF: "truth", Digit1: "sab1", Digit2: "sab2", Digit3: "disguise", Digit4: "smoke", KeyG: "strike" };
     const down = (ev) => {
       if (ev.target && (ev.target.tagName === "INPUT" || ev.target.tagName === "TEXTAREA" || ev.target.tagName === "SELECT")) return;
       if (ev.code === "KeyV" && !ev.repeat && voiceRef.current) {
@@ -407,6 +414,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
       if ((ev.code === "KeyE" || ev.code === "Space") && !ev.repeat) {
         const ctx = humanContext(w, myIdRef.current);
         if (ctx.station && ctx.station.kind !== "passage") { ev.preventDefault(); openChoreRef.current(ctx); return; }
+        if (!ctx.station && ctx.claymore) { actRef.current("claymore"); ev.preventDefault(); return; }
         if (!ctx.station && ctx.pet) { actRef.current("pet"); ev.preventDefault(); return; }
       }
       if (map[ev.code]) { keys.current[map[ev.code]] = true; ev.preventDefault(); }
@@ -414,6 +422,7 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
       if (ev.code === "KeyM") { const m = !snd.isMuted(); snd.setMuted(m); setMuted(m); }
       if (ev.code === "KeyN") { const on = !music.isEnabled(); music.setEnabled(on); setMusicOn(on); }
       if (ev.code === "KeyH" && !ev.repeat) setHelpOpen((o) => !o);
+      if (ev.code === "KeyC" && !ev.repeat) setBookOpen((o) => !o);
     };
     const up = (ev) => { if (map[ev.code]) keys.current[map[ev.code]] = false; };
     const blur = () => { keys.current = {}; };
@@ -537,8 +546,21 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     setCup(list);
   }, [gphase, hud]);
 
+  // a new clue card: show it as a card for a few seconds
+  const cardCount = useRef(0);
+  const cardList = hud?.cards || [];
+  useEffect(() => {
+    if (cardList.length > cardCount.current && cardList.length) {
+      setCardPop({ ...cardList[cardList.length - 1], key: Date.now() });
+      const id = setTimeout(() => setCardPop(null), 5200);
+      cardCount.current = cardList.length;
+      return () => clearTimeout(id);
+    }
+    cardCount.current = cardList.length;
+  }, [cardList.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const say = (text) => { act("say", { text }); setTick((x) => x + 1); };
-  const vote = (target) => { setMyVote(target); snd.click(); act("vote", { target }); };
+  const vote = (target, weapon, place) => { setMyVote(target); act("vote", { target, weapon, place }); };
   const lightTorch = () => { snd.unlock(); music.start(); voiceRef.current?.resume(); act("ready"); setTick((x) => x + 1); };
   const anotherNight = () => {
     if (!netRef.current) { worldRef.current = null; setScreen("lobby"); return; }
@@ -596,6 +618,10 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
           <p style={{ ...S.p, fontSize: 13, color: "#a9a3c4" }}>
             {r.side === "dark" ? "The castle wins if they joust the Black Knight or finish every chore. You win if the castle runs out of honest folk, or the clock strikes midnight." : "Finish every chore, or find the Black Knight and send them to the joust, before midnight."}
           </p>
+          <p style={{ ...S.p, fontSize: 13.5, color: "#e3d7b4" }}>
+            Like Clue, every capture has three answers: <b>who</b>, <b>with what</b> and <b>where</b>. Each chore shows you a clue card; at every meeting you seal an accusation.
+            And somewhere in the castle the <b>Donaghy Claymore</b> lies hidden: one strike, at anyone{meE.role === "blackknight" ? " (except you can't lift it)" : ""}.
+          </p>
           {others.length > 1 && <p style={{ ...S.p, fontSize: 13, color: "#a9a3c4" }}>Keep your role secret, even on the voice chat!</p>}
           <p style={{ ...S.p, fontSize: 13, color: "#a9a3c4" }}>Stuck at any point? Click the owl in the corner, or press H.</p>
           {!lit ? (
@@ -626,12 +652,18 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
     <div style={{ position: "fixed", inset: 0, background: "#05060d", overflow: "hidden", fontFamily: "Inter, system-ui, sans-serif" }}>
       <canvas ref={canvasRef} onMouseDown={onCanvasDown} onMouseMove={onCanvasMove} onContextMenu={(e) => e.preventDefault()} style={{ position: "absolute", inset: 0, width: "100%", height: "100%", display: gphase === "joust" ? "none" : "block", cursor: "crosshair" }} />
       {gphase !== "joust" && hud && (
-        <Hud hud={hud} openChore={() => { const ctx = humanContext(w, myId); if (ctx.station && ctx.station.kind !== "passage") openChore(ctx); }} pet={() => act("pet")} miniRef={miniRef} muted={muted} toggleMute={toggleMute} musicOn={musicOn} toggleMusic={toggleMusic} showChores={showChores} setShowChores={setShowChores} backHref={backHref} />
+        <Hud hud={hud} openBook={() => setBookOpen((o) => !o)} act={act} openChore={() => { const ctx = humanContext(w, myId); if (ctx.station && ctx.station.kind !== "passage") openChore(ctx); }} pet={() => act("pet")} miniRef={miniRef} muted={muted} toggleMute={toggleMute} musicOn={musicOn} toggleMusic={toggleMusic} showChores={showChores} setShowChores={setShowChores} backHref={backHref} />
       )}
       {gphase === "play" && hud && <HelpOwl hud={hud} open={helpOpen} setOpen={setHelpOpen} />}
+      {gphase === "play" && bookOpen && (
+        <div style={{ position: "absolute", right: 12, top: 300, width: 290, zIndex: 12 }}>
+          <Notebook world={w} myId={myId} cards={hud?.cards || []} marks={marks} setMark={setMark} onClose={() => setBookOpen(false)} />
+        </div>
+      )}
+      {gphase === "play" && cardPop && <CardPop card={cardPop} shift={bookOpen} />}
       {gphase === "play" && chore && <ChoreGame station={chore.station} fake={chore.fake} onDone={doneChore} onClose={closeChore} />}
       {gphase === "meeting" && w.meeting && (
-        <Meeting w={w} myId={myId} m={w.meeting} myVote={myVote} castVote={vote} say={say} />
+        <Meeting w={w} myId={myId} m={w.meeting} myVote={myVote} castVote={vote} say={say} marks={marks} setMark={setMark} cards={hud?.cards || []} />
       )}
       {gphase === "joust" && w.joust && (
         <VoteJoust key={w.joust.startMs} accused={w.joust.accused} crowd={w.joust.crowd.map((c) => ({ ...c, name: c.id === myId ? `${c.name} (you)` : c.name }))} onDone={null} />
@@ -648,8 +680,32 @@ export default function DonaghyCastle({ playerName = "You", backHref = "/account
   );
 }
 
+// a clue card from a chore: the room, and a weapon
+function CardPop({ card, shift }) {
+  const w = card.weapon ? weaponById(card.weapon) : null;
+  return (
+    <div key={card.key} style={{ position: "absolute", right: shift ? 316 : 12, top: 300, zIndex: 14, pointerEvents: "none", animation: "cardIn .45s ease" }}>
+      <div style={{ width: 280, background: "linear-gradient(180deg, #efe2bf, #d8c08a)", border: "3px solid #8a6a3a", borderRadius: 12, padding: "12px 14px", color: "#2a1a08", boxShadow: "0 12px 40px rgba(0,0,0,0.6)", textAlign: "center" }}>
+        <div className="mono" style={{ fontSize: 10, letterSpacing: "3px", color: "#6a4a1a" }}>{card.source === "raven" ? "THE RAVEN BRINGS A CLUE" : "CLUE CARD"}</div>
+        <div style={{ fontFamily: "Fraunces, Georgia, serif", fontStyle: "italic", fontSize: 22, marginTop: 2 }}>{placeName(card.place)}</div>
+        <div style={{ fontSize: 14, fontWeight: 700, color: card.struggle ? "#8a1020" : "#2e5a2e" }}>{card.struggle ? "Signs of a struggle here!" : "No sign of a struggle."}</div>
+        {w && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginTop: 8, borderTop: "1px dashed #8a6a3a", paddingTop: 8 }}>
+            <WeaponIcon id={w.id} size={34} />
+            <div style={{ fontSize: 13.5, textAlign: "left", color: card.missing ? "#8a1020" : "#2a1a08", fontWeight: card.missing ? 700 : 500 }}>
+              {card.missing ? `${w.name}'s stand is EMPTY. That's the weapon!` : `${w.name}: accounted for. Not the weapon.`}
+            </div>
+          </div>
+        )}
+        <div style={{ fontSize: 11, color: "#6a4a1a", marginTop: 6 }}>Kept in your notebook (C)</div>
+      </div>
+      <style>{`@keyframes cardIn{from{opacity:0;transform:rotateY(90deg) scale(0.8)}to{opacity:1;transform:rotateY(0) scale(1)}}`}</style>
+    </div>
+  );
+}
+
 // ---------- HUD ----------
-function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores, setShowChores, backHref }) {
+function Hud({ hud, openBook, act, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleMusic, showChores, setShowChores, backHref }) {
   const [mapOpen, setMapOpen] = useState(true);
   const r = ROLES[hud.me.role];
   const cdRow = (label, key, extra) => {
@@ -681,6 +737,11 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
         {hud.me.role === "blacksmith" && <div style={{ fontSize: 12, color: "#f2dc9a" }}>Your torch never goes out</div>}
         {hud.ally.length > 0 && <div style={{ fontSize: 12, color: "#ffb4a2", marginTop: 4 }}>Partner: {hud.ally.map((a) => a.name).join(", ")}</div>}
         <div style={{ fontSize: 12, color: hud.me.bellUsed ? "#8d87ad" : "#c9c3e6", marginTop: 4 }}>[B] Great Bell: {hud.me.bellUsed ? "rung" : "once tonight"}</div>
+        {hud.weapon && <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, color: "#ffb4a2", marginTop: 4 }}><WeaponIcon id={hud.weapon} size={18} /> This round: {weaponById(hud.weapon).name}</div>}
+        {Object.keys(POWERUPS).filter((k) => hud.powerups?.[k] && k !== "raven").map((k) => (
+          <div key={k} style={{ fontSize: 12, color: "#bff5c9", marginTop: 4 }} title={POWERUPS[k].what}>{k === "boots" ? "👢" : "🏮"} {POWERUPS[k].name}: {POWERUPS[k].what}</div>
+        ))}
+        {hud.claymore && <div style={{ fontSize: 12, color: "#f2dc9a", marginTop: 4, fontWeight: 600 }}>⚔ You carry the Donaghy Claymore: [G] strike (once)</div>}
       </div>
 
       {/* clock and chores bar */}
@@ -692,6 +753,11 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
         </div>
         <div className="mono" style={{ fontSize: 10, color: "#a9a3c4", marginTop: 3 }}>CASTLE CHORES {Math.round(hud.secured * 100)}%</div>
         {hud.job && hud.me.alive && <div style={{ fontSize: 12, color: hud.job.urgent ? "#ff9a85" : "#f2dc9a", marginTop: 4 }}>Next: {hud.job.label} · {hud.job.room}</div>}
+        {hud.missing?.length > 0 && (
+          <div style={{ fontSize: 12, color: "#ff9a85", marginTop: 4 }}>
+            Missing: {hud.missing.map((m) => (m.found ? `${m.name} (helmet found: ${m.room})` : `${m.name} (where?)`)).join(" · ")}
+          </div>
+        )}
       </div>
 
       {/* minimap */}
@@ -699,7 +765,10 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
         <canvas ref={miniRef} width={MINI_W * 2} height={MINI_H * 2} style={{ display: mapOpen ? "block" : "none", width: MINI_W, height: MINI_H }} />
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginTop: mapOpen ? 6 : 0 }}>
           <span className="mono" style={{ fontSize: 11, color: "#f2e6c8" }}>{hud.room.toUpperCase()}</span>
-          <button onClick={() => setMapOpen(!mapOpen)} style={S.tiny} title="Show or hide the map">{mapOpen ? "hide map ▴" : "map ▾"}</button>
+          <span style={{ display: "flex", gap: 6 }}>
+            <button onClick={openBook} style={{ ...S.tiny, color: "#f2dc9a", borderColor: "#8a6a3a" }} title="Your Detective's Notebook (C)">📜 notebook</button>
+            <button onClick={() => setMapOpen(!mapOpen)} style={S.tiny} title="Show or hide the map">{mapOpen ? "hide map ▴" : "map ▾"}</button>
+          </span>
         </div>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 6, marginTop: 6 }}>
           <button onClick={toggleMusic} style={{ ...S.tiny, color: musicOn ? "#f2dc9a" : "#8d87ad" }} title="Music (N)">{musicOn ? "♪ music on" : "♪ music off"}</button>
@@ -743,9 +812,15 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
       </div>
 
       {/* what you can do right here */}
-      {(hud.ctx.station || hud.ctx.marker || hud.ctx.bell || hud.ctx.power || hud.ctx.pet) && (
+      {(hud.ctx.station || hud.ctx.marker || hud.ctx.bell || hud.ctx.power || hud.ctx.pet || hud.ctx.claymore || hud.ctx.strike) && (
         <div style={{ ...S.hudBox, bottom: 24, left: "50%", transform: "translateX(-50%)", textAlign: "center", minWidth: 280 }}>
           {hud.ctx.power && <div style={{ color: hud.ctx.power.hot ? "#ff9a85" : "#a9a3c4", fontWeight: 600, marginBottom: 4 }}>Press <b style={S.k}>{hud.ctx.power.key}</b>: {hud.ctx.power.label}</div>}
+          {hud.ctx.strike && <div style={{ color: "#ffe08a", fontWeight: 700, marginBottom: 4 }}>Press <b style={S.k}>G</b>: {hud.ctx.strike}</div>}
+          {hud.ctx.claymore && !hud.ctx.station && (
+            <button onClick={() => act("claymore")} style={{ background: "transparent", border: 0, color: "#ffe08a", fontSize: 14, fontWeight: 700, cursor: "pointer", padding: 0, display: "block", margin: "0 auto 4px" }}>
+              ⚔ Press <b style={S.k}>E</b>: {hud.ctx.claymore === "take" ? "take up the Donaghy Claymore!" : "try to lift the old claymore"}
+            </button>
+          )}
           {hud.ctx.marker && <div style={{ color: "#ff9a85", fontWeight: 600 }}>A dropped helmet! Press <b style={S.k}>R</b> to report it</div>}
           {hud.ctx.bell && !hud.ctx.marker && <div style={{ color: "#f2dc9a" }}>Press <b style={S.k}>B</b> to ring the Great Bell</div>}
           {hud.ctx.pet && !hud.ctx.station && <div style={{ color: "#f2e6c8", cursor: "pointer" }} onClick={pet}>Press <b style={S.k}>E</b>: pet Sheba</div>}
@@ -778,137 +853,6 @@ function Hud({ hud, openChore, pet, miniRef, muted, toggleMute, musicOn, toggleM
   );
 }
 
-// ---------- the meeting in the Great Hall ----------
-// The host runs it: lines appear one by one, the vote closes when every
-// real player has voted (or the time runs out), then the tally shows and
-// everyone is taken to the tiltyard together.
-function Meeting({ w, myId, m, myVote, castVote, say }) {
-  const [draft, setDraft] = useState("");
-  const [showAll, setShowAll] = useState(false);
-  const me = w.entities[myId];
-  const voted = m.voted || Object.keys(m.humanVotes || {}).map(Number);
-  const shown = showAll ? m.lines.length : Math.min(m.lines.length, m.shown || 0);
-  const lines = m.lines.slice(0, shown);
-  const done = shown >= m.lines.length;
-  const left = Math.ceil((m.leftMs ?? 0) / 1000);
-  const alive = w.entities.filter((e) => e.alive);
-  const name = (id) => (id === myId ? `${w.entities[id].name} (you)` : w.entities[id].name);
-  const notebook = (m.notebooks && m.notebooks[myId]) || [];
-  const waitingOn = w.entities.filter((e) => e.human && e.alive && !voted.includes(e.id));
-  const bottomRef = useRef(null);
-  useEffect(() => { bottomRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }); }, [shown]);
-  const iVoted = myVote !== undefined || voted.includes(myId);
-
-  return (
-    <div style={{ position: "absolute", inset: 0, background: "rgba(6,5,14,0.82)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
-      <div style={{ ...S.card, maxWidth: 1040, width: "100%", maxHeight: "94vh", overflow: "auto", padding: 22 }}>
-        <div style={{ display: "flex", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ ...S.big, fontSize: 30 }}>The Great Bell tolls</div>
-          <div className="mono" style={S.kicker}>MEETING IN THE GREAT HALL · ROUND {w.round}</div>
-          {!m.resolved && <div className="mono" style={{ marginLeft: "auto", fontSize: 13, letterSpacing: "1px", color: left <= 10 ? "#ff8a70" : "#f2dc9a" }}>VOTE CLOSES IN {left}s</div>}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1.5fr) minmax(0, 1fr)", gap: 18, marginTop: 14 }} className="castle-meet-grid">
-          <div style={{ minHeight: 220 }}>
-            {lines.map((l, i) => {
-              const e = l.who === null ? null : w.entities[l.who];
-              return (
-                <div key={i} style={{ display: "flex", gap: 10, padding: "7px 0", borderBottom: "1px solid #24203e", animation: "castleIn .35s ease" }}>
-                  {e ? <Shield color={e.color} /> : <span style={{ width: 22, fontSize: 18, textAlign: "center" }}>{l.evidence ? "🔍" : "🔔"}</span>}
-                  <div style={{ fontSize: 14, lineHeight: 1.5, color: l.who === null ? (l.evidence ? "#f2dc9a" : "#ffd0c4") : "#e7e1ff" }}>
-                    {e && <b style={{ color: e.color === "#E8E4D8" ? "#fff" : e.color, marginRight: 6 }}>{name(e.id)}:</b>}
-                    {l.text}
-                  </div>
-                </div>
-              );
-            })}
-            {!done && <button style={{ ...S.tiny, marginTop: 10 }} onClick={() => setShowAll(true)}>show everything</button>}
-            {me.alive && !m.resolved && (
-              <form onSubmit={(e) => { e.preventDefault(); if (draft.trim()) { say(draft); setDraft(""); setShowAll(true); } }} style={{ display: "flex", gap: 8, marginTop: 12 }}>
-                <input
-                  value={draft}
-                  onChange={(e) => setDraft(e.target.value)}
-                  placeholder="Type to the hall: “I saw Hamish in the Forge!” or “Agnes is innocent”"
-                  maxLength={240}
-                  aria-label="Say something to the hall"
-                  style={{ flex: 1, minWidth: 0, background: "#14112a", color: "#f2e6c8", border: "1px solid #3a3560", borderRadius: 999, padding: "9px 14px", fontSize: 14 }}
-                />
-                <button type="submit" style={{ ...S.voteBtn, background: "#2a2450" }}>Say it</button>
-              </form>
-            )}
-            <div ref={bottomRef} />
-          </div>
-          <div>
-            <div className="mono" style={S.kicker}>CASE NOTES (ALL NIGHT)</div>
-            {w.caseNotes.length ? w.caseNotes.map((c, i) => (
-              <div key={i} style={{ fontSize: 12.5, color: "#e3d7b4", marginTop: 6, lineHeight: 1.45 }}>
-                <b>Round {c.round}:</b> {c.victim} taken in the {c.room}. {c.text}
-              </div>
-            )) : <div style={{ fontSize: 12.5, color: "#8d87ad", marginTop: 6 }}>No captures yet.</div>}
-            <div className="mono" style={{ ...S.kicker, marginTop: 16 }}>WHAT YOU SAW (LAST TWO MINUTES)</div>
-            {notebook.length ? notebook.map((n, i) => (
-              <div key={i} style={{ fontSize: 12.5, color: n.saw || n.growl ? "#ff9a85" : "#c9c3e6", marginTop: 5 }}>
-                {n.saw ? `You saw ${n.name} capture someone in the ${n.room}!` : n.growl ? `Sheba growled at ${n.name} in the ${n.room} (${n.ago}s ago)` : `${n.name} · ${n.room} · ${n.ago}s ago`}
-              </div>
-            )) : <div style={{ fontSize: 12.5, color: "#8d87ad", marginTop: 6 }}>You didn&rsquo;t see anyone.</div>}
-          </div>
-        </div>
-
-        <div style={{ marginTop: 18, borderTop: "1px solid #2e2850", paddingTop: 14 }}>
-          {!m.resolved ? (
-            me.alive ? (
-              <>
-                <div className="mono" style={S.kicker}>WHO RIDES IN THE JOUST? {iVoted ? "YOUR VOTE IS IN (YOU CAN CHANGE IT)" : "CAST YOUR VOTE"}</div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-                  {alive.filter((e) => e !== me).map((e) => (
-                    <button key={e.id} onClick={() => castVote(e.id)} style={{ ...S.voteBtn, borderColor: myVote === e.id ? "#c9a227" : "#3a3560", background: myVote === e.id ? "#3a2f10" : "#17142e" }}><Shield color={e.color} small /> {e.name}</button>
-                  ))}
-                  <button onClick={() => castVote(null)} style={{ ...S.voteBtn, borderStyle: "dashed", borderColor: myVote === null ? "#c9a227" : "#3a3560" }}>Skip the vote</button>
-                </div>
-              </>
-            ) : (
-              <div style={{ color: "#c9c3e6", fontSize: 14 }}>You&rsquo;re a ghost: you can&rsquo;t vote, but you can watch (and your chores still count).</div>
-            )
-          ) : (
-            <>
-              <div className="mono" style={S.kicker}>THE VOTE</div>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginTop: 8 }}>
-                {[...Object.entries(m.counts || {}).sort((a, b) => b[1] - a[1]), ...(m.skip ? [["skip", m.skip]] : [])].map(([id, n]) => (
-                  <div key={id} style={{ ...S.voteBtn, cursor: "default", borderColor: +id === m.accused ? "#c9a227" : "#3a3560" }}>
-                    {id === "skip" ? "Skipped" : name(+id)}: <b style={{ marginLeft: 4 }}>{n}</b>
-                    <span style={{ fontSize: 11, color: "#8d87ad", marginLeft: 6 }}>
-                      ({(m.votes || []).filter((v) => String(v.target === null ? "skip" : v.target) === id).map((v) => (v.voter === myId ? "you" : w.entities[v.voter].name.split(" ").slice(-1)[0])).join(", ")})
-                    </span>
-                  </div>
-                ))}
-              </div>
-              <div style={{ marginTop: 14, color: "#f2e6c8" }}>
-                {m.accused !== null && m.accused !== undefined ? `${name(m.accused)} must ride against the Black Knight. To the tiltyard...` : "No one has enough votes. Nobody rides tonight. Back to the castle..."}
-              </div>
-            </>
-          )}
-          {!m.resolved && (
-            <div style={{ fontSize: 12, color: "#8d87ad", marginTop: 8 }}>
-              {waitingOn.length ? `Still to vote: ${waitingOn.map((e) => (e.id === myId ? "you" : e.name)).join(", ")}. ` : ""}
-              The castle folk vote when the family has. Anyone who hasn&rsquo;t voted when the time runs out skips.
-            </div>
-          )}
-        </div>
-      </div>
-      <style>{`@keyframes castleIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
-      @media (max-width: 760px){.castle-meet-grid{grid-template-columns:1fr !important}}`}</style>
-    </div>
-  );
-}
-
-function Shield({ color, small }) {
-  const s = small ? 14 : 22;
-  return (
-    <svg width={s} height={s * 1.15} viewBox="0 0 20 23" style={{ flexShrink: 0, verticalAlign: "middle" }} aria-hidden="true">
-      <path d="M1 1h18v9c0 6-5 10-9 12C6 20 1 16 1 10z" fill={color} stroke="#e8dcb8" strokeWidth="1.2" />
-    </svg>
-  );
-}
-
 // ---------- end of the night ----------
 function Domino({ a, b, title }) {
   const pip = (n, ox) => {
@@ -933,6 +877,7 @@ function Over({ w, myId, result, mine, cup, again, canAgain, solo, backHref, voi
     chores: "Every chore is done and the castle is secure. The Black Knight slinks away.",
     overrun: "Too few honest folk are left free. The Black Knight rules the night.",
     midnight: "The clock struck midnight and the Black Knight escaped into the dark.",
+    claymore: "The Donaghy Claymore found its mark: the Black Knight is slain!",
   }[result.reason];
   const castleWon = result.winner === "castle";
   const pts = cup.reduce((s, x) => s + x.points, 0);
