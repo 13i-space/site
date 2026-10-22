@@ -4,6 +4,16 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.05 (no SQL): the arcade expansion. XenoKlash has three tournaments
+  (store.tier) unlocking Rhakka, Zhaal and Morrow, Voraxx gets stronger each
+  time, and Tournament III ends with Xal'Thuun, the Hollow King, on the Hollow
+  Throne (Ultimate Champion). XenoKart has two Grand Prix cups (Rave, Frontier),
+  nine tracks and eight racers (Zhaal: win the Rave Cup; Morrow: win the
+  Frontier Cup; either also carries over from XenoKlash). Every game has a ♫
+  button for 13i songs. The Oracle's iris follows how close you are and turns
+  to a cat's slit now and then. From 6.05 the site copies of XenoKlash and
+  XenoKart (public/games/*.html) are ahead of their artifacts: edit the site
+  files, not the artifacts. XenoWing's artifact is still its source.
 - Update 6.03 (no SQL): Donaghy Castle plays like Clue - weapons, clue cards
   from chores, hidden helmets, sealed who/weapon/room accusations with a
   dramatic reveal, power-ups, the Donaghy Claymore, bullseye joust.

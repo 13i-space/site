@@ -7,8 +7,8 @@ import { createClient } from "../lib/supabaseBrowser";
 // XenoKlash (Update 5.99) runs as a standalone page in an iframe
 // (public/games/xenoklash.html). IframeGame records its plays and its
 // tournament scores like every other iframe game. This adds one thing:
-// unlock progress (tournaments won -> Voraxx and Rhakka unlocked, which
-// fighters have won) kept in Supabase table xk_progress
+// unlock progress (tournaments won; Voraxx, Rhakka, Zhaal and Morrow unlocked,
+// "ultimate" once the Hollow King falls; which fighters have won) kept in Supabase table xk_progress
 // (docs/v5.99-xenoklash-progress.sql), so it follows a Kin across devices.
 // Signed out, or the table not created yet: the game just keeps progress
 // in that browser, and nothing here throws.
@@ -63,5 +63,5 @@ export default function XenoKlashGame() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  return <IframeGame game={GAME} src="/games/xenoklash.html" title="XenoKlash" note="click the game to give it the keyboard · arrows move · A S D W · Space special · P pauses" />;
+  return <IframeGame game={GAME} songs src="/games/xenoklash.html?v=6.05" title="XenoKlash" note="click the game to give it the keyboard · arrows move · A S D W · Space special · P pauses" />;
 }

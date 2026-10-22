@@ -6,7 +6,7 @@ export default function XenoKlashPage() {
   return (
     <div>
       <div className="page-title">XenoKlash</div>
-      <div className="page-subtitle">galactic gladiators &middot; one-on-one alien fighting &middot; tournament leaderboard</div>
+      <div className="page-subtitle">galactic gladiators &middot; three tournaments &middot; the Hollow King &middot; tournament leaderboard</div>
       <XenoKlashGame />
     </div>
   );
