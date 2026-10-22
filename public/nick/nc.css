@@ -1,0 +1,75 @@
+/* New Concept Studios — shared system.
+   Layout concept: a designer's markup sheet. Clean pages, with "redline" annotations in mono
+   that point at what matters, the same way Nick marks up a comp. */
+:root{
+  --paper:#F5F6F3;      /* cool proof paper */
+  --surface:#FFFFFF;
+  --ink:#15171C;
+  --muted:#5B6070;
+  --rule:#DADDE3;
+  --blue:#2B44E8;       /* proof blue: links, primary */
+  --mark:#FFE24A;       /* highlighter */
+  --hl:#FFE24A;
+  --red:#D63A2F;        /* redline annotation */
+  --good:#1C8A4E; --warn:#B7791F; --bad:#C53030;
+  --on-blue:#FFFFFF;
+  --display:"Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --body:"IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --mono:"IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --wrap:1120px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#111318; --surface:#191C23; --ink:#ECEDF0; --muted:#A0A5B4; --rule:#2C303A;
+    --blue:#7D8CFF; --mark:#E6C93A; --hl:rgba(230,201,58,.38); --red:#FF7A6E; --good:#4CC17E; --warn:#E3A948; --bad:#FF7A6E;
+    --on-blue:#0E1020; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#111318; --surface:#191C23; --ink:#ECEDF0; --muted:#A0A5B4; --rule:#2C303A;
+  --blue:#7D8CFF; --mark:#E6C93A; --hl:rgba(230,201,58,.38); --red:#FF7A6E; --good:#4CC17E; --warn:#E3A948; --bad:#FF7A6E;
+  --on-blue:#0E1020; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font:400 17px/1.6 var(--body);margin:0}
+.wrap{max-width:var(--wrap);margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--display);line-height:1.05;letter-spacing:-.02em;text-wrap:balance;margin:0}
+h1{font-size:clamp(2.6rem,7vw,5.4rem);font-weight:700}
+h2{font-size:clamp(1.9rem,4vw,3rem);font-weight:700}
+h3{font-size:1.3rem;font-weight:600;letter-spacing:-.01em}
+p{margin:0;max-width:65ch}
+a{color:var(--blue)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--blue);outline-offset:3px}
+.mono{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase}
+.muted{color:var(--muted)}
+.hl{background:linear-gradient(transparent 58%,var(--hl) 58% 92%,transparent 92%);padding-inline:.08em}
+.redline{font-family:var(--mono);font-size:.76rem;color:var(--red);letter-spacing:.04em;display:inline-flex;gap:.5em;align-items:center}
+.redline::before{content:"";width:22px;height:1px;background:currentColor}
+
+/* top bar */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.bar .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px;flex-wrap:wrap}
+.logo{font-family:var(--display);font-weight:800;font-size:1.15rem;letter-spacing:-.02em;color:var(--ink);text-decoration:none;display:flex;align-items:center;gap:10px}
+.logo i{display:inline-grid;place-items:center;width:30px;height:30px;border:2px solid var(--ink);font-style:normal;font-size:.8rem;font-weight:800}
+.nav{display:flex;gap:18px;flex-wrap:wrap}
+.nav a{color:var(--muted);text-decoration:none;font-size:.95rem}
+.nav a:hover{color:var(--ink)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:.6em;font:600 1rem/1 var(--body);padding:15px 22px;border:2px solid var(--ink);color:var(--ink);background:transparent;text-decoration:none;cursor:pointer}
+.btn:hover{background:var(--ink);color:var(--paper)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.btn.primary:hover{filter:brightness(1.08);color:var(--on-blue);background:var(--blue)}
+.btn .arr{transition:transform .2s}
+.btn:hover .arr{transform:translateX(4px)}
+
+section{padding-block:clamp(56px,9vw,104px)}
+.sec-head{display:grid;gap:14px;margin-bottom:40px}
+.ruled{border-top:1px solid var(--rule)}
+
+.chip{align-self:start;justify-self:start;display:inline-block;font:600 .7rem/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;padding:5px 8px;border:1px solid currentColor}
+.chip.high{color:var(--bad)} .chip.med{color:var(--warn)} .chip.low{color:var(--muted)} .chip.ok{color:var(--good)}
+
+footer.site{border-top:1px solid var(--rule);padding-block:40px;color:var(--muted);font-size:.9rem}
+footer.site .wrap{display:grid;gap:12px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}

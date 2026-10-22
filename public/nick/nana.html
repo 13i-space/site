@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nana Sushi-Thai Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
+<style>
+/* Nana Sushi-Thai concept. Single dark look by choice, taken from their own logo:
+   black, rice white and salmon, with rounded type that matches the mascot.
+   Layout concept: food first. Big photos, today's hours always in reach, ordering one tap away. */
+:root{
+  --ink:#0B0B0C; --ink2:#141416; --ink3:#1C1C1F; --line:#2A2A2F;
+  --rice:#F7EFE6; --dim:#B3ABA2;
+  --salmon:#F26B4F; --salmon2:#FF8A6A; --open:#7FD08A; --closed:#F08A6E;
+  --round:"Zen Maru Gothic","Hiragino Maru Gothic ProN","Arial Rounded MT Bold",system-ui,sans-serif;
+  --sans:"Zen Kaku Gothic New","Hiragino Sans","Helvetica Neue",Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--ink);color:var(--rice);font:400 16.5px/1.65 var(--sans);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:20px}
+h1,h2,h3{font-family:var(--round);font-weight:700;line-height:1.08;margin:0;text-wrap:balance}
+p{margin:0;max-width:60ch}
+a{color:var(--salmon2)}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid var(--salmon);outline-offset:3px}
+.eyebrow{font:700 .74rem var(--sans);letter-spacing:.2em;text-transform:uppercase;color:var(--salmon)}
+.dim{color:var(--dim)}
+
+.concept{background:#F7EFE6;color:#0B0B0C;font-size:.8rem;font-weight:500}
+.concept .wrap{display:flex;justify-content:space-between;gap:8px 16px;flex-wrap:wrap;padding-block:7px}
+.concept a{color:#0B0B0C;font-weight:700;margin-left:14px}
+
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:rgba(11,11,12,.86);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;gap:14px;padding-block:8px;flex-wrap:wrap}
+.brand img{height:54px;width:auto;display:block}
+.top nav{display:flex;gap:24px;flex-wrap:wrap}
+.top nav a{color:var(--dim);text-decoration:none;font-size:.95rem}
+.top nav a:hover{color:var(--rice)}
+.btn{display:inline-flex;align-items:center;gap:.5em;padding:14px 24px;border-radius:999px;font:700 .95rem/1 var(--sans);text-decoration:none;border:1.5px solid var(--rice);color:var(--rice);background:transparent;cursor:pointer}
+.btn.solid{background:var(--salmon);border-color:var(--salmon);color:#1A0905}
+.btn:hover{filter:brightness(1.08)}
+.btn.ghost:hover{background:rgba(247,239,230,.08)}
+
+.hero{position:relative;min-height:min(640px,82vh);display:grid;align-items:end;background:url(img/nana-banner-1.jpg) 70% center/cover;border-bottom:1px solid var(--line)}
+.hero::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(11,11,12,.95) 0%,rgba(11,11,12,.75) 38%,rgba(11,11,12,.1) 75%),linear-gradient(0deg,rgba(11,11,12,.9),transparent 40%)}
+.hero .wrap{position:relative;width:100%;padding-block:clamp(48px,8vw,96px)}
+.hero .copy{display:grid;gap:22px;max-width:600px}
+.hero h1{font-size:clamp(2.8rem,7vw,5.4rem);font-weight:900;letter-spacing:-.01em}
+.hero h1 span{color:var(--salmon)}
+.hero .lede{font-size:1.12rem;color:#DDD4CA}
+.status{display:inline-flex;align-items:center;gap:10px;justify-self:start;padding:8px 14px;border:1px solid rgba(255,255,255,.18);border-radius:999px;font-size:.92rem;background:rgba(11,11,12,.6);backdrop-filter:blur(6px)}
+.status i{width:9px;height:9px;border-radius:50%;background:var(--open);box-shadow:0 0 0 4px rgba(127,208,138,.22)}
+.status.closed i{background:var(--closed);box-shadow:0 0 0 4px rgba(240,138,110,.22)}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+@media (max-width:700px){.hero{background-position:60% center}.hero::before{background:linear-gradient(0deg,rgba(11,11,12,.97) 30%,rgba(11,11,12,.55) 75%,rgba(11,11,12,.3))}}
+
+.lunch{background:var(--salmon);color:#1A0905}
+.lunch .wrap{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding-block:16px}
+.lunch b{font:700 1.2rem var(--round)}
+.lunch a{color:#1A0905;font-weight:700}
+
+section{padding-block:clamp(56px,9vw,104px)}
+.head{display:grid;gap:12px;margin-bottom:34px}
+.head h2{font-size:clamp(2rem,4.6vw,3.3rem)}
+
+.cats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+@media (max-width:860px){.cats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.cats{grid-template-columns:1fr}}
+.cat{position:relative;aspect-ratio:4/3;border-radius:22px;overflow:hidden;text-decoration:none;color:var(--rice);display:grid;align-items:end;border:1px solid var(--line)}
+.cat img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .5s}
+.cat::after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(11,11,12,.88),rgba(11,11,12,0) 60%)}
+.cat span{position:relative;z-index:1;padding:18px 20px;display:grid;gap:2px}
+.cat b{font:700 1.3rem var(--round)}
+.cat small{color:var(--dim)}
+.cat:hover img{transform:scale(1.04)}
+
+.sig{display:grid;grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr);gap:48px;align-items:start}
+@media (max-width:860px){.sig{grid-template-columns:1fr}}
+.sig .photo{position:sticky;top:110px;border-radius:26px;overflow:hidden;aspect-ratio:1;border:1px solid var(--line)}
+.sig .photo img{width:100%;height:100%;object-fit:cover;display:block}
+@media (max-width:860px){.sig .photo{position:relative;top:0}}
+.rolls{display:grid;gap:0}
+.roll{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 18px;padding-block:20px;border-bottom:1px solid var(--line)}
+.roll h3{font-size:1.3rem}
+.roll .p{font:700 1.1rem var(--round);color:var(--salmon);font-variant-numeric:tabular-nums}
+.roll p{grid-column:1/-1;color:var(--dim);font-size:.95rem}
+.pop{grid-column:1/-1;justify-self:start;font:700 .66rem var(--sans);letter-spacing:.14em;text-transform:uppercase;color:#1A0905;background:var(--salmon);padding:4px 9px;border-radius:99px}
+
+.menu{background:var(--ink2);border-block:1px solid var(--line)}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
+.tabs button{font:500 .95rem var(--sans);padding:10px 18px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
+.tabs button[aria-selected="true"]{background:var(--rice);color:var(--ink);border-color:var(--rice)}
+.menu-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:0 48px}
+.item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;padding-block:16px;border-bottom:1px dashed var(--line)}
+.item b{font:700 1.05rem var(--round)}
+.item .p{font-variant-numeric:tabular-nums;color:var(--salmon2);font-weight:700}
+.item span.d{grid-column:1/-1;color:var(--dim);font-size:.9rem}
+.menu-note{margin-top:18px;font-size:.85rem;color:var(--dim)}
+
+.quote{position:relative;background:url(img/nana-g6.jpg) center/cover;text-align:center}
+.quote::before{content:"";position:absolute;inset:0;background:rgba(11,11,12,.82)}
+.quote .wrap{position:relative;display:grid;gap:22px;justify-items:center}
+.quote blockquote{margin:0;font:700 clamp(1.9rem,4.6vw,3.4rem)/1.18 var(--round);max-width:20ch}
+.revs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:20px;width:100%;text-align:left}
+.revs div{border-top:1px solid rgba(255,255,255,.18);padding-top:14px;color:#D9D0C6;font-size:.95rem}
+.revs b{color:var(--salmon);letter-spacing:.1em;display:block;margin-bottom:6px}
+
+.rewards .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px;align-items:center}
+@media (max-width:860px){.rewards .wrap{grid-template-columns:1fr}}
+.card{border-radius:26px;padding:30px;background:linear-gradient(140deg,#F26B4F,#E2513A);color:#1A0905;display:grid;gap:18px;box-shadow:0 30px 80px -30px rgba(242,107,79,.6)}
+.card .hd{display:flex;justify-content:space-between;align-items:center}
+.card .hd b{font:900 1.5rem var(--round)}
+.card .hd img{height:44px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.25))}
+.stamps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px}
+.stamps span{aspect-ratio:1;border-radius:50%;border:2px dashed rgba(26,9,5,.4);display:grid;place-items:center;font:700 .74rem var(--sans)}
+.stamps span.on{background:#1A0905;color:var(--salmon);border:2px solid #1A0905}
+.stamps span.free{border-style:solid;border-color:#1A0905}
+form.join{display:grid;gap:12px}
+form.join label{font-size:.85rem;font-weight:700;display:grid;gap:6px;color:var(--rice)}
+form.join input{font:400 1rem var(--sans);padding:13px 14px;border:1px solid var(--line);border-radius:12px;background:var(--ink2);color:var(--rice)}
+form.join small{color:var(--dim)}
+.done{padding:12px 14px;border-radius:12px;border:1px solid rgba(127,208,138,.45);color:#B5E8BC}
+
+.visit .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px}
+@media (max-width:860px){.visit .wrap{grid-template-columns:1fr}}
+.hours{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+.hours td{padding:12px 0;border-bottom:1px solid var(--line)}
+.hours td:last-child{text-align:right;color:var(--dim)}
+.hours tr.today td{color:var(--salmon2);font-weight:700}
+.addr{display:grid;gap:14px;align-content:start}
+.addr .big{font:700 1.7rem/1.25 var(--round)}
+.copyrow{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.copyrow output{font:700 1.3rem var(--round);user-select:all}
+.mini{font:500 .8rem var(--sans);padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--dim);cursor:pointer}
+
+footer{border-top:1px solid var(--line);padding-block:30px;color:var(--dim);font-size:.85rem}
+footer .wrap{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;align-items:center}
+footer img{height:40px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="concept"><div class="wrap"><span>Concept prototype by New Concept Studios. Not the live Nana Sushi-Thai website.</span><span><a href="nana-report.html">← Back to the report</a><a href="index.html">Back to Nick's pitch</a></span></div></div>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#"><img src="img/nana-logo.png" alt="Nana Sushi-Thai"></a>
+    <nav aria-label="Main"><a href="#menu">Menu</a><a href="#rolls">Signature rolls</a><a href="#rewards">Rewards</a><a href="#visit">Hours &amp; directions</a></nav>
+    <a class="btn solid" href="#menu">Order pickup</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero" style="padding:0">
+    <div class="wrap">
+      <div class="copy">
+        <span class="status" id="status"><i></i><span id="statusText">Checking today's hours…</span></span>
+        <h1>Fresh sushi.<br><span>Real Thai.</span></h1>
+        <p class="lede">A calm room on State Road 7, generous rolls and curries made to order. Coconut Creek regulars have been coming back for fifteen years.</p>
+        <div class="ctas"><a class="btn solid" href="#menu">Order pickup</a><a class="btn ghost" href="#rolls">Signature rolls</a></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="lunch"><div class="wrap"><b>Weekday lunch specials from $13.95</b><a href="#menu" data-tab="lunch">Monday to Friday, 11:30 to 2:00 →</a></div></div>
+
+  <section>
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">The menu</span><h2>What are you hungry for?</h2></div>
+      <div class="cats">
+        <a class="cat" href="#menu" data-tab="rolls"><img src="img/nana-special.jpg" alt="Assorted sushi rolls and nigiri" loading="lazy"><span><b>Sushi &amp; rolls</b><small>Signature rolls from $17.95</small></span></a>
+        <a class="cat" href="#menu" data-tab="starters"><img src="img/nana-g2.jpg" alt="Salmon sashimi with ginger and wasabi" loading="lazy"><span><b>Sushi bar starters</b><small>Sashimi, nachos, sushi pizza</small></span></a>
+        <a class="cat" href="#menu" data-tab="thai"><img src="img/nana-g3.jpg" alt="Thai green curry with chicken and basil" loading="lazy"><span><b>Thai curries</b><small>Red, green, panang, massaman</small></span></a>
+        <a class="cat" href="#menu" data-tab="thai"><img src="img/nana-banner-2.jpg" alt="Stir-fried noodles with vegetables" loading="lazy"><span><b>Noodles &amp; wok</b><small>From the Thai kitchen</small></span></a>
+        <a class="cat" href="#menu" data-tab="soups"><img src="img/nana-g1.jpg" alt="Fried rice in a bowl with chopsticks" loading="lazy"><span><b>Soups &amp; bowls</b><small>Tom yum, tom kha, poke-style bowls</small></span></a>
+        <a class="cat" href="#menu" data-tab="lunch"><img src="img/nana-banner-3.jpg" alt="Bento lunch box with sushi and tempura" loading="lazy"><span><b>Lunch boxes</b><small>Weekdays, from $13.95</small></span></a>
+      </div>
+    </div>
+  </section>
+
+  <section id="rolls" style="padding-top:0">
+    <div class="wrap sig">
+      <div class="photo"><img src="img/nana-g4.jpg" alt="Maki rolls on a white plate with soy sauce" loading="lazy"></div>
+      <div>
+        <div class="head"><span class="eyebrow">From the sushi bar</span><h2>Signature rolls</h2><p class="dim">The ones regulars order by name.</p></div>
+        <div class="rolls" id="rollList"></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="menu" class="menu">
+    <div class="wrap">
+      <div class="head"><span class="eyebrow">Order pickup</span><h2>Sushi bar and Thai kitchen</h2></div>
+      <div class="tabs" role="tablist" aria-label="Menu sections" id="tabs"></div>
+      <div class="menu-list" id="menuList" role="tabpanel"></div>
+      <p class="menu-note">Prices from nanasushithai.com, October 2026. In the live site, every item adds straight to a commission-free pickup order.</p>
+    </div>
+  </section>
+
+  <section class="quote">
+    <div class="wrap">
+      <span class="eyebrow">From a regular</span>
+      <blockquote>“Been eating here for 15 years. Fresh, fast, and friendly!”</blockquote>
+      <div class="revs">
+        <div><b>★★★★★</b>“Fresh and addictive sushi.” The Orange Dragon gets a special mention.</div>
+        <div><b>★★★★★</b>“Service is impeccable and the atmosphere is calm and peaceful.”</div>
+        <div><b>★★★★★</b>“Great prices for generous portions.”</div>
+      </div>
+      <p style="font-size:.9rem;color:#D9D0C6">4.3 stars from 369 Google reviews</p>
+    </div>
+  </section>
+
+  <section id="rewards" class="rewards">
+    <div class="wrap">
+      <div class="card" aria-label="Example rewards card with 6 of 10 stamps">
+        <div class="hd"><b>Nana Rewards</b><img src="img/nana-logo.png" alt=""></div>
+        <div class="stamps"><span class="on">1</span><span class="on">2</span><span class="on">3</span><span class="on">4</span><span class="on">5</span><span class="on">6</span><span>7</span><span>8</span><span>9</span><span class="free">Free</span></div>
+        <span style="font-weight:700">4 more rolls until your free one</span>
+      </div>
+      <div style="display:grid;gap:16px">
+        <span class="eyebrow">Nana Rewards</span>
+        <h2 style="font-size:clamp(2rem,4.6vw,3.2rem)">Your tenth roll is on us.</h2>
+        <p class="dim">Give us your number at pickup or checkout. Every roll earns a stamp, and members hear about new rolls and specials first. One text a week at most.</p>
+        <form class="join" id="join" novalidate>
+          <label for="jname">First name<input id="jname" autocomplete="given-name" placeholder="Mai"></label>
+          <label for="jphone">Mobile number<input id="jphone" inputmode="tel" autocomplete="tel" placeholder="(954) 555-0123"></label>
+          <button class="btn solid" type="submit" style="justify-self:start">Join Nana Rewards</button>
+          <small>Prototype only. Nothing is saved or sent.</small>
+          <div class="done" id="joined" hidden></div>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <section id="visit" class="visit" style="border-top:1px solid var(--line)">
+    <div class="wrap">
+      <div class="addr">
+        <span class="eyebrow">Visit</span>
+        <div class="big">6512 N State Road 7<br>Coconut Creek, FL 33073</div>
+        <div class="copyrow"><output id="phone">954-725-5400</output><button class="mini" id="copyPhone" type="button">Copy number</button></div>
+        <p class="dim">Dine in, pickup or delivery. Easy parking out front. Book a table online or by phone.</p>
+        <a class="btn ghost" style="justify-self:start" href="https://www.google.com/maps/search/?api=1&query=Nana+Sushi-Thai+6512+N+State+Rd+7+Coconut+Creek+FL">Get directions</a>
+      </div>
+      <div>
+        <span class="eyebrow">Hours</span>
+        <table class="hours" id="hours" style="margin-top:14px"><tbody></tbody></table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><img src="img/nana-logo.png" alt="Nana Sushi-Thai"><span>© 2026 Nana Sushi-Thai · Coconut Creek, FL · Concept by New Concept Studios</span></div></footer>
+
+<script>
+(function(){
+  const signature=[
+    ["Green Dragon Roll","$17.95","Shrimp tempura and cucumber, topped with avocado, spicy mayo and eel sauce.","Most ordered"],
+    ["Black Dragon Roll","$18.95","Shrimp tempura, avocado and asparagus, topped with eel."],
+    ["Nana Roll","$19.95","Yellowtail tempura, seaweed salad, avocado and cucumber.","House roll"],
+    ["The Perfect Roll","$23.95","Shrimp tempura, cream cheese, tuna, asparagus and avocado."],
+    ["Lobster Bomb Roll","$27.95","Fried lobster, cucumber, avocado and lettuce, finished with house sauces."],
+    ["Sushi Pizza","$17.95","Crispy rice topped with spicy tuna, tempura flakes and masago."]
+  ];
+  document.getElementById('rollList').innerHTML=signature.map(r=>`<div class="roll">${r[3]?`<span class="pop">${r[3]}</span>`:''}<h3>${r[0]}</h3><span class="p">${r[1]}</span><p>${r[2]}</p></div>`).join('');
+
+  const menu={
+    rolls:{label:"Signature rolls",items:signature.map(r=>[r[0],r[1],r[2]])},
+    starters:{label:"Sushi bar starters",items:[
+      ["Hamachi Jalapeño (6)","$17.95","Yellowtail sashimi with jalapeño, masago and ponzu."],
+      ["Nana Nachos","$17.95","Tuna, salmon, crab, jalapeño and avocado on wonton chips."],
+      ["Lava Shrimp","$13.95","Fried shrimp in creamy chili sauce over salad."],
+      ["Bangkok Crispy Stick","$12.95","Marinated minced chicken wrapped in rice paper and fried."],
+      ["Tempura Appetizer","$12.95","Two jumbo shrimp with vegetable tempura."],
+      ["Age Tofu","$8.95","Soft tofu tempura with house sauce."]]},
+    thai:{label:"Thai kitchen",items:[
+      ["Panang Curry","$17.95","Thick curry with coconut milk, bell peppers and peanuts."],
+      ["Red Curry","$17.95","Red chili paste, coconut milk, bamboo shoots, green beans."],
+      ["Massaman Curry","$17.95","Yellow curry with sweet potato, onion and cashews."],
+      ["Basil Leaves","$17.95","Thai basil, bell peppers, onions and mushrooms."],
+      ["Soft Shell Crabs, Garlic Sauce","$27.95","Crispy soft shell crabs in garlic sauce."],
+      ["Salmon Teriyaki","$27.95","Grilled 8 oz salmon with steamed vegetables."]]},
+    soups:{label:"Soups & bowls",items:[
+      ["Tom Yum Goong","$8.95","Spicy shrimp soup with lemongrass and lime."],
+      ["Tom Kha, Shrimp","$9.95","Coconut milk soup with lime and galangal."],
+      ["Crab Miso Soup","$8.95","Miso with real crab meat."],
+      ["Salmon Bowl","$15.95","Salmon, seaweed salad, carrot and sesame over rice."],
+      ["Tuna Bowl","$15.95","Tuna, seaweed salad, carrot and sesame over rice."],
+      ["Chicken Katsu Bowl","$15.95","Fried chicken katsu over warm rice with spicy mayo."]]},
+    lunch:{label:"Lunch specials",note:"Monday to Friday, 11:30 AM to 2:00 PM",items:[
+      ["T-4 Chicken Teriyaki","$13.95","Grilled chicken, teriyaki sauce, steamed vegetables."],
+      ["J-3 Sushi Combo","$16.95","Spicy tuna roll, three pieces of sushi and a California roll."],
+      ["Lunch boxes","$14.95–$19.95","Combinations of rolls, sushi, sashimi and Thai favorites."]]}
+  };
+  const tabs=document.getElementById('tabs'),list=document.getElementById('menuList');
+  function show(key){
+    [...tabs.children].forEach(b=>b.setAttribute('aria-selected',b.dataset.k===key));
+    const m=menu[key];
+    list.innerHTML=(m.note?`<p class="dim" style="grid-column:1/-1;margin-bottom:8px">${m.note}</p>`:'')+m.items.map(i=>`<div class="item"><b>${i[0]}</b><span class="p">${i[1]}</span><span class="d">${i[2]}</span></div>`).join('');
+  }
+  Object.keys(menu).forEach(k=>{const b=document.createElement('button');b.type='button';b.setAttribute('role','tab');b.dataset.k=k;b.textContent=menu[k].label;b.onclick=()=>show(k);tabs.appendChild(b)});
+  show('rolls');
+  document.querySelectorAll('[data-tab]').forEach(a=>a.addEventListener('click',()=>show(a.dataset.tab)));
+
+  const days=["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+  const sched=d=>(d>=1&&d<=5)?[[690,870],[1020,1290]]:[[1020,1290]];
+  const t=m=>{let h=Math.floor(m/60),mm=m%60,ap=h>=12?'PM':'AM';h=h%12||12;return h+(mm?':'+String(mm).padStart(2,'0'):'')+' '+ap};
+  let now;
+  try{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/New_York',weekday:'long',hour:'numeric',minute:'numeric',hour12:false}).formatToParts(new Date());const get=k=>parts.find(p=>p.type===k).value;now={d:days.indexOf(get('weekday')),m:(+get('hour')%24)*60+(+get('minute'))}}
+  catch(e){const d=new Date();now={d:d.getDay(),m:d.getHours()*60+d.getMinutes()}}
+  const tb=document.querySelector('#hours tbody');
+  [1,2,3,4,5,6,0].forEach(d=>{const tr=document.createElement('tr');if(d===now.d)tr.className='today';tr.innerHTML=`<td>${days[d]}${d===now.d?' · today':''}</td><td>${sched(d).map(s=>t(s[0])+'–'+t(s[1])).join(', ')}</td>`;tb.appendChild(tr)});
+  const st=document.getElementById('status'),sx=document.getElementById('statusText');
+  const open=sched(now.d).find(s=>now.m>=s[0]&&now.m<s[1]);
+  if(open){sx.textContent='Open now · until '+t(open[1])}
+  else{st.classList.add('closed');const later=sched(now.d).find(s=>now.m<s[0]);
+    if(later)sx.textContent='Closed now · opens at '+t(later[0])+' today';
+    else{const nd=(now.d+1)%7;sx.textContent='Closed now · opens '+days[nd]+' at '+t(sched(nd)[0][0])}}
+
+  document.getElementById('join').addEventListener('submit',e=>{e.preventDefault();const n=document.getElementById('jname').value.trim()||'friend';const d=document.getElementById('joined');d.textContent='Welcome to Nana Rewards, '+n+'. In the live site, your first stamp would be waiting at pickup. (Prototype: nothing was saved.)';d.hidden=false});
+  document.getElementById('copyPhone').addEventListener('click',function(){const b=this;navigator.clipboard.writeText('954-725-5400').then(()=>{b.textContent='Copied'},()=>{const r=document.createRange();r.selectNodeContents(document.getElementById('phone'));const s=getSelection();s.removeAllRanges();s.addRange(r);b.textContent='Selected'})});
+})();
+</script>
+</body>
+</html>

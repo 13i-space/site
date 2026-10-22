@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nana Sushi-Thai Website Review</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="nc.css">
+<style>
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.hero{padding-block:clamp(48px,8vw,96px) 40px}
+.hero .wrap{display:grid;gap:22px}
+.hero .lede{font-size:clamp(1.1rem,2vw,1.3rem);color:var(--muted);max-width:60ch}
+.meta{display:flex;gap:10px 24px;flex-wrap:wrap;font-family:var(--mono);font-size:.78rem;color:var(--muted);letter-spacing:.04em}
+
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.tiles div{background:var(--surface);padding:22px;display:grid;gap:6px}
+.tiles b{font:700 2rem/1 var(--display);font-variant-numeric:tabular-nums}
+.tiles span{font-size:.88rem;color:var(--muted)}
+
+.market{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,.7fr);gap:clamp(24px,5vw,56px);align-items:start}
+@media (max-width:860px){.market{grid-template-columns:1fr}}
+.chart{background:var(--surface);border:1px solid var(--rule);padding:22px 22px 12px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:520px;height:auto}
+.chart text{font-family:var(--body);font-size:13px;fill:var(--muted)}
+.chart .lbl-me{fill:var(--ink);font-weight:600}
+.chart .grid{stroke:var(--rule)}
+.chart .stem{stroke:var(--rule);stroke-width:2}
+.chart .dot{fill:var(--muted)}
+.chart .dot.me{fill:var(--blue)}
+.chart .val{font-family:var(--mono);font-size:12px;fill:var(--ink)}
+.chart .src{font-size:11px}
+.takeaway{display:grid;gap:14px}
+.takeaway .big{font:800 3.4rem/1 var(--display)}
+
+.voices{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.voice{background:var(--surface);border:1px solid var(--rule);padding:24px;display:grid;gap:12px;align-content:start}
+.voice ul{margin:0;padding-left:1.1em;display:grid;gap:8px;color:var(--muted)}
+.voice q{color:var(--ink)}
+
+.findings{display:grid;gap:0;border-top:2px solid var(--ink)}
+.finding{display:grid;grid-template-columns:96px minmax(0,1fr);gap:20px;padding-block:22px;border-bottom:1px solid var(--rule)}
+.finding h3{font-size:1.15rem}
+.finding p{color:var(--muted);margin-top:6px}
+.finding code{font-family:var(--mono);font-size:.82em;background:color-mix(in srgb,var(--red) 10%,transparent);color:var(--ink);padding:1px 5px;word-break:break-word}
+.finding .chip{justify-self:start;margin-top:3px}
+@media (max-width:560px){.finding{grid-template-columns:1fr;gap:8px}}
+
+.working{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.working div{padding:20px;border:1px solid var(--rule);background:var(--surface);display:grid;gap:8px}
+.working div::before{content:"✓";font-weight:700;color:var(--good)}
+
+.money{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;align-items:stretch}
+.money .cell{padding:24px;border:1px solid var(--rule);background:var(--surface);display:grid;gap:6px}
+.money b{font:700 2.2rem/1 var(--display);font-variant-numeric:tabular-nums}
+
+.ideas{padding:0;margin:0;display:grid;gap:12px;counter-reset:i}
+.ideas li{list-style:none;display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:baseline}
+.ideas li::before{counter-increment:i;content:counter(i);font:700 1.4rem/1 var(--display);color:var(--blue)}
+.ideas li span{color:var(--muted)}
+
+.reveal{background:#0F1A16;color:#EDE6D6;padding-block:clamp(64px,10vw,120px);text-align:left;position:relative;overflow:hidden}
+.reveal .wrap{display:grid;gap:22px;position:relative;z-index:1}
+.reveal h2{color:#EDE6D6;font-size:clamp(2.2rem,5vw,3.8rem)}
+.reveal p{color:#BDB5A3}
+.reveal .btn{background:#C9A24A;border-color:#C9A24A;color:#0F1A16;font-size:1.1rem;padding:20px 28px;justify-self:start}
+.reveal .btn:hover{background:#E0BB60;border-color:#E0BB60;color:#0F1A16}
+.reveal svg{position:absolute;right:-60px;top:50%;transform:translateY(-50%);width:min(420px,60vw);opacity:.85}
+.sources{font-size:.85rem;color:var(--muted);display:grid;gap:6px}
+.sources a{color:var(--muted)}
+</style>
+</head>
+<body>
+<div style="background:#15171C;color:#F5F6F3;font:400 .8rem var(--mono)"><div class="wrap" style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding-block:7px"><span>Demo: this is the page a restaurant owner would receive.</span><a href="index.html" style="color:#FFE24A">← Back to Nick's pitch</a></div></div>
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="index.html"><i>NC</i>New Concept Studios</a>
+    <span class="mono muted">Private report</span>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <div class="meta"><span>Prepared for Nana Sushi-Thai</span><span>6512 N State Rd 7, Coconut Creek</span><span>October 2026</span></div>
+      <h1 style="font-size:clamp(2.4rem,6vw,4.6rem)">People already love Nana. <span class="hl">Your website should show it.</span></h1>
+      <p class="lede">We're a small design studio in South Florida. We looked at how Nana shows up online, compared it with the Thai and sushi places around you, and rebuilt your website to show what's possible. It's free to look. Your new site is at the end of this page.</p>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="tiles">
+        <div><b>4.3★</b><span>Google rating across 369 reviews</span></div>
+        <div><b>15 yrs</b><span>How long one regular quoted on your site has been coming</span></div>
+        <div><b>$17.95</b><span>Most Thai curries. Signature rolls run $18.95 to $27.95</span></div>
+        <div><b>0</b><span>Ways for a regular to sign up for news or rewards</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Your market</span>
+        <h2>You're in a crowded, well-reviewed neighborhood.</h2>
+      </div>
+      <div class="market">
+        <div class="chart" role="img" aria-label="Ratings of nine nearby Thai and sushi restaurants. Nana Sushi-Thai is 4.4, fourth of nine.">
+          <svg id="dots" viewBox="0 0 640 380"></svg>
+        </div>
+        <div class="takeaway">
+          <span class="mono muted">Nana's rank nearby</span>
+          <span class="big">4th of 9</span>
+          <p class="muted">Your ratings are good, and so are your neighbors'. Within a short drive, diners can pick from dozens of Thai and sushi spots rated 4 stars or higher. When food quality looks the same on paper, people choose based on what they see online: photos, hours they can trust, and how easy it is to order.</p>
+          <p class="muted">One listing site shows about 50 Thai and sushi restaurants across north Broward and Boca.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">What diners say</span>
+        <h2>Your reviews tell a clear story.</h2>
+      </div>
+      <div class="voices">
+        <div class="voice"><span class="chip ok">What they love</span><ul>
+          <li><q>Fresh and addictive sushi</q>, with the Orange Dragon roll called out</li>
+          <li><q>Great prices for generous portions</q></li>
+          <li><q>Service is impeccable and the atmosphere is calm and peaceful</q></li>
+          <li><q>So happy this restaurant survived the pandemic and is still going strong!</q></li>
+        </ul></div>
+        <div class="voice"><span class="chip med">What comes up sometimes</span><ul>
+          <li>A few diners mention smaller roll sizes</li>
+          <li>Some find the seating uncomfortable</li>
+          <li>A few say the Thai dishes could be bolder</li>
+        </ul><p class="muted" style="font-size:.9rem">None of these are website problems. A site can still help, though: showing roll sizes in photos sets expectations before people arrive.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Your website today</span>
+        <h2>What's working</h2>
+      </div>
+      <div class="working">
+        <div><b>Online ordering is built in</b><span class="muted">Pickup and delivery are one tap from the homepage.</span></div>
+        <div><b>A full menu with prices</b><span class="muted">Every dish is listed with a description and price, including lunch specials.</span></div>
+        <div><b>A real customer voice</b><span class="muted">The 15-year regular's testimonial is the best line on the site.</span></div>
+        <div><b>Address and phone are easy to find</b><span class="muted">Both appear on the homepage.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2>What's holding it back</h2>
+        <p class="muted">Ranked by how much each one likely costs you in visits and orders.</p>
+      </div>
+      <div class="findings">
+        <div class="finding"><span class="chip high">High</span><div><h3>Regulars have no way to hear from you</h3><p>There's no email or text signup and no rewards program. Your most loyal customers can't find out about a new roll, a holiday special or a slow-Tuesday deal unless they happen to walk in.</p></div></div>
+        <div class="finding"><span class="chip high">High</span><div><h3>Your hours aren't on the homepage</h3><p>Nana closes between lunch and dinner on weekdays and serves dinner only on weekends. That split is exactly what people check before driving over, and right now they have to look elsewhere.</p></div></div>
+        <div class="finding"><span class="chip high">High</span><div><h3>Google shows a garbled page title</h3><p>Your page title reads <code>Nana Sushi-Thai6512 N State Rd 7, Coconut Creek, FL 33073, USASushi,Thai Restaurant</code>, with words run together. That title is the blue link people see in search results.</p></div></div>
+        <div class="finding"><span class="chip med">Medium</span><div><h3>The ordering experience feels like someone else's</h3><p>The site carries "Powered by Zingmyorder" branding. It works, but it looks like a template, and it doesn't feel like the calm, cared-for place your reviews describe.</p></div></div>
+        <div class="finding"><span class="chip med">Medium</span><div><h3>Reservations are phone-only</h3><p>The site says to call. Diners planning a birthday dinner at 10pm can't book.</p></div></div>
+        <div class="finding"><span class="chip low">Low</span><div><h3>Small copy slips</h3><p>The About section opens with <code>We offers great tasting Thai food</code>. Easy to fix, and it matters to first-time visitors.</p></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Delivery apps</span>
+        <h2>Every app order costs you a slice.</h2>
+        <p class="muted">Delivery apps commonly charge restaurants 15% to 30% per order. Orders placed on your own site keep that money with you.</p>
+      </div>
+      <div class="money">
+        <div class="cell"><span class="mono muted">Example order</span><b>$60</b><span class="muted">Two signature rolls, a curry and soup</span></div>
+        <div class="cell"><span class="mono muted">App commission</span><b>$9–$18</b><span class="muted">At 15% to 30%</span></div>
+        <div class="cell"><span class="mono muted">20 orders a week moved to your site</span><b>$9k–$19k</b><span class="muted">Kept per year, at $60 each. An illustration, not a forecast.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap" style="display:grid;gap:28px">
+      <div class="sec-head" style="margin:0">
+        <span class="redline">What we changed</span>
+        <h2>Five things your new site does.</h2>
+      </div>
+      <ol class="ideas">
+        <li><div><b>Shows whether you're open right now.</b> <span>Today's hours sit at the top, including the lunch-to-dinner break.</span></div></li>
+        <li><div><b>Puts the food first.</b> <span>Signature rolls lead the page, with clear prices and big photos.</span></div></li>
+        <li><div><b>Turns regulars into a list.</b> <span>Nana Rewards: sign up with a phone number, earn a free roll, get first word on specials.</span></div></li>
+        <li><div><b>Makes ordering yours.</b> <span>Commission-free pickup ordering under your own name.</span></div></li>
+        <li><div><b>Leads with your reviews.</b> <span>Your regulars say it better than any ad could.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <svg viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="92" fill="#1D1D1B"/><circle cx="100" cy="100" r="78" fill="#F4EFE4"/><circle cx="100" cy="100" r="40" fill="#E2683C"/><circle cx="86" cy="92" r="14" fill="#7BAF5A"/><circle cx="114" cy="110" r="12" fill="#F2D27A"/></svg>
+    <div class="wrap">
+      <span class="mono" style="color:#C9A24A">Your new website</span>
+      <h2>We already built it.</h2>
+      <p style="max-width:52ch">No cost to build. If you like it, a simple monthly plan keeps it updated, runs your ordering and rewards, and sends your promotions for you.</p>
+      <a class="btn" href="nana.html">See Nana, reimagined <span class="arr">→</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>New Concept Studios · South Florida. This is an unsolicited concept. We are not affiliated with Nana Sushi-Thai.</span>
+    <div class="sources">
+      <span>Sources, checked October 2, 2026:</span>
+      <a href="https://nanasushithai.com/">nanasushithai.com</a>
+      <a href="https://wanderlog.com/place/details/2979187/nana-sushi-thai">Wanderlog: Google rating and review count</a>
+      <a href="https://www.restaurantji.com/fl/coconut-creek/thai/">Restaurantji: nearby Thai and sushi ratings</a>
+      <a href="https://www.restaurantji.com/fl/coconut-creek/nana-sushi-thai-/">Restaurantji: Nana reviews</a>
+      <a href="https://www.duck-hub.com/blog/food-delivery-commission-rates">Delivery commission rates, 2026</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const data=[
+    ["Fisho Sushi & Thai","Coral Springs",4.7],
+    ["Nakama Sushi Thai","Margate",4.5],
+    ["Tobu Thai & Sushi","Coral Springs",4.5],
+    ["Nana Sushi-Thai","Coconut Creek",4.4,1],
+    ["Jasmine Thai & Sushi","Margate",4.3],
+    ["SAISAKI Sushi & Kitchen","Coral Springs",4.3],
+    ["Spikey Ty Asian","Coral Springs",4.2],
+    ["Bluefin Sushi","Parkland",4.1],
+    ["Hamachi Thai & Sushi","Coral Springs",4.1]
+  ];
+  const svg=document.getElementById('dots'),NS='http://www.w3.org/2000/svg';
+  const L=230,R=600,T=20,row=36,min=3.5,max=5;
+  const x=v=>L+(v-min)/(max-min)*(R-L);
+  const el=(n,a,t)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(t!=null)e.textContent=t;svg.appendChild(e);return e};
+  const bottom=T+data.length*row;
+  [3.5,4,4.5,5].forEach(v=>{el('line',{x1:x(v),x2:x(v),y1:T-6,y2:bottom,class:'grid'});el('text',{x:x(v),y:bottom+20,'text-anchor':'middle'},v.toFixed(1)+'★')});
+  data.forEach((d,i)=>{
+    const y=T+i*row+row/2;
+    el('text',{x:0,y:y-2,class:d[3]?'lbl-me':''},d[0]);
+    el('text',{x:0,y:y+13,style:'font-size:11px'},d[1]);
+    el('line',{x1:x(min),x2:x(d[2]),y1:y,y2:y,class:'stem'});
+    const c=el('circle',{cx:x(d[2]),cy:y,r:d[3]?9:7,class:'dot'+(d[3]?' me':'')});
+    const tt=document.createElementNS(NS,'title');tt.textContent=d[0]+', '+d[1]+': '+d[2].toFixed(1)+' stars';c.appendChild(tt);
+    el('text',{x:x(d[2])+14,y:y+4,class:'val'},d[2].toFixed(1));
+  });
+  el('text',{x:0,y:bottom+44,class:'src'},'Restaurantji ratings, October 2026. Scale starts at 3.5 stars.');
+  svg.setAttribute('viewBox','0 0 640 '+(bottom+52));
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,278 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NC Studios Relaunch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="nc.css">
+<style>
+.hero{padding-block:clamp(56px,10vw,120px) clamp(40px,6vw,72px)}
+.hero .wrap{display:grid;gap:28px}
+.hero .lede{font-size:clamp(1.15rem,2.2vw,1.4rem);color:var(--muted);max-width:58ch}
+.hero .ctas{display:flex;gap:12px;flex-wrap:wrap}
+.hero h1 .strike{position:relative;color:var(--muted);font-weight:400}
+.hero h1 .strike::after{content:"";position:absolute;left:-2%;right:-2%;top:54%;height:.08em;background:var(--red);transform:rotate(-3deg)}
+
+.stuck{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1px;background:var(--rule);border:1px solid var(--rule)}
+.stuck div{background:var(--surface);padding:26px;display:grid;gap:10px;align-content:start}
+.stuck b{font-family:var(--display);font-size:1.25rem;line-height:1.2}
+
+.steps{display:grid;gap:0;border-top:2px solid var(--ink)}
+.step{display:grid;grid-template-columns:72px 1fr minmax(0,300px);gap:24px;padding-block:28px;border-bottom:1px solid var(--rule);align-items:start}
+.step .n{font:700 2.4rem/1 var(--display);color:var(--blue)}
+.step p{color:var(--muted);margin-top:8px}
+.step .who{font-family:var(--mono);font-size:.78rem;color:var(--muted);display:grid;gap:4px;padding-top:6px}
+.step .who .redline{white-space:normal}
+@media (max-width:760px){.step{grid-template-columns:48px 1fr}.step .who{grid-column:2}}
+
+.case{display:grid;grid-template-columns:1.1fr .9fr;gap:0;border:2px solid var(--ink);background:var(--surface)}
+.case .l{padding:clamp(24px,4vw,44px);display:grid;gap:18px;align-content:start}
+.case .r{background:linear-gradient(0deg,rgba(11,11,12,.85),rgba(11,11,12,.15)),url(img/nana-banner-1.jpg) center/cover;color:#F7EFE6;min-height:300px;align-content:end!important;padding:clamp(24px,4vw,44px);display:grid;gap:14px;align-content:center;position:relative;overflow:hidden}
+.case .r .jp{font-family:"Shippori Mincho",serif;font-size:clamp(2.2rem,5vw,3.4rem);line-height:1.05}
+.case .r small{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:#FF8A6A;position:relative;z-index:1}
+.case .r .roll{position:absolute;right:-30px;bottom:-30px;width:200px;opacity:.9}
+.facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.facts div{border-top:1px solid var(--rule);padding-top:10px}
+.facts b{display:block;font:700 1.5rem/1.1 var(--display);font-variant-numeric:tabular-nums}
+.facts span{font-size:.85rem;color:var(--muted)}
+.case .ctas{display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width:820px){.case{grid-template-columns:1fr}.case .r{min-height:220px}}
+
+.tiers{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.tier{border:1px solid var(--rule);background:var(--surface);padding:26px;display:grid;gap:14px;align-content:start}
+.tier.feat{border:2px solid var(--blue)}
+.tier .price{font:700 2.4rem/1 var(--display);font-variant-numeric:tabular-nums}
+.tier .price small{font:400 .95rem var(--body);color:var(--muted)}
+.tier ul{margin:0;padding-left:1.1em;display:grid;gap:6px;color:var(--muted);font-size:.95rem}
+
+.math{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,5vw,64px);align-items:center}
+.ctrl{display:grid;gap:8px;margin-bottom:22px}
+.ctrl label{display:flex;justify-content:space-between;font-weight:600}
+.ctrl output{font-family:var(--mono);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--blue)}
+.result{border:2px solid var(--ink);padding:28px;background:var(--surface);display:grid;gap:6px}
+.result .big{font:800 clamp(2.6rem,6vw,4rem)/1 var(--display);font-variant-numeric:tabular-nums}
+.result .sub{color:var(--muted);font-variant-numeric:tabular-nums}
+@media (max-width:820px){.math{grid-template-columns:1fr}}
+
+.split{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
+.col{padding:26px;border:1px solid var(--rule);background:var(--surface);display:grid;gap:12px;align-content:start}
+.col.nick{border:2px solid var(--ink)}
+.col ul{margin:0;padding-left:1.1em;display:grid;gap:8px}
+.col li{color:var(--muted)} .col li b{color:var(--ink);font-weight:600}
+
+.niches{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.niche{padding:28px;background:var(--surface);border:1px solid var(--rule);display:grid;gap:10px;align-content:start}
+.niche .tag{justify-self:start}
+
+.plan{counter-reset:p;display:grid;gap:0;border-top:1px solid var(--rule)}
+.plan li{list-style:none;display:grid;grid-template-columns:110px 1fr;gap:20px;padding-block:18px;border-bottom:1px solid var(--rule)}
+.plan .wk{font-family:var(--mono);font-size:.8rem;color:var(--blue);padding-top:3px}
+.plan{padding:0;margin:0}
+@media (max-width:560px){.plan li{grid-template-columns:1fr;gap:4px}}
+
+.newsite{display:flex;justify-content:space-between;align-items:center;gap:24px;flex-wrap:wrap;padding:clamp(28px,5vw,48px);background:#15171C;color:#F5F6F3;border:1px solid var(--rule)}
+.newsite h2{color:#F5F6F3}
+.newsite p{color:#B9BCC6}
+.newsite .btn{border-color:#F5F6F3;color:#F5F6F3}
+.newsite .btn:hover{background:#F5F6F3;color:#15171C}
+</style>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@600&display=swap">
+
+<header class="bar">
+  <div class="wrap">
+    <a class="logo" href="#top"><i>NC</i>New Concept Studios</a>
+    <nav class="nav" aria-label="Sections">
+      <a href="#model">The model</a>
+      <a href="#case">Case study</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#roles">Who does what</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <span class="mono muted">For Nick · from Paul · October 2026</span>
+      <h1><span class="strike">Stop pitching.</span><br>Start showing.</h1>
+      <p class="lede">A new model for New Concept Studios. We redesign a local business's website <span class="hl">before they ever hear from us</span>. They see their own place made better, and they pay a monthly fee to keep it running.</p>
+      <div class="ctas">
+        <a class="btn primary" href="#case">See it on a real restaurant <span class="arr">→</span></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Why the current approach is hard</span>
+        <h2>Selling design hours is a tough business right now.</h2>
+      </div>
+      <div class="stuck">
+        <div><b>Every client starts as a stranger.</b><p class="muted">Each project means finding someone, pitching them, and convincing them in a meeting. That's the part nobody enjoys.</p></div>
+        <div><b>The price comparison got brutal.</b><p class="muted">Owners weigh a custom quote against a $20-a-month site builder and AI tools that promise a site in minutes.</p></div>
+        <div><b>Projects end. So does the income.</b><p class="muted">A one-time build pays once. Then it's back to finding the next client.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="model" class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">The new model</span>
+        <h2>Five steps. Only one needs a sales conversation, and it's with a yes.</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><span class="n">1</span><div><h3>Find</h3><p>Agents pull independent restaurants in an area from public listings: ratings, reviews, website, how they take orders.</p></div><div class="who"><span>Agents</span></div></div>
+        <div class="step"><span class="n">2</span><div><h3>Audit</h3><p>Claude reviews each site and where the restaurant stands in its market, then writes a plain-language report: what's working, what's holding them back.</p></div><div class="who"><span>Agents</span></div></div>
+        <div class="step"><span class="n">3</span><div><h3>Reimagine</h3><p>We build a working prototype of their new site with their real menu, hours and reviews. Nick reviews and polishes every one before it goes out.</p></div><div class="who"><span>Agents draft</span><span class="redline">Nick's eye goes here</span></div></div>
+        <div class="step"><span class="n">4</span><div><h3>Invite</h3><p>The owner gets a short, friendly note with a private link to their report. The report ends with a button that opens their new site.</p></div><div class="who"><span>Agents send, Nick writes the voice</span></div></div>
+        <div class="step"><span class="n">5</span><div><h3>Subscribe</h3><p>No build fee. A monthly plan covers hosting, menu changes, commission-free ordering, a rewards program and promotions.</p></div><div class="who"><span>Recurring revenue</span></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="case" class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Case study</span>
+        <h2>Walk through it the way an owner would.</h2>
+        <p class="muted">I picked a real place near you on State Road 7. Open the report first, as if you owned Nana, then hit the button at the end.</p>
+      </div>
+      <div class="case">
+        <div class="l">
+          <span class="mono muted">Coconut Creek, FL · Sushi &amp; Thai</span>
+          <h3 style="font-size:1.9rem">Nana Sushi-Thai</h3>
+          <p class="muted">Loyal regulars, fresh fish, fair prices. The website doesn't tell that story yet, and there's no way to keep those regulars coming back.</p>
+          <div class="facts">
+            <div><b>4.3★</b><span>Google, 369 reviews</span></div>
+            <div><b>15 yrs</b><span>"Been eating here for 15 years," says a testimonial on their site</span></div>
+            <div><b>0</b><span>Ways to join a mailing list or rewards program</span></div>
+            <div><b>15–30%</b><span>What delivery apps commonly take per order</span></div>
+          </div>
+          <div class="ctas">
+            <a class="btn primary" href="nana-report.html">Open Nana's report <span class="arr">→</span></a>
+            <a class="btn" href="nana.html">Skip to the new site</a>
+          </div>
+        </div>
+        <div class="r" aria-hidden="true">
+          <small>Prototype preview</small>
+          <img src="img/nana-logo.png" alt="" style="width:150px;position:relative;z-index:1">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="pricing" class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">What owners pay for</span>
+        <h2>Free to build. Monthly to run.</h2>
+        <p class="muted">Starting prices to test with the first ten clients. Restaurant platforms already charge in this range, so owners are used to it.</p>
+      </div>
+      <div class="tiers">
+        <div class="tier"><span class="mono muted">Essentials</span><div class="price">$149<small> /mo</small></div><ul><li>New site, hosted and secure</li><li>Menu, hours and special updates within a day</li><li>Google Business Profile kept current</li></ul></div>
+        <div class="tier feat"><span class="mono" style="color:var(--blue)">Growth · most owners</span><div class="price">$249<small> /mo</small></div><ul><li>Everything in Essentials</li><li>Commission-free online ordering</li><li>Rewards program for regulars</li><li>One email + text promo each month</li><li>Owner dashboard</li></ul></div>
+        <div class="tier"><span class="mono muted">Full service</span><div class="price">$399<small> /mo</small></div><ul><li>Everything in Growth</li><li>We plan and run the promo calendar</li><li>Weekly promos, written by us</li><li>Monthly results call</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap math">
+      <div>
+        <div class="sec-head" style="margin-bottom:24px">
+          <span class="redline">The math</span>
+          <h2>How many restaurants does it take?</h2>
+          <p class="muted">Move the sliders. This is a scenario to think with, not a forecast.</p>
+        </div>
+        <div class="ctrl"><label for="clients">Paying clients <output id="clientsOut">30</output></label><input id="clients" type="range" min="5" max="120" value="30"></div>
+        <div class="ctrl"><label for="avg">Average plan <output id="avgOut">$229</output></label><input id="avg" type="range" min="149" max="399" step="10" value="229"></div>
+        <div class="ctrl"><label for="cost">Costs per client (hosting, SMS, tools) <output id="costOut">$35</output></label><input id="cost" type="range" min="10" max="80" step="5" value="35"></div>
+      </div>
+      <div class="result" aria-live="polite">
+        <span class="mono muted">Monthly recurring revenue</span>
+        <span class="big" id="mrr">$6,870</span>
+        <span class="sub" id="net">$5,820 after costs · $69,840 a year</span>
+        <span class="sub" id="note" style="margin-top:10px">Prototypes needed at a 5% sign-up rate: about 600</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="roles" class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Who does what</span>
+        <h2>The agents do the volume. Nick does the part that makes it good.</h2>
+      </div>
+      <div class="split">
+        <div class="col"><span class="mono muted">Agents</span><ul><li>Finding restaurants and gathering their public data</li><li>Writing the first draft of every audit</li><li>Building first-draft prototypes from the real menu</li><li>Sending invites and follow-ups</li><li>Routine menu and hours updates</li><li>Monthly reports for each owner</li></ul></div>
+        <div class="col nick"><span class="mono">Nick</span><ul><li><b>Design review.</b> Nothing goes out until it looks right to him.</li><li><b>Voice.</b> Invite emails and promo texts written by someone who does stand-up. Funny gets opened.</li><li><b>Picking targets.</b> He knows which local spots deserve better.</li><li><b>No sales calls.</b> The prototype does the pitching.</li></ul></div>
+        <div class="col"><span class="mono muted">Paul</span><ul><li>Building and running the agent system</li><li>Templates, hosting and the owner dashboard</li><li>Billing and the business side</li></ul></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">Where to start</span>
+        <h2>Two niches we both already know.</h2>
+      </div>
+      <div class="niches">
+        <div class="niche"><span class="chip ok tag">Start here</span><h3>Asian restaurants in north Broward</h3><p class="muted">Coconut Creek, Margate, Coral Springs, Parkland. Nick eats at these places. One listing site shows about 50 Thai and sushi restaurants across north Broward and Boca alone, and most are independent.</p></div>
+        <div class="niche"><span class="chip low tag">Next</span><h3>Comedians and musicians</h3><p class="muted">Same funnel, different site: show dates, clips, a mailing list and merch. Nick knows the comedy world from the inside, and the monthly plan covers updates after every show.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="ruled">
+    <div class="wrap">
+      <div class="sec-head">
+        <span class="redline">The first 30 days</span>
+        <h2>Prove it by hand before we automate it.</h2>
+      </div>
+      <ol class="plan">
+        <li><span class="wk">Week 1</span><div><b>Pick 15 restaurants.</b> <span class="muted">Independent Asian spots within a 15-minute drive, with good reviews and weak websites.</span></div></li>
+        <li><span class="wk">Week 2</span><div><b>Build 15 reports and prototypes.</b> <span class="muted">Claude drafts, Nick reviews every one.</span></div></li>
+        <li><span class="wk">Week 3</span><div><b>Send the invites.</b> <span class="muted">Email, plus a printed card with a QR code dropped off or mailed. Track who opens the report.</span></div></li>
+        <li><span class="wk">Week 4</span><div><b>Count the yeses.</b> <span class="muted">Two or three sign-ups means the model works. Then we build the agents to do it at scale.</span></div></li>
+      </ol>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="newsite">
+        <div style="display:grid;gap:10px"><span class="mono" style="color:#FFE24A">One more thing</span><h2>Your site, rebuilt for the new model.</h2><p>Same black, same mark, same senior eye. Rebuilt to sell this model to restaurant owners and performers.</p></div>
+        <a class="btn" href="studio.html">Open the new nc-studios.com <span class="arr">→</span></a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site">
+  <div class="wrap">
+    <span>New Concept Studios · South Florida · Draft for discussion</span>
+    <span>Nana Sushi-Thai data comes from public sources (their website, Google via Wanderlog, Restaurantji) as of October 2, 2026. The prototype is a private concept and has not been sent to the restaurant.</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const fmt=n=>'$'+Math.round(n).toLocaleString('en-US');
+  function calc(){
+    const c=+$('clients').value,a=+$('avg').value,k=+$('cost').value;
+    $('clientsOut').textContent=c;$('avgOut').textContent=fmt(a);$('costOut').textContent=fmt(k);
+    const mrr=c*a,net=c*(a-k);
+    $('mrr').textContent=fmt(mrr);
+    $('net').textContent=fmt(net)+' after costs · '+fmt(net*12)+' a year';
+    $('note').textContent='Prototypes needed at a 5% sign-up rate: about '+(c*20).toLocaleString('en-US');
+  }
+  ['clients','avg','cost'].forEach(id=>$(id).addEventListener('input',calc));
+  calc();
+})();
+</script>
+
+</body></html>
