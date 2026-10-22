@@ -3,6 +3,13 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.04 — Signing in to the castle (Oct 2026)
+No SQL. /donaghy-castle used to show the ordinary 404 to anyone signed out,
+so Aaron opening the link on a browser where he wasn't signed in got
+"doesn't exist". Now a signed-out visitor goes to the sign-in page and
+straight back to the castle (/login?next=/donaghy-castle). Signed in but not
+on the family list (lib/familyGame.js) is still a 404.
+
 ## Update 6.03 — Donaghy Castle becomes a game of Clue (Oct 2026)
 No SQL. After the family's first nights, Paul's notes:
 - Who, with what, where: six period weapons (Dagger, Battle-Axe, Mace, Iron
