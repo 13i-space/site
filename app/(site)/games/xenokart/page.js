@@ -6,7 +6,7 @@ export default function XenoKartPage() {
   return (
     <div>
       <div className="page-title">XenoKart</div>
-      <div className="page-subtitle">grand prix of the worlds &middot; alien kart racing across four tracks &middot; leaderboard</div>
+      <div className="page-subtitle">two cups &middot; nine alien worlds &middot; eight racers &middot; leaderboard</div>
       <XenoKartGame />
     </div>
   );

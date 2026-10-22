@@ -3,16 +3,45 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
-## Update 6.05 — 13i songs while you play; phone fixes (Oct 2026)
-- **Play 13i songs instead**: under XenoKlash, XenoWing and XenoKart, a "♫ play 13i songs instead" button.
-  The page (IframeGame, prop `songs`) plays all three albums in random order with "now playing" and
+## Update 6.05 — Arcade expansion: three tournaments and the Hollow King, the Frontier Cup, 13i songs while you play; the Oracle watches (Oct 2026)
+No SQL (new unlocks ride in the existing `unlocked` arrays of xk_progress and xkart_progress).
+- **XenoKlash, Tournaments I-III**: winning a tournament moves you up a tier (store.tier; restored from
+  `unlocked` on the site). Tournament I unlocks Rhakka (and Voraxx for Versus), II unlocks **Zhaal, the Storm
+  Serpent** (lightning zoner: Arc Bolt, Thunder Coil, Skyfall, Fang Strike, Static Field, Tempest), III
+  unlocks **Morrow, the Spore Mother** (grappler/trapper: Spore Burst, Root Snare, Mycelium Embrace, Cap Slam,
+  Fungal Bloom, Overgrowth; heals when left alone). Voraxx returns stronger each time: Voraxx Ascended
+  (+20% health, +12% damage, sharper AI), then Voraxx Eternal (+40% / +24%, violet). Easy takes one step off.
+- **Xal'Thuun, the Hollow King**: after Voraxx falls in Tournament III, a final non-playable boss on a new
+  arena, the Hollow Throne (black sun, empty throne, drifting pillars). Three masks, a cloak of stars, a
+  scepter; heals as it hits; below half health it unmasks and stars fall on you. Beating it makes you
+  Ultimate Champion (crown, gold fireworks, store.ult, "ultimate" in `unlocked`) and opens the Hollow Throne
+  arena in Versus.
+- **Bigger wins**: a tournament win gets a gold flash, fireworks behind the champion, a fanfare, the
+  announcer, and an animated "New challenger unlocked" card for each fighter it unlocked. Locked fighters
+  show as silhouettes on the select screen with what unlocks them.
+- **XenoKart, two cups**: the Grand Prix is now the Rave Cup (the first five worlds) or the **Frontier Cup**,
+  four new tracks: Thornwood Hollow (Morrow's spore jungle: snapping plants that grab anyone hugging the
+  edge, a hollow log, a launch mushroom hidden in the ferns), Stormcrown Skyway (Zhaal's storm road: open
+  edges you can fall off, lightning strikes with warning rings, five bounce discs over a drop, a launch with
+  rings), Glacier Deep (slick ice, then down through a hole in the ice and along the sea floor with kelp,
+  anglerfish and a whale; currents push you, jumps float) and Dune Raiders Run (raiders paint you with a
+  laser then fire, a sandworm breaches across the road, sand traps, a secret canyon).
+- **XenoKart racers**: Zhaal (storm disc, Chain Lightning) and Morrow (puffball pod, Spore Cloud). Win the
+  Rave Cup for Zhaal, the Frontier Cup for Morrow, or bring them over from XenoKlash (same browser).
+- **XenoKart engine**: falling off and respawning, pit gaps with bounce pads, ice grip, underwater drag,
+  grabs, secret-shortcut flights, and walls that push you back onto the road instead of pinning you.
+- **Oracle eye**: the iris grows as your pointer comes closer and shrinks as it moves away; every so often
+  the pupil snaps to a cat's slit for a moment.
+- **Play 13i songs instead**: under XenoKlash, XenoWing and XenoKart, a "♫ play 13i songs instead" button
+  (and a ♫ button inside each game, so it works in full screen too).
+  The page (IframeGame, prop `songs`) plays all three albums and the remixes in random order with "now playing" and
   "next", and tells the game (message `music`) to quiet its own music. Remembered per browser.
 - **XenoKart**: steering pinned bottom-left, A / S / DRIFT / GAS pinned bottom-right.
 - **XenoKlash**: a ULT button on touch screens (A and S together, the ultimate in one tap).
 - **XenoKart: Magma Core Descent**, a fifth track and Kharn's home: a climb up a volcano's crater rim and
   a descent through a lava tube, with magma geysers that rumble then throw karts into the air, boulders
-  rolling across the road, a lava sea, stone colossi and rising embers. The Grand Prix is now five races.
-- Game files are loaded with a version tag (`?v=6.03`) so phones pick up updates instead of an old copy.
+  rolling across the road, a lava sea, stone colossi and rising embers.
+- Game files are loaded with a version tag (`?v=6.05`) so phones pick up updates instead of an old copy.
 - **Home screen app**: `app/manifest.js` (display fullscreen) and Apple web-app metadata, so 13i added
   to an iPhone home screen opens without Safari's address bar.
 ## Update 6.04 — Signing in to the castle (Oct 2026)

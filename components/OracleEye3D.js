@@ -37,11 +37,11 @@ precision highp float;
 varying vec2 v;
 uniform sampler2D uIris;
 uniform vec3 uF, uR, uU;   // the eye's forward, right and up, in view space
-uniform float uT, uPupil, uLid, uPx;
+uniform float uT, uPupil, uLid, uPx, uIrisS, uSlit;
 
 const float WIN = 0.90;    // the window inside the gold ring
 const float RS = 1.32;     // the eyeball's radius, in window units: bigger than the window
-const float IRIS = 0.40;   // the iris's angular radius on the sphere (radians)
+const float IRIS0 = 0.40;  // the iris's angular radius on the sphere (radians), before it reacts to you
 
 float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float noise(vec3 x) {
@@ -54,6 +54,7 @@ float fbm(vec3 p) { float s = 0.0, a = 0.5; for (int i = 0; i < 4; i++) { s += a
 float veins(vec3 p) { float n = 1.0 - abs(fbm(p) * 2.0 - 1.0); return pow(n, 9.0); }
 
 void main() {
+  float IRIS = IRIS0 * uIrisS;      // Update 6.05: the iris grows as you come closer
   vec2 q = v;                       // -1..1 across the canvas, y up
   float r = length(q);
   vec3 col = vec3(0.0);
@@ -83,15 +84,19 @@ void main() {
       float ang = atan(L.y, L.x) + uT * 0.02;       // a slow drift of the stroma
       float pu = uPupil;
       // the pupil pushes the iris fibres outward as it widens
-      float tr = rr < pu ? 0.0 : mix(0.12, 1.0, (rr - pu) / (1.0 - pu));
+      // Update 6.05: now and then the pupil snaps into a vertical slit, like a cat's
+      vec2 ip = rr * vec2(cos(ang - uT * 0.02), sin(ang - uT * 0.02));
+      float rs = length(ip / vec2(mix(1.0, 0.16, uSlit), mix(1.0, 1.5, uSlit)));
+      float tr = rs < pu ? 0.0 : mix(0.12, 1.0, clamp((rr - pu * mix(1.0, 0.2, uSlit)) / (1.0 - pu), 0.0, 1.0));
       vec2 uv = 0.5 + 0.5 * tr * vec2(cos(ang), sin(ang));
       vec3 ir = texture2D(uIris, uv).rgb;
       float edge = smoothstep(1.02, 0.97, rr);
+      ir = mix(ir, ir * vec3(0.95, 1.15, 0.45) + vec3(0.10, 0.12, 0.0), uSlit * 0.8);
       col = mix(col, ir, edge);
       // the pupil, with stars a long way down
-      float pm = smoothstep(pu + 0.02, pu - 0.01, rr);
+      float pm = smoothstep(pu + 0.02, pu - 0.01, rs);
       vec3 deep = vec3(0.012, 0.008, 0.05);
-      vec2 sp = vec2(cos(ang), sin(ang)) * rr / max(pu, 0.01) * 6.0;
+      vec2 sp = vec2(cos(ang), sin(ang)) * rs / max(pu, 0.01) * 6.0;
       vec2 cell = floor(sp), fr = fract(sp) - 0.5;
       float h = hash(vec3(cell, 7.0));
       float star = step(0.82, h) * smoothstep(0.16, 0.0, length(fr)) * (0.45 + 0.55 * abs(sin(uT * 0.9 + h * 40.0)));
@@ -192,14 +197,14 @@ export default function OracleEye3D({ open = 1, mood = "listening" }) {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
     const U = {};
-    ["uIris", "uF", "uR", "uU", "uT", "uPupil", "uLid", "uPx"].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
+    ["uIris", "uF", "uR", "uU", "uT", "uPupil", "uLid", "uPx", "uIrisS", "uSlit"].forEach((n) => { U[n] = gl.getUniformLocation(prog, n); });
     gl.uniform1i(U.uIris, 0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
 
     const reduced = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     let W = 0, dpr = 1, raf = 0;
-    const st = { yaw: 0, pitch: 0, ty: 0, tp: 0, pupil: 0.3, lid: 0, lastMove: 0, nextGlance: 0 };
+    const st = { yaw: 0, pitch: 0, ty: 0, tp: 0, pupil: 0.3, lid: 0, lastMove: 0, nextGlance: 0, near: 0, nearT: 0, size: 1, slit: 0, slitT: 0, nextSlit: performance.now() + 5000 + Math.random() * 6000 };
 
     const resize = () => {
       dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -221,6 +226,9 @@ export default function OracleEye3D({ open = 1, mood = "listening" }) {
       const dy = (e.clientY - cy) / (window.innerHeight * 0.5);
       st.ty = Math.max(-1, Math.min(1, dx)) * 0.55;
       st.tp = -Math.max(-1, Math.min(1, dy)) * 0.45;
+      // how close you are: 1 right on top of it, 0 far away
+      const dist = Math.hypot(e.clientX - cx, e.clientY - cy);
+      st.nearT = Math.max(0, Math.min(1, 1 - (dist - r.width * 0.25) / (r.width * 2.2)));
       st.lastMove = performance.now();
     };
     window.addEventListener("pointermove", onMove);
@@ -242,6 +250,14 @@ export default function OracleEye3D({ open = 1, mood = "listening" }) {
       st.pitch += (st.tp - st.pitch) * k;
       st.pupil += ((PUPIL[m] || 0.3) * (1 + (m === "speaking" ? 0.06 * Math.sin(t * 3) : 0.03 * Math.sin(t * 0.8))) - st.pupil) * 0.06;
       st.lid += (Math.max(0, Math.min(1, o)) - st.lid) * (reduced ? 1 : 0.04);
+      // Update 6.05: it really sees you - the iris swells and the pupil opens as you come close, shrinks as you back away
+      if (now - st.lastMove > 6000) st.nearT *= 0.995;
+      st.near += (st.nearT - st.near) * 0.05;
+      st.size = 0.82 + st.near * 0.45;
+      // and once in a while, for a moment, the pupil goes to a cat's slit
+      if (!reduced && now > st.nextSlit) { st.slitT = now + 700 + Math.random() * 700; st.nextSlit = now + 9000 + Math.random() * 12000; }
+      const wantSlit = now < st.slitT ? 1 : 0;
+      st.slit += (wantSlit - st.slit) * (wantSlit ? 0.35 : 0.12);
 
       // the eye's basis: forward toward the gaze, with a little roll of its own
       const cy = Math.cos(st.yaw), sy = Math.sin(st.yaw), cp = Math.cos(st.pitch), sp = Math.sin(st.pitch);
@@ -259,7 +275,9 @@ export default function OracleEye3D({ open = 1, mood = "listening" }) {
       gl.uniform3fv(U.uR, R);
       gl.uniform3fv(U.uU, Uv);
       gl.uniform1f(U.uT, t);
-      gl.uniform1f(U.uPupil, st.pupil);
+      gl.uniform1f(U.uPupil, st.pupil * (0.85 + st.near * 0.4));
+      gl.uniform1f(U.uIrisS, st.size);
+      gl.uniform1f(U.uSlit, st.slit);
       gl.uniform1f(U.uLid, st.lid);
       gl.uniform1f(U.uPx, 2 / Math.max(1, canvas.width));
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);

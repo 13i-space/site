@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import FullscreenButton from "./FullscreenButton";
 import Leaderboard from "./Leaderboard";
 import { playerTwoAt, playerTwoEnd } from "../lib/lyraAssist";
-import { albums, parseTrack, songSrc } from "../lib/musicReleases";
+import { albums, remixes, parseTrack, songSrc } from "../lib/musicReleases";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
 
 const MAX_SCORE = 1000000; // sanity cap - far above anything a real run reaches
@@ -18,7 +18,8 @@ const MAX_SCORE = 1000000; // sanity cap - far above anything a real run reaches
 // {source:"13i", type:"music", on}). The choice is remembered.
 const SONGS_KEY = "13i.gameSongs";
 function shuffledSongs() {
-  const list = albums.flatMap((a) => a.tracks.map((t) => { const { file, label } = parseTrack(t); return { src: songSrc(file), label }; }));
+  const list = albums.flatMap((a) => a.tracks.map((t) => { const { file, label } = parseTrack(t); return { src: songSrc(file), label }; }))
+    .concat(remixes.map((r) => ({ src: r.src, label: r.label })));
   for (let i = list.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [list[i], list[j]] = [list[j], list[i]]; }
   return list;
 }
@@ -28,6 +29,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
   const [nowPlaying, setNowPlaying] = useState("");
   const audioRef = useRef(null);
   const queueRef = useRef([]);
+  const songsOnRef = useRef(false);
   const [best, setBest] = useState(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const frameRef = useRef(null);
@@ -50,6 +52,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
   }, []);
   const setSongs = useCallback((on) => {
     setSongsOn(on);
+    songsOnRef.current = on;
     try { localStorage.setItem(SONGS_KEY, on ? "1" : "0"); } catch (e) {}
     tellGame(on);
     if (on) playNext(); else { audioRef.current?.pause(); setNowPlaying(""); }
@@ -61,6 +64,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
     try { saved = localStorage.getItem(SONGS_KEY) === "1"; } catch (e) {}
     if (!saved) return;
     setSongsOn(true);
+    songsOnRef.current = true;
     const start = () => { if (!audioRef.current || audioRef.current.paused) playNext(); window.removeEventListener("pointerdown", start, true); };
     window.addEventListener("pointerdown", start, true);
     return () => window.removeEventListener("pointerdown", start, true);
@@ -80,6 +84,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
       if (Number.isFinite(x) && Number.isFinite(y)) playerTwoAt(r.left + x, r.top + y, !!msg.firing);
       return;
     }
+    if (msg.type === "songs-toggle") { if (songs) setSongs(!songsOnRef.current); return; }
     if (msg.type === "fullscreen") {
       // the game's own full-screen button: inside an iframe it can't go full screen itself (and iPhone Safari
       // can't at all), so the page does it - real full screen where allowed, otherwise filling the window
@@ -96,7 +101,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
       });
       recordDailyScore(game, score).then(() => setRefreshKey((k) => k + 1));
     }
-  }, [game]);
+  }, [game, songs, setSongs]);
 
   // on phones and tablets Lyra steps aside on game pages: she covers the touch controls
   useEffect(() => {
@@ -118,7 +123,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
           title={title}
           allow="fullscreen"
           style={{ width: "100%", height: "78vh", minHeight: 480, border: "none", display: "block" }}
-          onLoad={() => { frameRef.current?.focus(); if (songsOn) tellGame(true); }}
+          onLoad={() => { frameRef.current?.focus(); if (songs) tellGame(songsOnRef.current); }}
         />
       </div>
       <div className="mono" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, marginTop: 10, fontSize: 11, color: "#6E76B8", flexWrap: "wrap" }}>
