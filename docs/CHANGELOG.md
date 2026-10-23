@@ -3,6 +3,42 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.08 — XenoKlash fighters in detail; solid bodies; sharp supers (Oct 2026)
+No SQL.
+- **Solid fighters**: the arena's glow layer (planets, lanterns) was added on top of everything after the
+  fighters were drawn, so it showed through them. Each fighter now blocks the glow behind it.
+- **Sharper effects**: glow dots were hard discs on a quarter-resolution layer, which turned ultimates and
+  Annihilations into blocky white blobs. They are now soft gradient sprites, the glow layer is twice the
+  resolution, eruption pillars, sky beams and beam supers use soft falloff instead of hard rectangles, and the
+  beam's origin is a soft core instead of a solid disc. Hit flashes no longer bleach a fighter white.
+- **A detail kit for the 3D models** (shared): muscle-shaped limbs, jointed hands whose fingers curl, feet with
+  toes and claws, lumpy boulders, brain folds, veined wing membranes, compound eyes, ribbed spiral horns,
+  bump maps for rock, chitin, scales, plates and skin.
+- **Kharn**: shaped stone feet with obsidian claws, three-fingered fists, faceted crystal spikes with shards
+  that light up during his power moves (and pulse when his meter is full), a tail with crystal plates and a
+  spiked club like a stegosaurus.
+- **Vess**: a neck, pincer hands, clawed feet, veined wings with a stiff leading edge, faceted compound eyes,
+  ocelli and working mandibles. Scorpion Sting curls the segmented abdomen over his back and drives the
+  stinger into the opponent, dripping venom.
+- **Luma**: a face (almond eyes, brow, lips, a gem, star freckles), a neck and choker, a petal collar, a waist,
+  shaped legs with pointed feet and ribbons wound around them, four-fingered hands, wavy falling hair.
+  Her tentacles keep their length and bend instead of stretching.
+- **Sypher**: a brain-folded alien head with black almond eyes and face tendrils inside the helmet, eight
+  segmented dreadlocks that sway, and in Tendril Storm and Void Shock lash over his head and seize the
+  opponent. Big jointed gauntlets, shaped boots with thrusters.
+- **Rhakka**: overlapping armour scales, a spiked rim, glowing spots, four eye stalks, mandibles and feelers,
+  three-jointed spiked legs, real crab claws (swollen palm, curved toothed fingers). The wreck on his back has
+  a turret that swings forward and fires a plasma bolt in Snap Shot; thrusters roar in Shell Spin.
+- **Zhaal**: a neck, a lagoon-serpent head (heavy brow, slit eyes, hinged fanged jaws, gill frills, crest), a
+  finned spine, shaped arms with taloned hands, a tail that slithers in a travelling wave. **Fang Strike** is
+  now a bite: the head lunges, the jaws gape and snap, and it poisons. **Static Field is replaced by Thunder
+  Tail**: the tail sweeps low across the floor crackling with lightning (hits low, stuns).
+- **Voraxx**: dragon wings with arm and finger bones and a veined, scalloped membrane, muscled limbs, spiked
+  bracers, four-taloned hands, digitigrade clawed feet, a spiked tail ending in a gold crescent blade, and
+  ribbed ram horns that curl back.
+- **Morrow**: a stem neck up to the cap, a gill frill, shaped legs. **Xal'Thuun**: jointed gold gauntlets,
+  cuffed sleeves.
+
 ## Update 6.07 — Game sound balance (Oct 2026)
 No SQL.
 - The 13i songs in the games now play at 0.12 volume, measured to match the games' own music (about
