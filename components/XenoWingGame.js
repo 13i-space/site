@@ -63,5 +63,5 @@ export default function XenoWingGame() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  return <IframeGame game={GAME} songs src="/games/xenowing.html?v=6.06" title="XenoWing" note="click the game to give it the keyboard · ↑↓ pitch · ← → roll · W S throttle · Space guns · F secondary · Shift boost · C cockpit · H handling · P pauses" />;
+  return <IframeGame game={GAME} songs src="/games/xenowing.html?v=6.07" title="XenoWing" note="click the game to give it the keyboard · ↑↓ pitch · ← → roll · W S throttle · Space guns · F secondary · Shift boost · C cockpit · H handling · P pauses" />;
 }

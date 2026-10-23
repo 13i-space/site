@@ -3,6 +3,14 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.07 — Game sound balance (Oct 2026)
+No SQL.
+- The 13i songs in the games now play at 0.12 volume, measured to match the games' own music (about
+  -28 dB average, against -29 dB for XenoKlash's built-in track). At 0.28 they were still about 9 dB louder
+  and buried XenoKlash's short hit and whoosh sounds.
+- XenoKlash effects are about 5-10 dB louder (effects bus 0.6 to 1.1, whooshes raised); the game's own
+  music is unchanged.
+
 ## Update 6.06 — 3D fighters in XenoKlash; XenoKart items you can see, hold and throw; quieter songs (Oct 2026)
 No SQL.
 - **Songs in the games are quieter**: the 13i songs now play at about a third of their old volume
