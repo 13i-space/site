@@ -329,10 +329,11 @@ body.tdev .hint{bottom:auto;top:30%}body.tdev .ctl{display:none}
 const C=document.getElementById("c");const X=C.getContext("2d");
 const GL=document.createElement("canvas"),GX=GL.getContext("2d"),GL2=document.createElement("canvas"),GX2=GL2.getContext("2d");
 const NUL=document.createElement("canvas").getContext("2d");
+const GLX=2;{const st=GX.setTransform.bind(GX);GX.setTransform=(a,b,c,d,e,f)=>st(a*GLX,b*GLX,c*GLX,d*GLX,e*GLX,f*GLX);}
 let W=0,H=0,DPR=1,FY=0;
 const TC=document.createElement("canvas"),TXc=TC.getContext("2d"),TM=document.createElement("canvas"),TMc=TM.getContext("2d");
 function resize(){DPR=Math.min(2,window.devicePixelRatio||1);W=innerWidth;H=innerHeight;C.width=W*DPR;C.height=H*DPR;TC.width=TM.width=C.width;TC.height=TM.height=C.height;C.style.width=W+"px";C.style.height=H+"px";
-  GL.width=Math.ceil(W/4);GL.height=Math.ceil(H/4);GL2.width=Math.ceil(W/12);GL2.height=Math.ceil(H/12);FY=H*.78}
+  GL.width=Math.ceil(W/4*GLX);GL.height=Math.ceil(H/4*GLX);GL2.width=Math.ceil(W/12*GLX);GL2.height=Math.ceil(H/12*GLX);GX.imageSmoothingQuality=GX2.imageSmoothingQuality="high";FY=H*.78}
 addEventListener("resize",resize);resize();
 const $=id=>document.getElementById(id);
 const TAU=Math.PI*2,rnd=(a,b)=>a+Math.random()*(b-a),clamp=(v,a,b)=>v<a?a:v>b?b:v,lerp=(a,b,k)=>a+(b-a)*k;
@@ -602,7 +603,7 @@ CH.rhakka={name:"Rhakka",title:"Wreck Hermit",arch:"Tank · Counter",col:"#FF7A4
 CH.zhaal={name:"Zhaal",title:"Storm Serpent",arch:"Zoner · Lightning",col:"#4AD8FF",rgb:"74,216,255",hp:980,walk:210,run:560,jump:860,scale:1.1,armor:0,hw:50,float:1,
   prop:{torso:58,head:14,ua:34,la:34,ul:42,ll:42},stats:{Power:3,Speed:4,Range:4,Defense:2},
   bio:"Born in the eye of a storm that has circled a gas giant for a million years. Four arms, one tail, and a temper measured in gigawatts.",
-  tech:"Storm-born",techL:3,traits:[["Serpent Coil","No legs: he rides a coil of static, and falls slowly"],["Overcharge","His specials recharge 25% faster"],["Conductor","Arc Bolt, Fang Strike and Static Field stun what they touch"]],
+  tech:"Storm-born",techL:3,traits:[["Serpent Coil","No legs: he rides a coil of static, and falls slowly"],["Overcharge","His specials recharge 25% faster"],["Conductor","Arc Bolt, Fang Strike and Thunder Tail stun what they touch"]],
   finisher:"Thunderhead",poses:{idle:{torso:.12,head:-.05,fa:[.8,1.5],ba:[.3,1.3],fl:[.3,-.4],bl:[-.2,-.3]}},
   moves:kit({r:1.12,p:.98,d:0,run:560,stepK:1.1,
     names:{A1:"Spark Jab",A2:"Volt Hook",A3:"Thunderclap",AS:"Tail Snap",AAS:"Coil Lash",S1:"Tail Flick",S2:"Rising Tail",SSA:"Fulgur Fist",SA:"Static Palm",fA:"Ion Thrust",bA:"Storm Backhand",fS:"Cyclone Tail",bS:"Hammer Tail",RA:"Lightning Lunge",RS:"Skyfall Coil",cA:"Low Spark",cS:"Tail Sweep",cbS:"Ground Current",jA:"Air Crash",jS:"Air Lash"},
@@ -648,8 +649,8 @@ const UNIQUE={
           W2:{n:"Abyssal Maw",cool:5,su:12,ac:1,rc:30,wind:"power",pose:"cast",lv:3,proj:{kind:"horizon",target:1,delay:12,w:150,h:180,dmg:130,hold:"void",holdT:40,life:30,hs:30,bs:20,chip:.2}}}
 };
 Object.assign(UNIQUE,{
-  zhaal:{W1:{n:"Fang Strike",su:9,ac:4,rc:18,dmg:56,hb:[22,110,70,60],high:1,kb:[300,80],hs:24,bs:16,stun:20,stunKind:"shock",wind:"headbuttW",pose:"headbutt",lv:3,shake:6,step:140},
-         W2:{n:"Static Field",cool:4.5,su:12,ac:18,rc:20,dmg:18,multi:4,hb:[20,40,240,150],kb:[60,0],hs:20,bs:10,shock:1,stun:40,stunKind:"shock",wind:"castW",pose:"shock",lv:3}},
+  zhaal:{W1:{n:"Fang Strike",su:9,ac:4,rc:18,dmg:56,hb:[22,110,86,60],high:1,kb:[300,80],hs:24,bs:16,stun:20,stunKind:"shock",poison:60,bite:1,wind:"headbuttW",pose:"headbutt",lv:3,shake:6,step:140},
+         W2:{n:"Thunder Tail",cool:4.5,su:10,ac:7,rc:22,dmg:48,hb:[10,0,250,70],low:1,kb:[300,120],hs:22,bs:12,stun:22,stunKind:"shock",wind:"sweepW",pose:"sweep",limb:"ff",lv:3,tailWhip:1}},
   morrow:{W1:{n:"Cap Slam",su:11,ac:4,rc:20,dmg:60,hb:[18,120,64,70],high:1,kb:[300,60],hs:24,bs:16,stun:26,stunKind:"dizzy",wind:"headbuttW",pose:"headbutt",lv:3,shake:9,step:120},
           W2:{n:"Fungal Bloom",cool:5,su:14,ac:1,rc:26,wind:"power",pose:"stomp",lv:3,proj:{kind:"bloom",target:1,delay:26,w:110,h:220,dmg:66,poison:90,launch:1,kd:1,kb:[120,900],life:22,hs:24,bs:16,chip:.15}}},
   xalthuun:{W1:{n:"Scepter of Ages",su:12,ac:5,rc:22,dmg:96,hb:[20,20,150,190],high:1,kd:1,kb:[380,440],hs:26,bs:18,wind:"slamW",pose:"slam",limb:"fh",lv:3,shake:12,step:120},
@@ -715,7 +716,10 @@ function seg(c,a,b,w1,w2,c1,c2,stroke,sw){const r=capPath(c,a,b,w1,w2),nx=r[0],n
 function rimPoly(c,pts,J){const a=T2(J,-44,30),b=T2(J,6,30),g=c.createLinearGradient(a.x,a.y,b.x,b.y);g.addColorStop(0,RIM);g.addColorStop(1,"rgba(255,120,210,0)");poly(c,pts);c.strokeStyle=g;c.lineWidth=3;c.stroke();
   const k=T2(J,22,62),h=c.createRadialGradient(k.x,k.y,1,k.x,k.y,34);h.addColorStop(0,"rgba(255,255,255,.22)");h.addColorStop(1,"rgba(255,255,255,0)");c.save();poly(c,pts);c.clip();c.fillStyle=h;c.fillRect(J.hip.x-70,J.hip.y-30,140,140);c.restore()}
 function gline(g,pts,w,col){g.strokeStyle=col;g.lineWidth=w;g.lineCap="round";g.lineJoin="round";g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y));g.stroke()}
-function gdot(g,p,r,col){g.fillStyle=col;g.beginPath();g.arc(p.x,p.y,r,0,TAU);g.fill()}
+/* soft glow dots (6.08): a cached radial sprite tinted per colour, instead of a hard disc that blew up into blocks */
+const GSP={};function gsprite(rgb,n){const k=rgb+"|"+n;if(GSP[k])return GSP[k];const c=document.createElement("canvas");c.width=c.height=n*2;const g=c.getContext("2d"),gr=g.createRadialGradient(n,n,0,n,n,n);gr.addColorStop(0,`rgba(${rgb},1)`);gr.addColorStop(.3,`rgba(${rgb},.85)`);gr.addColorStop(.62,`rgba(${rgb},.32)`);gr.addColorStop(1,`rgba(${rgb},0)`);g.fillStyle=gr;g.fillRect(0,0,n*2,n*2);return GSP[k]=c}
+function gdot(g,p,r,col){if(!(r>0))return;const m=/^rgba?\(([^)]+)\)/.exec(col);if(!m){g.fillStyle=col;g.beginPath();g.arc(p.x,p.y,r,0,TAU);g.fill();return}const q=m[1].split(","),a=q.length>3?+q[3]:1;if(!(a>.004))return;
+  const R=r*1.35,n=R<6?8:R<20?24:64,ga=g.globalAlpha;g.globalAlpha=ga*Math.min(1,a);g.drawImage(gsprite(q[0].trim()+","+q[1].trim()+","+q[2].trim(),n),p.x-R,p.y-R,R*2,R*2);g.globalAlpha=ga}
 function line(c,pts,w,col){c.strokeStyle=col;c.lineWidth=w;c.lineCap="round";c.lineJoin="round";c.beginPath();pts.forEach((p,i)=>i?c.lineTo(p.x,p.y):c.moveTo(p.x,p.y));c.stroke()}
 const T2=(J,v,u)=>({x:J.hip.x+J.V.x*v+J.U.x*u,y:J.hip.y+J.V.y*v+J.U.y*u});
 const H2=(J,v,u)=>({x:J.head.x+J.hv.x*v+J.hu.x*u,y:J.head.y+J.hv.y*v+J.hu.y*u});
@@ -2543,14 +2547,14 @@ function init3D(){if(F3.tried)return F3.ok;F3.tried=true;if(!T3||window.__no3d)r
     capE:null,glow:texC(64,64,(g)=>{const q=g.createRadialGradient(32,32,0,32,32,32);q.addColorStop(0,"rgba(255,255,255,1)");q.addColorStop(.35,"rgba(255,255,255,.35)");q.addColorStop(1,"rgba(255,255,255,0)");g.fillStyle=q;g.fillRect(0,0,64,64)})};
   F3.tx.capE=texC(256,128,(g,w,h)=>{g.fillStyle="#000";g.fillRect(0,0,w,h)});
   F3.g={sph:new T3.SphereGeometry(1,20,14),sphL:new T3.SphereGeometry(1,10,8),ico:new T3.IcosahedronGeometry(1,1),ico0:new T3.IcosahedronGeometry(1,0),dod:new T3.DodecahedronGeometry(1,0),cone:new T3.ConeGeometry(1,1,10),cone4:new T3.ConeGeometry(1,1,4),cone6:new T3.ConeGeometry(1,1,6),box:new T3.BoxGeometry(1,1,1),cyl:new T3.CylinderGeometry(1,1,1,16),torus:new T3.TorusGeometry(1,.08,8,36),dome:new T3.SphereGeometry(1,24,12,0,TAU,0,Math.PI/2),disc:new T3.CircleGeometry(1,28)};
-  F3.g.cone.translate(0,.5,0);F3.g.cone4.translate(0,.5,0);F3.g.cone6.translate(0,.5,0);
+  F3.g.cone.translate(0,.5,0);F3.g.cone4.translate(0,.5,0);F3.g.cone6.translate(0,.5,0);kitTex();
   F3.ok=true}catch(e){console.log("XK 3D off",e);F3.ok=false}return F3.ok}
 const UPV=()=>new T3.Vector3(0,1,0);
 const P3=(p,z)=>new T3.Vector3(p.x,p.y,z||0);
 /* a material that takes the fighter's skin hue, an env reflection, a rim in the fighter's colour and a hit flash */
 function mat3(R,col,o){o=o||{};const C=o.phys?T3.MeshPhysicalMaterial:T3.MeshStandardMaterial;
   const m=new C({color:col,roughness:o.r??.45,metalness:o.m??.12,flatShading:!!o.flat,emissive:o.e??0,emissiveIntensity:o.ei??1,transparent:!!o.t,opacity:o.o??1,side:o.ds?T3.DoubleSide:T3.FrontSide,depthWrite:o.t?!!o.dw:true,envMap:F3.env,envMapIntensity:o.env??.9,blending:o.add?T3.AdditiveBlending:T3.NormalBlending});
-  if(o.map)m.map=o.map;if(o.emap)m.emissiveMap=o.emap;if(o.phys){m.clearcoat=o.cc??1;m.clearcoatRoughness=.18}
+  if(o.map)m.map=o.map;if(o.emap)m.emissiveMap=o.emap;if(o.bump){m.bumpMap=o.bump;m.bumpScale=o.bs??1}if(o.amap){m.alphaMap=o.amap}if(o.phys){m.clearcoat=o.cc??1;m.clearcoatRoughness=.18}
   m.color.convertSRGBToLinear();m.emissive.convertSRGBToLinear();
   if(R.dh){if(!o.keep){m.color.offsetHSL(R.dh,0,0);m.emissive.offsetHSL(R.dh,0,0)}}
   const U=R.U;m.onBeforeCompile=sh=>{sh.uniforms.rimC=U.rimC;sh.uniforms.rimK=U.rimK;sh.uniforms.flashK=U.flashK;sh.fragmentShader=sh.fragmentShader.replace("#include <common>","#include <common>\nuniform vec3 rimC;uniform float rimK;uniform float flashK;")
@@ -2585,7 +2589,7 @@ function rigNew(id,skin){const ch=CH[id],R={id,ch,mats:[],root:new T3.Group(),bo
 function poseRig(R,f,J,t,face){const ch=R.ch;
   R.torso.position.copy(P3(J.hip));R.torso.rotation.set(0,0,-Math.atan2(J.U.x,J.U.y));R.head.position.copy(P3(J.head));R.head.rotation.set(0,0,-Math.atan2(J.hu.x,J.hu.y));if(R.head.userData.sc)R.head.scale.setScalar(R.head.userData.sc);
   R.body.position.set(0,0,0);R.body.rotation.set(0,0,0);if(J.rot){R.body.position.copy(P3(J.hip));R.body.rotation.z=J.rot;R.body.position.sub(P3(J.hip).applyEuler(R.body.rotation))}
-  R.upd(J,f,t);R.belt.visible=!!f.belt;R.U.flashK.value=f.flash>0?f.flash/8*.55:0}
+  R.upd(J,f,t);R.belt.visible=!!f.belt;R.U.flashK.value=f.flash>0?f.flash/8*.2:0}
 /* face direction, the turn through a front view, spins */
 function orientRig(R,f){let fv=f.fv==null?f.face:f.fv;const m=f.state==="move"&&f.move;let spin=0;if(m&&m.spin){const tot=m.su+m.ac;spin=Math.min(1,f.mf/tot)*TAU*m.spin}
   if(fv>=0){R.root.scale.set(1,1,1);R.root.rotation.set(0,-(1-fv)*Math.PI/2+spin,0)}else{R.root.scale.set(-1,1,1);R.root.rotation.set(0,(1+fv)*Math.PI/2-spin,0)}}
@@ -2605,7 +2609,7 @@ function render3D(t){if(!init3D()||!G)return;const r=F3.r,z=G.cam.z,pr=LOWFX.on?
     if(!f.lay3){f.lay3=document.createElement("canvas")}const L=f.lay3;if(L.width!==r.domElement.width||L.height!==r.domElement.height){L.width=r.domElement.width;L.height=r.domElement.height}
     const lc=L.getContext("2d");lc.clearRect(0,0,L.width,L.height);lc.drawImage(r.domElement,bx*pr,by*pr,bw*pr,bh*pr,bx*pr,by*pr,bw*pr,bh*pr);f.pr3=pr;R.root.visible=false}
   r.setScissorTest(false)}
-function drop3D(){if(!F3.ok)return;for(const o of F3.sc.children.slice())if(o.userData.fr){F3.sc.remove(o);o.traverse(q=>{if(q.geometry&&!Object.values(F3.g).includes(q.geometry))q.geometry.dispose()})}if(G)for(const f of G.f){f.r3=null;f.lay3=null}}
+function drop3D(){if(!F3.ok)return;for(const o of F3.sc.children.slice())if(o.userData.fr){F3.sc.remove(o);const keep=new Set([].concat(...Object.values(F3.g)).concat(Object.values(LGEO)));o.traverse(q=>{if(q.geometry&&!keep.has(q.geometry))q.geometry.dispose()})}if(G)for(const f of G.f){f.r3=null;f.lay3=null}}
 /* turntable previews on the select screen, ladder and unlock cards */
 const PRIG={};
 function preview3D(cv,id,t,skin){if(!init3D())return false;const key=id+(skin||"");let R=PRIG[key];if(!R){R=PRIG[key]=rigNew(id,skin)}const r=F3.pr,sc=F3.sc;
@@ -2617,132 +2621,378 @@ function preview3D(cv,id,t,skin){if(!init3D())return false;const key=id+(skin||"
   const c=cv.getContext("2d");c.setTransform(1,0,0,1,0,0);c.clearRect(0,0,cv.width,cv.height);c.fillStyle="rgba(0,0,0,.45)";c.beginPath();c.ellipse(cv.width/2,cv.height*.93,cv.width*.2,cv.height*.025,0,0,TAU);c.fill();
   c.drawImage(F3.pcv,0,0,400,440,0,0,cv.width,cv.height);return true}
 
+/* ================= 6.08 detail kit =================
+   Shaped limbs (lathe profiles with muscle), jointed hands that curl, real feet with toes and claws,
+   lumpy boulders, brain folds, veined wings, compound eyes, ribbed spiral horns, bump-mapped textures. */
+const LGEO={};
+function latheG(prof,seg){const k=prof.map(v=>v.toFixed(2)).join(",")+"|"+(seg||14);if(LGEO[k])return LGEO[k];const n=prof.length-1,pts=[];for(let i=0;i<=n;i++)pts.push(new T3.Vector2(Math.max(.02,prof[i]),i/n));return LGEO[k]=new T3.LatheGeometry(pts,seg||14)}
+/* a muscle profile: tapers r0 to r1 with a bulge at `at`, rounded into the joints */
+function mus(r0,r1,bulge,at,n){n=n||10;const o=[];for(let i=0;i<=n;i++){const u=i/n,base=lerp(r0,r1,u),b=1+(bulge||0)*Math.exp(-(((u-(at??.35))/.26)**2)),end=u<.08?.82+u*2.2:u>.92?.86+(1-u)*1.7:1;o.push(base*b*end)}return o}
+/* a shaped segment between two points (lathe along +Y, base at the first point) */
+function seg3(par,mat,prof,o){o=o||{};const m=new T3.Mesh(latheG(prof,o.seg),mat);par.add(m);let b=null;if(o.ball){b=new T3.Mesh(F3.g.sph,mat);b.scale.setScalar(o.ball);par.add(b)}
+  const d=new T3.Vector3();return{m,b,set(a,c){d.subVectors(c,a);const l=d.length()||.001;m.position.copy(a);m.scale.set(o.sx||1,l,o.sz||1);m.quaternion.setFromUnitVectors(UPV(),d.multiplyScalar(1/l));if(o.roll)m.rotateY(o.roll);if(b)b.position.copy(a)},vis(v){m.visible=v;if(b)b.visible=v}}}
+/* a two-segment arm or leg with shaped muscles */
+function limb3(R,mat,z,p0,p1,o){o=o||{};const a=seg3(R.body,mat,p0,{ball:o.ball0,seg:o.seg}),b=seg3(R.body,o.mat2||mat,p1,{ball:o.ball1,seg:o.seg});
+  return{a,b,arm(A){const s=P3(A.s,z),e=P3(A.e,z*1.05),h=P3(A.h,z*1.1);a.set(s,e);b.set(e,h);return{s,e,h}},leg(L){const h=P3(L.h,z*.6),k=P3(L.k,z),f=P3(L.f,z);a.set(h,k);b.set(k,f);return{h,k,f}}}}
+/* a hand: palm and jointed fingers that curl (local +Y runs along the forearm, fingers curl toward +X) */
+function hand3(R,mat,o){const g=new T3.Group();R.body.add(g);const [pw,pl,pd]=o.palm,fg=[],cm=o.clawM||mat;
+  m3(o.pgeo||F3.g.sph,mat,g,[0,pl*.45,0],null,[pw*.5,pl*.55,pd*.5]);if(o.knuckle)for(let i=0;i<o.n;i++)m3(o.pgeo||F3.g.sph,mat,g,[pw*.05,pl*.92,(i-(o.n-1)/2)*pd/o.n*1.05],null,o.knuckle);
+  const fin=(base,rot,L,r)=>{const f0=new T3.Group();f0.position.set(...base);f0.rotation.set(rot[0],rot[1]||0,0);g.add(f0);let par=f0;const js=[f0];
+    L.forEach((l,i)=>{const rr=r*(1-i*.16);m3(latheG([rr*.95,rr*1.08,rr*.98,rr*.85],10),mat,par,[0,0,0],null,[1,l,1]);if(o.joint)m3(F3.g.sph,mat,par,[0,0,0],null,rr*1.05);
+      const nx=new T3.Group();nx.position.set(0,l,0);par.add(nx);par=nx;js.push(nx)});
+    if(o.claw){const c=m3(F3.g.cone,cm,par,[0,-r*.2,0],[0,0,o.clawBend??-.35],[r*.85,o.claw,r*.7]);}return js};
+  for(let i=0;i<o.n;i++){const zz=(i-(o.n-1)/2)*pd/o.n*1.1;fg.push(fin([0,pl*.9,zz],[zz/(pd||1)*(o.spread??.5)],o.fl,o.fr))}
+  let th=null;if(o.thumb)th=fin([pw*.3,pl*.35,pd*.42],[.55,0],o.thumb,o.fr*1.05);
+  return{g,set(e,h,curl,spread){g.position.copy(h);g.quaternion.setFromUnitVectors(UPV(),dir2(e,h));if(o.twist)g.rotateY(o.twist);const c=curl??.3;
+    fg.forEach((js,i)=>{js.forEach((j,k)=>{j.rotation.z=-c*(k?1.35:1.0)*(k<js.length-1?1:0)});if(spread!=null)js[0].rotation.x=((i-(o.n-1)/2)/(o.n||1))*spread});
+    if(th)th.forEach((j,k)=>{if(k)j.rotation.z=-c*.9;else j.rotation.z=-c*.6})}}}
+/* a foot: sole, heel and toes with claws; sits on the ground, tips to follow the shin in the air */
+function foot3(R,mat,o){const g=new T3.Group();R.body.add(g);const cm=o.clawM||mat,{len,w,h}=o;
+  m3(o.geo||F3.g.sph,mat,g,[len*.1,h*.5,0],null,[len*.48,h*.55,w*.5]);m3(o.geo||F3.g.sph,mat,g,[-len*.22,h*.42,0],null,[len*.24,h*.5,w*.42]);if(o.ankle)m3(F3.g.sph,mat,g,[-len*.05,h*.95,0],null,o.ankle);
+  const n=o.toes||3;for(let i=0;i<n;i++){const zz=(i-(n-1)/2)*(w/n)*1.05,tg=new T3.Group();tg.position.set(len*.42,h*.32,zz);tg.rotation.y=-zz/(w||1)*.6;g.add(tg);
+    const tl=o.toeL*(i===0||i===n-1?.82:1);m3(latheG([o.toeR,o.toeR*1.1,o.toeR*.95,o.toeR*.8],10),mat,tg,[0,0,0],[0,0,-Math.PI/2+.1],[1,tl,1]);
+    if(o.claw)m3(F3.g.cone,cm,tg,[tl*.92,-o.toeR*.15,0],[0,0,-Math.PI/2-.25],[o.toeR*.75,o.claw,o.toeR*.6])}
+  if(o.dew){const tg=new T3.Group();tg.position.set(-len*.3,h*.6,0);g.add(tg);m3(F3.g.cone,cm,tg,[0,0,0],[0,0,Math.PI/2+.5],[o.toeR*.6,o.dew,o.toeR*.5])}
+  return{g,set(k,f){g.position.copy(f).add(new T3.Vector3(o.dx||0,o.dy||0,0));const d=dir2(k,f);let a=Math.atan2(d.x,-d.y);g.rotation.z=f.y<10?a*.12:a*.75}}}
+/* noise and geometry generators */
+const hsh=n=>{const s=Math.sin(n*127.1+311.7)*43758.5453;return s-Math.floor(s)};
+function fbm3(x,y,z,seed){let v=0,a=1,f=1;for(let o=0;o<4;o++){v+=a*Math.sin(x*f*2.1+seed+o*1.7)*Math.sin(y*f*2.3+seed*1.3+o)*Math.sin(z*f*1.9+seed*.7+o*2.2);a*=.5;f*=2.03}return v}
+function rockGeo(seed,amp,det){const g=new T3.IcosahedronGeometry(1,det??2),p=g.attributes.position,v=new T3.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i).normalize();const n=1+(amp??.22)*fbm3(v.x*1.6,v.y*1.6,v.z*1.6,seed);v.multiplyScalar(n);p.setXYZ(i,v.x,v.y,v.z)}g.computeVertexNormals();return g}
+function brainGeo(){const g=new T3.SphereGeometry(1,64,48),p=g.attributes.position,v=new T3.Vector3();for(let i=0;i<p.count;i++){v.fromBufferAttribute(p,i);const n=v.clone().normalize(),gy=Math.sin(n.x*13+Math.sin(n.y*9)*1.6)*Math.sin(n.y*12+Math.sin(n.z*8)*1.5)*Math.cos(n.z*11+n.x*3),fis=Math.exp(-(n.z*n.z)/.004)*(n.y>-.2?1:0);v.multiplyScalar(1+.045*gy-.08*fis);p.setXYZ(i,v.x,v.y,v.z)}g.computeVertexNormals();return g}
+function normUV(g){g.computeBoundingBox();const b=g.boundingBox,uv=g.attributes.uv,p=g.attributes.position;for(let i=0;i<uv.count;i++)uv.setXY(i,(p.getX(i)-b.min.x)/(b.max.x-b.min.x||1),(p.getY(i)-b.min.y)/(b.max.y-b.min.y||1));uv.needsUpdate=true;return g}
+/* a horn that spirals and tapers, ribbed like a goat's */
+function hornGeo(len,r0,turn,ribs,curl){const pts=[];for(let i=0;i<=24;i++){const u=i/24,a=u*turn,rad=len*.3*(1-u*.4);pts.push(new T3.Vector3(-rad*(1-Math.cos(a)),rad*Math.sin(a),u*len*(curl??.3)))}
+  const c=new T3.CatmullRomCurve3(pts),TS=72,RS=12,g=new T3.TubeGeometry(c,TS,1,RS,false),p=g.attributes.position,v=new T3.Vector3();
+  for(let i=0;i<=TS;i++){const u=i/TS,ctr=c.getPointAt(u),k=r0*(1-u*.88)*(1+.14*Math.max(0,Math.sin(u*ribs*Math.PI*2)));for(let j=0;j<=RS;j++){const ix=i*(RS+1)+j;v.fromBufferAttribute(p,ix).sub(ctr).multiplyScalar(k).add(ctr);p.setXYZ(ix,v.x,v.y,v.z)}}g.computeVertexNormals();return g}
+/* a wing membrane between bone tips, with UVs for a veined texture */
+function membraneGeo(tips,scallop){const sh=new T3.Shape();sh.moveTo(0,0);let prev=[0,0];tips.forEach((p,i)=>{if(i===0)sh.lineTo(p[0],p[1]);else{const m=[(prev[0]+p[0])/2,(prev[1]+p[1])/2],dx=p[0]-prev[0],dy=p[1]-prev[1],L=Math.hypot(dx,dy);sh.quadraticCurveTo(m[0]+dy/L*L*(scallop??.22),m[1]-dx/L*L*(scallop??.22),p[0],p[1])}prev=p});sh.lineTo(0,0);return normUV(new T3.ShapeGeometry(sh,14))}
+function kitTex(){const T=F3.tx;
+  T.veins=texC(512,256,(g,w,h)=>{g.clearRect(0,0,w,h);const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,"rgba(190,255,170,.85)");gr.addColorStop(.6,"rgba(140,230,190,.55)");gr.addColorStop(1,"rgba(200,170,255,.45)");g.fillStyle=gr;g.fillRect(0,0,w,h);
+    const br=(x,y,a,l,wd,d)=>{if(d>5||l<6)return;const x2=x+Math.cos(a)*l,y2=y+Math.sin(a)*l;g.strokeStyle=`rgba(20,60,20,${.9-d*.1})`;g.lineWidth=wd;g.beginPath();g.moveTo(x,y);g.quadraticCurveTo((x+x2)/2+rnd(-6,6),(y+y2)/2+rnd(-6,6),x2,y2);g.stroke();br(x2,y2,a+rnd(.2,.55),l*.72,wd*.68,d+1);br(x2,y2,a-rnd(.2,.55),l*.72,wd*.68,d+1)};
+    for(let i=0;i<5;i++){g.strokeStyle="rgba(15,50,15,.95)";g.lineWidth=5;const y=h*(.15+i*.18);g.beginPath();g.moveTo(0,h/2);g.quadraticCurveTo(w*.4,y,w,y+rnd(-10,10));g.stroke();for(let k=1;k<6;k++)br(w*k/6,lerp(h/2,y,k/6),(i<2?-1:1)*.5+rnd(-.2,.2),46,2.4,1)}
+    for(let i=0;i<120;i++){g.fillStyle=`rgba(255,255,255,${rnd(.05,.18)})`;g.beginPath();g.arc(rnd(0,w),rnd(0,h),rnd(2,7),0,TAU);g.fill()}});
+  T.hex=texC(256,256,(g,w,h)=>{g.fillStyle="#0A1A04";g.fillRect(0,0,w,h);const r=9;for(let y=0;y<h+r;y+=r*1.5)for(let x=0;x<w+r;x+=r*1.732){const ox=(Math.round(y/(r*1.5))%2)*r*.866,cx=x+ox,cy=y;const q=g.createRadialGradient(cx-2,cy-2,0,cx,cy,r);q.addColorStop(0,"#F2FFB0");q.addColorStop(.45,"#B8FF5A");q.addColorStop(1,"#1A4A08");g.fillStyle=q;g.beginPath();for(let k=0;k<6;k++){const a=k/6*TAU+Math.PI/6;g.lineTo(cx+Math.cos(a)*r*.92,cy+Math.sin(a)*r*.92)}g.closePath();g.fill()}},1);
+  T.hex.repeat.set(2,2);
+  T.bumpRock=texC(256,256,g=>{g.fillStyle="#808080";g.fillRect(0,0,256,256);for(let i=0;i<300;i++){g.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.12)`;g.beginPath();g.arc(rnd(0,256),rnd(0,256),rnd(2,14),0,TAU);g.fill()}g.drawImage(T.lava.image,0,0);g.globalCompositeOperation="difference";g.fillStyle="#fff";g.fillRect(0,0,256,256)},1);
+  T.plates=texC(256,256,(g,w,h)=>{g.fillStyle="#808080";g.fillRect(0,0,w,h);for(let y=0;y<h+20;y+=20)for(let x=0;x<w+24;x+=24){const ox=(y/20)%2?12:0,q=g.createRadialGradient(x+ox,y-4,1,x+ox,y,14);q.addColorStop(0,"#FFFFFF");q.addColorStop(.8,"#909090");q.addColorStop(1,"#202020");g.fillStyle=q;g.beginPath();g.ellipse(x+ox,y,12,11,0,0,Math.PI);g.fill()}},1);
+  T.skin=texC(256,256,(g,w,h)=>{g.fillStyle="#808080";g.fillRect(0,0,w,h);for(let i=0;i<1400;i++){g.fillStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.08)`;g.fillRect(rnd(0,w),rnd(0,h),2,2)}for(let i=0;i<40;i++){g.strokeStyle="rgba(0,0,0,.18)";g.lineWidth=1;g.beginPath();g.moveTo(rnd(0,w),rnd(0,h));g.lineTo(rnd(0,w),rnd(0,h));g.stroke()}},1);
+  T.ribs=texC(64,256,(g,w,h)=>{g.fillStyle="#808080";g.fillRect(0,0,w,h);for(let y=0;y<h;y+=10){const q=g.createLinearGradient(0,y,0,y+10);q.addColorStop(0,"#202020");q.addColorStop(.4,"#E0E0E0");q.addColorStop(1,"#404040");g.fillStyle=q;g.fillRect(0,y,w,10)}},1);
+  T.bell=texC(512,128,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,"#C8CEFF");gr.addColorStop(1,"#6A70E0");g.fillStyle=gr;g.fillRect(0,0,w,h);for(let x=0;x<w;x+=16){g.strokeStyle="rgba(255,255,255,.55)";g.lineWidth=2;g.beginPath();g.moveTo(x,0);g.quadraticCurveTo(x+6,h*.5,x,h);g.stroke()}for(let i=0;i<60;i++){g.fillStyle="rgba(255,250,230,.9)";const x=rnd(0,w),y=rnd(0,h),r=rnd(.8,2.2);g.beginPath();for(let k=0;k<8;k++){const a=k/8*TAU,rr=k%2?r*.35:r*1.6;g.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr)}g.fill()}g.fillStyle="#F2C46A";g.fillRect(0,h-6,w,6)},1);
+  T.robe=texC(256,256,(g,w,h)=>{g.fillStyle="#7A80E8";g.fillRect(0,0,w,h);for(let i=0;i<9;i++){g.strokeStyle="rgba(242,196,106,.85)";g.lineWidth=1.5;g.beginPath();for(let x=0;x<=w;x+=4)g.lineTo(x,i*30+10+Math.sin(x/18+i)*5);g.stroke()}for(let i=0;i<80;i++){g.fillStyle="rgba(255,255,255,.8)";g.fillRect(rnd(0,w),rnd(0,h),1.5,1.5)}},1);
+  T.suit=texC(256,256,(g,w,h)=>{g.fillStyle="#3A3460";g.fillRect(0,0,w,h);g.strokeStyle="rgba(10,6,24,.9)";g.lineWidth=2;for(let y=0;y<h;y+=32){g.beginPath();g.moveTo(0,y);g.lineTo(w,y);g.stroke()}for(let x=0;x<w;x+=64){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke()}g.fillStyle="#5FE3E8";for(let y=14;y<h;y+=64)g.fillRect(0,y,w,2);for(let i=0;i<30;i++){g.fillStyle="rgba(120,110,190,.5)";g.fillRect(rnd(0,w),rnd(0,h),rnd(6,20),rnd(4,10))}for(let i=0;i<40;i++){g.fillStyle="#1A1430";g.beginPath();g.arc(rnd(0,w),rnd(0,h),1.6,0,TAU);g.fill()}},1);
+  T.carapace=texC(256,256,(g,w,h)=>{const gr=g.createLinearGradient(0,0,0,h);gr.addColorStop(0,"#FFB070");gr.addColorStop(.6,"#E05A28");gr.addColorStop(1,"#8A2410");g.fillStyle=gr;g.fillRect(0,0,w,h);for(let y=0;y<h+20;y+=18)for(let x=0;x<w+20;x+=20){const ox=(y/18)%2?10:0;g.strokeStyle="rgba(70,10,4,.7)";g.lineWidth=2;g.beginPath();g.arc(x+ox,y,10,0,Math.PI);g.stroke();g.fillStyle="rgba(255,230,190,.25)";g.beginPath();g.arc(x+ox-3,y+3,3,0,TAU);g.fill()}for(let i=0;i<26;i++){g.fillStyle="rgba(95,240,220,.75)";g.beginPath();g.arc(rnd(0,w),rnd(0,h),rnd(1.5,3.5),0,TAU);g.fill()}},1);
+  T.carapaceE=texC(256,256,(g,w,h)=>{g.fillStyle="#000";g.fillRect(0,0,w,h)},1);
+  T.serp=texC(256,256,(g,w,h)=>{g.fillStyle="#1E5AA8";g.fillRect(0,0,w,h);for(let y=0;y<h+16;y+=12)for(let x=0;x<w+16;x+=14){const ox=(y/12)%2?7:0,q=g.createLinearGradient(0,y-8,0,y+6);q.addColorStop(0,"#5AB8FF");q.addColorStop(1,"#0A2A60");g.fillStyle=q;g.beginPath();g.moveTo(x+ox-7,y-6);g.lineTo(x+ox,y+6);g.lineTo(x+ox+7,y-6);g.closePath();g.fill();g.strokeStyle="rgba(4,12,30,.8)";g.lineWidth=1;g.stroke()}for(let x=0;x<w;x+=64){g.fillStyle="rgba(10,20,40,.55)";g.beginPath();g.ellipse(x+20,h/2,14,90,0,0,TAU);g.fill()}},1);
+  T.serp.repeat.set(2,3);T.serpB=texC(256,256,(g,w,h)=>{g.fillStyle="#808080";g.fillRect(0,0,w,h);for(let y=0;y<h+16;y+=12)for(let x=0;x<w+16;x+=14){const ox=(y/12)%2?7:0;g.fillStyle="#E0E0E0";g.beginPath();g.moveTo(x+ox-6,y-5);g.lineTo(x+ox,y+5);g.lineTo(x+ox+6,y-5);g.closePath();g.fill();g.strokeStyle="#202020";g.stroke()}},1);
+  T.memb=texC(512,256,(g,w,h)=>{const gr=g.createLinearGradient(0,h,w,0);gr.addColorStop(0,"#2A0408");gr.addColorStop(.5,"#7A1018");gr.addColorStop(.85,"#D8401C");gr.addColorStop(1,"#FFB040");g.fillStyle=gr;g.fillRect(0,0,w,h);
+    for(let i=0;i<70;i++){const x=rnd(0,w),y=rnd(0,h);g.strokeStyle=`rgba(255,${rnd(90,170)|0},40,${rnd(.25,.6)})`;g.lineWidth=rnd(.6,1.6);g.beginPath();g.moveTo(x,y);let xx=x,yy=y;for(let k=0;k<6;k++){xx+=rnd(-14,22);yy+=rnd(-16,16);g.lineTo(xx,yy)}g.stroke()}
+    for(let i=0;i<30;i++){g.fillStyle=`rgba(10,0,4,${rnd(.2,.45)})`;g.beginPath();g.ellipse(rnd(0,w),rnd(0,h),rnd(8,30),rnd(4,12),rnd(0,3),0,TAU);g.fill()}});
+  T.obs=texC(256,256,(g,w,h)=>{g.fillStyle="#808080";g.fillRect(0,0,w,h);for(let i=0;i<60;i++){g.strokeStyle=`rgba(${Math.random()<.5?255:0},${Math.random()<.5?255:0},${Math.random()<.5?255:0},.25)`;g.lineWidth=rnd(1,3);g.beginPath();g.moveTo(rnd(0,w),rnd(0,h));g.lineTo(rnd(0,w),rnd(0,h));g.stroke()}},1);
+  T.serpB.repeat.set(2,3);F3.g.sph=new T3.SphereGeometry(1,32,22);F3.g.rock=[0,1,2,3].map(i=>rockGeo(i*3.3+1,.2,2));F3.g.rockS=[0,1].map(i=>rockGeo(i*5.1+2,.16,1));F3.g.brain=brainGeo();
+  F3.g.prism=new T3.CylinderGeometry(.62,1,1,6,1);F3.g.prism.translate(0,.5,0);F3.g.cone8=new T3.ConeGeometry(1,1,8);F3.g.cone8.translate(0,.5,0);F3.g.cone3=new T3.ConeGeometry(1,1,3);F3.g.cone3.translate(0,.5,0)}
+/* a crystal spike: a faceted shaft with a point and two side shards */
+function crystal3(par,mat,pos,rot,len,r,side){const g=new T3.Group();g.position.set(...pos);g.rotation.set(...rot);par.add(g);m3(F3.g.prism,mat,g,[0,0,0],null,[r,len*.62,r]);m3(F3.g.cone6,mat,g,[0,len*.62,0],null,[r*.62,len*.38,r*.62]);
+  if(side){m3(F3.g.prism,mat,g,[r*.5,len*.1,r*.3],[0,0,-.5],[r*.45,len*.3,r*.45]);m3(F3.g.cone6,mat,g,[r*.5+Math.sin(.5)*len*.3,len*.1+Math.cos(.5)*len*.3,r*.3],[0,0,-.5],[r*.28,len*.18,r*.28]);m3(F3.g.prism,mat,g,[-r*.4,len*.05,-r*.35],[.3,0,.45],[r*.38,len*.24,r*.38]);m3(F3.g.cone6,mat,g,[-r*.4-Math.sin(.45)*len*.24,len*.05+Math.cos(.45)*len*.24,-r*.35+.07*len],[.3,0,.45],[r*.24,len*.14,r*.24])}return g}
+/* the opponent, in this rig's own coordinates */
+function oppL(f){const o=f.opp;if(!o)return null;const k=(f.face||1),s=f.s||1;return{x:(o.x-f.x)*k/s,y:(o.y-f.y)/s,h:(o.ch.prop.ul+o.ch.prop.ll+o.ch.prop.torso*.6)*o.s/s}}
+const mvK=(f,m,a,b)=>{if(!(f.state==="move"&&m))return 0;const st=m.su+(a||0),en=m.su+m.ac+(b||0);if(f.mf<st-8)return 0;if(f.mf<st)return 1-(st-f.mf)/8;if(f.mf<=en)return 1;return Math.max(0,1-(f.mf-en)/10)};
 /* ================= the nine models ================= */
 const BUILD3={
-kharn(R){const rock=mat3(R,0xD8C8D0,{map:F3.tx.rock,emap:F3.tx.lava,e:0xFFFFFF,ei:1,r:.85,flat:1,env:.3}),dark=mat3(R,0x6A5A64,{map:F3.tx.rock,emap:F3.tx.lava,e:0xFFFFFF,ei:.7,r:.9,flat:1,env:.25}),cry=mat3(R,0xC890FF,{phys:1,e:0x6A2AB0,r:.1,t:1,o:.9,flat:1,dw:1}),lava=basic3(R,0xFFB060);
-  const T=R.torso,g=F3.g;m3(g.ico,rock,T,[0,36,0],null,[30,36,28]);m3(g.ico,dark,T,[-15,48,0],null,[22,26,25]);m3(g.ico,rock,T,[11,24,0],null,[18,20,21]);m3(g.ico,dark,T,[0,6,0],null,[24,12,22]);
-  const core=m3(g.sph,lava,T,[24,42,0],null,6);glow3(R,0xFF7A30,46,T,[27,42,0]);
-  for(const [x,y,l,a,zz] of[[-22,58,30,.5,8],[-26,48,24,.7,-8],[-14,66,36,.25,0],[-30,38,20,.9,4],[-6,70,24,.05,-6],[-20,62,22,.4,-12]]){const c=m3(g.cone6,cry,T,[x,y,zz],[0,0,a],[5,l,5]);glow3(R,0xC890FF,14,T,[x-Math.sin(a)*l,y+Math.cos(a)*l,zz])}
-  for(const s of[-1,1])m3(g.ico,dark,T,[0,58,s*24],null,[14,13,13]);
-  const H=R.head;m3(g.ico,rock,H,[3,4,0],null,[12,11,12]);m3(g.box,dark,H,[9,10,0],[0,0,-.2],[10,4,18]);for(const s of[-1,1])m3(g.sph,lava,H,[13,6,s*5],null,2.6);glow3(R,0xFF8A30,16,H,[14,6,0]);m3(g.ico0,dark,H,[10,-4,0],null,[8,4,9]);
-  const AF=arm3(R,rock,22,[11,9,11]),AB=arm3(R,dark,-22,[10,8,10]),AF2=arm3(R,rock,16,[8,7,8]),AB2=arm3(R,dark,-16,[7,6,7]),LF=leg3(R,rock,14,[14,12,11]),LB=leg3(R,dark,-14,[13,11,10]);
-  const fist=(m,s)=>m3(g.ico,m,R.body,null,null,s);const fF=fist(rock,14),fB=fist(dark,13),fF2=fist(rock,10),fB2=fist(dark,9);const foot=[m3(g.box,dark,R.body,null,null,[26,8,18]),m3(g.box,dark,R.body,null,null,[24,8,17])];
-  const tail=chain3(R.body,dark,4,9,6),club=m3(g.ico,rock,R.body,null,null,12);const clubS=[];for(let i=0;i<4;i++)clubS.push(m3(g.cone6,cry,club,[0,0,0],[i*1.6,0,i*.8],[.25,1.1,.25]));
-  const lower=(A,dz)=>{const s={x:J0.chest.x+(A.s.x-J0.chest.x)-J0.U.x*24,y:A.s.y-J0.U.y*24},d1=rot2({x:A.e.x-A.s.x,y:A.e.y-A.s.y},-.55),d2=rot2({x:A.h.x-A.e.x,y:A.h.y-A.e.y},-.35),e={x:s.x+d1.x*.8,y:s.y+d1.y*.8};return{s,e,h:{x:e.x+d2.x*.8,y:e.y+d2.y*.8}}};let J0=null;
-  return(J,f,t)=>{J0=J;const a=AF.set(J.fa),b=AB.set(J.ba);fF.position.copy(a.h);fB.position.copy(b.h);const a2=AF2.set(lower(J.fa)),b2=AB2.set(lower(J.ba));fF2.position.copy(a2.h);fB2.position.copy(b2.h);
-    const lf=LF.set(J.fl),lb=LB.set(J.bl);foot[0].position.copy(lf.f).add(new T3.Vector3(6,0,0));foot[1].position.copy(lb.f).add(new T3.Vector3(6,0,0));
-    const h=P3(J.hip),sw=Math.sin(t*1.5)*8,pts=[h.clone().add(new T3.Vector3(-14,6,0)),h.clone().add(new T3.Vector3(-34,-6,sw*.3)),h.clone().add(new T3.Vector3(-56,-18,sw*.7)),h.clone().add(new T3.Vector3(-76,-24,sw)),h.clone().add(new T3.Vector3(-90,-26+Math.sin(t*2)*4,sw*1.2))];tail.set(pts);club.position.copy(pts[4]);club.rotation.z+=.0;core.scale.setScalar(6*(.9+.1*Math.sin(t*6)))}},
-
-vess(R){const chit=mat3(R,0xFFFFFF,{map:F3.tx.chitin,phys:1,cc:1,r:.25,m:.35,env:1.3}),dark=mat3(R,0x1A3A1A,{phys:1,cc:.8,r:.3,m:.3}),blade=mat3(R,0xE8FFD0,{m:.9,r:.15,env:1.5}),wingM=mat3(R,0xC8FFC0,{t:1,o:.35,ds:1,r:.2,e:0x3A8A3A,ei:.5}),eye=basic3(R,0xD7FF5A);
-  const T=R.torso,g=F3.g;m3(g.sph,chit,T,[0,28,0],null,[11,24,10]);for(let i=0;i<4;i++)m3(g.torus,dark,T,[0,12+i*9,0],[Math.PI/2,0,0],[10-i,10-i,30]);
-  const abd=new T3.Group();T.add(abd);abd.position.set(-4,2,0);m3(g.sph,chit,abd,[-28,-10,0],[0,0,.45],[30,11,11]);for(let i=0;i<5;i++)m3(g.torus,dark,abd,[-12-i*10,-3-i*3.6,0],[0,Math.PI/2,.45],[10-i,11-i*.6,40]);const sting=m3(g.cone4,blade,abd,[-56,-24,0],[0,0,2.2],[2.5,14,2.5]);
-  const wings=[];for(const [y,zz,l] of[[44,6,48],[44,-6,44],[38,7,38],[38,-7,34]]){const w=new T3.Group();w.position.set(-6,y,zz);T.add(w);const sh=new T3.Shape();sh.moveTo(0,0);sh.quadraticCurveTo(-l*.3,l*.25,-l,l*.08);sh.quadraticCurveTo(-l*.5,-l*.08,0,0);m3(new T3.ShapeGeometry(sh,12),wingM,w);wings.push({w,zz})}
-  const mid=[bone3(R.body,dark,3,2),bone3(R.body,dark,2,1.4),bone3(R.body,dark,3,2),bone3(R.body,dark,2,1.4)];
-  const H=R.head;m3(g.sph,chit,H,[4,2,0],[0,0,-.3],[10,9,9]);m3(g.cone4,chit,H,[10,-2,0],[0,0,-2],[5,8,4]);for(const s of[-1,1]){m3(g.sph,eye,H,[7,6,s*6],null,[5,6,4]);glow3(R,0xD7FF5A,14,H,[8,6,s*7])}
+kharn(R){const g=F3.g,TX=F3.tx,rock=mat3(R,0xD8C8D0,{map:TX.rock,emap:TX.lava,e:0xFFFFFF,ei:1,r:.88,env:.3,bump:TX.bumpRock,bs:1.4}),dark=mat3(R,0x6A5A64,{map:TX.rock,emap:TX.lava,e:0xFFFFFF,ei:.7,r:.9,env:.25,bump:TX.bumpRock,bs:1.4}),
+    obs=mat3(R,0x1A1018,{phys:1,cc:1,r:.18,m:.3,env:1.4}),cry=mat3(R,0xC890FF,{phys:1,cc:1,e:0x8A3AE0,ei:.35,r:.12,env:1.5}),lava=basic3(R,0xFFB060);
+  const T=R.torso,rk=i=>g.rock[i%4];
+  /* torso: stacked boulders, a molten core, a pelvis */
+  m3(rk(0),rock,T,[0,36,0],[0,.3,0],[29,35,27]);m3(rk(1),dark,T,[-14,50,0],[.4,0,0],[21,24,24]);m3(rk(2),rock,T,[12,22,0],[0,1,0],[18,19,20]);m3(rk(3),dark,T,[0,5,0],null,[25,13,23]);
+  m3(rk(1),rock,T,[14,46,8],null,[11,10,10]);m3(rk(2),rock,T,[14,46,-8],null,[10,9,10]);for(const [x,y,z,s] of[[18,32,10,6],[19,30,-9,5],[6,14,14,6],[-4,62,10,5]])m3(g.rockS[0],obs,T,[x,y,z],[x,y,z],[s,s*.8,s*.7]);
+  const core=m3(g.sph,lava,T,[24,40,0],null,6);glow3(R,0xFF7A30,46,T,[27,40,0]);for(let i=0;i<6;i++){const a=i/6*TAU;m3(g.cone4,obs,T,[24+Math.cos(a)*.5,40+Math.sin(a)*8,Math.cos(a)*8],[a,0,-Math.PI/2],[1.4,6,1.4])}
+  for(const s of[-1,1]){m3(rk(s>0?1:3),dark,T,[0,58,s*24],null,[15,13,14]);m3(g.rockS[1],obs,T,[2,66,s*25],[s,0,.3],[6,5,6])}
+  /* the crystal ridge down his back: faceted shafts with shards, dim until he powers up */
+  const crys=[],cg=[];for(const [x,y,l,a,zz,r] of[[-22,60,34,.45,8,5.5],[-26,50,28,.65,-8,5],[-14,68,40,.2,0,6.5],[-29,38,22,.9,4,4.2],[-6,72,26,.05,-7,4.4],[-20,64,26,.4,-13,4.4],[-27,28,16,1.05,-4,3.4]]){crys.push(crystal3(T,cry,[x,y,zz],[zz*.02,0,a],l,r,l>24));cg.push(glow3(R,0xC890FF,l*1.5,T,[x-Math.sin(a)*l*.5,y+Math.cos(a)*l*.5,zz]))}
+  /* head: a rock skull with a brow ridge and a heavy jaw */
+  const H=R.head;m3(rk(2),rock,H,[3,4,0],null,[12,11,12]);m3(rk(0),dark,H,[9,10,0],[0,0,-.2],[7,3.6,11]);const jaw=m3(rk(3),dark,H,[8,-4,0],null,[8,4.5,9]);
+  for(const s of[-1,1]){m3(g.sph,lava,H,[13,6,s*5],null,[2,2.6,2.2]);m3(g.cone6,cry,H,[-4,12,s*6],[s*.4,0,.5],[2.2,9,2.2])}glow3(R,0xFF8A30,16,H,[14,6,0]);for(let i=0;i<4;i++)m3(g.cone4,lava,H,[13,-1.5,(i-1.5)*3],[0,0,Math.PI],[.8,2.4,.8]);
+  const neck=seg3(R.body,dark,mus(13,11,.1,.5));
+  /* four arms with shaped stone muscle, three-fingered fists with obsidian nails */
+  const AF=limb3(R,rock,22,mus(11,10,.25,.35),mus(10,9,.2,.3),{ball0:12,ball1:9.5}),AB=limb3(R,dark,-22,mus(10,9,.25,.35),mus(9,8,.2,.3),{ball0:11,ball1:9}),
+    AF2=limb3(R,rock,16,mus(8,7,.2,.35),mus(7,6.5,.15,.3),{ball0:8,ball1:7}),AB2=limb3(R,dark,-16,mus(7,6.5,.2,.35),mus(6.5,6,.15,.3),{ball0:7,ball1:6.5});
+  const fist=(m,s)=>hand3(R,m,{palm:[16*s,13*s,16*s],pgeo:rk(1),n:3,fl:[8*s,7*s],fr:4.6*s,thumb:[7*s,5*s],claw:4*s,clawM:obs,knuckle:4.4*s,joint:1});
+  const hF=fist(rock,1),hB=fist(dark,.95),hF2=fist(rock,.72),hB2=fist(dark,.68);
+  const LF=limb3(R,rock,14,mus(14,12,.2,.4),mus(12,11,.25,.3),{ball0:14,ball1:12}),LB=limb3(R,dark,-14,mus(13,11,.2,.4),mus(11,10,.25,.3),{ball0:13,ball1:11});
+  const ft=m=>foot3(R,m,{len:32,w:24,h:13,geo:rk(2),toes:3,toeL:9,toeR:5,claw:6,clawM:obs,dx:4,ankle:9});const fF=ft(rock),fB=ft(dark);
+  /* tail: tapering stone, a row of crystal plates, and a spiked club like a stegosaurus */
+  const tl=[0,1,2,3].map(i=>seg3(R.body,i%2?dark:rock,mus(10-i*1.4,8.6-i*1.4,.15,.5),{ball:10-i*1.4})),plates=[0,1,2,3].map(i=>crystal3(R.body,cry,[0,0,0],[0,0,0],13-i*1.5,3.2-i*.35,false));
+  const club=new T3.Group();R.body.add(club);m3(rk(1),rock,club,[0,0,0],null,[13,12,12]);m3(rk(3),dark,club,[-4,-3,0],null,[9,8,10]);
+  const clubC=[];for(const [a,b,l] of[[.2,0,17],[.9,.5,15],[.9,-.5,15],[1.7,.2,13],[-.5,.6,12],[-.5,-.6,12],[2.4,-.3,11]])clubC.push(crystal3(club,cry,[Math.cos(a)*9,Math.sin(a)*8,b*9],[b*.9,0,a-Math.PI/2],l,3,false));
+  let J0=null;const lower=A=>{const s={x:A.s.x-J0.U.x*24,y:A.s.y-J0.U.y*24},d1=rot2({x:A.e.x-A.s.x,y:A.e.y-A.s.y},-.55),d2=rot2({x:A.h.x-A.e.x,y:A.h.y-A.e.y},-.35),e={x:s.x+d1.x*.8,y:s.y+d1.y*.8};return{s,e,h:{x:e.x+d2.x*.8,y:e.y+d2.y*.8}}};
+  return(J,f,t)=>{J0=J;const m=f.state==="move"&&f.move,pw=m&&m.lv>=3?mvK(f,m,-6,8):0,full=f.meter>=100?.35+.25*Math.sin(t*5):0,heat=Math.max(pw,full);
+    cry.emissiveIntensity=.35+heat*3.2;cg.forEach((s,i)=>{s.material.opacity=heat*(.75+.25*Math.sin(t*14+i));s.visible=heat>.02});
+    const grab=m&&(m.grab||m.pose==="grab")?mvK(f,m,-4,4):0,curl=.95-grab*.75;
+    neck.set(P3(J.chest).add(new T3.Vector3(0,-2,0)),P3(J.head));
+    const a=AF.arm(J.fa),b=AB.arm(J.ba);hF.set(a.e,a.h,curl);hB.set(b.e,b.h,curl);const a2=AF2.arm(lower(J.fa)),b2=AB2.arm(lower(J.ba));hF2.set(a2.e,a2.h,curl);hB2.set(b2.e,b2.h,curl);
+    const lf=LF.leg(J.fl),lb=LB.leg(J.bl);fF.set(lf.k,lf.f);fB.set(lb.k,lb.f);
+    const h=P3(J.hip),sw=Math.sin(t*1.5)*8,pts=[h.clone().add(new T3.Vector3(-14,6,0)),h.clone().add(new T3.Vector3(-34,-6,sw*.3)),h.clone().add(new T3.Vector3(-56,-16,sw*.7)),h.clone().add(new T3.Vector3(-76,-22,sw)),h.clone().add(new T3.Vector3(-90,-24+Math.sin(t*2)*4,sw*1.2))];
+    for(let i=0;i<4;i++){tl[i].set(pts[i],pts[i+1]);const d=dir2(pts[i],pts[i+1]),mid=pts[i].clone().lerp(pts[i+1],.5);plates[i].position.copy(mid).addScaledVector(new T3.Vector3(d.y,-d.x,0),8-i*1.2);plates[i].rotation.set(0,0,Math.atan2(-d.x,d.y)-Math.PI/2)}
+    club.position.copy(pts[4]);const dd=dir2(pts[3],pts[4]);club.rotation.set(0,0,Math.atan2(dd.y,dd.x));jaw.position.y=-4-(pw*2.5);core.scale.setScalar(6*(.9+.1*Math.sin(t*6))*(1+heat*.3))}},
+vess(R){const g=F3.g,TX=F3.tx,chit=mat3(R,0xFFFFFF,{map:TX.chitin,phys:1,cc:1,r:.25,m:.35,env:1.3,bump:TX.plates,bs:.6}),dark=mat3(R,0x1A3A1A,{phys:1,cc:.8,r:.3,m:.3}),blade=mat3(R,0xE8FFD0,{m:.9,r:.15,env:1.5}),
+    wingM=mat3(R,0xFFFFFF,{map:TX.veins,t:1,o:.92,ds:1,r:.2,e:0x2A6A2A,ei:.35,env:1.2,dw:0}),eyeM=mat3(R,0xFFFFFF,{map:TX.hex,emap:TX.hex,e:0xFFFFFF,ei:.85,phys:1,cc:1,r:.05,env:1.4}),venom=basic3(R,0xC8FF3A),gl=basic3(R,0xD7FF5A);
+  const T=R.torso;
+  /* thorax: armoured plates, a pronotum shield */
+  m3(g.sph,chit,T,[0,28,0],null,[11,24,10]);for(let i=0;i<4;i++)m3(g.torus,dark,T,[0,12+i*9,0],[Math.PI/2,0,0],[10.4-i,10.4-i,34]);m3(g.dome,chit,T,[1,44,0],[0,0,-.25],[12,9,11]);m3(g.sph,dark,T,[9,26,0],null,[3,16,6]);
+  for(const s of[-1,1])for(let i=0;i<3;i++)m3(g.cone4,dark,T,[3,18+i*10,s*9],[s*1.3,0,-.3],[1.2,4,1.2]);
+  /* four veined wings: a membrane over a branching vein texture, with a stiff leading edge */
+  const wings=[];for(const [y,zz,l,hh] of[[44,6,52,14],[44,-6,48,13],[38,7,40,11],[38,-7,36,10]]){const w=new T3.Group();w.position.set(-6,y,zz);T.add(w);
+    const geo=membraneGeo([[-l*.35,hh*.9],[-l,hh*.35],[-l*.85,-hh*.25],[-l*.3,-hh*.45]],.12);m3(geo,wingM,w);const e=bone3(w,dark,1,.4,false);e.set(new T3.Vector3(0,0,0),new T3.Vector3(-l*.35,hh*.9,0));const e2=bone3(w,dark,.6,.25,false);e2.set(new T3.Vector3(-l*.35,hh*.9,0),new T3.Vector3(-l,hh*.35,0));wings.push({w,zz})}
+  /* neck and head: compound eyes, three ocelli, mandibles that work */
+  const neck=seg3(R.body,dark,mus(3.2,2.6,.1,.5),{ball:3.4}),neckR=[0,1].map(()=>m3(g.torus,chit,R.body,null,null,[3.6,3.6,40]));
+  const H=R.head;m3(g.sph,chit,H,[4,2,0],[0,0,-.3],[9,8,8]);m3(g.cone4,chit,H,[9,-2,0],[0,0,-2.1],[4.5,8,3.6]);m3(g.sph,dark,H,[1,8,0],null,[5,3,6]);
+  for(const s of[-1,1]){m3(g.sph,eyeM,H,[6,6,s*6.2],[0,s*.4,0],[5.6,7,4.6]);glow3(R,0xD7FF5A,12,H,[8,6,s*7.5])}for(const [y,zz] of[[11,0],[10,2.4],[10,-2.4]])m3(g.sph,gl,H,[6,y,zz],null,.9);
+  const mand=[-1,1].map(s=>{const q=new T3.Group();q.position.set(11,-5,s*2.4);H.add(q);m3(g.cone4,blade,q,[0,0,0],[0,s*.4,-1.9],[1.2,6,1]);m3(g.cone4,dark,q,[3,-2,0],[0,0,-2.6],[.8,3,.8]);return q});
   const ant=[chain3(H,dark,3,1,.5),chain3(H,dark,3,1,.5)];
-  const AF=arm3(R,chit,10,[4.5,4,3.5]),AB=arm3(R,dark,-10,[4,3.5,3]),LF=leg3(R,chit,7,[4.5,3.5,2.5]),LB=leg3(R,dark,-7,[4,3,2]);
+  /* raptorial arms with spines, small pincer hands, the scythes */
+  const AF=limb3(R,chit,10,mus(4.6,3.8,.35,.3),mus(3.8,3.2,.3,.4),{ball0:4.6,ball1:4}),AB=limb3(R,dark,-10,mus(4.2,3.4,.35,.3),mus(3.4,2.9,.3,.4),{ball0:4.2,ball1:3.5});
+  const pin=m=>hand3(R,m,{palm:[4,5,4],n:2,fl:[4,3],fr:1.1,claw:3.4,clawM:blade,spread:1.2,joint:1}),hF=pin(chit),hB=pin(dark);
+  const spines=[[],[]];for(let k=0;k<2;k++)for(let i=0;i<4;i++)spines[k].push(m3(g.cone4,blade,R.body,null,null,[.8,4,.8]));
   const scy=[m3(g.cone4,blade,R.body,null,null,[4,40,1.2]),m3(g.cone4,blade,R.body,null,null,[3.5,34,1])];
-  return(J,f,t)=>{const a=AF.set(J.fa),b=AB.set(J.ba);for(const [k,A] of[[0,a],[1,b]]){aimAt(scy[k],A.h,A.h.clone().add(dir2(A.e,A.h).applyAxisAngle(new T3.Vector3(0,0,1),k?2.6:2.4)))}
-    const lf=LF.set(J.fl),lb=LB.set(J.bl);const hp=P3(J.hip),gy=Math.min(J.fl.f.y,J.bl.f.y);
-    for(const [i,s] of[[0,1],[2,-1]]){const k=hp.clone().add(new T3.Vector3(4,10,s*12)),ft=new T3.Vector3(J.hip.x+10+Math.sin(t*8+i)*3,gy,s*16);mid[i].set(hp.clone().add(new T3.Vector3(2,14,s*5)),k);mid[i+1].set(k,ft)}
+  const LF=limb3(R,chit,7,mus(4.6,3.4,.4,.3),mus(3.4,2,.2,.3),{ball0:4.4,ball1:3.4}),LB=limb3(R,dark,-7,mus(4.2,3,.4,.3),mus(3,1.8,.2,.3),{ball0:4,ball1:3});
+  const tars=m=>foot3(R,m,{len:12,w:6,h:3.4,toes:2,toeL:6,toeR:1.3,claw:3.6,clawM:blade,dew:3}),fF=tars(chit),fB=tars(dark);
+  const mid=[bone3(R.body,dark,3,2),bone3(R.body,dark,2,1.4),bone3(R.body,dark,3,2),bone3(R.body,dark,2,1.4)],midF=[0,1].map(()=>m3(g.cone4,blade,R.body,null,null,[1,4,1]));
+  /* the abdomen: eight segments that curl over the back to sting */
+  const RAD=[8,10.5,11.5,11,10,8.6,6.8,5],beads=RAD.map((r,i)=>m3(g.sph,i%2?chit:dark,R.body,null,null,1)),bands=RAD.map(r=>m3(g.torus,dark,R.body,null,null,1));
+  const sting=m3(g.cone8,blade,R.body,null,null,[2.6,16,2.6]),bulb=m3(g.sph,chit,R.body,null,null,[4,5,4]),drop=glow3(R,0xC8FF3A,16,R.body),dropM=m3(g.sph,venom,R.body,null,null,1.6);
+  const cub=(a,b,c,d,u)=>{const v=1-u;return new T3.Vector3(v*v*v*a.x+3*v*v*u*b.x+3*v*u*u*c.x+u*u*u*d.x,v*v*v*a.y+3*v*v*u*b.y+3*v*u*u*c.y+u*u*u*d.y,0)};
+  return(J,f,t)=>{const m=f.state==="move"&&f.move;
+    neck.set(P3(J.chest).add(new T3.Vector3(1,-3,0)),P3(J.head).add(new T3.Vector3(0,-2,0)));neckR.forEach((r,i)=>{r.position.copy(P3(J.chest).lerp(P3(J.head),.3+i*.3));r.quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),dir2(P3(J.chest),P3(J.head)))});
+    const a=AF.arm(J.fa),b=AB.arm(J.ba);[[0,a,hF],[1,b,hB]].forEach(([k,A,hh])=>{hh.set(A.e,A.h,.35+.3*Math.sin(t*3+k),.9);aimAt(scy[k],A.h,A.h.clone().add(dir2(A.e,A.h).applyAxisAngle(new T3.Vector3(0,0,1),k?2.6:2.4)));
+      spines[k].forEach((s,i)=>{const p=A.e.clone().lerp(A.h,.2+i*.2),d=dir2(A.e,A.h).applyAxisAngle(new T3.Vector3(0,0,1),-1.1);aimAt(s,p,p.clone().add(d))})});
+    const lf=LF.leg(J.fl),lb=LB.leg(J.bl);fF.set(lf.k,lf.f);fB.set(lb.k,lb.f);const hp=P3(J.hip),gy=Math.min(J.fl.f.y,J.bl.f.y);
+    for(const [i,s] of[[0,1],[2,-1]]){const k=hp.clone().add(new T3.Vector3(4,10,s*12)),ft=new T3.Vector3(J.hip.x+10+Math.sin(t*8+i)*3,gy,s*16);mid[i].set(hp.clone().add(new T3.Vector3(2,14,s*5)),k);mid[i+1].set(k,ft);aimAt(midF[i/2],ft,ft.clone().add(new T3.Vector3(1,-.3,0)))}
     const flap=f.air||f.state==="run"?Math.sin(t*70)*.9:Math.sin(t*9)*.12;wings.forEach(({w,zz},i)=>{w.rotation.set(Math.sign(zz)*(.35+flap*(i<2?1:.8)),0,-.15)});
-    for(const s of[0,1]){const base=new T3.Vector3(6,9,s?-3:3),pts=[base];for(let k=1;k<=3;k++)pts.push(base.clone().add(new T3.Vector3(8*k+Math.sin(t*2+k+s)*2,10*k,(s?-1:1)*4*k)));ant[s].set(pts)}}},
-
-luma(R){const body=mat3(R,0x9AA2FF,{e:0x3A40B0,ei:.75,r:.15,t:1,o:.88,dw:1,phys:1,cc:1}),robe=mat3(R,0x8A90F0,{e:0x4048B0,ei:.6,r:.3,t:1,o:.8,ds:1,dw:1}),gold=mat3(R,0xF2C46A,{m:.95,r:.2}),bell=mat3(R,0xB9C0FF,{t:1,o:.45,ds:1,e:0x4A50C0,ei:.7,r:.1}),glowM=basic3(R,0xF4F0FF);
-  const T=R.torso,g=F3.g;m3(g.sph,body,T,[0,30,0],null,[11,28,10]);m3(new T3.CylinderGeometry(12,6,30,18,1,true),robe,T,[0,44,0]);for(const s of[-1,1]){m3(g.sph,gold,T,[0,52,s*11],null,[5,3,6]);m3(g.cone4,gold,T,[0,54,s*13],[s*.7,0,0],[1.6,10,1.6])}m3(g.torus,gold,T,[0,40,0],[Math.PI/2,0,0],[11,10,30]);const core=glow3(R,0xFFFFFF,40,T,[8,38,0]);m3(g.octa||g.ico0,glowM,T,[9,38,0],null,4);
-  const b=m3(new T3.CylinderGeometry(9,26,24,24,1,true),bell,T,[0,-4,0]);m3(g.torus,gold,T,[0,-16,0],[Math.PI/2,0,0],[26,26,20]);
-  const strands=[];for(let i=0;i<14;i++)strands.push(line3(T,i%2?0xB9C0FF:0xF2E8FF,10,{o:.85}));
-  const H=R.head;m3(g.sph,body,H,[2,2,0],null,[10,13,10]);for(const s of[-1,1]){m3(g.sph,glowM,H,[9,4,s*4],null,1.8);glow3(R,0xFFFFFF,8,H,[10,4,s*4])}
+    for(const s of[0,1]){const base=new T3.Vector3(6,9,s?-3:3),pts=[base];for(let k=1;k<=3;k++)pts.push(base.clone().add(new T3.Vector3(8*k+Math.sin(t*2+k+s)*2,10*k,(s?-1:1)*4*k)));ant[s].set(pts)}
+    const atk=m&&mvK(f,m,0,0)>0&&f.mf>=m.su&&f.mf<=m.su+m.ac;mand.forEach((q,i)=>q.rotation.y=(i?-1:1)*(atk?.5:.12+.08*Math.sin(t*5)));
+    /* abdomen: rest curve, or the sting arc toward the opponent */
+    const base=P3(J.hip).add(new T3.Vector3(-6,6,0)),sw=Math.sin(t*2)*3,r0=base.clone().add(new T3.Vector3(-20,-2+sw*.2,0)),r1=base.clone().add(new T3.Vector3(-42,-12+sw*.5,0)),r2=base.clone().add(new T3.Vector3(-60,-26+sw,0));
+    let k=0,tx=140,ty=100;if(m&&m.sting){const O=oppL(f);if(O){tx=clamp(O.x-24,60,175);ty=clamp(O.y+O.h*.75,60,140)}k=f.mf<m.su?Math.pow(f.mf/m.su,.7)*.7:f.mf<=m.su+m.ac?1:Math.max(0,1-(f.mf-m.su-m.ac)/(m.rc||12))}
+    const reach=f.mf>=m?.su&&f.mf<=(m?.su+m?.ac)?1:.6,s0=base.clone().add(new T3.Vector3(-34,74,0)),s1=new T3.Vector3(lerp(base.x+10,tx-50,reach),ty+70,0),s2=new T3.Vector3(lerp(base.x+30,tx,reach),lerp(ty+40,ty,reach),0);
+    const C1=r0.clone().lerp(s0,k),C2=r1.clone().lerp(s1,k),P=r2.clone().lerp(s2,k),N=RAD.length;let prev=base;
+    for(let i=0;i<N;i++){const u=(i+1)/N,q=cub(base,C1,C2,P,u),d=dir2(prev,q),L=prev.distanceTo(q),r=RAD[i];beads[i].position.copy(prev).lerp(q,.5);beads[i].quaternion.setFromUnitVectors(UPV(),d);beads[i].scale.set(r,Math.max(r*.8,L*.62),r*.9);
+      bands[i].position.copy(prev);bands[i].quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),d);bands[i].scale.set(r*.96,r*.9,40);prev=q}
+    const dEnd=dir2(cub(base,C1,C2,P,.94),P);bulb.position.copy(P);aimAt(sting,P,P.clone().add(dEnd));const tip=P.clone().addScaledVector(dEnd,16);drop.position.copy(tip);dropM.position.copy(tip).add(new T3.Vector3(0,-2-((t*3)%1)*6,0));
+    const hot=m&&m.sting?k:0;drop.visible=dropM.visible=hot>.5;drop.material.opacity=hot}},
+luma(R){const g=F3.g,TX=F3.tx,body=mat3(R,0xA6AEFF,{e:0x3A40B0,ei:.45,r:.22,phys:1,cc:1,env:1.1,bump:TX.skin,bs:.25}),robe=mat3(R,0xFFFFFF,{map:TX.robe,e:0x2A30A0,ei:.35,r:.35,ds:1}),gold=mat3(R,0xF2C46A,{m:.95,r:.2}),
+    bell=mat3(R,0xFFFFFF,{map:TX.bell,t:1,o:.9,ds:1,e:0x4A50C0,ei:.5,r:.1,phys:1,cc:1,dw:1}),glowM=basic3(R,0xF4F0FF),eyeD=mat3(R,0x14123A,{phys:1,cc:1,r:.05,env:1.6}),iris=basic3(R,0xC8F0FF),lip=mat3(R,0xD890C8,{r:.3,phys:1,cc:.8});
+  const T=R.torso;
+  /* a slender torso with a waist, a starred bodice, a petal collar (no straight lines) */
+  m3(latheG([8.5,7.2,6.4,6.8,8.4,10.2,10.6,9.4,6.5],18),body,T,[0,2,0],null,[1,48,.82]);m3(latheG([9,7.6,6.9,7.3,9,10.9,11.2,9.8],18),robe,T,[0,10,0],null,[1,36,.86]);
+  for(const s of[-1,1]){m3(g.sph,gold,T,[0,49,s*11],null,[5,3,6]);m3(g.cone4,gold,T,[0,51,s*13],[s*.7,0,0],[1.6,10,1.6])}m3(g.torus,gold,T,[0,18,0],[Math.PI/2,0,0],[8.4,7.2,36]);
+  const core=glow3(R,0xFFFFFF,34,T,[8,36,0]);m3(g.octa||g.ico0,glowM,T,[8.6,36,0],null,3.4);
+  const petals=[];for(let i=0;i<11;i++){const a=i/11*TAU,q=new T3.Group();q.position.set(Math.cos(a)*6,50,Math.sin(a)*5.4);q.rotation.set(Math.sin(a)*.55,0,-Math.cos(a)*.55);T.add(q);m3(g.sph,i%2?robe:bell,q,[0,6,0],null,[3.4,8.5,1.2]);m3(g.cone4,gold,q,[0,13,0],null,[.7,3,.7]);petals.push(q)}
+  /* the bell skirt and fourteen fixed-length tentacles that sway and trail */
+  m3(new T3.CylinderGeometry(9,27,26,36,6,true),bell,T,[0,-5,0]);m3(g.torus,gold,T,[0,-18,0],[Math.PI/2,0,0],[27,27,22]);m3(g.torus,gold,T,[0,7.5,0],[Math.PI/2,0,0],[9.4,9.4,16]);
+  for(let i=0;i<12;i++){const a=i/12*TAU;m3(g.sph,glowM,T,[Math.cos(a)*25,-15,Math.sin(a)*25],null,1.1)}
+  const NT=14,tents=[];for(let i=0;i<NT;i++)tents.push(chain3(T,i%2?bell:body,7,1.5,.3));
+  /* neck, head and face: almond eyes, brow, lips, a gem, star freckles */
+  const neck=seg3(R.body,body,mus(3.6,3,.05,.5),{ball:3.4}),choker=m3(g.torus,gold,R.body,null,null,[4,4,30]);
+  const H=R.head;m3(g.sph,body,H,[2,2,0],[0,0,-.12],[8.8,12.4,8.6]);m3(g.sph,body,H,[-2.6,6.4,0],[0,0,.6],[8.4,10.8,8]);m3(g.sph,body,H,[6,-6.6,0],[0,0,.5],[2.2,2.6,3]);
+  for(const s of[-1,1]){const e=new T3.Group();e.position.set(9,3.4,s*4);e.rotation.set(0,s*.35,s*.2);H.add(e);m3(g.sph,eyeD,e,[0,0,0],null,[1.6,2.2,3.4]);m3(g.sph,iris,e,[1.1,0,0],null,[.6,1.4,1.4]);glow3(R,0xC8F0FF,7,e,[1.6,0,0]);
+    m3(g.sph,body,H,[9.4,6.2,s*4.2],[s*.3,0,0],[1.4,.7,3.4]);m3(g.cone4,body,H,[-2,4,s*8.6],[s*1.5,0,.3],[2.4,8,1]);for(let k=0;k<3;k++)m3(g.sph,glowM,H,[9.4,0+k*.8,s*(4+k*1.2)],null,.35)}
+  m3(g.sph,body,H,[11,1.2,0],null,[1.2,2.2,1]);m3(g.sph,lip,H,[10.4,-2.8,0],null,[.9,.7,2.2]);m3(g.sph,lip,H,[10.2,-3.8,0],null,[.8,.6,1.8]);m3(g.octa||g.ico0,gold,H,[10.4,9,0],null,[1.2,2,1.2]);glow3(R,0xFFF4D8,8,H,[11,9,0]);
   const halo=m3(g.torus,gold,H,[-6,12,0],[0,1.25,.4],[20,24,30]);for(let i=0;i<7;i++){const a=i/7*Math.PI-Math.PI/2;m3(g.cone4,gold,H,[-2,14+Math.cos(a)*10,Math.sin(a)*10],[Math.sin(a)*.8,0,0],[1.5,8,1.5])}
-  const hair=[];for(let i=0;i<9;i++)hair.push(line3(H,i%2?0xE8CFC0:0xB9C0FF,10,{o:.8}));
-  const AF=arm3(R,body,12,[5,4,3.2]),AB=arm3(R,body,-12,[4.5,3.6,3]);const hands=[glow3(R,0xC8D0FF,24,R.body),glow3(R,0xC8D0FF,18,R.body)];const cuffs=[0,1].map(()=>m3(g.torus,gold,R.body,null,null,[5,5,25]));
-  const lash=[chain3(R.body,body,6,3,1),chain3(R.body,body,6,2.6,.8)];
-  return(J,f,t)=>{const a=AF.set(J.fa),c=AB.set(J.ba);hands[0].position.copy(a.h);hands[1].position.copy(c.h);[a,c].forEach((A,k)=>{cuffs[k].position.copy(A.e).lerp(A.h,.75);cuffs[k].quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),dir2(A.e,A.h))});
-    const trail=((f.vx||0)*(f.face||1))*.012;strands.forEach((st,i)=>{const an=i/14*TAU,x0=Math.cos(an)*22,z0=Math.sin(an)*22,pts=[];for(let k=0;k<10;k++){const kk=k/9;pts.push(new T3.Vector3(x0*(1-kk*.2)+Math.sin(t*2+i+k*.6)*k*.5-trail*k*14,-14-kk*(60+(i%4)*8),z0*(1-kk*.2)+Math.cos(t*1.7+i+k*.5)*k*.4))}st.set(pts)});
-    hair.forEach((h,i)=>{const pts=[];for(let k=0;k<10;k++)pts.push(new T3.Vector3(-6-k*8+Math.sin(t*2+k*.7+i)*2,10-k*3+Math.sin(t*1.3+i)*k*.7,(i-4)*2.4+Math.sin(t+i+k)*k*.6));h.set(pts)});
-    for(const [i,L,zz] of[[0,J.fl,6],[1,J.bl,-6]]){const kick=f.state==="move"&&f.move&&f.move.limb==="ff"&&i===0,ext=kick?{x:L.f.x+(L.f.x-L.k.x)*.4,y:L.f.y+(L.f.y-L.k.y)*.4}:L.f,pts=[];for(let k=0;k<=6;k++){const u=k/6,q=qpt(L.h,{x:L.k.x+Math.sin(t*3)*6,y:L.k.y},ext,u);pts.push(new T3.Vector3(q.x+Math.sin(t*3+k*.8+i*2)*k*.7,q.y,zz))}lash[i].set(pts)}
-    halo.rotation.y=1.25+Math.sin(t*.8)*.1;core.material.opacity=.7+.3*Math.sin(t*4)}},
-
-sypher(R){const hull=mat3(R,0xFFFFFF,{map:F3.tx.panel,phys:1,cc:.8,r:.32,m:.6,env:1.2}),dark=mat3(R,0x24203A,{m:.7,r:.35}),glass=mat3(R,0xBFE8FF,{phys:1,t:1,o:.32,r:.05,env:1.6,dw:0}),squid=mat3(R,0xA060D0,{phys:1,cc:.6,r:.35,e:0x3A1060,ei:.6}),cyan=basic3(R,0x5FE3E8),eyeM=basic3(R,0xFFE070);
-  const T=R.torso,g=F3.g;m3(g.box,hull,T,[0,38,0],[0,0,0],[24,30,26]);m3(g.box,dark,T,[0,16,0],null,[18,16,20]);m3(g.cyl,hull,T,[0,4,0],null,[13,8,14]);for(const s of[-1,1])m3(g.box,cyan,T,[12.6,38,s*7],null,[.6,20,2]);
-  m3(g.box,dark,T,[-16,40,0],null,[10,26,22]);const jets=[];for(const s of[-1,1]){m3(g.cyl,hull,T,[-20,32,s*7],null,[4,22,4]);const j=m3(g.cone,basic3(R,0x9FF8FF,{add:1}),T,[-20,20,s*7],[Math.PI,0,0],[3.5,14,3.5]);jets.push(j)}
-  for(const s of[-1,1])m3(g.sph,hull,T,[0,52,s*17],null,[10,8,10]);
-  const H=R.head;const dome=m3(g.sph,glass,H,[2,6,0],null,14);m3(g.cyl,dark,H,[2,-6,0],null,[13,4,13]);const sq=m3(g.sph,squid,H,[2,5,0],null,[9,10,9]);for(const s of[-1,1]){m3(g.sph,eyeM,H,[9,7,s*4],null,2.6);m3(g.sph,basic3(R,0x000000),H,[10.8,7,s*4],null,[1,2,1.2])}glow3(R,0xC07CFF,30,H,[2,5,0]);
-  const tent=[0,1,2,3].map(()=>chain3(R.body,squid,5,3,1));
-  const AF=arm3(R,hull,13,[8,6.5,6]),AB=arm3(R,dark,-13,[7,6,5.5]),LF=leg3(R,hull,10,[10,8,6.5]),LB=leg3(R,dark,-10,[9,7.5,6]);for(const z of[13,-13])m3(g.sph,hull,R.torso,[0,50,z*1.3],null,[11,9,11]);
-  const claws=[[],[]];for(let k=0;k<2;k++)for(let i=0;i<3;i++)claws[k].push(m3(g.cone4,dark,R.body,null,null,[1.8,9,1.8]));const feet=[m3(g.box,dark,R.body,null,null,[16,6,12]),m3(g.box,dark,R.body,null,null,[15,6,11])];const fj=[glow3(R,0x5FE3E8,18,R.body),glow3(R,0x5FE3E8,14,R.body)];
-  return(J,f,t)=>{const a=AF.set(J.fa),b=AB.set(J.ba);[a,b].forEach((A,k)=>claws[k].forEach((c,i)=>{const d=dir2(A.e,A.h).applyAxisAngle(new T3.Vector3(0,0,1),(i-1)*.45);aimAt(c,A.h,A.h.clone().add(d))}));
-    const lf=LF.set(J.fl),lb=LB.set(J.bl);feet[0].position.copy(lf.f).add(new T3.Vector3(4,0,0));feet[1].position.copy(lb.f).add(new T3.Vector3(4,0,0));fj[0].position.copy(lf.f);fj[1].position.copy(lb.f);
-    const on=f.air||f.state==="run";jets.forEach(j=>{j.visible=on;j.scale.y=on?12+Math.random()*8:0});fj.forEach(s=>s.material.opacity=on?1:.25);
-    const hd=P3(J.head);tent.forEach((c,i)=>{const s=i<2?1:-1,base=hd.clone().add(new T3.Vector3(-8,-4,s*(4+i%2*4))),pts=[base];for(let k=1;k<=5;k++)pts.push(base.clone().add(new T3.Vector3(-k*8+Math.sin(t*2.6+k+i)*4,-k*7+Math.cos(t*2+k+i)*3,s*k*2.5)));c.set(pts)});sq.scale.y=10*(1+.04*Math.sin(t*3))}},
-
-voraxx(R){const ob=mat3(R,0x2A2230,{phys:1,cc:.4,r:.4,m:.4,flat:1,emap:F3.tx.lava,e:0xFF3A1A,ei:.6}),gold=mat3(R,0xE8B04A,{m:.95,r:.22}),bone=mat3(R,0xE8DCC8,{r:.5}),fire=basic3(R,0xFF6A2A),wing=mat3(R,0xFFFFFF,{map:F3.tx.ember,emap:F3.tx.ember,e:0x8A4030,t:1,o:.95,ds:1,r:.6,dw:1});
-  const T=R.torso,g=F3.g;m3(g.ico,ob,T,[0,38,0],null,[28,36,26]);m3(g.torus,gold,T,[0,52,0],[Math.PI/2,0,0],[26,24,40]);m3(g.ico,ob,T,[2,12,0],null,[20,16,20]);
-  const maw=m3(g.sph,fire,T,[24,32,0],null,[5,9,8]);glow3(R,0xFF6A2A,50,T,[28,32,0]);for(let i=0;i<8;i++){const a=i/8*TAU;m3(g.cone4,bone,T,[25,32+Math.sin(a)*10,Math.cos(a)*9],[0,0,-Math.PI/2-Math.sin(a)*.3],[1.4,5,1.4])}
-  for(const s of[-1,1]){m3(g.dome,gold,T,[0,60,s*22],[s*.4,0,0],[14,11,14]);for(let i=0;i<3;i++)m3(g.cone4,gold,T,[-4+i*5,66,s*(26+i*2)],[s*.5,0,-.3],[2,14,2])}
-  const wings=[];for(const s of[-1,1]){const w=new T3.Group();w.position.set(-14,58,s*12);T.add(w);const sh=new T3.Shape();sh.moveTo(0,0);sh.lineTo(-30,95);sh.lineTo(-48,62);sh.lineTo(-92,70);sh.lineTo(-74,30);sh.lineTo(-104,8);sh.lineTo(-58,-6);sh.lineTo(-30,-22);sh.lineTo(0,0);m3(new T3.ShapeGeometry(sh,8),wing,w);
-    for(const [x,y] of[[-30,95],[-92,70],[-104,8]]){const b=bone3(w,gold,2.4,1.2,false);b.set(new T3.Vector3(0,0,0),new T3.Vector3(x,y,0))}wings.push({w,s})}
-  const H=R.head;m3(g.dod,ob,H,[3,4,0],null,[11,12,11]);m3(g.box,gold,H,[10,9,0],[0,0,.3],[6,3,16]);const eyes=[];for(const [y,zz] of[[7,0],[9,-4],[9,4],[4,-3],[4,3]])eyes.push(m3(g.sph,basic3(R,0xFF3A2A),H,[13,y,zz],null,1.8));glow3(R,0xFF3A2A,22,H,[14,7,0]);
-  for(const s of[-1,1]){const pts=[new T3.Vector3(-2,12,s*6),new T3.Vector3(-10,24,s*10),new T3.Vector3(-22,30,s*12),new T3.Vector3(-34,28,s*10)];chain3(H,bone,3,3,1).set(pts)}
-  const AF=arm3(R,ob,24,[9,8,7]),AB=arm3(R,ob,-24,[8.5,7.5,6.5]),LF=leg3(R,ob,14,[12,10,8]),LB=leg3(R,ob,-14,[11,9,7.5]);const gaunt=[m3(g.ico,gold,R.body,null,null,9),m3(g.ico,gold,R.body,null,null,8)];const tail=chain3(R.body,ob,5,8,3);const tip=m3(g.cone4,gold,R.body,null,null,[4,16,4]);
-  const feet=[0,1].map(()=>{const q=new T3.Group();R.body.add(q);for(let i=0;i<3;i++)m3(g.cone4,bone,q,[2,0,(i-1)*5],[0,0,-Math.PI/2],[2,12,2]);return q});
-  return(J,f,t)=>{const a=AF.set(J.fa),b=AB.set(J.ba);gaunt[0].position.copy(a.h);gaunt[1].position.copy(b.h);const lf=LF.set(J.fl),lb=LB.set(J.bl);feet[0].position.copy(lf.f);feet[1].position.copy(lb.f);
-    const fl=Math.sin(t*3);wings.forEach(({w,s})=>w.rotation.set(s*(.9+fl*.25),s*-.25,-.1+fl*.08));maw.scale.y=9*(1+Math.sin(t*6)*.25);eyes.forEach((e,i)=>e.scale.setScalar(Math.sin(t*.5+i)>.985?.3:1.8));
-    const h=P3(J.hip),sw=Math.sin(t*1.7)*10,pts=[0,1,2,3,4,5].map(k=>h.clone().add(new T3.Vector3(-10-k*18,-4-k*8+Math.sin(t*2+k)*3,sw*k*.2)));tail.set(pts);aimAt(tip,pts[5],pts[5].clone().add(dir2(pts[4],pts[5])))}},
-
-rhakka(R){const crab=mat3(R,0xFFFFFF,{map:F3.tx.crab,phys:1,cc:1,r:.3}),crabL=mat3(R,0xFF9A6A,{phys:1,cc:.8,r:.35}),crabD=mat3(R,0x8A2A14,{r:.5}),hullM=mat3(R,0xFFFFFF,{map:F3.tx.wreck,m:.55,r:.5,env:.8}),steel=mat3(R,0x8A9AB4,{m:.85,r:.3}),glass=mat3(R,0x7FE8FF,{phys:1,t:1,o:.7,e:0x1A5A70,r:.05}),te=basic3(R,0x5FF0DC);
-  const T=R.torso,g=F3.g;m3(g.sph,crab,T,[2,24,0],null,[36,24,34]);m3(g.sph,crabL,T,[22,16,0],null,[16,10,18]);for(let i=0;i<5;i++)m3(g.cone4,crabD,T,[-16+i*8,40,rnd(-12,12)],null,[2,6,2]);
+  const NH=12,hair=[];for(let i=0;i<NH;i++)hair.push(chain3(H,i%3?body:robe,8,1.5,.35));
+  /* arms with shoulder and forearm shape, long four-fingered hands, gold cuffs */
+  const AF=limb3(R,body,12,mus(4.4,3.4,.25,.3),mus(3.4,2.4,.2,.25),{ball0:4.6,ball1:3.4}),AB=limb3(R,body,-12,mus(4,3.1,.25,.3),mus(3.1,2.2,.2,.25),{ball0:4.2,ball1:3.1});
+  const hnd=()=>hand3(R,body,{palm:[4.6,5,3.6],n:4,fl:[3.6,3],fr:.85,thumb:[3,2.4],spread:.9}),hF=hnd(),hB=hnd();const hands=[glow3(R,0xC8D0FF,20,R.body),glow3(R,0xC8D0FF,15,R.body)];const cuffs=[0,1].map(()=>m3(g.torus,gold,R.body,null,null,[3.6,3.6,30]));
+  /* legs with real shape, pointed feet, and wavy ribbons wound around them */
+  const LF=limb3(R,body,6,mus(6,4.2,.25,.3),mus(4.2,2.2,.3,.25),{ball0:6,ball1:4.2}),LB=limb3(R,body,-6,mus(5.6,4,.25,.3),mus(4,2.1,.3,.25),{ball0:5.6,ball1:4});
+  const ft=()=>foot3(R,body,{len:12,w:4.6,h:3.4,toes:1,toeL:6,toeR:1.5,dx:2}),fF=ft(),fB=ft();const rib=[0,1,2,3].map(i=>chain3(R.body,i%2?robe:bell,12,1,.5));
+  return(J,f,t)=>{const m=f.state==="move"&&f.move;
+    neck.set(P3(J.chest).add(new T3.Vector3(0,-2,0)),P3(J.head).add(new T3.Vector3(0,-6,0)));choker.position.copy(P3(J.neck));choker.quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),dir2(P3(J.chest),P3(J.head)));
+    const a=AF.arm(J.fa),c=AB.arm(J.ba),cast=m?mvK(f,m,-4,6):0;hF.set(a.e,a.h,.25-cast*.2+.1*Math.sin(t*2),.5+cast*.6);hB.set(c.e,c.h,.35+.1*Math.sin(t*2+1),.5);hands[0].position.copy(a.h);hands[1].position.copy(c.h);hands[0].material.opacity=.5+cast*.5;
+    [a,c].forEach((A,k)=>{cuffs[k].position.copy(A.e).lerp(A.h,.8);cuffs[k].quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),dir2(A.e,A.h))});
+    const lf=LF.leg(J.fl),lb=LB.leg(J.bl);fF.set(lf.k,lf.f);fB.set(lb.k,lb.f);
+    [[lf,0],[lb,1],[lf,2],[lb,3]].forEach(([L,i])=>{const pts=[];for(let k=0;k<=12;k++){const u=k/12,p=u<.5?L.h.clone().lerp(L.k,u*2):L.k.clone().lerp(L.f,(u-.5)*2),an=u*TAU*1.6+i*1.6+t*2,rr=lerp(6.5,3,u)+Math.sin(t*3+u*8+i)*.8;pts.push(p.add(new T3.Vector3(Math.cos(an)*rr*.5+Math.sin(t*2.5+u*9+i)*2*u,0,Math.sin(an)*rr)))}rib[i].set(pts)});
+    /* tentacles: each keeps its length; motion only bends them */
+    const lean=clamp(-(f.vx||0)*(f.face||1)*.0011,-.55,.55),sl=5.4;tents.forEach((st,i)=>{const an=i/NT*TAU,x0=Math.cos(an)*24,z0=Math.sin(an)*24,pts=[new T3.Vector3(x0,-17,z0)];let ang=lean*.4,az=0;
+      for(let k=1;k<=7;k++){ang+=lean*.12+Math.sin(t*2.4+i*.9+k*.7)*.12;az+=Math.cos(t*1.9+i+k*.5)*.1;const p=pts[k-1];pts.push(new T3.Vector3(p.x+Math.sin(ang)*sl-Math.cos(an)*.6,p.y-Math.cos(ang)*sl,p.z+Math.sin(az)*sl*.6-Math.sin(an)*.5))}st.set(pts)});
+    hair.forEach((h,i)=>{const sp=(i-(NH-1)/2)*1.7,pts=[];for(let k=0;k<=8;k++){const u=k/8,w=Math.sin(t*2.4-k*1.1+i*.8)*(1+u*3.2);pts.push(new T3.Vector3(-6-k*4.6-u*u*6,9-k*5.2-u*u*8+w*1.3,sp*(1+u*1.1)+Math.cos(t*1.8-k*.9+i*1.3)*(.6+u*2.6)))}h.set(pts)});
+    petals.forEach((q,i)=>q.scale.setScalar(1+.05*Math.sin(t*2+i)));halo.rotation.y=1.25+Math.sin(t*.8)*.1;core.material.opacity=.7+.3*Math.sin(t*4)}},
+sypher(R){const g=F3.g,TX=F3.tx,hull=mat3(R,0xFFFFFF,{map:TX.panel,phys:1,cc:.8,r:.32,m:.6,env:1.2,bump:TX.obs,bs:.4}),suit=mat3(R,0xFFFFFF,{map:TX.suit,phys:1,cc:.5,r:.4,m:.45,env:1}),dark=mat3(R,0x24203A,{m:.7,r:.35}),
+    glass=mat3(R,0xBFE8FF,{phys:1,t:1,o:.22,r:.03,env:1.8,dw:0}),squid=mat3(R,0xB070E0,{phys:1,cc:.7,r:.32,e:0x3A1060,ei:.5,bump:TX.skin,bs:.3}),squidD=mat3(R,0x6A3090,{phys:1,cc:.5,r:.4}),cyan=basic3(R,0x5FE3E8),eyeM=mat3(R,0x08040E,{phys:1,cc:1,r:.02,env:2});
+  const T=R.torso;
+  /* armoured flight suit: shaped chest, plates, a reactor pack with twin jets */
+  m3(latheG([10,9.4,9,9.6,11,12.6,13.2,12.4,9],16),suit,T,[0,4,0],null,[1,48,.9]);m3(g.box,hull,T,[6,40,0],[0,0,-.05],[12,22,22]);m3(g.box,hull,T,[5,24,0],null,[10,10,18]);for(const s of[-1,1])m3(g.box,cyan,T,[12.2,40,s*6],null,[.6,18,1.6]);
+  m3(g.box,dark,T,[-15,40,0],null,[11,28,22]);m3(g.cyl,hull,T,[-15,40,0],[Math.PI/2,0,0],[8,24,8]);const core=m3(g.sph,cyan,T,[-15,40,0],null,3.4);glow3(R,0x5FE3E8,22,T,[-22,40,0]);
+  const jets=[];for(const s of[-1,1]){m3(g.cyl,hull,T,[-20,30,s*7],null,[4,22,4]);m3(g.torus,dark,T,[-20,19,s*7],[Math.PI/2,0,0],[4.4,4.4,40]);const j=m3(g.cone,basic3(R,0x9FF8FF,{add:1}),T,[-20,18,s*7],[Math.PI,0,0],[3.5,14,3.5]);jets.push(j)}
+  for(const s of[-1,1]){m3(g.sph,hull,T,[0,52,s*17],null,[10,8,10]);m3(g.box,dark,T,[0,56,s*18],[s*.3,0,0],[12,2,10])}m3(g.torus,hull,T,[0,57,0],[Math.PI/2,0,0],[9.6,9.6,24]);
+  /* the pilot: a brain-folded alien skull in a glass helmet, black almond eyes, face tendrils */
+  const H=R.head;m3(g.sph,glass,H,[2,6,0],null,15);m3(g.torus,hull,H,[2,-6,0],[Math.PI/2,0,0],[13.6,13.6,22]);m3(g.cyl,dark,H,[2,-7,0],null,[13,3,13]);
+  const brain=m3(g.brain,squid,H,[0,8,0],[0,0,.25],[9,8.6,8]);m3(g.sph,squid,H,[6,1,0],[0,0,-.3],[5.6,6.6,6]);
+  for(const s of[-1,1]){const e=new T3.Group();e.position.set(9.4,3.4,s*3.6);e.rotation.set(s*.4,s*.5,-.2);H.add(e);m3(g.sph,eyeM,e,[0,0,0],null,[1.4,3,1.8]);glow3(R,0xC07CFF,5,e,[1.2,.6,0]);m3(g.sph,squidD,H,[8.6,6.6,s*3.6],[s*.4,0,-.4],[2,.9,2.6])}
+  const ft=[0,1,2,3].map(()=>chain3(H,squid,4,1.1,.35));glow3(R,0xC07CFF,30,H,[2,6,0]);
+  /* dreadlock tendrils: eight segmented locks that sway, and lash out to seize in his specials */
+  const ND=8,dreads=[],rings=[];for(let i=0;i<ND;i++){dreads.push(chain3(R.body,i%2?squid:squidD,7,2.6,1));const rr=[];for(let k=0;k<3;k++)rr.push(m3(g.torus,hull,R.body,null,null,[2.4,2.4,30]));rings.push(rr)}
+  /* armoured limbs with pads; big jointed gauntlets; shaped boots with thrusters */
+  const AF=limb3(R,suit,13,mus(7.6,6.4,.2,.3),mus(6.4,5.8,.2,.35),{ball0:8,ball1:6.4}),AB=limb3(R,suit,-13,mus(7,6,.2,.3),mus(6,5.4,.2,.35),{ball0:7.4,ball1:6});
+  const pads=[0,1,2,3].map(()=>m3(g.sph,hull,R.body,null,null,[6,5,6]));
+  const gaunt=m=>hand3(R,m,{palm:[12,10,10],pgeo:g.box,n:4,fl:[6,4.6],fr:2.1,thumb:[5,4],joint:1,knuckle:2.2,spread:.5}),hF=gaunt(hull),hB=gaunt(dark),tips=[glow3(R,0x5FE3E8,10,R.body),glow3(R,0x5FE3E8,10,R.body)];
+  const LF=limb3(R,suit,10,mus(9.4,7.6,.2,.35),mus(7.6,6,.25,.3),{ball0:9,ball1:7.4}),LB=limb3(R,suit,-10,mus(8.8,7.2,.2,.35),mus(7.2,5.6,.25,.3),{ball0:8.4,ball1:7});
+  const boot=m=>{const b=foot3(R,m,{len:24,w:11,h:9,toes:1,toeL:5,toeR:4.4,dx:3,ankle:6.6});m3(g.box,dark,b.g,[0,1,0],null,[24,2.2,11]);m3(g.torus,cyan,b.g,[-2,9,0],[Math.PI/2,0,0],[6.4,6.4,20]);return b},bF=boot(hull),bB=boot(dark);
+  const fj=[glow3(R,0x5FE3E8,18,R.body),glow3(R,0x5FE3E8,14,R.body)];
+  return(J,f,t)=>{const m=f.state==="move"&&f.move;
+    const a=AF.arm(J.fa),b=AB.arm(J.ba);pads[0].position.copy(a.e);pads[1].position.copy(b.e);const cast=m?mvK(f,m,-3,4):0;hF.set(a.e,a.h,.55-cast*.45,.4+cast*.6);hB.set(b.e,b.h,.6,.4);tips[0].position.copy(a.h);tips[1].position.copy(b.h);tips[0].material.opacity=tips[1].material.opacity=.3+cast*.7;
+    const lf=LF.leg(J.fl),lb=LB.leg(J.bl);pads[2].position.copy(lf.k);pads[3].position.copy(lb.k);bF.set(lf.k,lf.f);bB.set(lb.k,lb.f);fj[0].position.copy(lf.f);fj[1].position.copy(lb.f);
+    const on=f.air||f.state==="run";jets.forEach(j=>{j.visible=on;j.scale.y=on?12+Math.random()*8:0});fj.forEach(s=>s.material.opacity=on?1:.2);
+    ft.forEach((c,i)=>{const s=i<2?1:-1,base=new T3.Vector3(9,-1,s*(1+(i%2)*2.2)),pts=[base];for(let k=1;k<=4;k++)pts.push(base.clone().add(new T3.Vector3(1.4*k+Math.sin(t*3+k+i)*.8,-2.6*k,s*k*.5+Math.cos(t*2.6+i+k)*.6)));c.set(pts)});
+    /* dreads: rest sway, or seize the opponent */
+    const hd=P3(J.head),seize=m&&(m.storm||m.shock)?mvK(f,m,-2,4):0,O=oppL(f),tgt=O?new T3.Vector3(clamp(O.x-8,30,250),O.y+O.h*.62,0):new T3.Vector3(150,100,0);
+    dreads.forEach((c,i)=>{const s=i%2?1:-1,ang=(i/(ND-1)-.5)*1.6,base=hd.clone().add(new T3.Vector3(-8,2+Math.cos(ang)*4,Math.sin(ang)*8)),rest=[base],grab=[base];
+      for(let k=1;k<=7;k++){const u=k/7;rest.push(base.clone().add(new T3.Vector3(-k*6.6+Math.sin(t*2.8+k*.8+i)*(2+u*5),-k*6+Math.cos(t*2.2+k+i*.6)*(1.5+u*4)-u*u*8,Math.sin(ang)*k*2.2+Math.sin(t*1.9+i+k*.7)*(1+u*3))))}
+      const top=base.clone().add(new T3.Vector3(10,46+i%3*6,Math.sin(ang)*16));for(let k=1;k<=7;k++){const u=k/7,v=1-u,q=new T3.Vector3(v*v*base.x+2*v*u*top.x+u*u*tgt.x,v*v*base.y+2*v*u*top.y+u*u*tgt.y,v*v*base.z+2*v*u*top.z+u*u*0);
+        if(k>=6){const an=t*14+i*.8+k;q.x+=Math.cos(an)*9;q.z+=Math.sin(an)*12;q.y+=(i-3.5)*3}grab.push(q)}
+      const pts=rest.map((p,k)=>p.clone().lerp(grab[k],seize));c.set(pts);rings[i].forEach((r,k)=>{const p=pts[k*2+1],d=dir2(pts[k*2],pts[k*2+2]);r.position.copy(p);r.quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),d)})});
+    brain.scale.y=8.6*(1+.03*Math.sin(t*3));core.scale.setScalar(3.4*(1+.2*Math.sin(t*5)))}},
+voraxx(R){const g=F3.g,TX=F3.tx,ob=mat3(R,0x2A2230,{phys:1,cc:.5,r:.38,m:.4,emap:TX.lava,e:0xFF3A1A,ei:.6,bump:TX.obs,bs:.6}),obD=mat3(R,0x18121E,{phys:1,cc:.6,r:.3,m:.5,bump:TX.obs,bs:.5}),gold=mat3(R,0xE8B04A,{m:.95,r:.22}),horn=mat3(R,0xCDB896,{r:.45,phys:1,cc:.4,bump:TX.ribs,bs:.6}),
+    bone=mat3(R,0xE8DCC8,{r:.45,phys:1,cc:.5,bump:TX.ribs,bs:.5}),fire=basic3(R,0xFF6A2A),memb=mat3(R,0xFFFFFF,{map:TX.memb,emap:TX.memb,e:0x6A2A1A,ei:.8,t:1,o:.97,ds:1,r:.6,dw:1});
+  const T=R.torso;
+  /* a muscled obsidian torso: pectoral plates, the maw in the chest, ribbed abdomen, gold collar and pauldrons */
+  m3(latheG([14,13,13.4,15,18,21,22.4,21,16],18),ob,T,[0,2,0],null,[1,60,.9]);for(const s of[-1,1])m3(g.rock[s>0?0:1],obD,T,[10,44,s*9],[0,0,-.2],[10,9,9]);for(let k=0;k<4;k++)for(const s of[-1,1])m3(g.sph,obD,T,[14-k*.6,12+k*7,s*4.6],null,[3.4,3.2,4]);
+  m3(g.torus,gold,T,[0,56,0],[Math.PI/2,0,0],[22,20,46]);const maw=m3(g.sph,fire,T,[19,30,0],null,[5,9,8]);glow3(R,0xFF6A2A,50,T,[24,30,0]);for(let i=0;i<10;i++){const a=i/10*TAU;m3(g.cone4,bone,T,[20,30+Math.sin(a)*10,Math.cos(a)*9],[0,0,-Math.PI/2-Math.sin(a)*.3],[1.4,5.6,1.4])}
+  for(const s of[-1,1]){m3(g.dome,gold,T,[0,62,s*24],[s*.4,0,0],[15,12,15]);for(let i=0;i<4;i++)m3(g.cone4,gold,T,[-6+i*5,68-i,s*(27+i*1.6)],[s*.5,0,-.3],[2,15-i*2,2])}
+  /* dragon wings: arm bones, four finger bones from the wrist, a scalloped veined membrane, a wrist claw */
+  const wings=[];for(const s of[-1,1]){const w=new T3.Group();w.position.set(-14,58,s*12);T.add(w);
+    const arm=[[0,0],[-22,30],[-36,64]],tips=[[-30,104],[-64,98],[-96,72],[-108,30],[-72,-6]],geo=membraneGeo([[-22,30],[-36,64],...tips,[-24,-14]],.16);m3(geo,memb,w);
+    for(let i=0;i<2;i++)seg3(w,ob,mus(3.4-i,2.6-i*.6,.2,.4),{ball:3.4-i}).set(new T3.Vector3(...arm[i],0),new T3.Vector3(...arm[i+1],0));
+    tips.forEach(p=>seg3(w,bone,mus(1.8,.5,.1,.3)).set(new T3.Vector3(-36,64,0),new T3.Vector3(...p,0)));m3(g.cone,bone,w,[-36,64,0],[0,0,.6],[1.6,9,1.6]);tips.forEach(p=>m3(g.cone4,bone,w,[p[0],p[1],0],[0,0,Math.atan2(p[1]-64,p[0]+36)-Math.PI/2],[.9,4,.9]));wings.push({w,s})}
+  /* head: a horned demon skull, five ember eyes, a jaw, ribbed goat horns that curl back */
+  const H=R.head;m3(g.dod,ob,H,[3,4,0],null,[11,12,11]);m3(g.sph,obD,H,[10,0,0],[0,0,-.15],[9,5,7]);m3(g.torus,gold,H,[2,10,0],[Math.PI/2,0,.25],[11,11,30]);const jaw=m3(g.sph,obD,H,[9,-5,0],[0,0,.15],[8,3,6]);for(const s of[-1,1])for(let k=0;k<3;k++)m3(g.cone4,bone,H,[12+k*2.4,-2.6,s*(3.4-k*.5)],[0,0,Math.PI],[.6,2.6,.6]);
+  const eyes=[];for(const [y,zz] of[[7,0],[9,-4],[9,4],[4,-3],[4,3]])eyes.push(m3(g.sph,basic3(R,0xFF3A2A),H,[13.4,y,zz],null,1.8));glow3(R,0xFF3A2A,22,H,[14,7,0]);
+  for(const s of[-1,1])m3(hornGeo(60,5.6,4.3,10,.32*s),horn,H,[0,12,s*7],[s*.25,0,.15]);for(let i=0;i<4;i++)m3(g.cone4,gold,H,[-4+i*3,14,0],[0,0,.4],[1.2,5+i,1.2]);
+  /* arms: heavy muscle, spiked gold bracers, four-taloned hands */
+  const AF=limb3(R,ob,24,mus(9.6,8.4,.3,.3),mus(8.4,7,.3,.35),{ball0:10,ball1:8.4}),AB=limb3(R,obD,-24,mus(9,7.8,.3,.3),mus(7.8,6.6,.3,.35),{ball0:9.4,ball1:7.8});
+  const brace=[0,1].map(()=>{const q=new T3.Group();R.body.add(q);m3(g.cyl,gold,q,[0,0,0],null,[8.6,14,8.6]);for(let i=0;i<4;i++)m3(g.cone4,gold,q,[0,(i-1.5)*3,7],[1.4,0,0],[1.4,6,1.4]);return q});
+  const claw=m=>hand3(R,m,{palm:[12,10,11],n:4,fl:[7,6],fr:2.3,thumb:[6,5],claw:8,clawM:bone,joint:1,spread:.8,clawBend:-.5}),hF=claw(ob),hB=claw(obD);
+  /* legs: thick thighs, digitigrade clawed feet built to carry him */
+  const LF=limb3(R,ob,14,mus(12.6,10,.3,.35),mus(10,7.4,.35,.3),{ball0:12.6,ball1:10}),LB=limb3(R,obD,-14,mus(12,9.4,.3,.35),mus(9.4,7,.35,.3),{ball0:12,ball1:9.4});
+  const ft=m=>foot3(R,m,{len:32,w:18,h:10,toes:3,toeL:11,toeR:3.8,claw:9,clawM:bone,dew:7,dx:6,ankle:7.6}),fF=ft(ob),fB=ft(obD);
+  /* tail: tapering, spiked along the top, ending in a gold crescent blade */
+  const NT=7,tail=[],tsp=[];for(let i=0;i<NT;i++){const r0=lerp(9,3,i/NT),r1=lerp(9,3,(i+1)/NT);tail.push(seg3(R.body,i%2?obD:ob,mus(r0,r1,.15,.5),{ball:r0}));tsp.push(m3(g.cone4,bone,R.body,null,null,[1.6,7-i*.6,1.6]))}
+  const axe=new T3.Group();R.body.add(axe);{const sh=new T3.Shape();sh.moveTo(0,0);sh.quadraticCurveTo(10,26,34,32);sh.quadraticCurveTo(20,18,24,0);sh.quadraticCurveTo(20,-18,34,-32);sh.quadraticCurveTo(10,-26,0,0);
+    const eg=new T3.ExtrudeGeometry(sh,{depth:2.4,bevelEnabled:true,bevelThickness:1.2,bevelSize:1,bevelSegments:2,curveSegments:12});eg.translate(0,0,-1.2);m3(eg,gold,axe);m3(g.cone4,gold,axe,[4,0,0],[0,0,-Math.PI/2],[3.4,26,3.4]);m3(g.sph,fire,axe,[6,0,0],null,3);glow3(R,0xFF6A2A,24,axe,[6,0,0])}
+  return(J,f,t)=>{const m=f.state==="move"&&f.move,a=AF.arm(J.fa),b=AB.arm(J.ba),atk=m?mvK(f,m,-3,4):0;hF.set(a.e,a.h,.45-atk*.35,.8+atk*.4);hB.set(b.e,b.h,.5,.8);
+    [a,b].forEach((A,k)=>{brace[k].position.copy(A.e).lerp(A.h,.55);brace[k].quaternion.setFromUnitVectors(UPV(),dir2(A.e,A.h))});
+    const lf=LF.leg(J.fl),lb=LB.leg(J.bl);fF.set(lf.k,lf.f);fB.set(lb.k,lb.f);
+    const fl=Math.sin(t*3),big=m&&m.lv>=3?atk:0;wings.forEach(({w,s})=>w.rotation.set(s*(.9+fl*.25-big*.4),s*-.25,-.1+fl*.08+big*.2));maw.scale.y=9*(1+Math.sin(t*6)*.25);eyes.forEach((e,i)=>e.scale.setScalar(Math.sin(t*.5+i)>.985?.3:1.8));jaw.rotation.z=.15-atk*.25;
+    const h=P3(J.hip),sw=Math.sin(t*1.7)*10,pts=[0,1,2,3,4,5,6,7].map(k=>h.clone().add(new T3.Vector3(-10-k*15,-4-k*6+Math.sin(t*2+k)*3+k*k*.5,sw*k*.2)));
+    for(let i=0;i<NT;i++){tail[i].set(pts[i],pts[i+1]);const d=dir2(pts[i],pts[i+1]),mid=pts[i].clone().lerp(pts[i+1],.5);aimAt(tsp[i],mid.clone().add(new T3.Vector3(d.y,-d.x,0).multiplyScalar(lerp(8,3,i/NT))),mid.clone().add(new T3.Vector3(d.y,-d.x,0).multiplyScalar(20)))}
+    const dE=dir2(pts[NT-1],pts[NT]);axe.position.copy(pts[NT]);axe.rotation.set(0,0,Math.atan2(dE.y,dE.x))}},
+rhakka(R){const g=F3.g,TX=F3.tx,crab=mat3(R,0xFFFFFF,{map:TX.carapace,phys:1,cc:1,r:.3,bump:TX.plates,bs:.8,e:0xFFFFFF,emap:TX.carapaceE,ei:0}),crabL=mat3(R,0xFF9A6A,{phys:1,cc:.8,r:.35,bump:TX.plates,bs:.5}),crabD=mat3(R,0x8A2A14,{r:.5,phys:1,cc:.6}),
+    shell=mat3(R,0xFF7A40,{phys:1,cc:1,r:.25,m:.1,env:1.2}),hullM=mat3(R,0xFFFFFF,{map:TX.wreck,m:.55,r:.5,env:.8,bump:TX.obs,bs:.5}),steel=mat3(R,0x8A9AB4,{m:.85,r:.3}),glass=mat3(R,0x7FE8FF,{phys:1,t:1,o:.7,e:0x1A5A70,r:.05}),
+    te=basic3(R,0x5FF0DC),bio=mat3(R,0x5FF0DC,{e:0x5FF0DC,ei:.9,r:.2}),plasma=basic3(R,0x9FFFF0,{add:1}),ivory=mat3(R,0xFFE8D0,{r:.35,phys:1,cc:.8});
+  const T=R.torso,steelD=mat3(R,0x1A1E26,{m:.8,r:.4});
+  /* carapace: a broad shell armoured with overlapping scale plates, a spiked rim, glowing spots */
+  m3(g.sph,crab,T,[2,24,0],null,[36,24,34]);m3(g.sph,crabL,T,[22,14,0],null,[16,10,18]);m3(g.sph,crabD,T,[4,8,0],null,[30,8,28]);
+  {const pts=[];for(let r=0;r<5;r++)for(let c=0;c<9;c++){const th=-1.1+r*.42+(c%2)*.2,ph=(c/8-.5)*2.3;pts.push([th,ph])}const im=new T3.InstancedMesh(g.dome,shell,pts.length),M=new T3.Matrix4(),q=new T3.Quaternion(),sc=new T3.Vector3();
+    pts.forEach(([th,ph],i)=>{const n0=new T3.Vector3(Math.sin(th)*Math.cos(ph),Math.cos(th),Math.cos(th)*0+Math.sin(ph)*.9).normalize(),p=new T3.Vector3(2+n0.x*35,24+n0.y*23.4,n0.z*33.2),nn=new T3.Vector3(n0.x/36,n0.y/24,n0.z/34).normalize();q.setFromUnitVectors(UPV(),nn);q.multiply(new T3.Quaternion().setFromAxisAngle(new T3.Vector3(1,0,0),-.35));sc.set(8.4,2.6,7.2);M.compose(p,q,sc);im.setMatrixAt(i,M)});T.add(im)}
+  for(let i=0;i<9;i++){const a=(i/8-.5)*2.4;m3(g.cone4,crabD,T,[2+Math.cos(a)*34,26,Math.sin(a)*32],[Math.sin(a)*.6,0,-Math.cos(a)*1.1],[2.2,8,2.2])}for(let i=0;i<5;i++)m3(g.cone4,ivory,T,[-16+i*8,44,(i-2)*4],[0,0,.2],[2,7,2]);
+  for(const [x,y,z,r] of[[20,34,14,2.2],[20,34,-14,2.2],[8,40,20,1.8],[8,40,-20,1.8],[30,22,12,1.6],[30,22,-12,1.6]])m3(g.sph,bio,T,[x,y,z],null,r);
+  /* the wreck on his back, with a turret cannon that fires in Snap Shot */
   const hull=new T3.Group();T.add(hull);hull.position.set(-26,42,0);hull.rotation.z=.35;m3(g.cyl,hullM,hull,[0,0,0],[0,0,Math.PI/2],[20,72,18]);m3(g.cone,hullM,hull,[36,0,0],[0,0,-Math.PI/2],[20,30,18]);m3(g.sph,glass,hull,[50,8,0],null,[12,7,9]);
-  for(const s of[-1,1]){m3(g.cyl,steel,hull,[-38,0,s*9],[0,0,Math.PI/2],[6,10,6]);glow3(R,0x78F0FF,26,hull,[-46,0,s*9])}for(let i=0;i<4;i++){m3(g.sph,basic3(R,0xFFC87A),hull,[-20+i*14,10,19],null,[3,3,1])}m3(g.cyl,steel,hull,[-10,20,0],[0,0,.4],[1.2,20,1.2]);
+  const thr=[];for(const s of[-1,1]){m3(g.cyl,steel,hull,[-38,0,s*9],[0,0,Math.PI/2],[6,10,6]);thr.push(glow3(R,0x78F0FF,26,hull,[-46,0,s*9]))}for(let i=0;i<4;i++){m3(g.sph,basic3(R,0xFFC87A),hull,[-20+i*14,10,19],null,[3,3,1])}m3(g.cyl,steel,hull,[-10,20,0],[0,0,.4],[1.2,20,1.2]);
   for(let i=0;i<4;i++)m3(g.torus,steel,hull,[-26+i*16,0,0],[0,Math.PI/2,0],[19.5,17.5,30]);
-  const H=R.head,stalks=[];for(const s of[-1,1]){const st=new T3.Group();st.position.set(6,0,s*5);H.add(st);bone3(st,crabL,2.4,2).set(new T3.Vector3(0,0,0),new T3.Vector3(2,22,s*3));m3(g.sph,mat3(R,0x1E2832,{phys:1,r:.1}),st,[2,24,s*3],null,5);m3(g.sph,te,st,[6,24,s*3],null,[1.4,3,2]);stalks.push(st)}
-  const legs=[];for(let i=0;i<6;i++)legs.push([bone3(R.body,i<3?crabL:crabD,5.5,4.5),bone3(R.body,i<3?crabL:crabD,4.5,1.6)]);
-  const claw=(m,big)=>{const q=new T3.Group();R.body.add(q);const s=big?1:.6;m3(g.sph,m,q,[10*s,0,0],null,[14*s,11*s,9*s]);const up=new T3.Group(),dn=new T3.Group();up.position.set(20*s,4*s,0);dn.position.set(20*s,-4*s,0);q.add(up);q.add(dn);
-    m3(g.cone4,crabL,up,[0,0,0],[0,0,-Math.PI/2],[5*s,26*s,4*s]);m3(g.cone4,crabD,dn,[0,0,0],[0,0,-Math.PI/2],[4*s,22*s,3.5*s]);return{q,up,dn}};
-  const AF=arm3(R,crab,16,[7,6,6]),AB=arm3(R,crabD,-16,[5,4,4]);const C1=claw(crab,1),C2=claw(crabD,0);
-  return(J,f,t)=>{const a=AF.set(J.fa),b=AB.set(J.ba);for(const [C,A] of[[C1,a],[C2,b]]){C.q.position.copy(A.h);const d=dir2(A.e,A.h);C.q.rotation.set(0,0,Math.atan2(d.y,d.x));const m=f.state==="move"&&f.move,op=m&&f.mf<=m.su?.5:m&&f.mf<=m.su+m.ac?.05:.25+.08*Math.sin(t*2);C.up.rotation.z=op;C.dn.rotation.z=-op*.7}
-    const gy=Math.min(J.fl.f.y,J.bl.f.y),hp=P3(J.hip);for(let i=0;i<6;i++){const s=i<3?1:-1,k=i%3,L=s>0?J.fl:J.bl,root=hp.clone().add(new T3.Vector3(-16+k*14,14,s*18)),tip=new T3.Vector3(L.f.x-62+k*58+(f.state==="walk"||f.state==="run"?Math.sin(t*8+k*2)*6:0),f.air?hp.y-24:gy,s*(46+k*6)),kn=new T3.Vector3(root.x*.35+tip.x*.65,root.y+30,s*(40+k*4));legs[i][0].set(root,kn);legs[i][1].set(kn,tip)}
-    stalks.forEach((s,i)=>{s.rotation.z=Math.sin(t*1.7+i*2.3)*.25;s.rotation.x=Math.sin(t*1.3+i)*.15})}},
-
-zhaal(R){const sc=mat3(R,0xFFFFFF,{map:F3.tx.scale,phys:1,cc:.8,r:.3,m:.15}),dark=mat3(R,0x0E2A50,{phys:1,r:.35}),belly=mat3(R,0xE8F6FF,{r:.4}),gold=mat3(R,0xF2C230,{m:.95,r:.2}),hornM=mat3(R,0xF2F8FF,{r:.3}),el=0xBFF2FF;
-  const T=R.torso,g=F3.g;m3(g.sph,sc,T,[0,30,0],null,[15,32,14]);for(let k=0;k<6;k++)m3(g.sph,belly,T,[10-k*.3,8+k*9,0],null,[5,4,9]);const spine=line3(T,0x78DCFF,8,{o:.9});
-  const hood=m3(g.sph,dark,R.head,[-12,10,0],null,[5,24,22]);for(const [y,zz] of[[4,-10],[4,10],[20,-8],[20,8]]){m3(g.sph,gold,R.head,[-8,y,zz],null,[2,4.5,4.5]);m3(g.sph,basic3(R,0x4AD8FF),R.head,[-6.5,y,zz],null,[1.5,2,2])}m3(g.torus,gold,R.head,[-12,10,0],[0,Math.PI/2,0],[22,24,40]);
-  const H=R.head;m3(g.sph,sc,H,[8,2,0],null,[18,8,9]);m3(g.cone4,sc,H,[24,0,0],[0,0,-Math.PI/2],[6,8,6]);m3(g.box,gold,H,[8,8,0],null,[18,1.2,8]);
-  for(const s of[-1,1]){m3(g.sph,basic3(R,0xFFD24A),H,[14,5,s*6.5],null,[2.8,2,1.6]);m3(g.box,basic3(R,0x000000),H,[15.2,5,s*7.6],null,[.6,3.4,.6]);glow3(R,0xFFD24A,10,H,[15,5,s*7])}
-  const horns=[m3(g.cone4,hornM,H,[-4,10,4],[.3,0,1.0],[2.4,22,2.4]),m3(g.cone4,hornM,H,[-8,8,-4],[-.3,0,1.3],[2,18,2])];const arc=line3(H,el,7,{o:1});const tongue=m3(g.box,basic3(R,0xFF4A6A),H,[34,-2,0],null,[12,.6,1.6]);
-  const AF=arm3(R,sc,12,[6,5,4.5]),AB=arm3(R,dark,-12,[5.5,4.5,4]),AF2=arm3(R,sc,9,[4.5,4,3.5]),AB2=arm3(R,dark,-9,[4,3.5,3]);
-  const talon=k=>[0,1,2].map(()=>m3(g.cone4,hornM,R.body,null,null,[1.3,9,1.3]));const tal=[talon(),talon(),talon(),talon()];const handG=[0,1,2,3].map(()=>glow3(R,0x78DCFF,12,R.body));const zaps=[0,1].map(()=>line3(R.body,el,6));
-  const tail=chain3(R.body,sc,16,14,2.5),tipG=glow3(R,0x78DCFF,22,R.body);const coil=glow3(R,0x78DCFF,70,R.body);const coilZ=[0,1,2].map(()=>line3(R.body,el,5));
+  const tur=new T3.Group();tur.position.set(8,19,0);hull.add(tur);m3(g.cyl,steel,tur,[0,0,0],null,[8,6,8]);m3(g.dome,hullM,tur,[0,3,0],null,[8,6,8]);const bar=new T3.Group();bar.position.set(0,5,0);tur.add(bar);
+  m3(g.cyl,steel,bar,[12,0,0],[0,0,Math.PI/2],[2.6,26,2.6]);m3(g.cyl,steelD,bar,[25,0,0],[0,0,Math.PI/2],[3.4,4,3.4]);for(let i=0;i<3;i++)m3(g.torus,te,bar,[6+i*5,0,0],[0,Math.PI/2,0],[2.9,2.9,14]);const muz=new T3.Object3D();muz.position.set(28,0,0);bar.add(muz);
+  const flash=glow3(R,0xBFFFF8,40,bar,[30,0,0]),beam=m3(g.cyl,plasma,R.body,null,null,1),beamC=m3(g.cyl,basic3(R,0xFFFFFF,{add:1}),R.body,null,null,1),hitG=glow3(R,0x9FFFF0,70,R.body);
+  /* head: four eye stalks, mandible plates and feelers */
+  const H=R.head,stalks=[];for(const [s,zz,l] of[[1,5,22],[-1,-5,22],[1,9,15],[-1,-9,15]]){const st=new T3.Group();st.position.set(6,0,zz);H.add(st);bone3(st,crabL,2.4,1.8).set(new T3.Vector3(0,0,0),new T3.Vector3(2,l,s*3));m3(g.sph,mat3(R,0x1E2832,{phys:1,r:.1}),st,[2,l+2,s*3],null,l>20?5:3.6);m3(g.sph,te,st,[l>20?6:4.6,l+2,s*3],null,[1.4,l>20?3:2.2,2]);glow3(R,0x5FF0DC,12,st,[6,l+2,s*3]);stalks.push(st)}
+  for(const s of[-1,1]){m3(g.sph,crabD,H,[12,-8,s*4],[0,s*.3,.4],[5,7,2.4]);m3(g.cone4,ivory,H,[15,-12,s*3],[0,0,-2.6],[1.2,5,1])}const feel=[0,1,2,3].map(()=>chain3(H,crabL,4,1,.3));
+  /* six legs, three segments each, spiked at the joints, needle tips */
+  const legs=[];for(let i=0;i<6;i++){const m=i<3?crabL:crabD;legs.push([seg3(R.body,m,mus(5.6,4.8,.2,.4),{ball:5.6}),seg3(R.body,m,mus(4.8,3.6,.3,.35),{ball:4.8}),seg3(R.body,m,mus(3.6,.8,.1,.3),{ball:3.6}),m3(g.cone4,ivory,R.body,null,null,[1.2,5,1.2]),m3(g.cone4,ivory,R.body,null,null,[1,4,1])])}
+  /* claws: a swollen palm, a fixed finger and a hinged finger, both curved with teeth */
+  const finger=(par,m,L,r,dir)=>{const pts=[];for(let k=0;k<=4;k++){const u=k/4,a=u*.9*dir;pts.push(new T3.Vector3(Math.sin(u*1.2)*L*.85,dir*Math.sin(a)*L*.12*(1-u*.2)-dir*u*u*L*.12,0))}
+    for(let k=0;k<4;k++){const b=seg3(par,m,mus(r*(1-k*.22),r*(1-(k+1)*.22)+.2,.05,.5));b.set(pts[k],pts[k+1])}for(let k=1;k<4;k++){const p=pts[k];m3(g.cone4,ivory,par,[p.x,p.y-dir*r*.6,0],[0,0,dir>0?Math.PI:0],[r*.3,r*.9,r*.3])}};
+  const claw=(m,big)=>{const q=new T3.Group();R.body.add(q);const s=big?1:.6;m3(g.sph,m,q,[10*s,0,0],null,[17*s,13*s,10.5*s]);for(let i=0;i<3;i++)m3(g.torus,crabD,q,[2*s+i*6*s,0,0],[0,Math.PI/2,0],[9.5*s,9*s,20]);for(let i=0;i<4;i++)m3(g.cone4,ivory,q,[4*s+i*5*s,10*s,0],null,[1.2*s,4*s,1.2*s]);
+    const up=new T3.Group(),dn=new T3.Group();up.position.set(20*s,4*s,0);dn.position.set(20*s,-3*s,0);q.add(up);q.add(dn);finger(up,crabL,32*s,5.6*s,1);finger(dn,crabD,27*s,5*s,-1);return{q,up,dn}};
+  const AF=limb3(R,crab,16,mus(7.4,6.4,.25,.35),mus(6.4,6,.3,.4),{ball0:7.4,ball1:6.4}),AB=limb3(R,crabD,-16,mus(5.4,4.6,.25,.35),mus(4.6,4.2,.3,.4),{ball0:5.4,ball1:4.6});const C1=claw(crab,1),C2=claw(crabD,0);
+  const wp=new T3.Vector3(),bp=new T3.Vector3();
+  return(J,f,t)=>{const m=f.state==="move"&&f.move,a=AF.arm(J.fa),b=AB.arm(J.ba);
+    for(const [C,A] of[[C1,a],[C2,b]]){C.q.position.copy(A.h);const d=dir2(A.e,A.h);C.q.rotation.set(0,0,Math.atan2(d.y,d.x));const op=m&&f.mf<=m.su?.55:m&&f.mf<=m.su+m.ac?.02:.22+.08*Math.sin(t*2);C.up.rotation.z=op;C.dn.rotation.z=-op*.6}
+    const gy=Math.min(J.fl.f.y,J.bl.f.y),hp=P3(J.hip),walk=f.state==="walk"||f.state==="run";
+    for(let i=0;i<6;i++){const s=i<3?1:-1,k=i%3,L=s>0?J.fl:J.bl,ph=t*8+k*2+(s>0?0:Math.PI),root=hp.clone().add(new T3.Vector3(-16+k*14,14,s*18)),tip=new T3.Vector3(L.f.x-62+k*58+(walk?Math.sin(ph)*7:0),f.air?hp.y-24:gy+(walk?Math.max(0,Math.cos(ph))*5:0),s*(58+k*6)),
+        kn=new T3.Vector3(root.x*.6+tip.x*.4,root.y+40,s*(42+k*4)),an=new T3.Vector3(root.x*.15+tip.x*.85,root.y+16,s*(64+k*5)),Lg=legs[i];Lg[0].set(root,kn);Lg[1].set(kn,an);Lg[2].set(an,tip);aimAt(Lg[3],kn,kn.clone().add(new T3.Vector3(0,1,s*.4)));aimAt(Lg[4],an,an.clone().add(new T3.Vector3(.3,1,s*.3)))}
+    stalks.forEach((s,i)=>{s.rotation.z=Math.sin(t*1.7+i*2.3)*.25;s.rotation.x=Math.sin(t*1.3+i)*.15});
+    feel.forEach((c,i)=>{const s=i<2?1:-1,base=new T3.Vector3(14,-9,s*(2+i%2*3)),pts=[base];for(let k=1;k<=4;k++)pts.push(base.clone().add(new T3.Vector3(3*k+Math.sin(t*4+i+k)*1.5,-3*k+Math.cos(t*3+k+i),s*k*1.2)));c.set(pts)});
+    /* Snap Shot: the turret swings forward and fires a plasma bolt at the target; Shell Spin: thrusters roar */
+    const shot=m&&m.n==="Snap Shot",k=shot?mvK(f,m,-4,2):0,fire=shot&&f.mf>=m.su&&f.mf<=m.su+m.ac+2;tur.rotation.y=0;bar.rotation.z=lerp(-.35+Math.sin(t*.7)*.1,-.42,k);
+    R.root.updateMatrixWorld(true);muz.getWorldPosition(wp);R.body.worldToLocal(wp);const O=oppL(f),tg=O?new T3.Vector3(O.x,O.y+O.h*.6,0):new T3.Vector3(200,90,0);
+    beam.visible=beamC.visible=hitG.visible=fire;flash.material.opacity=fire?1:k*.4;if(fire){const d=bp.subVectors(tg,wp),L=d.length();beam.position.copy(wp).addScaledVector(d,.5);beam.quaternion.setFromUnitVectors(UPV(),d.clone().normalize());beam.scale.set(5+Math.random()*2,L,5+Math.random()*2);
+      beamC.position.copy(beam.position);beamC.quaternion.copy(beam.quaternion);beamC.scale.set(1.8,L,1.8);hitG.position.copy(tg);hitG.scale.setScalar(60+Math.random()*30)}
+    const spin=m&&m.n==="Shell Spin"?mvK(f,m):0;thr.forEach(s=>{s.scale.setScalar(26+spin*40+Math.random()*spin*20)});crab.emissiveIntensity=0}},
+zhaal(R){const g=F3.g,TX=F3.tx,sc=mat3(R,0xFFFFFF,{map:TX.serp,phys:1,cc:.8,r:.3,m:.15,bump:TX.serpB,bs:.6}),dark=mat3(R,0x0E2A50,{phys:1,r:.35,bump:TX.serpB,bs:.4}),belly=mat3(R,0xD8EEF8,{r:.4,bump:TX.ribs,bs:.8}),
+    fin=mat3(R,0x2A6AC0,{t:1,o:.85,ds:1,r:.3,e:0x0A3A80,ei:.5,dw:1}),fang=mat3(R,0xF6F2E2,{r:.25,phys:1,cc:1}),gum=mat3(R,0x6A1028,{r:.5}),el=0xBFF2FF;
+  const T=R.torso;
+  /* a scaled, muscled serpent torso, belly scutes, a finned spine like a lagoon creature */
+  m3(latheG([10,11,12.4,13.6,14.4,15,14.6,12.8,10],18),sc,T,[0,0,0],null,[1,58,.92]);for(let k=0;k<7;k++)m3(g.sph,belly,T,[10.6-Math.abs(k-3)*.4,6+k*8,0],null,[4.6,4.2,8.6]);
+  const spinePts=[];for(let k=0;k<7;k++){const y=8+k*8,l=7+Math.sin(k/6*Math.PI)*7;spinePts.push([-14.5+Math.abs(k-3)*.3,y,l]);m3(g.cone4,fang,T,[-14+Math.abs(k-3)*.3,y,0],[0,0,.7],[1.2,l,1])}
+  {const sh=new T3.Shape();sh.moveTo(-14,4);spinePts.forEach(([x,y,l])=>sh.lineTo(x-Math.sin(.7)*l,y+Math.cos(.7)*l));sh.lineTo(-14,60);sh.lineTo(-14,4);m3(new T3.ShapeGeometry(sh,8),fin,T)}
+  const spine=line3(T,0x78DCFF,8,{o:.9});for(const s of[-1,1])m3(g.sph,sc,T,[0,52,s*14],null,[9,8,9]);
+  /* neck and a lagoon-serpent head: heavy brow, slit eyes deep under it, hinged fanged jaws, gill frills, a crest */
+  const neck=seg3(R.body,sc,mus(8,6.6,.1,.4),{ball:7}),neckB=seg3(R.body,belly,mus(5.2,4.4,.05,.5));
+  const H=R.head,skull=new T3.Group();H.add(skull);m3(g.sph,sc,skull,[5,4,0],null,[14,7.4,9]);m3(g.sph,dark,skull,[-4,5,0],null,[8,7,8.4]);
+  for(const s of[-1,1]){m3(g.sph,dark,skull,[10,9,s*4.6],[s*.4,0,-.25],[7,2.4,3]);const e=m3(g.sph,basic3(R,0xFFC020),skull,[12.2,7.2,s*5.8],[0,0,-.3],[2.6,1.6,1.4]);m3(g.box,basic3(R,0x000000),skull,[13.6,7.2,s*6.6],[0,0,-.3],[.5,2.8,.5]);glow3(R,0xFF8A20,14,skull,[13.6,7.2,s*6.8]);
+    for(let k=0;k<4;k++)m3(g.cone4,fang,skull,[1-k*3,10-k*.4,s*(6+k*.6)],[s*-1.1,0,.9],[1,5+k,1]);
+    const gf=new T3.Group();gf.position.set(-6,1,s*8);gf.rotation.set(s*-.6,s*.3,0);skull.add(gf);const sh=new T3.Shape();sh.moveTo(0,0);sh.lineTo(-6,12);sh.quadraticCurveTo(-12,8,-16,4);sh.quadraticCurveTo(-14,-2,-15,-6);sh.quadraticCurveTo(-8,-6,-5,-12);sh.lineTo(0,0);m3(new T3.ShapeGeometry(sh,8),fin,gf);
+    for(const [x,y] of[[-6,12],[-16,4],[-15,-6],[-5,-12]])bone3(gf,fang,.7,.3,false).set(new T3.Vector3(0,0,0),new T3.Vector3(x,y,0))}
+  for(let k=0;k<5;k++)m3(g.cone4,fin,skull,[2-k*4,11.5-k*.3,0],[0,0,.5+k*.08],[1.4,5+Math.sin(k)*2,.6]);
+  const upJ=new T3.Group();upJ.position.set(4,1,0);skull.add(upJ);m3(g.sph,sc,upJ,[10,0,0],[0,0,-.06],[12,3.4,6.6]);m3(g.sph,gum,upJ,[10,-1.6,0],null,[11,1.2,5.6]);
+  for(const s of[-1,1]){m3(g.cone4,fang,upJ,[18,-2,s*3],[0,0,Math.PI],[1.1,6,1.1]);for(let k=0;k<5;k++)m3(g.cone4,fang,upJ,[6+k*2.4,-2,s*(5.2-k*.3)],[0,0,Math.PI],[.6,2.2,.6])}m3(g.sph,dark,upJ,[20,.6,0],null,[2.4,2,3.4]);
+  const loJ=new T3.Group();loJ.position.set(4,-1,0);skull.add(loJ);m3(g.sph,sc,loJ,[9,-1.6,0],[0,0,.08],[11,2.8,6]);m3(g.sph,gum,loJ,[9,0,0],null,[10,1,5]);m3(g.sph,belly,loJ,[8,-3.4,0],null,[9,1.4,4.4]);
+  for(const s of[-1,1]){m3(g.cone4,fang,loJ,[15,.6,s*2.6],null,[.9,4.6,.9]);for(let k=0;k<4;k++)m3(g.cone4,fang,loJ,[5+k*2.4,.6,s*(4.6-k*.3)],null,[.5,1.8,.5])}
+  const tongue=chain3(loJ,basic3(R,0xFF4A6A),4,.6,.25),venom=glow3(R,0xB8FF6A,20,upJ,[20,-3,0]);const arc=line3(H,el,7,{o:1});
+  /* four arms with scaled muscle and three-taloned webbed hands */
+  const AF=limb3(R,sc,12,mus(6.4,5.2,.3,.3),mus(5.2,4.4,.3,.35),{ball0:6.6,ball1:5.2}),AB=limb3(R,dark,-12,mus(6,4.8,.3,.3),mus(4.8,4,.3,.35),{ball0:6.2,ball1:4.8}),AF2=limb3(R,sc,9,mus(4.8,4,.3,.3),mus(4,3.4,.3,.35),{ball0:5,ball1:4}),AB2=limb3(R,dark,-9,mus(4.4,3.6,.3,.3),mus(3.6,3,.3,.35),{ball0:4.6,ball1:3.6});
+  const hd=(m,s)=>hand3(R,m,{palm:[6*s,6*s,6*s],n:3,fl:[5*s,4*s],fr:1.3*s,thumb:[3.6*s],claw:4*s,clawM:fang,spread:1.1,joint:1}),hands=[hd(sc,1),hd(dark,.95),hd(sc,.8),hd(dark,.75)];
+  const handG=[0,1,2,3].map(()=>glow3(R,0x78DCFF,12,R.body)),zaps=[0,1].map(()=>line3(R.body,el,6));
+  /* the tail: sixteen tapering scaled segments that slither in a travelling wave, a fin at the tip */
+  const NS=16,tail=[];for(let i=0;i<NS;i++){const r0=lerp(14,2.6,i/NS),r1=lerp(14,2.6,(i+1)/NS);tail.push(seg3(R.body,i%2?sc:dark,mus(r0,r1,.08,.5),{ball:r0*.98}))}
+  const tfin=new T3.Group();R.body.add(tfin);{const sh=new T3.Shape();sh.moveTo(0,0);sh.quadraticCurveTo(6,12,16,14);sh.quadraticCurveTo(10,4,18,0);sh.quadraticCurveTo(10,-4,16,-14);sh.quadraticCurveTo(6,-12,0,0);m3(new T3.ShapeGeometry(sh,8),fin,tfin)}
+  const tipG=glow3(R,0x78DCFF,22,R.body),coil=glow3(R,0x78DCFF,70,R.body),coilZ=[0,1,2].map(()=>line3(R.body,el,5)),tailZ=[0,1].map(()=>line3(R.body,el,10));
   let J0;const lower=A=>{const U=J0.U,s={x:A.s.x-U.x*24,y:A.s.y-U.y*24},d1=rot2({x:A.e.x-A.s.x,y:A.e.y-A.s.y},-.5),d2=rot2({x:A.h.x-A.e.x,y:A.h.y-A.e.y},-.3),e={x:s.x+d1.x*.8,y:s.y+d1.y*.8};return{s,e,h:{x:e.x+d2.x*.8,y:e.y+d2.y*.8}}};
-  return(J,f,t)=>{J0=J;const m=f.state==="move"&&f.move,act=m&&f.mf>=m.su-3&&f.mf<=m.su+m.ac+2,kick=act&&m.limb==="ff",hot=(act&&m.lv>=3)||f.meter>=100;
-    const hs=[AF.set(J.fa),AB.set(J.ba),AF2.set(lower(J.fa)),AB2.set(lower(J.ba))];hs.forEach((A,k)=>{tal[k].forEach((c,i)=>aimAt(c,A.h,A.h.clone().add(dir2(A.e,A.h).applyAxisAngle(new T3.Vector3(0,0,1),(i-1)*.5))));handG[k].position.copy(A.h);handG[k].material.opacity=hot?1:.35});
+  return(J,f,t)=>{J0=J;const m=f.state==="move"&&f.move,act=m&&f.mf>=m.su-3&&f.mf<=m.su+m.ac+2,hot=(act&&m.lv>=3)||f.meter>=100,O=oppL(f);
+    /* bite: the head lunges and the jaws gape, then snap shut */
+    const bite=m&&m.bite?mvK(f,m,0,2):0,open=m&&m.bite?(f.mf<m.su?f.mf/m.su:f.mf<=m.su+1?.15:Math.max(0,.15)):0;R.head.position.x+=bite*16;R.head.position.y-=bite*4;
+    const gape=m&&m.bite?(f.mf<m.su?Math.min(1,f.mf/(m.su*.8)):f.mf<=m.su+m.ac?.05:.15):.08+.05*Math.sin(t*1.3);upJ.rotation.z=gape*.55;loJ.rotation.z=-gape*.75;venom.material.opacity=m&&m.bite?gape*.8+(f.mf>=m.su?.4:0):0;
+    tongue.set([0,1,2,3,4].map(k=>new T3.Vector3(10+k*3.4*(1+((t*.45)%1<.12&&!act?1.2:0)),.6+Math.sin(t*20+k)*.6,0)));
+    neck.set(P3(J.chest).add(new T3.Vector3(0,-4,0)),R.head.position.clone().add(new T3.Vector3(-2,-2,0)));neckB.set(P3(J.chest).add(new T3.Vector3(7,-6,0)),R.head.position.clone().add(new T3.Vector3(5,-6,0)));
+    R.torso.rotation.y=Math.sin(t*2.2)*.12;
+    const hs=[AF.arm(J.fa),AB.arm(J.ba),AF2.arm(lower(J.fa)),AB2.arm(lower(J.ba))];hs.forEach((A,k)=>{hands[k].set(A.e,A.h,act?.15:.55+.15*Math.sin(t*2+k),1);handG[k].position.copy(A.h);handG[k].material.opacity=hot?.9:.2});
     zaps.forEach((z,i)=>{if(hot&&Math.random()<.8){const h=hs[i].h;z.set(zig(h,h.clone().add(new T3.Vector3(rnd(-24,24),rnd(-24,24),rnd(-10,10))),5,5));z.l.visible=true}else z.l.visible=false});
-    const hip=J.hip,gy=Math.min(J.fl.f.y,J.bl.f.y);let pts;
-    if(kick){const L=J.fl,ext={x:L.f.x+(L.f.x-L.k.x)*.5,y:L.f.y+(L.f.y-L.k.y)*.5};pts=qpts({x:hip.x,y:hip.y+4},{x:L.k.x-12,y:L.k.y-24},ext,16).map((p,i)=>new T3.Vector3(p.x,p.y,6))}
+    /* tail: rest coil with a travelling slither wave, the Thunder Tail sweep, or a tail kick */
+    const hip=J.hip,gy=Math.min(J.fl.f.y,J.bl.f.y),mv=Math.abs(f.vx||0)>20,ph=t*(mv?7:2.6),whip=m&&m.tailWhip?mvK(f,m,-2,4):0,kick=act&&m.limb==="ff"&&!m.tailWhip;let pts;
+    if(kick){const L=J.fl,ext={x:L.f.x+(L.f.x-L.k.x)*.5,y:L.f.y+(L.f.y-L.k.y)*.5};pts=qpts({x:hip.x,y:hip.y+4},{x:L.k.x-12,y:L.k.y-24},ext,NS).map(p=>new T3.Vector3(p.x,p.y,6))}
     else{const sw=Math.sin(t*2.2)*6,mid={x:-6+sw,y:gy+6},A1=qpts({x:hip.x,y:hip.y+4},{x:hip.x+20,y:gy+(hip.y-gy)*.35},mid,8),A2=qpts(mid,{x:-46,y:gy-8},{x:-78,y:gy+24+Math.sin(t*3)*8},8).slice(1);
-      pts=A1.concat(A2).map((p,i,a)=>{const u=i/(a.length-1);return new T3.Vector3(p.x,p.y+(u>.4?10:0),Math.sin(u*Math.PI*1.6)*22-4)})}
-    tail.set(pts.slice(0,17));tipG.position.copy(pts[16]);coil.position.set(-24,gy+4,0);coil.material.opacity=f.air||kick?0:.35;
+      pts=A1.concat(A2).map((p,i,a)=>{const u=i/(a.length-1);return new T3.Vector3(p.x,p.y+(u>.4?10:0),Math.sin(u*Math.PI*1.6)*22-4+Math.sin(ph-u*7)*u*12)});
+      if(whip>0){const reach=O?clamp(O.x+10,120,250):220,sweep=m&&f.mf>=m.su?clamp((f.mf-m.su)/m.ac,0,1):0,an=lerp(Math.PI,.08,sweep),W=pts.map((p,i,a)=>{const u=i/(a.length-1);return new T3.Vector3(hip.x-4+Math.cos(an)*reach*u,gy+5+Math.sin(u*Math.PI)*6,Math.sin(an)*reach*.5*u+Math.sin(u*Math.PI)*8)});pts=pts.map((p,i)=>p.lerp(W[i],whip))}}
+    for(let i=0;i<NS;i++)tail[i].set(pts[i],pts[i+1]);const tip=pts[NS],dT=dir2(pts[NS-1],tip);tfin.position.copy(tip);tfin.rotation.set(0,0,Math.atan2(dT.y,dT.x));tipG.position.copy(tip);
+    tailZ.forEach((z,i)=>{if(whip>.3&&Math.random()<.85){z.set(pts.slice(4).filter((_,k)=>k%1===0).slice(0,10).map(p=>p.clone().add(new T3.Vector3(rnd(-4,4),rnd(-4,4),rnd(-4,4)))));z.l.visible=true}else z.l.visible=false});
+    coil.position.set(-24,gy+4,0);coil.material.opacity=f.air||kick||whip?0:.3;
     coilZ.forEach(z=>{if(!f.air&&!kick&&Math.random()<.5){const a=new T3.Vector3(rnd(-60,10),gy+4,rnd(-20,20));z.set(zig(a,a.clone().add(new T3.Vector3(rnd(-14,14),-8,rnd(-8,8))),4,4));z.l.visible=true}else z.l.visible=false});
-    spine.set([0,1,2,3,4,5,6,7].map(k=>new T3.Vector3(-13,6+k*7,0)));spine.l.material.opacity=hot?1:.5;
-    if(hot||((t*1.3)%1)<.12){const tp=horns.map(h=>new T3.Vector3(0,1,0).applyEuler(h.rotation).multiplyScalar(h.scale.y).add(h.position));arc.set(zig(tp[0],tp[1],6,4));arc.l.visible=true}else arc.l.visible=false;tongue.visible=((t*.45)%1)<.1&&!act}},
-
+    spine.set([0,1,2,3,4,5,6,7].map(k=>new T3.Vector3(-13.5,6+k*7,0)));spine.l.material.opacity=hot?1:.4;
+    if(hot&&Math.random()<.6){arc.set(zig(new T3.Vector3(-2,14,0),new T3.Vector3(-14,12,0),6,4));arc.l.visible=true}else arc.l.visible=false}},
 morrow(R){const stalk=mat3(R,0xD8C8B0,{r:.6,phys:1,cc:.3}),root=mat3(R,0x7A5A44,{r:.85,flat:1}),rootL=mat3(R,0xA88A68,{r:.8}),cap=mat3(R,0xFFFFFF,{map:F3.tx.cap,phys:1,cc:.6,r:.35,e:0x4FE8B8,ei:0}),gill=mat3(R,0xF2C8DC,{r:.6,ds:1}),skirt=mat3(R,0xE89AC0,{t:1,o:.72,ds:1,r:.5,dw:1,e:0x3A0A2A}),gl=basic3(R,0x4FE8B8),sac=mat3(R,0x4FE8B8,{phys:1,t:1,o:.8,e:0x1A8A60,r:.1,dw:1});
   const T=R.torso,g=F3.g;{const pts=[];for(let i=0;i<=12;i++){const y=i/12*56;pts.push(new T3.Vector2(15-i*.45+Math.sin(i*1.7)*1.2,y))}m3(new T3.LatheGeometry(pts,18),stalk,T,[0,-2,0])}for(let i=0;i<7;i++){const a=i/7*TAU;const l=line3(T,0xA89878,2,{o:.8});l.set([new T3.Vector3(Math.cos(a)*14.8,0,Math.sin(a)*14.8),new T3.Vector3(Math.cos(a)*10.5,52,Math.sin(a)*10.5)]);l.l.material.blending=T3.NormalBlending}const vein=line3(T,0x4FE8B8,6,{o:.9});
-  m3(new T3.CylinderGeometry(15,26,18,22,1,true),skirt,T,[0,46,0]);const sacs=[];for(const [x,y,zz,r] of[[-14,30,-8,8],[-16,18,6,6],[-12,42,8,5]]){sacs.push(m3(g.sph,sac,T,[x,y,zz],null,r));glow3(R,0x4FE8B8,r*3.6,T,[x,y,zz])}
+  for(let i=0;i<16;i++){const an=i/16*TAU,q=new T3.Group();q.position.set(Math.cos(an)*12,52,Math.sin(an)*11);q.rotation.set(Math.sin(an)*2.2,0,-Math.cos(an)*2.2);T.add(q);m3(g.sph,i%2?skirt:gill,q,[0,7,0],null,[4.2,9,1])}m3(g.torus,rootL,T,[0,52,0],[Math.PI/2,0,0],[12,11,60]);const sacs=[];for(const [x,y,zz,r] of[[-14,30,-8,8],[-16,18,6,6],[-12,42,8,5]]){sacs.push(m3(g.sph,sac,T,[x,y,zz],null,r));glow3(R,0x4FE8B8,r*3.6,T,[x,y,zz])}
   const H=R.head;const capG=new T3.Group();H.add(capG);capG.position.set(-2,8,0);m3(g.dome,cap,capG,[0,0,0],null,[46,27,46]);m3(g.disc,gill,capG,[0,-.2,0],[Math.PI/2,0,0],[46,46,1]);for(let i=0;i<24;i++){const a=i/24*TAU;m3(g.box,mat3(R,0xC88AA8,{r:.6}),capG,[Math.cos(a)*22,-1,Math.sin(a)*22],[0,-a,0],[44,.4,.8])}
   const spots=[];for(let i=0;i<12;i++){const a=rnd(0,TAU),rr=rnd(10,40),y=Math.sqrt(Math.max(0,1-(rr/46)**2))*27;spots.push(m3(g.sph,gl,capG,[Math.cos(a)*rr,y,Math.sin(a)*rr],null,rnd(2.4,4.4)))}glow3(R,0x4FE8B8,90,capG,[0,10,0]);
   for(const [x,y,zz,r] of[[10,-9,3,3],[10,-9,-3,3],[13,-13,0,2.4]]){m3(g.sph,gl,H,[x,y,zz],null,r);glow3(R,0x4FE8B8,r*4,H,[x+1,y,zz])}
   const strands=k=>[0,1,2].map(i=>chain3(R.body,i===1?rootL:root,2,4.2,3));const arms=[strands(),strands()];const fingers=[[0,1,2,3].map(()=>chain3(R.body,rootL,3,1.6,.6)),[0,1,2,3].map(()=>chain3(R.body,rootL,3,1.4,.5))];
-  const LF=leg3(R,rootL,10,[10,8,6]),LB=leg3(R,root,-10,[9.5,7.5,5.5]);const rootsF=[[0,1,2,3].map(()=>chain3(R.body,root,2,2.6,.8)),[0,1,2,3].map(()=>chain3(R.body,root,2,2.4,.7))];
-  const snare=chain3(R.body,root,8,7,2.5);snare.bs.forEach(b=>b.vis(false));
-  return(J,f,t)=>{const m=f.state==="move"&&f.move,act=m&&f.mf>=m.su-3&&f.mf<=m.su+m.ac+4,pulse=.6+.4*Math.sin(t*3);
+  const LF=limb3(R,rootL,10,mus(10,8,.25,.35),mus(8,5.6,.3,.3),{ball0:10,ball1:8}),LB=limb3(R,root,-10,mus(9.5,7.5,.25,.35),mus(7.5,5.2,.3,.3),{ball0:9.5,ball1:7.5});const rootsF=[[0,1,2,3].map(()=>chain3(R.body,root,2,2.6,.8)),[0,1,2,3].map(()=>chain3(R.body,root,2,2.4,.7))];
+  const neck=seg3(R.body,stalk,mus(9.5,7.4,.12,.5),{ball:9}),ring=m3(g.torus,skirt,R.body,null,null,[9,9,50]);const snare=chain3(R.body,root,8,7,2.5);snare.bs.forEach(b=>b.vis(false));
+  return(J,f,t)=>{neck.set(P3(J.chest).add(new T3.Vector3(0,-6,0)),P3(J.head).add(new T3.Vector3(-2,8,0)));ring.position.copy(P3(J.chest).lerp(P3(J.head),.55));ring.quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),dir2(P3(J.chest),P3(J.head)));const m=f.state==="move"&&f.move,act=m&&f.mf>=m.su-3&&f.mf<=m.su+m.ac+4,pulse=.6+.4*Math.sin(t*3);
     [J.fa,J.ba].forEach((A,k)=>{const zz=k?-14:14,P=[A.s,A.e,A.h].map(p=>P3(p,zz));arms[k].forEach((c,i)=>{const o=(i-1)*2.4;c.set(P.map((p,j)=>p.clone().add(new T3.Vector3(Math.sin(t*2+j*1.3+i*2)*o,Math.cos(t*2+j+i)*o,o))))});
       const d=dir2(P[1],P[2]),grip=act&&(m.grab||m.snare);fingers[k].forEach((c,i)=>{const a=(i-1.5)*.4,dd=d.clone().applyAxisAngle(new T3.Vector3(0,0,1),a),pts=[P[2]];for(let q=1;q<=3;q++)pts.push(P[2].clone().addScaledVector(dd,q*(grip?8:6)).add(new T3.Vector3(0,Math.sin(t*3+i+q)*2*(grip?-1:1),(i-1.5)*q*1.5)));c.set(pts)})});
-    [LF.set(J.fl),LB.set(J.bl)].forEach((L,k)=>rootsF[k].forEach((c,i)=>{const a=[-2.8,-2.3,-.4,-.9][i];c.set([L.f,L.f.clone().add(new T3.Vector3(Math.cos(a)*10,-1,(i-1.5)*5)),L.f.clone().add(new T3.Vector3(Math.cos(a)*22,-2,(i-1.5)*9))])}));
+    [LF.leg(J.fl),LB.leg(J.bl)].forEach((L,k)=>rootsF[k].forEach((c,i)=>{const a=[-2.8,-2.3,-.4,-.9][i];c.set([L.f,L.f.clone().add(new T3.Vector3(Math.cos(a)*10,-1,(i-1.5)*5)),L.f.clone().add(new T3.Vector3(Math.cos(a)*22,-2,(i-1.5)*9))])}));
     vein.set([0,1,2,3,4,5].map(k=>new T3.Vector3(16,4+k*9,Math.sin(k)*2)));vein.l.material.opacity=pulse;spots.forEach((s,i)=>s.scale.setScalar((2.6+.8*Math.sin(t*3+i))));sacs.forEach((s,i)=>s.scale.multiplyScalar(1));
     capG.rotation.z=Math.sin(t*1.6)*.05;
     if(m&&m.snare&&f.mf>=m.su-4&&f.mf<=m.su+m.ac+8){const k=clamp((f.mf-m.su+4)/8,0,1)*(f.mf>m.su+m.ac?Math.max(0,1-(f.mf-m.su-m.ac)/8):1),Ln=300*k,pts=[];for(let i=0;i<=8;i++)pts.push(new T3.Vector3(20+i/8*Ln,4+Math.sin(i*1.3+t*12)*5*(i/8),8));snare.bs.forEach(b=>b.vis(k>.02));snare.set(pts)}else snare.bs.forEach(b=>b.vis(false))}},
-
 xalthuun(R){const cloakM=mat3(R,0xFFFFFF,{map:F3.tx.stars,e:0xFFFFFF,emap:F3.tx.stars,ei:.35,r:.7,ds:1}),gold=mat3(R,0xF2C25C,{m:.95,r:.22}),sleeve=mat3(R,0x2A1A44,{r:.6,m:.2}),dark=mat3(R,0x05020C,{r:.9}),mask=mat3(R,0xE8B04A,{m:.9,r:.25,phys:1,cc:1}),maskB=mat3(R,0x8A6A2A,{m:.8,r:.4});
   const T=R.torso,g=F3.g;const cloak=m3(new T3.CylinderGeometry(.34,1,1,28,1,true),cloakM,R.body);const hem=m3(g.torus,gold,R.body,null,[Math.PI/2,0,0]);
   m3(g.ico,gold,T,[6,48,0],null,[14,20,22]);const core=m3(g.sph,basic3(R,0xFFFAEA),T,[20,48,0],null,3.5);const coreG=glow3(R,0xFFE08A,30,T,[22,48,0]);m3(g.torus,gold,T,[19,48,0],[0,Math.PI/2,0],[7,7,20]);
@@ -2750,10 +3000,10 @@ xalthuun(R){const cloakM=mat3(R,0xFFFFFF,{map:F3.tx.stars,e:0xFFFFFF,emap:F3.tx.
   const H=R.head;H.userData.sc=1.35;m3(g.sph,dark,H,[-4,2,0],null,[14,19,17]);m3(g.sph,maskB,H,[-16,2,0],[0,0,0],[4,10,8]);for(const s of[-1,1])m3(g.sph,maskB,H,[-2,2,s*15],[0,s*1.2,0],[3,9,7]);const mk=m3(g.sph,mask,H,[10,2,0],null,[6,16,12]);for(const s of[-1,1]){m3(g.sph,basic3(R,0x000000),H,[15.4,5,s*4.5],null,[1.4,2.4,2]);m3(g.sph,basic3(R,0xFFFFFF),H,[16.4,5,s*4.5],null,1)}m3(g.box,basic3(R,0x000000),H,[15.8,-6,0],null,[.6,1.2,6]);
   const eyeG=glow3(R,0xFFFFFF,12,H,[17,5,0]);const crack=m3(g.box,basic3(R,0xFF5A4A),H,[16.6,0,2],[0,0,.4],[.5,16,1]);crack.visible=false;
   const crown=[];for(let i=0;i<7;i++)crown.push(glow3(R,0xFFE08A,10,H));m3(g.torus,gold,H,[-2,24,0],[Math.PI/2,0,0],[14,14,20]);
-  const AF=arm3(R,sleeve,26,[13,14,15]),AB=arm3(R,sleeve,-26,[12,13,14]);const gF=bone3(R.body,gold,9,8),gB=bone3(R.body,gold,8,7);const cl=[[0,1,2,3].map(()=>m3(g.cone4,gold,R.body,null,null,[1.6,14,1.6])),[0,1,2,3].map(()=>m3(g.cone4,gold,R.body,null,null,[1.4,12,1.4]))];
+  const AF=arm3(R,sleeve,26,[13,14,15]),AB=arm3(R,sleeve,-26,[12,13,14]);const gF=bone3(R.body,gold,9,8),gB=bone3(R.body,gold,8,7);const sc2=[0,1].map(()=>m3(g.torus,gold,R.body,null,null,[13,13,40]));const gh=s=>hand3(R,gold,{palm:[12*s,11*s,11*s],n:4,fl:[7*s,6*s],fr:2*s,thumb:[6*s,5*s],claw:7*s,clawM:dark,joint:1,spread:.7}),cl=[gh(1),gh(.9)];
   const sceptre=new T3.Group();R.body.add(sceptre);m3(g.cyl,gold,sceptre,[0,20,0],null,[1.6,72,1.6]);const orb=m3(g.sph,dark,sceptre,[0,58,0],null,6);m3(g.torus,gold,sceptre,[0,58,0],[Math.PI/2,0,0],[7,7,20]);const orbG=glow3(R,0xA070FF,30,sceptre,[0,58,0]);
   return(J,f,t)=>{const un=!!f.p2,a=AF.set(J.fa),b=AB.set(J.ba);const ga=P3(J.fa.e,26).lerp(a.h,.4),gb=P3(J.ba.e,-26).lerp(b.h,.4);gF.set(ga,a.h);gB.set(gb,b.h);
-    [a,b].forEach((A,k)=>cl[k].forEach((c,i)=>aimAt(c,A.h,A.h.clone().add(dir2(A.e,A.h).applyAxisAngle(new T3.Vector3(0,0,1),(i-1.5)*.35)))));
+    [a,b].forEach((A,k)=>{sc2[k].position.copy(A.e).lerp(A.h,.82);sc2[k].quaternion.setFromUnitVectors(new T3.Vector3(0,0,1),dir2(A.e,A.h))});cl[0].set(a.e,a.h,.85,.5);cl[1].set(b.e,b.h,.45+.15*Math.sin(t*1.5),.9);
     const d=dir2(a.e,a.h);sceptre.position.copy(a.h).addScaledVector(d,-12);sceptre.quaternion.setFromUnitVectors(UPV(),d);
     const ch=P3(J.chest),gy=Math.min(J.fl.f.y,J.bl.f.y),hgt=Math.max(30,ch.y-gy+4);cloak.position.set((ch.x+J.hip.x)/2-6,gy+hgt/2,0);cloak.scale.set(62,hgt,52);cloak.rotation.z=-Math.atan2(J.U.x,J.U.y)*.5;hem.position.set(cloak.position.x,gy+2+Math.sin(t*2)*1.5,0);hem.scale.set(62,52,30);
     crown.forEach((c,i)=>{const an=i/7*TAU+t*.9;c.position.set(-2+Math.cos(an)*28,28+Math.sin(an*2)*1.5,Math.sin(an)*28);c.material.color.setHex(un?0xFF7A5A:0xFFE08A)});
@@ -2764,7 +3014,7 @@ const rot2=(v,a)=>({x:v.x*Math.cos(a)-v.y*Math.sin(a),y:v.x*Math.sin(a)+v.y*Math
 function draw3(f,reflect){const [bx,by,bw,bh]=f.box3,dp=DPR;X.save();X.setTransform(1,0,0,1,0,0);
   if(reflect){X.translate(0,2*dp*(FY+G.oy));X.scale(1,-1)}if(f.state==="dodge")X.globalAlpha*=.6;
   const sp=f.pr3||dp;X.drawImage(f.lay3,bx*sp,by*sp,bw*sp,bh*sp,bx*dp,by*dp,bw*dp,bh*dp);X.restore();
-  if(!reflect){GX.save();GX.setTransform(1,0,0,1,0,0);GX.globalAlpha=.08;GX.drawImage(f.lay3,bx*sp,by*sp,bw*sp,bh*sp,bx/4,by/4,bw/4,bh/4);GX.restore()}}
+  if(!reflect){GX.save();GX.setTransform(1,0,0,1,0,0);GX.globalCompositeOperation="destination-out";GX.drawImage(f.lay3,bx*sp,by*sp,bw*sp,bh*sp,bx/4,by/4,bw/4,bh/4);GX.globalCompositeOperation="lighter";GX.globalAlpha=.08;GX.drawImage(f.lay3,bx*sp,by*sp,bw*sp,bh*sp,bx/4,by/4,bw/4,bh/4);GX.restore()}}
 function drawFighter(f,t,reflect){
   if(!f.vis)return;
   const z=G.cam.z*f.s,X0=sx(f.x)+G.ox;
@@ -2826,13 +3076,15 @@ function drawGuard(c,g,f,t){
   else if(f.id==="morrow"){c.save();c.globalAlpha=a;for(let i=-3;i<=3;i++){const p1={x:x-8,y:y+i*hh/3.2},p2={x:x+10,y:y+(i+1)*hh/3.2};line(c,[p1,{x:x+6,y:p1.y+6},p2],3,"#7A5A44")}for(let i=-2;i<=2;i++){const p={x:x+2,y:y+i*hh/2.4};c.fillStyle="#E07AB8";c.beginPath();c.ellipse(p.x,p.y,7,4,0,0,TAU);c.fill();gdot(g,p,6,`rgba(79,232,184,${.4*a})`)}c.restore()}
   else{c.save();c.globalAlpha=a;c.strokeStyle="rgba(95,227,232,.85)";c.lineWidth=1;for(let r=-3;r<=3;r++)for(let q=0;q<2;q++){const px=x-4+q*10+(r%2?5:0),py=y+r*hh/3.4,k=1-Math.abs(r)/5;c.beginPath();for(let i=0;i<6;i++){const an=i/6*TAU;c.lineTo(px+Math.cos(an)*6*k,py+Math.sin(an)*6)}c.closePath();c.stroke();c.fillStyle="rgba(95,227,232,.12)";c.fill()}c.restore();g.strokeStyle=`rgba(95,227,232,${.6*a})`;g.lineWidth=5;g.beginPath();g.ellipse(x,y,12,hh,0,-1.3,1.3);g.stroke()}
 }
+function softCol(g,x,y,w,h,col){const gr=g.createLinearGradient(x,0,x+w,0);gr.addColorStop(0,`rgba(${col},0)`);gr.addColorStop(.5,`rgba(${col},1)`);gr.addColorStop(1,`rgba(${col},0)`);g.fillStyle=gr;g.fillRect(x,y,w,h)}
+function softRow(g,x,y,w,h,col){const gr=g.createLinearGradient(0,y,0,y+h);gr.addColorStop(0,`rgba(${col},0)`);gr.addColorStop(.5,`rgba(${col},1)`);gr.addColorStop(1,`rgba(${col},0)`);g.fillStyle=gr;g.fillRect(x,y,w,h)}
 function drawBeam(c,g,f,t){
   const m=f.move,b=m.beam,k=(f.mf-m.su)/m.ac,fade=k>.8?(1-k)/.2:Math.min(1,k*6),h=b.h*fade*(1+Math.sin(t*60)*.08),x0=40,y=b.y,C=b.storm?["40,140,255","120,220,255"]:b.hollow?["200,130,30","255,224,138"]:["139,149,246","185,192,255"];
   const gr=c.createLinearGradient(0,y-h/2,0,y+h/2);gr.addColorStop(0,`rgba(${C[0]},0)`);gr.addColorStop(.3,`rgba(${C[1]},.9)`);gr.addColorStop(.5,"#FFFFFF");gr.addColorStop(.7,`rgba(${C[1]},.9)`);gr.addColorStop(1,`rgba(${C[0]},0)`);
-  c.fillStyle=gr;c.fillRect(x0,y-h/2,b.len,h);g.fillStyle=`rgba(${C[1]},${.7*fade})`;g.fillRect(x0,y-h*.9,b.len,h*1.8);
+  c.fillStyle=gr;c.fillRect(x0,y-h/2,b.len,h);g.globalAlpha=.5*fade;softRow(g,x0,y-h*.9,b.len,h*1.8,C[1]);g.globalAlpha=1;
   if(b.hollow){c.fillStyle="rgba(10,4,20,.92)";c.fillRect(x0,y-h*.12,b.len,h*.24);for(let i=0;i<14;i++){const xx=x0+((t*700+i*137)%b.len);star4(c,g,{x:xx,y:y+Math.sin(i*2.3+t*3)*h*.3},5,.9,C[1])}}
   if(b.storm)for(let i=0;i<5;i++){const pts=[];for(let j=0;j<=24;j++)pts.push({x:x0+j/24*b.len,y:y+rnd(-h*.45,h*.45)});line(c,pts,i?1.4:2.6,i?`rgba(${C[1]},.9)`:"#FFFFFF");gline(g,pts,5,`rgba(${C[1]},.6)`)}
-  c.fillStyle="#fff";c.beginPath();c.arc(x0,y,h*.6,0,TAU);c.fill();gdot(g,{x:x0,y},h*1.4,`rgba(255,255,255,${.8*fade})`);
+  {const rg=c.createRadialGradient(x0,y,0,x0,y,h*.62);rg.addColorStop(0,"rgba(255,255,255,1)");rg.addColorStop(.35,"rgba(255,255,255,.95)");rg.addColorStop(.7,`rgba(${C[1]},.5)`);rg.addColorStop(1,`rgba(${C[1]},0)`);c.fillStyle=rg;c.beginPath();c.arc(x0,y,h*.62,0,TAU);c.fill()}gdot(g,{x:x0,y},h*.8,`rgba(255,255,255,${.45*fade})`);
   if(b.nova)for(let i=0;i<6;i++){const xx=x0+((t*900+i*300)%b.len);c.strokeStyle=b.hollow?"rgba(255,224,138,.6)":"rgba(255,255,255,.6)";c.lineWidth=2;c.beginPath();c.ellipse(xx,y,8,h*.55,0,0,TAU);c.stroke()}
 }
 function drawShock(f,t){
@@ -2909,10 +3161,10 @@ function drawFx(t){
         X.fillStyle=`rgba(255,255,255,${k})`;X.beginPath();X.arc(x,y,r*.25*k,0,TAU);X.fill();gdot(GX,{x:x/4,y:y/4},r*.9/4,`rgba(${e.col},${k*.9})`)}}
     else if(e.type==="ring"){const x=sx(e.x)+G.ox,y=sy(e.y)+G.oy,r=e.r*z*(1-k)+10;X.strokeStyle=`rgba(${e.col},${k})`;X.lineWidth=4*k+1;X.beginPath();X.ellipse(x,y,r,r*.45,0,0,TAU);X.stroke();GX.strokeStyle=`rgba(${e.col},${k*.7})`;GX.lineWidth=4;GX.beginPath();GX.ellipse(x/4,y/4,r/4,r*.45/4,0,0,TAU);GX.stroke()}
     else if(e.type==="pillar"){const x=sx(e.x)+G.ox,hh=e.h*z*Math.sin(Math.PI*(1-k)),w=46*z;const g2=X.createLinearGradient(0,FYs-hh,0,FYs);g2.addColorStop(0,"rgba(255,230,150,0)");g2.addColorStop(.3,"rgba(255,170,80,.95)");g2.addColorStop(1,"#FF5A1F");
-      X.fillStyle=g2;X.beginPath();X.moveTo(x-w,FYs);X.quadraticCurveTo(x-w*.4,FYs-hh*.6,x,FYs-hh);X.quadraticCurveTo(x+w*.4,FYs-hh*.6,x+w,FYs);X.fill();GX.fillStyle="rgba(255,138,61,.7)";GX.fillRect((x-w)/4,(FYs-hh)/4,w/2,hh/4)}
+      X.fillStyle=g2;X.beginPath();X.moveTo(x-w,FYs);X.quadraticCurveTo(x-w*.4,FYs-hh*.6,x,FYs-hh);X.quadraticCurveTo(x+w*.4,FYs-hh*.6,x+w,FYs);X.fill();{const W4=w*1.5/4,x4=x/4,y4=FYs/4,h4=hh*1.08/4,gr=GX.createLinearGradient(x4-W4,0,x4+W4,0);gr.addColorStop(0,"rgba(255,138,61,0)");gr.addColorStop(.5,"rgba(255,150,70,.75)");gr.addColorStop(1,"rgba(255,138,61,0)");GX.fillStyle=gr;GX.beginPath();GX.moveTo(x4-W4,y4);GX.quadraticCurveTo(x4-W4*.4,y4-h4*.6,x4,y4-h4);GX.quadraticCurveTo(x4+W4*.4,y4-h4*.6,x4+W4,y4);GX.fill()}}
     else if(e.type==="slash"){const x=sx(e.x)+G.ox,y=sy(e.y)+G.oy,l=e.len*z,dx=Math.cos(e.a)*l/2,dy=Math.sin(e.a)*l/2;X.strokeStyle=`rgba(255,255,255,${k})`;X.lineWidth=3*k+1;X.beginPath();X.moveTo(x-dx,y-dy);X.lineTo(x+dx,y+dy);X.stroke();
       GX.strokeStyle=`rgba(${e.col},${k})`;GX.lineWidth=4;GX.beginPath();GX.moveTo((x-dx)/4,(y-dy)/4);GX.lineTo((x+dx)/4,(y+dy)/4);GX.stroke()}
-    else if(e.type==="skybeam"){const x=sx(e.x)+G.ox,w=e.w*z*k;X.fillStyle=`rgba(255,255,255,${k})`;X.fillRect(x-w/4,0,w/2,FYs);GX.fillStyle=`rgba(185,192,255,${k})`;GX.fillRect((x-w)/4,0,w/2,FYs/4)}
+    else if(e.type==="skybeam"){const x=sx(e.x)+G.ox,w=e.w*z*k;X.globalAlpha=k;softCol(X,x-w/2,0,w,FYs,"255,255,255");X.fillStyle=`rgba(255,255,255,${k})`;X.fillRect(x-w/10,0,w/5,FYs);X.globalAlpha=1;GX.globalAlpha=k;softCol(GX,(x-w*1.2)/4,0,w*2.4/4,FYs/4,"185,192,255");GX.globalAlpha=1}
     else if(e.type==="txt"){const x=sx(e.x)+G.ox,y=sy(e.y)+G.oy-(1-k)*30;X.globalAlpha=Math.min(1,k*2);X.font=`italic 800 ${Math.round(26*Math.max(.7,z))}px "Fraunces",Georgia,serif`;X.textAlign="center";X.fillStyle="rgba(0,0,0,.6)";X.fillText(e.txt.toUpperCase(),x+2,y+2);X.fillStyle=`rgb(${e.col})`;X.fillText(e.txt.toUpperCase(),x,y);X.globalAlpha=1}
     else if(e.type==="void"){const x=sx(e.x)+G.ox,y=sy(e.y)+G.oy,r=(1-Math.abs(k-.5)*2)*110*z;X.fillStyle="#000";X.beginPath();X.arc(x,y,r,0,TAU);X.fill();X.strokeStyle="rgba(255,79,216,.9)";X.lineWidth=3;X.beginPath();X.ellipse(x,y,r*1.4,r*.4,t*2,0,TAU);X.stroke();gdot(GX,{x:x/4,y:y/4},r*1.5/4,"rgba(192,124,255,.8)")}
   }
@@ -2944,7 +3196,7 @@ function render(t){
   drawFx(t);
   X.setTransform(DPR,0,0,DPR,0,0);
   GX2.setTransform(1,0,0,1,0,0);GX2.clearRect(0,0,GL2.width,GL2.height);GX2.drawImage(GL,0,0,GL2.width,GL2.height);
-  X.globalCompositeOperation="lighter";X.drawImage(GL,0,0,W,H);X.globalAlpha=.9;X.drawImage(GL2,0,0,W,H);X.globalAlpha=1;X.globalCompositeOperation="source-over";
+  X.imageSmoothingQuality="high";X.globalCompositeOperation="lighter";X.drawImage(GL,0,0,W,H);X.globalAlpha=.9;X.drawImage(GL2,0,0,W,H);X.globalAlpha=1;X.globalCompositeOperation="source-over";
   const vg=X.createRadialGradient(W/2,H*.55,Math.min(W,H)*.35,W/2,H*.55,Math.max(W,H)*.78);vg.addColorStop(0,"rgba(0,0,0,0)");vg.addColorStop(1,"rgba(2,1,10,.7)");X.fillStyle=vg;X.fillRect(0,0,W,H);
   if(G.flashR>0&&!reduce){X.fillStyle=`rgba(255,40,20,${G.flashR*.6})`;X.fillRect(0,0,W,H);G.flashR=Math.max(0,G.flashR-.02)}
   if(G.flashW>0&&!reduce){X.fillStyle=`rgba(255,255,255,${G.flashW})`;X.fillRect(0,0,W,H);G.flashW=Math.max(0,G.flashW-.04)}
@@ -3113,7 +3365,7 @@ function titleBackdrop(t){
   X.setTransform(DPR,0,0,DPR,0,0);GX.setTransform(1,0,0,1,0,0);GX.globalCompositeOperation="source-over";GX.clearRect(0,0,GL.width,GL.height);GX.globalCompositeOperation="lighter";
   drawStage(t);X.setTransform(DPR,0,0,DPR,0,0);
   GX2.setTransform(1,0,0,1,0,0);GX2.clearRect(0,0,GL2.width,GL2.height);GX2.drawImage(GL,0,0,GL2.width,GL2.height);
-  X.globalCompositeOperation="lighter";X.drawImage(GL,0,0,W,H);X.drawImage(GL2,0,0,W,H);X.globalCompositeOperation="source-over";G=sv;
+  X.imageSmoothingQuality="high";X.globalCompositeOperation="lighter";X.drawImage(GL,0,0,W,H);X.drawImage(GL2,0,0,W,H);X.globalCompositeOperation="source-over";G=sv;
 }
 requestAnimationFrame(frame);
 /* ---- 13i.space bridge: the page hosting this iframe records plays and scores, and keeps progress in Supabase ---- */
