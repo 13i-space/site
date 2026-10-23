@@ -319,6 +319,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   are 13i, five endings, one canon), at `/assignments/215783/interactive`
 
 ## Currently being worked on / most recently completed
+Update 6.06 (see CHANGELOG): XenoKlash fighters are 3D (three.js, posed from the 2D skeleton; the
+2D drawing is the fallback); XenoKart arches fixed, item boxes respawn, items named with hold/throw/drop,
+Space shoves; game songs quieter. public/games/xenoklash.html and xenokart.html remain the source of truth.
 Update 5.41: Alpha feedback batch (see CHANGELOG) — story games need sign-in,
 Interactive Stories progress bar, Lyra unread-mail fix, game tweaks across
 all six games. The Deep Signal "ship vanishes" glitch was never reproduced in

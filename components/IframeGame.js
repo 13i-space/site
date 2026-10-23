@@ -46,7 +46,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
     const a = audioRef.current || (audioRef.current = new Audio());
     if (!queueRef.current.length) queueRef.current = shuffledSongs();
     const s = queueRef.current.shift();
-    a.src = s.src; a.volume = 0.75;
+    a.src = s.src; a.volume = 0.28;
     a.onended = () => playNext();
     a.play().then(() => setNowPlaying(s.label)).catch(() => setNowPlaying(""));
   }, []);
