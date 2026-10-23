@@ -349,7 +349,7 @@ function audioInit(){
   try{A.ctx=new(window.AudioContext||window.webkitAudioContext)()}catch(e){return}
   const a=A.ctx;A.m=a.createGain();A.m.gain.value=store.sound?.85:0;A.m.connect(a.destination);
   const comp=a.createDynamicsCompressor();comp.threshold.value=-14;comp.connect(A.m);
-  A.sfx=a.createGain();A.sfx.gain.value=.6;A.sfx.connect(comp);A.mus=a.createGain();A.mus.gain.value=0;A.mus.connect(comp);
+  A.sfx=a.createGain();A.sfx.gain.value=1.1;A.sfx.connect(comp);A.mus=a.createGain();A.mus.gain.value=0;A.mus.connect(comp);
   const nb=a.createBuffer(1,a.sampleRate,a.sampleRate),d=nb.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;A.noise=nb;
 }
 const thr=(k,ms)=>{const n=performance.now();if(A.last[k]&&n-A.last[k]<ms)return false;A.last[k]=n;return true};
@@ -360,7 +360,7 @@ function hiss(dur,vol,f1,f2,q,t0,dest){const a=A.ctx;if(!a)return;const t=t0||a.
 const sfx={
   fanfare(big){const a=A.ctx;if(!a)return;const t0=a.currentTime+.05,N=big?[523,659,784,1047,784,1047,1319]:[523,659,784,1047];N.forEach((f,i)=>{tone(f,.45,"triangle",.2,null,t0+i*.13);tone(f*2,.25,"sine",.05,null,t0+i*.13)});const e=t0+N.length*.13,L=N[N.length-1];tone(L,1.6,"triangle",.22,null,e);tone(L*1.5,1.6,"sine",.1,null,e);tone(L/2,1.6,"sawtooth",.05,null,e);tone(L/4,1.8,"sine",.25,null,e);hiss(1.4,.22,6000,1500,.7,e)},
   pop(){if(!thr("pop",120))return;hiss(.35,.14,2600,500,1);tone(rnd(260,420),.25,"sine",.06,90)},
-  whoosh(h){if(thr("w",40))hiss(h?.22:.12,h?.22:.14,h?600:1400,h?2200:4200,1.6)},
+  whoosh(h){if(thr("w",40))hiss(h?.22:.14,h?.4:.3,h?600:1400,h?2200:4200,1.6)},
   hit(p){tone(p>1?110:170,p>1?.3:.16,"sine",p>1?.6:.42,40);hiss(p>1?.2:.1,p>1?.5:.35,p>1?900:1800,null,.8);if(p>1)tone(60,.4,"triangle",.3,30)},
   block(){tone(1250,.12,"square",.06,900);tone(2400,.08,"sine",.08);hiss(.08,.15,5000,null,3)},
   jump(){tone(220,.12,"sine",.06,420)},
