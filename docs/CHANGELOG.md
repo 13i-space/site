@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.06 — 3D fighters in XenoKlash; XenoKart items you can see, hold and throw; quieter songs (Oct 2026)
+No SQL.
+- **Songs in the games are quieter**: the 13i songs now play at about a third of their old volume
+  (IframeGame, 0.28 instead of 0.75), so sound effects come through.
+- **XenoKlash fighters are 3D**: every fighter (and Xal'Thuun) is a three.js model posed each frame from the
+  existing skeleton, so turning around goes through a real front view instead of a flat flip. Skins, hit
+  flashes, rim light per arena and floor reflections carry over. The select screen, ladder and unlock cards
+  show the 3D model turning. The champion screen still uses the 2D art. If WebGL is missing it falls back to
+  the 2D drawing; on slow devices the 3D drops to 1x resolution with the other low-power effects.
+- **XenoKart fixes**: the rings over the track (arches and ramp rings) now span the road instead of sitting
+  sideways inside it. Item boxes vanish for 3 seconds when any racer drives through them, then pop back.
+- **XenoKart items**: the item's name shows above the item slot and as a toast with how to use it. Hold A
+  with jelly or a mine to carry it behind you (it blocks one hit), let go to throw it forward; hold ↓ when
+  you let go to drop it behind instead.
+- **XenoKart shove**: Space beside another racer shoves them sideways (heavier karts push harder and may spin
+  them). Away from anyone it is still the hop and drift. CPU racers shove too.
+- **XenoKart looks**: a more detailed road (plates, rivets, scuffs, glowing lane lines, wet patches that
+  shine), reflections built from each world's sky, soft kart shadows, and grass, crystals and pebbles along
+  the roadside.
+
 ## Update 6.05 — Arcade expansion: three tournaments and the Hollow King, the Frontier Cup, 13i songs while you play; the Oracle watches (Oct 2026)
 No SQL (new unlocks ride in the existing `unlocked` arrays of xk_progress and xkart_progress).
 - **XenoKlash, Tournaments I-III**: winning a tournament moves you up a tier (store.tier; restored from
