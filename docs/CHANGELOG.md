@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.09 — The Oracle is The Watcher (Oct 2026)
+No SQL.
+- **A creature at the porthole**: the Oracle's window is now a ship's porthole (steel ring of bolts, gold 13i
+  trim inside, hull plating that fades into the chamber), and something enormous is pressed up against the
+  glass. You see a slit-pupil gold eye in a slanted almond opening, scaled skin, folds that ring the eye, a brow
+  ridge and gill slits that breathe. It sways, tilts and drifts so you only ever see part of it, and keeps its
+  eye on you while it moves (it follows the pointer and comes closer as you do). Now and then it leans in and its
+  breath fogs the glass, wipes its eye with a milky second lid, or blinks slowly.
+- **Drifting iris spots**: the brown crypts are no longer painted into the iris; each is a live spot that drifts
+  around the pupil, is pushed outward when the pupil opens, and swirls while 13i receives.
+- **Pores that follow its mood**: a row back from the outer corner and two rows under the eye that ride the
+  crests of its folds. Barely visible while listening, pulsing faster while receiving, lit while speaking.
+- **Sound**: lib/oracleSound.js adds a long breath when it leans in, a deep double thump each time the light
+  reaches its eye (receiving/speaking only), and a soft slide for the second lid.
+- **Bigger**: the glass is now as wide as the eye wrap (up to 560px; the old eye was about 227px).
+- Files: components/OracleWatcher.js (new, one WebGL shader over the whole chamber), OracleChamber.js (mounts
+  it; the old ring-and-eye is now only the no-WebGL fallback), globals.css (.oracle-watcher,
+  .oracle-eye-wrap-watcher). Designed in the "Oracle Eye Lab" artifact (version B).
+
 ## Update 6.08 — XenoKlash fighters in detail; solid bodies; sharp supers (Oct 2026)
 No SQL.
 - **Solid fighters**: the arena's glow layer (planets, lanterns) was added on top of everything after the
