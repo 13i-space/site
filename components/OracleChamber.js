@@ -1,6 +1,7 @@
 "use client";
 
 import OracleEye3D from "./OracleEye3D";
+import OracleWatcher from "./OracleWatcher";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createOracleSound } from "../lib/oracleSound";
 import { recordMilestone } from "../lib/milestones";
@@ -11,6 +12,9 @@ import { recordMilestone } from "../lib/milestones";
 // speak, and your words rise into the eye; it contracts while the static
 // builds, then answers - its words resolving out of alien glyphs, one by one.
 // Sound: lib/oracleSound.js (mutable, remembered in this browser).
+// Update 6.09: the eye is The Watcher (components/OracleWatcher.js) - a creature
+// pressed up against a ship's porthole. The old ring-and-eye (Eye, below) is
+// now only the fallback for browsers without WebGL.
 //
 // Talks to app/api/oracle, which is 13i itself (docs/WORLD.md "The Oracle").
 
@@ -191,6 +195,10 @@ export default function OracleChamber() {
   const sound = useRef(null);
   const ripple = useRef(() => {});
   const inputRef = useRef(null);
+  const eyeWrap = useRef(null);
+  const [watcher, setWatcher] = useState(true);
+  const playSfx = useCallback((n) => { const s = sound.current; if (s && s[n]) s[n](); }, []);
+  const watcherFailed = useCallback(() => setWatcher(false), []);
 
   useEffect(() => {
     try { setMuted(localStorage.getItem("oracle_muted") === "1"); } catch (e) { /* ignore */ }
@@ -328,6 +336,7 @@ export default function OracleChamber() {
     <div>
       <section className="oracle-chamber" aria-label="The Oracle">
         <ChamberSky rippleRef={ripple} intensity={intensity} />
+        {watcher && <OracleWatcher open={open} mood={mood} anchorRef={eyeWrap} onSfx={playSfx} onFail={watcherFailed} />}
 
         <div className="mono oracle-topbar">
           <span>13i &middot; COLLECTIVE CHANNEL</span>
@@ -344,8 +353,8 @@ export default function OracleChamber() {
           </span>
         </div>
 
-        <div className="oracle-eye-wrap">
-          <Eye open={open} mood={mood} />
+        <div ref={eyeWrap} className={watcher ? "oracle-eye-wrap oracle-eye-wrap-watcher" : "oracle-eye-wrap"}>
+          {!watcher && <Eye open={open} mood={mood} />}
         </div>
 
         {rising && <div key={rising.key} className="oracle-rising">{rising.text}</div>}
