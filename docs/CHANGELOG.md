@@ -3,6 +3,24 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.12 — XenoKart: rocket starts, slipstream, two new items, trophy shelf (Oct 2026)
+No SQL.
+- **Rocket start** (it was already in the game, but hidden): press gas as the 2 fades and hold it. Perfect timing
+  gives a big blue burst of speed, good timing a smaller one, and pressing too early stalls the engine. A tip shows
+  until you land your first one, exhaust flares while you rev, and CPU racers now get rocket starts too (more often
+  at higher speed classes).
+- **Slipstream**: tuck in close behind another racer and white wind streaks build up; hold the draft for just over a
+  second and you slingshot past with a boost. CPUs draft too.
+- **Gravity Well** (new item): thrown well ahead, it opens a spinning purple vortex for about six seconds that drags
+  nearby racers in and slows them, and spins out anyone who hits the core. More common for racers at the back.
+- **Decoy Box** (new item): drops a fake item box behind you that blows up whoever touches it. CPUs fall for it.
+  More common for racers at the front.
+- **Trophies**: finish a Grand Prix in the top three to win a gold, silver or bronze trophy for that cup at that speed
+  class (9 in all; only a better medal replaces the one you have). The podium shows the trophy you won, and a new
+  "Trophies" button on the XenoKart title opens the trophy shelf.
+- How: trophies sync with the player's progress as short codes in the existing unlocked list (e.g. trfrontierbg =
+  Frontier Cup, Grand class, gold), so no database change; components/XenoKartGame.js now keeps up to 40 entries.
+
 ## Update 6.11 — Game controllers in the Arcade (Oct 2026)
 No SQL.
 - **Controllers** (Xbox, PlayStation, Switch Pro and most others plugged into or paired with a computer) work
