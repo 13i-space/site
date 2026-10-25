@@ -4,7 +4,8 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
-- Update 6.05 (no SQL): the arcade expansion. XenoKlash has three tournaments
+- Update 6.13 (see CHANGELOG): the Rave's five characters painted per pixel (lib/rave/painted/), drawn versions as fallback.
+Update 6.05 (no SQL): the arcade expansion. XenoKlash has three tournaments
   (store.tier) unlocking Rhakka, Zhaal and Morrow, Voraxx gets stronger each
   time, and Tournament III ends with Xal'Thuun, the Hollow King, on the Hollow
   Throne (Ultimate Champion). XenoKart has three Grand Prix cups of four tracks
