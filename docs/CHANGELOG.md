@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.10 — XenoKart: three new worlds, three cups (Oct 2026)
+No SQL.
+- **Starforge Foundry**: a star-forge factory under smokestacks and turning gears. Conveyor belts push you
+  sideways, three stamping presses flash a warning and slam (get caught and you're flattened), ladles pour
+  molten metal beside the road, and the road ends at a **cannon**: drive into the breech, it booms and fires
+  you in a barrel-roll arc over a molten lake onto the far road.
+- **Neon Hyperloop**: a rain-soaked megacity of lit towers, neon signs and holograms. A glass **vacuum tube**
+  sucks you in and corkscrews you twice round its inside wall; a glass **loop-the-loop** turns you upside down
+  (the camera swings out to the side to watch); **hover traffic** streams across the road at two junctions,
+  with warning lights.
+- **Orbit Garden**: floating islands with waterfalls under a ringed giant. A **low-gravity** stretch with
+  bounce blossoms that throw you high (trick in the air for boosts), a ramp into a **slingshot round a tiny
+  moon** (you drive on its surface, upside down underneath it, and get flung onto the far road), and a field
+  of **pinball bumpers** that ping you sideways with a ding and a little boost.
+- **Three cups of four**: Rave Cup (Wreck Tide, Crystal Abyss, Hive Spire, Nebula Skyway), Frontier Cup
+  (Magma Core, Thornwood, Stormcrown, Glacier Deep), and the new **Nova Cup** (Dune Raiders, Starforge
+  Foundry, Neon Hyperloop, Orbit Garden). Winning the Nova Cup unlocks Voraxx (a Rift-class win still does too).
+- Engine: "rides" carry a racer along any path with its own facing, up direction (loops and orbits), camera
+  and sound; low-gravity zones per track. The single-race track list wraps on phones. Lyra knows the new worlds.
+
 ## Update 6.09 — The Oracle is The Watcher (Oct 2026)
 No SQL.
 - **A creature at the porthole**: the Oracle's window is now a ship's porthole (steel ring of bolts, gold 13i
