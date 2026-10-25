@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.13 — The Rave, repainted (Oct 2026)
+No SQL.
+- **The Rave's characters are painted per pixel**, like the Oracle: same designs, poses and moves, but lit with a
+  key light from above and the stage's two colours as rim lights, with gloss, light through thin skin and glows.
+  - **The DJ** (whole): glossy ringed horns, the brain glowing under a glass dome with the bass, a glass visor
+    over the equaliser, satin jacket, four arms.
+  - **Ilu** (whole): a glossy orb with light inside it, a wet eye with rolling iris rings and a socket, jelly
+    tentacles with round suckers and glowing tips; on the drop the eye is a real mirrorball catching the lights.
+  - **Varrow**: the head (deep teal skull, raised gold ridges that flare on the beat, four wet eyes with glowing
+    violet irises, cheek lights, glossy tendrils) and the orb (glass with a turning nebula, sparks, a gold halo).
+  - **Qeth**: the head (cheekbones and brow, gold slit-pupil eyes that close into happy arcs, the glowing third
+    eye, cheek lights).
+  - **Ixxen**: both heads, side-on and facing the crowd (swept-back skull with grooves, crest lights in a wave,
+    the vertical gold eye, small eyes).
+  - Robes, mantles, the crown filaments, frills, tendrils and loupe keep their drawn look.
+- **Fallbacks**: the drawn characters are used for the costume songs (Halloween, the Cicada), without WebGL,
+  after any error, and with `?drawn` on the URL.
+- Files: lib/rave/painted/ (index.js, djShader.js, iluShader.js, varrow.js, qeth.js, ixxen.js, glutil.js);
+  components/RaveMode.js calls paintDJ / paintDancer. Designed in the "The Rave, Repainted" look-lab artifact.
+
 ## Update 6.12 — XenoKart: rocket starts, slipstream, two new items, trophy shelf (Oct 2026)
 No SQL.
 - **Rocket start** (it was already in the game, but hidden): press gas as the 2 fades and hold it. Perfect timing

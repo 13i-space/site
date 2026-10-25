@@ -29,6 +29,7 @@ import { drawGirl } from "../lib/rave/girl";
 import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
 import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/rave/cicada";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
+import { paintDJ, paintDancer } from "../lib/rave/painted";
 
 // the show's colours, a pair of hues at a time
 const PALETTES = [[190, 300], [275, 45], [165, 215], [325, 190], [45, 285], [125, 305], [210, 340]];
@@ -234,9 +235,12 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       layer(0.5);
       drawSpeakers(ctx, L, m);
       if (forest) drawSwarm(ctx, L, m);
-      drawDJ(ctx, L, m, spectrum);
+      // Update 6.13: the characters painted per pixel (lib/rave/painted); the
+      // drawn versions stay for costume songs, no WebGL, or ?drawn
+      const painted = !DRAWN && !spooky && !forest;
+      if (!(painted && paintDJ(ctx, L, m, spectrum, 0))) drawDJ(ctx, L, m, spectrum);
       drawBoothTop(ctx, L, m, spectrum);
-      drawDJHands(ctx, L, m);
+      if (!(painted && paintDJ(ctx, L, m, spectrum, 1))) drawDJHands(ctx, L, m);
       drawBoothFront(ctx, L, m, ttl, spectrum);
       drawStageLip(ctx, L, m);
       if (spooky) drawPumpkins(ctx, L, m);
@@ -296,7 +300,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         ctx.restore();
         ctx.save();
         place(key);
-        DANCERS[key].draw(ctx, poses[key], m);
+        if (!(painted && paintDancer(key, ctx, poses[key], m))) DANCERS[key].draw(ctx, poses[key], m);
         ctx.restore();
       });
 
@@ -365,6 +369,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
   );
 }
 
+// ?drawn shows the characters the old drawn way (Update 6.13)
+const DRAWN = typeof window !== "undefined" && /[?&]drawn\b/.test(window.location.search);
 const DEBUG = typeof window !== "undefined" && /[?&]ravedebug/.test(window.location.search) ? (window.__rave = []) : null;
 // ?ravemove=ixxen:robot,ilu:soar pins moves, for checking a move by eye
 const FORCE = (() => {
