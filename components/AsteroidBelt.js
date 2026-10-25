@@ -205,6 +205,7 @@ export default function AsteroidBelt() {
 
   const respawnShip = (s, w, h) => {
     sfx.lifeLost();
+    try { const p = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).find((g) => g && g.connected); p?.vibrationActuator?.playEffect?.("dual-rumble", { duration: 320, strongMagnitude: 0.9, weakMagnitude: 0.5 }); } catch (e) {}
     s.lives--;
     s.ship.x = w / 2; s.ship.y = h / 2;
     s.ship.vx = 0; s.ship.vy = 0;
@@ -646,6 +647,38 @@ export default function AsteroidBelt() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [started]);
 
+  // Update 6.11: game controllers. Stick or D-pad turns; up, RT or B thrusts; A, X or RB fires;
+  // A or Start begins a game. Only changes are written, so the keyboard keeps working alongside it.
+  const startRef = useRef(start);
+  const startedRef = useRef(started);
+  startRef.current = start;
+  startedRef.current = started;
+  useEffect(() => {
+    let raf = 0, prev = [];
+    const held = { left: false, right: false, thrust: false, fire: false };
+    const tick = () => {
+      raf = requestAnimationFrame(tick);
+      let p = null;
+      try { p = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).find((g) => g && g.connected); } catch (e) {}
+      if (!p) return;
+      const val = (i) => { const x = p.buttons[i]; return x == null ? 0 : typeof x === "object" ? x.value : x; };
+      const on = (i) => val(i) > 0.5, edge = (i) => on(i) && !prev[i], ax = p.axes || [];
+      if (!startedRef.current) { if (edge(0) || edge(9)) startRef.current(); }
+      else {
+        const want = { left: on(14) || ax[0] < -0.4, right: on(15) || ax[0] > 0.4, thrust: on(7) || on(12) || on(1) || ax[1] < -0.55, fire: on(0) || on(2) || on(5) };
+        for (const k in want) if (want[k] !== held[k]) {
+          held[k] = want[k]; keysRef.current[k] = want[k];
+          if (k === "thrust") { if (want[k]) sfx.thrust.start(); else sfx.thrust.stop(); }
+        }
+      }
+      prev = p.buttons.map((_, i) => on(i));
+    };
+    const go = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    window.addEventListener("gamepadconnected", go);
+    go();
+    return () => { window.removeEventListener("gamepadconnected", go); cancelAnimationFrame(raf); };
+  }, []);
+
   const press = (key, val) => (e) => {
     e.preventDefault();
     keysRef.current[key] = val;
@@ -720,7 +753,7 @@ export default function AsteroidBelt() {
       )}
       <div className="game-extra">
         <p className="mono" style={{ fontSize: 11, color: "#565B8F", textAlign: "center", marginTop: 10 }}>
-          keyboard: arrow keys or WASD to move, space to fire
+          keyboard: arrow keys or WASD to move, space to fire · controller: stick to turn, up / RT / B to thrust, A to fire
         </p>
         <Leaderboard game="asteroid-belt" refreshKey={refreshKey} />
       </div>

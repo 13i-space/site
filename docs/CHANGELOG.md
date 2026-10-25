@@ -3,6 +3,25 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.11 — Game controllers in the Arcade (Oct 2026)
+No SQL.
+- **Controllers** (Xbox, PlayStation, Switch Pro and most others plugged into or paired with a computer) work
+  in all four Arcade games. A "Controller connected" card shows each game's button layout on first use.
+- **Menus**: on any menu screen the D-pad or left stick moves a highlight between buttons and cards, A selects,
+  Start or B backs out of a pause.
+- **XenoKart**: A or RT gas, B or LT brake, stick or D-pad steer, RB/LB hop and drift, X item (hold to carry,
+  release to throw), Y ability, Start pause.
+- **XenoKlash**: stick or D-pad move (up jump, down crouch), X arms, A legs, Y signature (twice for the
+  second), B special, RB/LB/LT block, RT ultimate, Start pause.
+- **XenoWing**: left stick pitch and roll, right stick or LB/RB yaw, RT/LT throttle, A guns, X secondary,
+  B boost, Y view, Start pause.
+- **Asteroid Belt**: stick or D-pad turn, up / RT / B thrust, A / X / RB fire, A or Start to begin.
+- **Rumble** when you're hit (or lose a ship in Asteroid Belt), on controllers that support it.
+- How: public/games/lib/pad.js turns the controller into each game's existing keyboard controls, so the games
+  barely change. Because some browsers only report a controller to the main page, components/IframeGame.js
+  forwards controller state into the game frame (and relays rumble back); the frame also allows "gamepad".
+  Asteroid Belt reads the controller directly in components/AsteroidBelt.js.
+
 ## Update 6.10 — XenoKart: three new worlds, three cups (Oct 2026)
 No SQL.
 - **Starforge Foundry**: a star-forge factory under smokestacks and turning gears. Conveyor belts push you

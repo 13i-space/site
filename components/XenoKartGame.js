@@ -66,5 +66,5 @@ export default function XenoKartGame() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  return <IframeGame game={GAME} songs src="/games/xenokart.html?v=6.10" title="XenoKart" note="click the game to give it the keyboard · ↑ gas · ← → steer · Space drift · A item · S ability · P pauses" />;
+  return <IframeGame game={GAME} songs src="/games/xenokart.html?v=6.11" title="XenoKart" note="click the game to give it the keyboard · ↑ gas · ← → steer · Space drift · A item · S ability · P pauses · or plug in a controller" />;
 }

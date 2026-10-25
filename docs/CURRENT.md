@@ -320,6 +320,9 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   are 13i, five endings, one canon), at `/assignments/215783/interactive`
 
 ## Currently being worked on / most recently completed
+Update 6.11 (see CHANGELOG): game controllers in all four Arcade games (public/games/lib/pad.js for the three
+standalone games, forwarded by IframeGame; Asteroid Belt reads them directly). New standalone games can get
+controllers by loading /games/lib/pad.js and calling XPad.start({map, legend, primary, back}).
 Update 6.10 (see CHANGELOG): XenoKart's three new tracks (Starforge Foundry, Neon Hyperloop, Orbit Garden)
 and three cups of four. New engine piece: "rides" (RIDES, startRide) carry a racer along any path, used for the
 cannon, the tubes and the moon slingshot; TRACK.lowG for low gravity.

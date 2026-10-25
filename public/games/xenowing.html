@@ -172,6 +172,7 @@ body.tdev .box{width:min(820px,100%)}body.tdev .logo{font-size:clamp(40px,8vw,90
   <div class="row"><button class="go" id="flyNext" hidden>Fly the next mission</button><button class="go ghost" id="cont" hidden>Continue from here (−500)</button><button class="go" id="again">Fly again</button><button class="go ghost" id="toTitleB">Title</button></div></div></div>
 
 <script src="/games/lib/three.r128.min.js"></script>
+<script src="/games/lib/pad.js"></script>
 <script>
 (function(){
 "use strict";
@@ -1361,6 +1362,11 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last
   try{if(game&&!game.paused){const I=step(dt);updateCam(dt);cockpit.updateMatrixWorld(true);cockpitTick(dt,I);hud(dt);
       if(A.ctx&&A.eG){const on=!game.attract&&!game.over;A.eG.gain.setTargetAtTime(on?.05+P.thr*.05:0,A.ctx.currentTime,.1);if(A.lfoG)A.lfoG.gain.setTargetAtTime(on&&PIL.purr?.035:0,A.ctx.currentTime,.1);A.eF.frequency.setTargetAtTime(300+P.v*6,A.ctx.currentTime,.1);for(const [o,f] of A.eo)o.frequency.setTargetAtTime(f*(.8+P.v/200),A.ctx.currentTime,.1);const lowAlt=clamp(1-(P.pos.y-Math.max(height(P.pos.x,P.pos.z),0))/80,0,1);A.wG.gain.setTargetAtTime(on?clamp(P.v/220,0,1)*.12+lowAlt*.1:0,A.ctx.currentTime,.1);A.wF.frequency.setTargetAtTime(400+P.v*8,A.ctx.currentTime,.1)}}
     R.render(scene,cam);for(const k in K)if(k.endsWith("P"))K[k]=false}catch(err){if(!frame.w){frame.w=1;console.error(err)}}}
+/* controllers (6.11) */
+{const D=damage;damage=function(n){const g=game,was=g&&!g.over&&!g.attract&&!g.done;D(n);if(was&&window.XPad)XPad.rumble(Math.min(1,.35+n/25),.45,180)}}
+try{XPad.start({game:"xenowing",legend:"Left stick fly · right stick or LB / RB yaw · RT / LT throttle · A fire · X missile · B boost · Y view · Start pause",primary:["#launch","#flyNext","#resume","#again",".go"],
+  back:()=>!$("pause").hidden?"Escape":null,
+  map:{buttons:{0:"Space",2:"KeyF",1:"ShiftLeft",3:"KeyC",4:"KeyA",5:"KeyD",7:"KeyW",6:"KeyS"},axes:[{axis:0,neg:"ArrowLeft",pos:"ArrowRight",th:.35},{axis:1,neg:"ArrowUp",pos:"ArrowDown",th:.35},{axis:2,neg:"KeyA",pos:"KeyD",th:.5}],up:"ArrowUp",down:"ArrowDown",left:"ArrowLeft",right:"ArrowRight",start:"Escape"}})}catch(e){}
 loadWorld("qorrath");setPilot(PILOTS[store.pilot]&&(store.pilot==="ixxen"||store.unl[store.pilot])?store.pilot:"ixxen");setMission("m1");toTitle();requestAnimationFrame(frame);
 window.__xw={DIFFS,get DF(){return DF},get DRAGON(){return DRAGON},get QORB(){return QORB},WISH,SEC,mk:{qeth:makeQethShip,varrow:makeVarrowShip,dragon:makeDragon,worm:makeWorm,jammer:makeJammer,skimmer:makeSkimmer,ilu:makeIluShip,thief:makeThief,stinger:makeStinger,jelly:makeJelly,pod:makePod,ray:makeRay,head:makeSerpentHead},begin,spawnSerpent,spawnStingers,spawnThief,killEnemy,setPilot,setMission,openBrief,loadWorld,store,showOver,get SERP(){return SERP},get THIEF(){return THIEF},get SPEC(){return SPEC},get MISSION(){return MISSION},get OUT(){return OUT},get ship(){return ship},get cockpit(){return cockpit},get STORM(){return STORM},RINGS,get game(){return game},P,toggleView,K,EN,sim(sec){for(let i=0;i<sec*60;i++){step(1/60);updateCam(1/60)}cockpit.updateMatrixWorld(true);cockpitTick(.1,{});hud(.016)},cycleHandling,height,los,get view(){return view}};
 })();

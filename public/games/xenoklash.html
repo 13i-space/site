@@ -322,6 +322,7 @@ body.tdev .hint{bottom:auto;top:30%}body.tdev .ctl{display:none}
 </div>
 
 <script src="/games/lib/three.r128.min.js"></script>
+<script src="/games/lib/pad.js"></script>
 <script>
 (function(){
 "use strict";
@@ -3367,6 +3368,11 @@ function titleBackdrop(t){
   GX2.setTransform(1,0,0,1,0,0);GX2.clearRect(0,0,GL2.width,GL2.height);GX2.drawImage(GL,0,0,GL2.width,GL2.height);
   X.imageSmoothingQuality="high";X.globalCompositeOperation="lighter";X.drawImage(GL,0,0,W,H);X.drawImage(GL2,0,0,W,H);X.globalCompositeOperation="source-over";G=sv;
 }
+/* controllers (6.11) */
+{const RH=resolveHit;resolveHit=function(att,def,m,isProj,box){const r=RH(att,def,m,isProj,box);if(r&&G&&def===G.f[0]&&!def.cpu&&window.XPad)XPad.rumble(m.lv>=3?.9:.5,.4,m.lv>=3?320:160);return r}}
+try{XPad.start({game:"xenoklash",legend:"Stick or D-pad move (up jump, down crouch) · X arms · A legs · Y signature · B special · RB block · RT ultimate · Start pause",primary:["#play","#ladGo","#resume","#rematch",".fc",".go"],
+  back:()=>!$("pause").hidden?"Escape":null,
+  map:{buttons:{2:"KeyA",0:"KeyS",3:"KeyW",1:"Space",5:"KeyD",4:"KeyD",6:"KeyD",7:["KeyA","KeyS"]},axes:[{axis:0,neg:"ArrowLeft",pos:"ArrowRight",th:.4},{axis:1,neg:"ArrowUp",pos:"ArrowDown",th:.6}],up:"ArrowUp",down:"ArrowDown",left:"ArrowLeft",right:"ArrowRight",start:"Escape"}})}catch(e){}
 requestAnimationFrame(frame);
 /* ---- 13i.space bridge: the page hosting this iframe records plays and scores, and keeps progress in Supabase ---- */
 (function(){
