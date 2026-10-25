@@ -40,7 +40,7 @@ async function saveProgress(p) {
     }
     await supabase.from("xkart_progress").upsert({
       user_id: user.id,
-      unlocked: (p.unlocked || []).filter((u) => KEY.test(u)).slice(0, 12),
+      unlocked: (p.unlocked || []).filter((u) => KEY.test(u)).slice(0, 40),
       best_laps,
       gp_wins: Math.max(0, Math.min(100000, Math.round(Number(p.gp_wins) || 0))),
       updated_at: new Date().toISOString(),
@@ -66,5 +66,5 @@ export default function XenoKartGame() {
     return () => window.removeEventListener("message", onMessage);
   }, []);
 
-  return <IframeGame game={GAME} songs src="/games/xenokart.html?v=6.11" title="XenoKart" note="click the game to give it the keyboard · ↑ gas · ← → steer · Space drift · A item · S ability · P pauses · or plug in a controller" />;
+  return <IframeGame game={GAME} songs src="/games/xenokart.html?v=6.12" title="XenoKart" note="click the game to give it the keyboard · ↑ gas · ← → steer · Space drift · A item · S ability · P pauses · or plug in a controller" />;
 }

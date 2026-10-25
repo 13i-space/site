@@ -320,6 +320,8 @@ snapshot, not a history — see CHANGELOG.md for the record over time.
   are 13i, five endings, one canon), at `/assignments/215783/interactive`
 
 ## Currently being worked on / most recently completed
+Update 6.12 (see CHANGELOG): XenoKart rocket start tiers, slipstream, Gravity Well and Decoy Box items (WELLS,
+DECOYS hazard lists), and the trophy shelf (store.trophies "cup:cls" -> 1/2/3, synced as tr{cup}{a|b|c}{g|s|b}).
 Update 6.11 (see CHANGELOG): game controllers in all four Arcade games (public/games/lib/pad.js for the three
 standalone games, forwarded by IframeGame; Asteroid Belt reads them directly). New standalone games can get
 controllers by loading /games/lib/pad.js and calling XPad.start({map, legend, primary, back}).
