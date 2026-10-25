@@ -84,6 +84,11 @@ export default function IframeGame({ game, src, title, note = "click the game to
       if (Number.isFinite(x) && Number.isFinite(y)) playerTwoAt(r.left + x, r.top + y, !!msg.firing);
       return;
     }
+    if (msg.type === "rumble") {
+      // the game asked for rumble but can't reach the controller from inside the frame: play it from here
+      try { const p = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).find((g) => g && g.connected); p?.vibrationActuator?.playEffect?.("dual-rumble", { duration: Math.min(600, Number(msg.ms) || 160), strongMagnitude: Math.min(1, Number(msg.strong) || 0.5), weakMagnitude: Math.min(1, Number(msg.weak) || 0.4) }); } catch (e) {}
+      return;
+    }
     if (msg.type === "songs-toggle") { if (songs) setSongs(!songsOnRef.current); return; }
     if (msg.type === "fullscreen") {
       // the game's own full-screen button: inside an iframe it can't go full screen itself (and iPhone Safari
@@ -109,6 +114,25 @@ export default function IframeGame({ game, src, title, note = "click the game to
     return () => document.body.classList.remove("iframe-game", "game-full");
   }, []);
 
+  // Update 6.11: controllers. Some browsers only report a game controller to the main page, so the page
+  // passes the controller's buttons and sticks into the game frame every frame (public/games/lib/pad.js
+  // uses them when it can't see the controller itself). Runs only while a controller is connected.
+  useEffect(() => {
+    let raf = 0;
+    const tick = () => {
+      let pads = [];
+      try { pads = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).filter((p) => p && p.connected); } catch (e) {}
+      if (!pads.length) { raf = 0; return; }
+      const snap = pads.map((p) => ({ buttons: p.buttons.map((b) => (typeof b === "object" ? b.value : b)), axes: Array.from(p.axes) }));
+      try { frameRef.current?.contentWindow?.postMessage({ source: "13i", type: "pad", pads: snap }, window.location.origin); } catch (e) {}
+      raf = requestAnimationFrame(tick);
+    };
+    const start = () => { if (!raf) raf = requestAnimationFrame(tick); };
+    window.addEventListener("gamepadconnected", start);
+    start();
+    return () => { window.removeEventListener("gamepadconnected", start); if (raf) cancelAnimationFrame(raf); };
+  }, []);
+
   useEffect(() => {
     window.addEventListener("message", onMessage);
     return () => { window.removeEventListener("message", onMessage); playerTwoEnd(); };
@@ -121,7 +145,7 @@ export default function IframeGame({ game, src, title, note = "click the game to
           ref={frameRef}
           src={src}
           title={title}
-          allow="fullscreen"
+          allow="fullscreen; gamepad"
           style={{ width: "100%", height: "78vh", minHeight: 480, border: "none", display: "block" }}
           onLoad={() => { frameRef.current?.focus(); if (songs) tellGame(songsOnRef.current); }}
         />

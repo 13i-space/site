@@ -173,6 +173,7 @@ h2{font-family:var(--f-display);font-weight:800;font-size:clamp(30px,5vw,52px);m
 </div>
 
 <script src="/games/lib/three.r128.min.js"></script>
+<script src="/games/lib/pad.js"></script>
 <script>
 (function(){
 "use strict";
@@ -1704,6 +1705,11 @@ function frame(now){requestAnimationFrame(frame);const dt=Math.min(.05,(now-last
     if(A.ctx&&A.eng){const me=race&&race.me;const v=me&&!race.paused?Math.abs(me.v):0,on=me&&!race.over&&!race.paused;A.eng.frequency.setTargetAtTime(48+v*3.2+(me&&me.boost>0?40:0),A.ctx.currentTime,.05);A.eng2.frequency.setTargetAtTime(24+v*1.6,A.ctx.currentTime,.05);A.engG.gain.setTargetAtTime(on?.05+v*.0012:0,A.ctx.currentTime,.1);A.eng2G.gain.setTargetAtTime(on?.03:0,A.ctx.currentTime,.1);A.engF.frequency.setTargetAtTime(400+v*25,A.ctx.currentTime,.1);A.skG.gain.setTargetAtTime(on&&me.drift&&!me.air?.08:0,A.ctx.currentTime,.05)}
     R.render(scene,cam);if(!$("title").hidden&&frameN%2===0)drawPreviews(t);
     for(const k in K)if(k.endsWith("P"))K[k]=false}catch(err){if(!frame.w){frame.w=1;console.error(err)}}}
+/* controllers (6.11) */
+{const H=hitRacer;hitRacer=function(r,RC,soft){const v=H(r,RC,soft);if(v&&RC&&r===RC.me&&window.XPad)XPad.rumble(soft?.45:.8,.5,soft?150:260);return v}}
+try{XPad.start({game:"xenokart",legend:"A or RT gas · B or LT brake · stick steer · RB hop &amp; drift · X item (hold to carry) · Y ability · Start pause",primary:["#start","#again","#resume",".go"],
+  back:()=>!$("pause").hidden?"Escape":null,playing:()=>!!(race&&!race.over&&!race.paused&&$("title").hidden),
+  map:{buttons:{0:"ArrowUp",7:"ArrowUp",1:"ArrowDown",6:"ArrowDown",5:"Space",4:"Space",2:"KeyA",3:"KeyS"},axes:[{axis:0,neg:"ArrowLeft",pos:"ArrowRight",th:.3}],up:"ArrowUp",down:"ArrowDown",left:"ArrowLeft",right:"ArrowRight",start:"Escape"}})}catch(e){}
 toTitle();requestAnimationFrame(frame);bridge.send({type:"progress-request"});
 window.__xk={TRACKS,CUPS,loadTrack,showPodium,get gp(){return gp},set gp(v){gp=v},get TI(){return TI},get RINGS(){return RINGS},get GAPS(){return GAPS},get L(){return L},mk:id=>decorate(id,BUILD[id](),RACERS[id].col),get race(){return race},get attract(){return attract},startRace,beginFromTitle,nextFromResults,K,store,sim(sec){const RC=race||attract;for(let i=0;i<sec*120;i++)step(RC,1/120);for(const r of RC.rs)placeRacer(r,.016,RC.t);updateCam(.5,RC,RC.t)}};
 })();
