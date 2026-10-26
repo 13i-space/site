@@ -2,6 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { alienClick, alienLock, alienDeny, alienOpen, isMuted, setMuted } from "../lib/alienSound";
+import CryptexDevice from "./CryptexDevice";
 
 // The Cryptex (Update 5.58, rebuilt as an alien device). Same puzzle as
 // before - three rings of nine marks, one order the mechanism accepts,
@@ -12,6 +13,9 @@ import { alienClick, alienLock, alienDeny, alienOpen, isMuted, setMuted } from "
 //   - every step makes an alien click (lib/alienSound.js, made live)
 //   - ENGAGE checks the order: right drums lock with a chord and stay put
 //   - solved, the cylinder splits and the message decrypts out of glyphs
+// Update 6.20: the body is rendered in 3D (components/CryptexDevice.js,
+// lib/cryptexShader.js); the drums are turned over the picture itself, or with
+// the dials under it. The flat drums stay for browsers without WebGL.
 
 const GLYPHS = [
   { name: "the seed", edges: [], dots: [0] },
@@ -117,6 +121,36 @@ function Drum({ i, rot, locked, open, onTurn }) {
   );
 }
 
+// an invisible strip over one of the 3D drums: drag it, scroll over it, or
+// focus it and use the arrow keys
+function Zone({ i, rot, locked, open, onTurn, onHover }) {
+  const drag = useRef(null);
+  const ref = useRef(null);
+  const idx = mod9(rot);
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const onWheel = (e) => { if (locked || open) return; e.preventDefault(); onTurn(e.deltaY > 0 ? 1 : -1); };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  });
+  return (
+    <div
+      ref={ref}
+      className={`cx3-zone ${locked ? "cx3-zone-held" : ""}`}
+      style={{ left: `${50 + (i - 1) * 17.7 - 7.5}%` }}
+      tabIndex={locked || open ? -1 : 0}
+      role="spinbutton"
+      aria-label={`Drum ${i + 1}: ${GLYPHS[idx].name}${locked ? ", held" : ""}`}
+      aria-valuenow={idx}
+      onPointerEnter={() => onHover(i)} onPointerLeave={() => onHover(-1)} onFocus={() => onHover(i)} onBlur={() => onHover(-1)}
+      onKeyDown={(e) => { if (locked || open) return; if (e.key === "ArrowUp") { e.preventDefault(); onTurn(-1); } if (e.key === "ArrowDown") { e.preventDefault(); onTurn(1); } }}
+      onPointerDown={(e) => { if (locked || open) return; drag.current = { y: e.clientY }; e.currentTarget.setPointerCapture(e.pointerId); }}
+      onPointerMove={(e) => { if (!drag.current) return; const dy = e.clientY - drag.current.y; if (Math.abs(dy) >= 22) { onTurn(dy > 0 ? -1 : 1); drag.current.y = e.clientY; } }}
+      onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}
+    />
+  );
+}
+
 // the message, decrypting out of alien marks
 const NOISE = "∴∵∷⁘⁙⁛⁜⸪⸫⸬⸭◌◍◐◑⦁⦿";
 function Decrypt({ text }) {
@@ -145,6 +179,7 @@ export default function Cryptex() {
   const [tries, setTries] = useState(0);
   const [solved, setSolved] = useState({});
   const [mute, setMute] = useState(false);
+  const [gl3d, setGl3d] = useState(true);
   useEffect(() => {
     setMute(isMuted());
     try { setSolved(JSON.parse(localStorage.getItem(SOLVED_KEY) || "{}")); } catch (e) { /* no storage */ }
@@ -218,6 +253,22 @@ export default function Cryptex() {
         ))}
       </div>
       <p className="mono cx-level-note">{LEVELS[level].note}</p>
+      {gl3d ? (
+        <div className={`cx3 ${open ? "cx3-open" : ""}`}>
+          <CryptexDevice glyphs={GLYPHS} rots={rots} locked={locked} open={open} shake={status === "shake"} onReady={setGl3d}>
+            {(setHover) => rots.map((r, i) => <Zone key={i} i={i} rot={r} locked={locked[i]} open={open} onTurn={(d) => turn(i, d)} onHover={setHover} />)}
+          </CryptexDevice>
+          <div className="cx3-dials">
+            {rots.map((r, i) => (
+              <div key={i} className={`cx3-dial ${locked[i] ? "cx3-held" : ""}`}>
+                <button className="cx3-arrow" disabled={locked[i] || open} onClick={() => turn(i, -1)} aria-label={`Turn drum ${i + 1} up`}>&#9650;</button>
+                <div className="cx3-dial-read"><Glyph def={GLYPHS[mod9(r)]} size={30} lit={locked[i]} /><span className="mono">{GLYPHS[mod9(r)].name}{locked[i] ? " · held" : ""}</span></div>
+                <button className="cx3-arrow" disabled={locked[i] || open} onClick={() => turn(i, 1)} aria-label={`Turn drum ${i + 1} down`}>&#9660;</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
       <div className={`cx-device ${status === "shake" ? "cx-shake" : ""} ${open ? "cx-open" : ""}`}>
         <div className="cx-cap cx-cap-l" aria-hidden="true"><span className="cx-core" /></div>
         <div className="cx-body">
@@ -229,6 +280,7 @@ export default function Cryptex() {
         </div>
         <div className="cx-cap cx-cap-r" aria-hidden="true"><span className="cx-core" /></div>
       </div>
+      )}
 
       <div className="cx-readout">
         {open ? (
