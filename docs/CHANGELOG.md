@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.14 — A guest at the Rave: Sypher (Oct 2026)
+No SQL.
+- **Now and then a XenoKlash fighter drops in for a drop.** Sypher, the Void Pilot, is the first: he flies in
+  on his jets during the build, lands on the downbeat with a ring of light, and the wall flashes
+  "SYPHER · VOID PILOT · XENOKLASH". Qeth and Ilu step aside for him. He dances the arm roll (forearms rolling
+  over each other, drifting side to side, turning round every eight beats), then does **Tendril Storm** (hovers,
+  arms up, his eight dreadlocks whip into a spinning glowing fan, void shockwaves roll across the floor), dances
+  a little more and blasts off.
+- **Painted per pixel** like the others: the flight suit (brushed chest plate with seams, bolts and cyan
+  strips, the swirling reactor core in its ring of chasing lights, rib armour, a ribbed abdomen, belt and
+  pouches), the pauldrons and the boots with their thruster rings; in the glass helmet, a brain-folded violet
+  alien with brow and cheek ridges, glowing temple pores, black almond eyes with a lit slit and a wet sheen,
+  a small beak and six ringed tendrils, behind glass with a HUD arc and fine scratches.
+- **Rare on purpose**: a guest only comes on the second drop or later of a song, about one drop in ten (about
+  one song in five). `?guest` on the URL brings one every drop. Never on the costume songs (Halloween, the
+  Cicada), during the girl's voice, with reduced motion, or with `?drawn`.
+- Built as a roster (lib/rave/painted/guests.js) so other fighters can take turns later.
+- Files: lib/rave/painted/guests.js, suitShader.js, index.js (guestNow / paintGuest / guestTitle);
+  components/RaveMode.js. Designed in the "The Rave, Repainted" look-lab artifact.
+
 ## Update 6.13 — The Rave, repainted (Oct 2026)
 No SQL.
 - **The Rave's characters are painted per pixel**, like the Oracle: same designs, poses and moves, but lit with a
