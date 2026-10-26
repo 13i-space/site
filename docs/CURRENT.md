@@ -4,6 +4,7 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.17 (see CHANGELOG): Rave Mode "save video"; the extended remixes get endings, reactions, story light, painted pumpkins, a dancing husk and a costumed crowd.
 - Update 6.16 (see CHANGELOG): director's cut camera in Rave Mode (button, off by default; ?director).
 - Update 6.15 (see CHANGELOG): the extended remixes' Raves use the painted characters in costume, plus a painted girl and cicada.
 - Update 6.14 (see CHANGELOG): rare guest at the Rave - Sypher drops in for a drop (lib/rave/painted/guests.js); ?guest forces one.
