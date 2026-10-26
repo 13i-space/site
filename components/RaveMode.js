@@ -29,7 +29,7 @@ import { drawGirl } from "../lib/rave/girl";
 import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
 import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/rave/cicada";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
-import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT } from "../lib/rave/painted";
+import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT, paintGirl, paintCicada } from "../lib/rave/painted";
 
 // the show's colours, a pair of hues at a time
 const PALETTES = [[190, 300], [275, 45], [165, 215], [325, 190], [45, 285], [125, 305], [210, 340]];
@@ -238,9 +238,10 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       layer(0.5);
       drawSpeakers(ctx, L, m);
       if (forest) drawSwarm(ctx, L, m);
-      // Update 6.13: the characters painted per pixel (lib/rave/painted); the
-      // drawn versions stay for costume songs, no WebGL, or ?drawn
-      const painted = !DRAWN && !spooky && !forest;
+      // Update 6.13: the characters painted per pixel (lib/rave/painted); since
+      // 6.15 on the costume songs too, in costume. The drawn versions stay for
+      // no WebGL, after an error, or ?drawn
+      const painted = !DRAWN;
       if (!(painted && paintDJ(ctx, L, m, spectrum, 0))) drawDJ(ctx, L, m, spectrum);
       drawBoothTop(ctx, L, m, spectrum);
       if (!(painted && paintDJ(ctx, L, m, spectrum, 1))) drawDJHands(ctx, L, m);
@@ -326,7 +327,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       }
 
       // the cicada, in the middle of the floor (Update 5.82)
-      if (forest) { const [, gy] = L.girl; layer(0.75 + (gy - L.floorTop) / 120); drawCicada(ctx, L, m); }
+      if (forest) { const [, gy] = L.girl; layer(0.75 + (gy - L.floorTop) / 120); if (!(painted && paintCicada(ctx, L, m))) drawCicada(ctx, L, m); }
 
       // the girl: the lights die around her, and she stands in a cold beam
       if (ghost > 0.01) {
@@ -336,7 +337,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         layer(0.75 + (gy - L.floorTop) / 120);
         drawGirlLight(ctx, gx, L.truss + 3, gy, ghost);
         ctx.save(); ctx.translate(gx, gy); ctx.scale(gh / 100, gh / 100);
-        drawGirl(ctx, m, ghost, vo.mouth, vo.whisper);
+        if (!(painted && paintGirl(ctx, m, ghost, vo.mouth, vo.whisper))) drawGirl(ctx, m, ghost, vo.mouth, vo.whisper);
         ctx.restore();
       }
       layer(1.05); drawFog(ctx, L, m, true);
