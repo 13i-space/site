@@ -29,7 +29,7 @@ import { drawGirl } from "../lib/rave/girl";
 import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
 import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/rave/cicada";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
-import { paintDJ, paintDancer } from "../lib/rave/painted";
+import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT } from "../lib/rave/painted";
 
 // the show's colours, a pair of hues at a time
 const PALETTES = [[190, 300], [275, 45], [165, 215], [325, 190], [45, 285], [125, 305], [210, 340]];
@@ -228,7 +228,10 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       if (spooky) { layer(0.32); drawBats(ctx, L, m); }
       layer(0.42);
       const titleA = 1 - smooth(4.5, 6, t - st.titleAt);
-      drawWall(ctx, L, m, spectrum, { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA }, clamp(L.u * dpr * 0.8, 4, 12));
+      // Update 6.14: now and then a guest drops in for a drop (lib/rave/painted/guests.js)
+      const V = playingNow && !DRAWN && !spooky && !forest && ghost < 0.01 && !reduced ? guestNow(B, st.drops, st.seed) : null;
+      const gT = V && V.b >= 0 && V.b < 5 ? guestTitle(V) : null;
+      drawWall(ctx, L, m, spectrum, gT ? { title: gT[0], sub: gT[1], a: 1 - smooth(3, 5, V.b) } : { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA }, clamp(L.u * dpr * 0.8, 4, 12));
       drawTruss(ctx, L, m);
       if (spooky) drawWebs(ctx, L, m);
       drawSpots(ctx, L, m, (playingNow ? 0.45 + 0.55 * st.e : 0.25) * (1 - 0.8 * ghost));
@@ -267,9 +270,16 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         }
         poses[key] = pose;
       });
+      // the two front-middle dancers step aside for a guest
+      const aside = (key) => {
+        if (!V || (key !== "qeth" && key !== "ilu")) return 0;
+        const x = L.dancers[key][0], k = clamp(V.here, 0, 1);
+        return (x < L.cx ? -1 : 1) * 13 * k * k * (3 - 2 * k);
+      };
       const place = (key) => {
         const D = DANCERS[key];
-        const [x, fy, h] = L.dancers[key];
+        const [x0, fy, h] = L.dancers[key];
+        const x = x0 + aside(key);
         const sc = h / D.height;
         ctx.translate(x, fy); ctx.scale(sc, sc);
         if (key === "ixxen" && x > L.cx) ctx.scale(-1, 1);
@@ -281,7 +291,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
           ctx.save();
           ctx.beginPath(); ctx.rect(-40, fy, L.VW + 80, L.VH); ctx.clip();
           ctx.globalAlpha = 0.2;
-          const [x, , h] = L.dancers[key];
+          const x = L.dancers[key][0] + aside(key);
           ctx.translate(x, fy); ctx.scale(1, -0.55); ctx.translate(-x, -fy);
           place(key);
           DANCERS[key].draw(ctx, poses[key], m);
@@ -290,7 +300,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         ctx.globalAlpha = 1;
       }
       order.forEach((key) => {
-        const [x, fy, h] = L.dancers[key];
+        const [x0, fy, h] = L.dancers[key];
+        const x = x0 + aside(key);
         const ci = ORDER.indexOf(key);
         layer(0.7 + (fy - L.floorTop) / 120);
         // contact shadow and floor glow
@@ -303,6 +314,16 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         if (!(painted && paintDancer(key, ctx, poses[key], m))) DANCERS[key].draw(ctx, poses[key], m);
         ctx.restore();
       });
+
+      // the guest, front and centre
+      if (V) {
+        const portrait = L.VW / L.VH < 1.15;
+        const gy = L.floorTop + (portrait ? 52 : 34), gh = portrait ? 29 : 33;
+        layer(0.7 + (gy - L.floorTop) / 120);
+        ctx.save(); ctx.translate(L.cx, gy); ctx.scale(gh / GUEST_HEIGHT, gh / GUEST_HEIGHT);
+        paintGuest(ctx, V, m);
+        ctx.restore();
+      }
 
       // the cicada, in the middle of the floor (Update 5.82)
       if (forest) { const [, gy] = L.girl; layer(0.75 + (gy - L.floorTop) / 120); drawCicada(ctx, L, m); }
