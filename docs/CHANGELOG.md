@@ -3,6 +3,34 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.17 — Rave videos: save as video, endings, reactions, light, pumpkins, a dancing husk, a costumed crowd (Oct 2026)
+No SQL.
+- **Save as video** (Rave Mode, "save video"): the Rave for the song, filmed with the director's cut, with the
+  song, recorded in real time from the start into a download - widescreen 16:9 (1920x1080) or vertical 9:16
+  (1080x1920). MP4 where the browser can (Chrome, Edge, Safari), WebM otherwise. Stops at the end of the song,
+  or when you press stop. The director's cut button stays for everyone.
+- **Endings**: Halloween - at the end of her last whisper the girl lets the doll fall; it bounces once and lies
+  on the floor as she fades and the lights go down to one pool on it. Cicada - as it flies away the lights go
+  down and the adult's shell is left glowing. The director's last shot goes in on the doll / the shell. The
+  crowd's silhouettes fade as the stage goes dark.
+- **The husk dances** (Cicada): the nymph's shed shell wakes at 3:20 (twitches, a light coming on inside), then
+  dances the cicada's own moves a beat late in stop-motion jerks, like an empty puppet on strings, light
+  pulsing out of the split down its back on every beat; every 16 beats it folds up and is yanked back up.
+- **Reactions** (lib/rave/reactions.js): Halloween - they turn to look at the girl, flinch as she appears and
+  freeze watching (Varrow's eyes go wide, Qeth stops smiling and leans back, Ilu curls its tentacles in and
+  gasps, Ixxen turns its side to her). Cicada - they lean in on the soil, flinch at the hit, at each crack of
+  the molt and at its chirps.
+- **Light** (lib/rave/storyLight.js): dust drifting in the spotlight beams; the girl's cold light washing over
+  the dancers beside her and her eyes' red glint at her feet; the cicada's last form throwing an emerald pool
+  and the husk an amber one; on the drop a laser catches a dancer's face each beat.
+- **The pumpkins** (Halloween) painted per pixel: ribbed waxy skin, a twisted stem, each its own carved face,
+  the candle flaring on every kick and lighting the cut flesh and the skin round the holes.
+- **The crowd in costume** (Halloween): witch hats, devil horns, cat and bunny ears, ghost sheets with light
+  through the eye holes, glowing jack-o'-lantern heads, vampire collars, a flat-topped monster, a reaper.
+- Files: lib/rave/reactions.js, storyLight.js, crowdCostumes.js, painted/pumpkinShader.js, painted/pumpkins.js
+  (new); lib/rave/cicada.js, specials.js, director.js, stage.js, painted/girl*.js, painted/cicadaShader.js,
+  painted/index.js; components/RaveMode.js; app/globals.css.
+
 ## Update 6.16 — The director's cut (Oct 2026)
 No SQL.
 - **A "director's cut" button in Rave Mode** (off unless you press it; `?director` starts with it on): a camera

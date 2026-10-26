@@ -26,11 +26,13 @@ import { drawSpeakers, drawPlanet, drawCity } from "../lib/rave/scenery";
 import { drawWall } from "../lib/rave/wall";
 import { specialFor, voiceAt, THEMES } from "../lib/rave/specials";
 import { drawGirl } from "../lib/rave/girl";
+import { react } from "../lib/rave/reactions";
+import { drawBeamDust, drawStoryLight, endingLight, drawEndingDark } from "../lib/rave/storyLight";
 import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
 import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/rave/cicada";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
 import { planFor, direct } from "../lib/rave/director";
-import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT, paintGirl, paintCicada } from "../lib/rave/painted";
+import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT, paintGirl, paintCicada, paintPumpkins, paintDoll } from "../lib/rave/painted";
 
 // the show's colours, a pair of hues at a time
 const PALETTES = [[190, 300], [275, 45], [165, 215], [325, 190], [45, 285], [125, 305], [210, 340]];
@@ -51,6 +53,12 @@ function shifted(m, delay) {
 export default function RaveMode({ audioRef, track, title, sub, playing, onToggle, onNext, onPrev, onClose }) {
   const wrapRef = useRef(null);
   const canvasRef = useRef(null);
+  // Update 6.17: save the Rave as a video - the canvas and the song, recorded in real time
+  const recRef = useRef(null);       // while recording: { w, h, dpr, rec, dest, started }
+  const audioNode = useRef(null);    // the analyser the song plays through
+  const [rec, setRec] = useState(null);      // null | { shape, t, len }
+  const [recMenu, setRecMenu] = useState(false);
+  const [recNote, setRecNote] = useState("");
   const [chrome, setChrome] = useState(true);
   const [strobe, setStrobe] = useState(false);
   // Update 6.16: the director's cut, a camera that films the song like a music video
@@ -120,6 +128,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
     const ctx = canvas.getContext("2d");
     let analyser = null, listener = null, bins = null;
     const off = onMusic((a, mode) => {
+      audioNode.current = a && mode !== "voice" ? a : null;
       if (a && mode !== "voice") { analyser = a; listener = createListener(a); bins = new Uint8Array(a.frequencyBinCount); }
       else { analyser = null; listener = null; bins = null; }
     });
@@ -134,7 +143,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       // keep it smooth on slower machines: drop the resolution if frames run long
       // (after a moment to settle in, and it climbs back if things speed up)
       st.frames += 1;
-      if (st.frames > 90) {
+      if (st.frames > 90 && !recRef.current) {
         st.slow = st.slow * 0.95 + (dt > 0.028 ? 1 : 0) * 0.05;
         if (st.slow > 0.6 && st.quality > 0.55) { st.quality *= 0.85; st.slow = 0.3; st.fast = 0; }
         st.fast = dt < 0.019 ? (st.fast || 0) + 1 : 0;
@@ -157,9 +166,11 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       }
 
       // canvas size
-      const W = canvas.clientWidth, H = canvas.clientHeight;
-      let dpr = Math.min(window.devicePixelRatio || 1, 1.5) * st.quality;
-      if (W * H * dpr * dpr > 2.4e6) dpr = Math.sqrt(2.4e6 / (W * H));
+      const R = recRef.current;
+      // recording: a fixed frame (1920x1080 or 1080x1920), whatever the window
+      const W = R ? R.w : canvas.clientWidth, H = R ? R.h : canvas.clientHeight;
+      let dpr = R ? R.dpr : Math.min(window.devicePixelRatio || 1, 1.5) * st.quality;
+      if (!R && W * H * dpr * dpr > 2.4e6) dpr = Math.sqrt(2.4e6 / (W * H));
       const cw = Math.round(W * dpr), ch = Math.round(H * dpr);
       if (canvas.width !== cw || canvas.height !== ch) { canvas.width = cw; canvas.height = ch; }
       const L = layout(W, H);
@@ -204,7 +215,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       const ghost = st.g, spooky = st.special && st.special.theme === "halloween";
       // Update 5.82: the cicada's forest; its story runs on the song's own clock
       const forest = !!(st.special && st.special.theme === "cicada");
-      const m = { halloween: !!spooky, cicada: forest, s: el ? el.currentTime : 0, ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
+      const m = { dollAt: st.special && st.special.ending ? st.special.ending.dropDoll : undefined, halloween: !!spooky, cicada: forest, s: el ? el.currentTime : 0, ghost, B, ph, t, e: st.e, amp: st.amp, level: playingNow ? heard.level : 0.05, bass: playingNow ? heard.bass : 0, high: playingNow ? heard.high : 0, drop, build, on: playingNow, pal };
       if (bins && analyser && playingNow) analyser.getByteFrequencyData(bins);
       const spectrum = playingNow ? bins : null;
 
@@ -218,7 +229,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       // the director's cut (lib/rave/director.js): the song's shots planned once,
       // from its beat grid, energy, drops and special moments; then the shot for now
       let DC = null;
-      if (dirOn && st.grid && el && !reduced) {
+      if ((dirOn || recRef.current) && st.grid && el && (!reduced || recRef.current)) {
         const len = isFinite(el.duration) && el.duration > 0 ? el.duration : st.grid.energy.length * 2;
         if (!st.plan || st.planKey !== key || Math.abs((st.planLen || 0) - len) > 1) { st.plan = planFor(st.grid, st.drops, st.special, len); st.planKey = key; st.planLen = len; }
         DC = direct(st.plan, s, L, { ph, e: st.e, drop });
@@ -248,7 +259,12 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       drawWall(ctx, L, m, spectrum, gT ? { title: gT[0], sub: gT[1], a: 1 - smooth(3, 5, V.b) } : { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA }, clamp(L.u * dpr * Zd * 0.8, 4, 12));
       drawTruss(ctx, L, m);
       if (spooky) drawWebs(ctx, L, m);
-      drawSpots(ctx, L, m, (playingNow ? 0.45 + 0.55 * st.e : 0.25) * (1 - 0.8 * ghost));
+      // Update 6.17: the endings take the lights down to one pool; dust in the beams
+      const E = (spooky || forest) ? endingLight(st.special, m.s, L) : null;
+      const dim = E ? 1 - E.k * 0.85 : 1;
+      const spotI = (playingNow ? 0.45 + 0.55 * st.e : 0.25) * (1 - 0.8 * ghost) * dim;
+      drawSpots(ctx, L, m, spotI);
+      if ((spooky || forest) && st.quality > 0.7) drawBeamDust(ctx, L, m, spotI);
       layer(0.5);
       drawSpeakers(ctx, L, m);
       if (forest) drawSwarm(ctx, L, m);
@@ -261,11 +277,11 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       if (!(painted && paintDJ(ctx, L, m, spectrum, 1))) drawDJHands(ctx, L, m);
       drawBoothFront(ctx, L, m, ttl, spectrum);
       drawStageLip(ctx, L, m);
-      if (spooky) drawPumpkins(ctx, L, m);
+      if (spooky && !(painted && paintPumpkins(ctx, L, m))) drawPumpkins(ctx, L, m);
       layer(0.62);
       drawFloor(ctx, L, m);
       const laserI = (!playingNow ? 0 : build > 0 ? 0.15 * (1 - build) : clamp(smooth(0.55, 0.9, st.e) + drop * 0.6, 0, 1)) * (1 - ghost);
-      layer(0.5); drawLasers(ctx, L, m, laserI);
+      layer(0.5); drawLasers(ctx, L, m, laserI * dim);
       layer(0.62); drawFog(ctx, L, m, false);
 
       // the four of them, back row first; each with a reflection in the floor
@@ -283,7 +299,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
           const prev = moveAt(key, ci, cur.start - 0.001, st, playingNow);
           if (prev.name !== cur.name || prev.delay !== cur.delay) pose = mix(D.moves[prev.name](shifted(mD, prev.delay)), pB, smooth(0, 1, k));
         }
-        poses[key] = pose;
+        // Update 6.17: on the extended remixes they react to the story
+        poses[key] = (spooky || forest) ? react(key, pose, m, L.dancers[key][0], { x: L.girl[0] }, st) : pose;
       });
       // the two front-middle dancers step aside for a guest
       const aside = (key) => {
@@ -354,9 +371,13 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         if (!(painted && paintGirl(ctx, m, ghost, vo.mouth, vo.whisper))) drawGirl(ctx, m, ghost, vo.mouth, vo.whisper);
         ctx.restore();
       }
+      // the doll she leaves lying, and how the characters light each other (Update 6.17)
+      if (spooky && painted && m.dollAt != null && m.s >= m.dollAt) { const [gx, gy, gh] = L.girl; layer(0.75 + (gy - L.floorTop) / 120); ctx.save(); ctx.translate(gx, gy); ctx.scale(gh / 100, gh / 100); paintDoll(ctx, m); ctx.restore(); }
+      if (spooky || forest) { layer(0.75); drawStoryLight(ctx, L, m, st); }
       layer(1.05); drawFog(ctx, L, m, true);
-      layer(1.25); drawCrowd(ctx, L, m);
+      layer(1.25); if (E) ctx.globalAlpha = 1 - 0.92 * E.k; drawCrowd(ctx, L, m); ctx.globalAlpha = 1;
       layer(0.8); drawParticles(ctx, st.parts, dt);
+      if (E) { layer(0.75); drawEndingDark(ctx, L, E); }
       ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
 
       // strobe (only if switched on): every other beat in the big moments
@@ -380,8 +401,70 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
     return () => { cancelAnimationFrame(raf); off(); };
   }, [audioRef, reduced]);
 
+  const stopRecording = () => { const R = recRef.current; if (R && R.rec && R.rec.state !== "inactive") R.rec.stop(); };
+  const startRecording = (shape) => {
+    setRecMenu(false);
+    const el = audioRef.current, canvas = canvasRef.current, a = audioNode.current;
+    if (!el || !canvas) return;
+    if (!a || !canvas.captureStream || typeof MediaRecorder === "undefined") { setRecNote("This browser can't save video. Chrome or Edge on a computer can, or Safari on a Mac."); return; }
+    const type = [...(/[?&]recwebm\b/.test(window.location.search) ? [] : ["video/mp4;codecs=avc1.640028,mp4a.40.2", "video/mp4;codecs=avc1,mp4a"]), "video/webm;codecs=vp9,opus", "video/webm;codecs=vp8,opus", "video/webm"].find((t) => MediaRecorder.isTypeSupported(t));
+    if (!type) { setRecNote("This browser can't save video. Chrome or Edge on a computer can, or Safari on a Mac."); return; }
+    try {
+      const tall = shape === "tall";
+      const ctxA = a.context;
+      const dest = ctxA.createMediaStreamDestination();
+      a.connect(dest);
+      recRef.current = { w: tall ? 720 : 1280, h: tall ? 1280 : 720, dpr: 1.5, dest };
+      // the frame's final size before capture starts (a size change mid-way breaks the recording)
+      canvas.width = Math.round(recRef.current.w * 1.5); canvas.height = Math.round(recRef.current.h * 1.5);
+      const stream = new MediaStream([...canvas.captureStream(30).getVideoTracks(), ...dest.stream.getAudioTracks()]);
+      const mr = new MediaRecorder(stream, { mimeType: type, videoBitsPerSecond: 10000000, audioBitsPerSecond: 192000 });
+      const chunks = [];
+      const name = `13i - ${(title || "The Rave").replace(/[\\/:*?"<>|]/g, "")} - Rave${tall ? " (vertical)" : ""}`;
+      mr.ondataavailable = (e) => { if (e.data && e.data.size) chunks.push(e.data); };
+      mr.onerror = () => { try { mr.stop(); } catch (e) { /* ignore */ } };
+      mr.onstop = () => {
+        try { a.disconnect(dest); } catch (e) { /* already gone */ }
+        el.removeEventListener("ended", onEnd);
+        recRef.current = null; setRec(null);
+        const mp4 = type.startsWith("video/mp4");
+        const blob = new Blob(chunks, { type: mp4 ? "video/mp4" : "video/webm" });
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob); link.download = name + (mp4 ? ".mp4" : ".webm");
+        document.body.appendChild(link); link.click(); link.remove();
+        setTimeout(() => URL.revokeObjectURL(link.href), 60000);
+        setRecNote(mp4 ? "Saved. The video is in your downloads." : "Saved as .webm in your downloads. YouTube takes it as it is; for Instagram or TikTok, convert it to .mp4 first.");
+      };
+      const onEnd = () => stopRecording();
+      el.addEventListener("ended", onEnd);
+      recRef.current.rec = mr;
+      el.currentTime = 0;
+      const go = () => { mr.start(1000); setRec({ shape, t: 0, len: isFinite(el.duration) ? el.duration : 0 }); setRecNote(""); };
+      // from the top, playing (through the player, so it knows)
+      if (!playing && onToggle) onToggle();
+      let tries = 0;
+      const wait = () => {
+        if (!el.paused) { el.currentTime = 0; go(); return; }
+        if (++tries > 40) { try { a.disconnect(dest); } catch (e) { /* ignore */ } el.removeEventListener("ended", onEnd); recRef.current = null; setRecNote("Press play, then save the video."); return; }
+        setTimeout(wait, 100);
+      };
+      wait();
+    } catch (e) {
+      recRef.current = null;
+      setRecNote("This browser can't save video. Chrome or Edge on a computer can, or Safari on a Mac.");
+    }
+  };
+  // the recording's clock, for the little red light
+  useEffect(() => {
+    if (!rec) return;
+    const id = setInterval(() => { const el = audioRef.current; if (el) setRec((r) => r && { ...r, t: el.currentTime, len: isFinite(el.duration) ? el.duration : r.len }); }, 500);
+    return () => clearInterval(id);
+  }, [!!rec]);
+  useEffect(() => () => stopRecording(), []);
+  const mmss = (x) => `${Math.floor((x || 0) / 60)}:${String(Math.floor((x || 0) % 60)).padStart(2, "0")}`;
+
   return (
-    <div ref={wrapRef} className={`rv ${chrome ? "rv-chrome" : ""}`} role="dialog" aria-label="Rave Mode">
+    <div ref={wrapRef} className={`rv ${chrome ? "rv-chrome" : ""} ${rec ? "rv-recording" : ""}`} role="dialog" aria-label="Rave Mode">
       <canvas ref={canvasRef} className="rv-canvas" aria-hidden="true" />
       <div className="rv-top">
         <div className="rv-now">
@@ -405,8 +488,26 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
             director's cut {director ? "on" : "off"}
           </button>
         )}
+        {!rec && <button className={`mono rv-small ${recMenu ? "rv-on" : ""}`} onClick={() => setRecMenu((v) => !v)} aria-expanded={recMenu} title="Save this song's Rave as a music video">save video</button>}
         <button className="mono rv-small" onClick={toggleFull} title="Full screen (F)">{full ? "exit full screen" : "full screen"}</button>
       </div>
+      {recMenu && !rec && (
+        <div className="rv-recmenu" role="dialog" aria-label="Save as a video">
+          <div className="mono rv-kicker">SAVE AS A VIDEO</div>
+          <p>The Rave for <b>{title || "this song"}</b>, filmed with the director's cut, with the song. It records in real time from the start: let the song play to the end (or stop early) and keep this tab open.</p>
+          <div className="rv-recmenu-go">
+            <button className="mono" onClick={() => startRecording("wide")}>widescreen · 16:9<span>YouTube</span></button>
+            <button className="mono" onClick={() => startRecording("tall")}>vertical · 9:16<span>Reels · TikTok · Shorts</span></button>
+          </div>
+          <button className="mono rv-recmenu-x" onClick={() => setRecMenu(false)}>not now</button>
+        </div>
+      )}
+      {rec && (
+        <button className="mono rv-rec" onClick={stopRecording} title="Stop and save the video">
+          <i aria-hidden="true" /> REC {mmss(rec.t)}{rec.len ? " / " + mmss(rec.len) : ""} · stop &amp; save
+        </button>
+      )}
+      {recNote && !rec && <button className="mono rv-recnote" onClick={() => setRecNote("")}>{recNote}</button>}
       {!playing && (
         <button className="rv-paused" onClick={onToggle}>
           <span>▶</span> start the music
