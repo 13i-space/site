@@ -4,6 +4,7 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.15 (see CHANGELOG): the extended remixes' Raves use the painted characters in costume, plus a painted girl and cicada.
 - Update 6.14 (see CHANGELOG): rare guest at the Rave - Sypher drops in for a drop (lib/rave/painted/guests.js); ?guest forces one.
 - Update 6.13 (see CHANGELOG): the Rave's five characters painted per pixel (lib/rave/painted/), drawn versions as fallback.
 Update 6.05 (no SQL): the arcade expansion. XenoKlash has three tournaments

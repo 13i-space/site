@@ -3,6 +3,27 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.15 — The extended remixes' Raves, repainted (Oct 2026)
+No SQL.
+- **The costume songs now use the painted characters** (they had stayed on the old drawn ones), in costume:
+  - Halloween remix: **Varrow** the witch (painted hat: crumpled felt, bent tip, stitched patch and tear, gold
+    buckle, a spider on a thread), **Qeth** the vampire (painted satin cape with red lining, crimson collar with
+    gold piping, a jewelled clasp, fangs), **Ilu** the bat (painted leathery wings that glow at the edges, furry
+    ears, fangs), **Ixxen** the mummy (bandages painted onto its head, round the dome, a gap for the eye; the
+    drawn mantle and neck wraps now shaded, frayed and stained). The DJ keeps the candy pail.
+  - Cicada remix: painted felt **ranger hats** on all four (pinched crown, leather band, gold badge). The DJ
+    keeps the lantern.
+- **The girl** (Halloween) painted per pixel: veined dome, huge wet black eyes with the red pinprick that
+  follows you, parted hair, needle teeth when she speaks, the stained torn nightgown with lace and a bow, the
+  stitched Ilu doll. Same flicker, glitch and lip-sync.
+- **The cicada** (Cicada) painted per pixel in all three forms and as amber shells: faceted compound eyes,
+  glassy wings, tymbal plates that shimmer when it sings, the emerald last form with glowing veins. Same life
+  on the same clock (lib/rave/cicada.js drawCicada now takes the bug-drawing function).
+- Fallbacks as before: the drawn versions without WebGL, after any error, or with `?drawn`.
+- Files: lib/rave/painted/ costumeShader.js, costumes.js, girlShader.js, girl.js, cicadaShader.js, cicada.js;
+  hooks in varrow.js, qeth.js, ixxen.js, index.js; lib/rave/costumes.js (mummy wraps), lib/rave/cicada.js;
+  components/RaveMode.js. Designed in the "The Costume Raves" look-lab artifact.
+
 ## Update 6.14 — A guest at the Rave: Sypher (Oct 2026)
 No SQL.
 - **Now and then a XenoKlash fighter drops in for a drop.** Sypher, the Void Pilot, is the first: he flies in
