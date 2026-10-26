@@ -3,6 +3,24 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.20 — The Cryptex and the Listening Well, rebuilt (Oct 2026)
+No SQL.
+- **The Cryptex is a 3D device** (components/CryptexDevice.js, lib/cryptexShader.js): a raymarched cylinder of
+  three nine-sided titanium drums with the marks engraved into each facet and glowing in their grooves, chrome
+  bezels with light rings, gold-grooved end caps with alien script, glowing cores. It tilts toward your pointer,
+  the drums roll as they turn, a held drum warms from teal to gold, a wrong order shakes it, and when it opens the
+  caps slide apart and light pours out of the seams round a white-gold axle. Turn a drum by dragging or scrolling
+  over it in the picture, with the arrow keys when it's focused, or with the dials below it (each shows the
+  current mark's name). Same levels, same solutions. Browsers without WebGL keep the flat drums.
+- **The Listening Well is a sheet of spacetime in perspective** (components/ListeningWell.js): stars sink deep
+  wells into a tilted grid (lines glow teal as they dip), each star with a corona, rays and turning accretion
+  rings; notes are comets riding the sheet; every ring sends a ripple across it; the sling shows a dotted
+  forecast of where the note will fly. An instrument HUD: counts, a "last tone" readout (step, octave, Hz) and
+  a scrolling trace of every tone heard. Same physics, sound, controls and modes; taps are mapped back onto the
+  sheet, wells included.
+- Files: components/CryptexDevice.js, lib/cryptexShader.js (new); components/Cryptex.js,
+  components/ListeningWell.js, app/globals.css.
+
 ## Update 6.19 — Ask Varrow: the Wish Engine's new cabinet (Oct 2026)
 No SQL.
 - **The Wish Engine is drawn live** (components/WishCabinet.js): a big carved-wood and brass fortune cabinet

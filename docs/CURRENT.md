@@ -4,6 +4,7 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.20 (see CHANGELOG): the Cryptex rendered as a 3D device; the Listening Well as a 3D spacetime instrument.
 - Update 6.19 (see CHANGELOG): Ask Varrow / the Wish Engine redrawn as a live cabinet with the painted Varrow and ambience.
 - Update 6.18 (see CHANGELOG): the Signal Composer's floor is the Rave (painted DJ, the crowd).
 - Update 6.17 (see CHANGELOG): Rave Mode "save video"; the extended remixes get endings, reactions, story light, painted pumpkins, a dancing husk and a costumed crowd.
