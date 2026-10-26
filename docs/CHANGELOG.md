@@ -3,6 +3,21 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.16 — The director's cut (Oct 2026)
+No SQL.
+- **A "director's cut" button in Rave Mode** (off unless you press it; `?director` starts with it on): a camera
+  that films the song like a music video instead of drifting. lib/rave/director.js plans a song's shots once,
+  from its beat grid, measured energy, drops and its special character's moments, then films each frame from
+  that plan, so a song always gets the same cut.
+  - intro: wide, easing in on the booth; the build: a push in on the DJ, faster and shakier to the drop; the
+    drop: a hard cut wide with a punch of zoom, then cuts round the dancers on the beat; loud stretches: two-bar
+    shots (wides, pairs, close-ups, the DJ); the groove: four-bar shots with pushes and trucks; breakdowns:
+    long glides; the end: a slow pull back and a fade to black. A letterbox while it's on.
+  - The Halloween remix's girl: revealed, then close on her face, two-shots with the dancer beside her, their
+    faces watching; whispering, held close and unsteady.
+  - Works on any song with a measured beat grid. Off with reduced motion.
+- Files: lib/rave/director.js (new); components/RaveMode.js. Designed in "The Costume Raves" look-lab artifact.
+
 ## Update 6.15 — The extended remixes' Raves, repainted (Oct 2026)
 No SQL.
 - **The costume songs now use the painted characters** (they had stayed on the old drawn ones), in costume:

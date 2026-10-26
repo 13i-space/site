@@ -29,6 +29,7 @@ import { drawGirl } from "../lib/rave/girl";
 import { drawBats, drawPumpkins, drawWebs, drawGirlLight } from "../lib/rave/spooky";
 import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/rave/cicada";
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
+import { planFor, direct } from "../lib/rave/director";
 import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT, paintGirl, paintCicada } from "../lib/rave/painted";
 
 // the show's colours, a pair of hues at a time
@@ -52,9 +53,11 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
   const canvasRef = useRef(null);
   const [chrome, setChrome] = useState(true);
   const [strobe, setStrobe] = useState(false);
+  // Update 6.16: the director's cut, a camera that films the song like a music video
+  const [director, setDirector] = useState(DIRECTOR);
   const [full, setFull] = useState(false);
-  const live = useRef({ track, title, sub, playing, strobe });
-  live.current = { track, title, sub, playing, strobe };
+  const live = useRef({ track, title, sub, playing, strobe, director: DIRECTOR });
+  live.current = { track, title, sub, playing, strobe, director };
   const reduced = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   // controls fade away while you watch; any move brings them back
@@ -138,7 +141,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         if (st.fast > 300 && st.quality < 1) { st.quality = Math.min(1, st.quality * 1.1); st.fast = 0; }
       }
 
-      const { track: tr, title: ttl, sub: sb, playing: on, strobe: strobeOn } = live.current;
+      const { track: tr, title: ttl, sub: sb, playing: on, strobe: strobeOn, director: dirOn } = live.current;
       // a new song: its beat grid, its drops, and its title up on the wall
       const key = tr ? tr.g : null;
       if (key !== st.key) {
@@ -212,10 +215,21 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         y: Math.sin(t * 0.083) * 0.8 * (reduced ? 0 : 1),
         z: 1 + (reduced ? 0 : 0.012 * Math.sin(t * 0.07) + build * 0.03 + drop * 0.05),
       };
+      // the director's cut (lib/rave/director.js): the song's shots planned once,
+      // from its beat grid, energy, drops and special moments; then the shot for now
+      let DC = null;
+      if (dirOn && st.grid && el && !reduced) {
+        const len = isFinite(el.duration) && el.duration > 0 ? el.duration : st.grid.energy.length * 2;
+        if (!st.plan || st.planKey !== key || Math.abs((st.planLen || 0) - len) > 1) { st.plan = planFor(st.grid, st.drops, st.special, len); st.planKey = key; st.planLen = len; }
+        DC = direct(st.plan, s, L, { ph, e: st.e, drop });
+      }
+      const Zd = DC ? DC.z : 1;
+      if (DC) { cam.x = 0; cam.y = 0; cam.z = 1 + drop * 0.02; }
       const fx = L.cx, fyc = L.floorTop;
       const layer = (depth) => {
         const k = 1 + (cam.z - 1) * depth;
-        ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
+        if (DC) ctx.setTransform(dpr * L.u * Zd, 0, 0, dpr * L.u * Zd, dpr * L.u * (L.VW / 2 - Zd * DC.x), dpr * L.u * (L.VH * 0.46 - Zd * DC.y));
+        else ctx.setTransform(dpr * L.u, 0, 0, dpr * L.u, 0, 0);
         ctx.translate(fx, fyc); ctx.scale(k, k); ctx.translate(-fx + cam.x * depth, -fyc + cam.y * depth);
       };
       ctx.globalCompositeOperation = "source-over";
@@ -231,7 +245,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       // Update 6.14: now and then a guest drops in for a drop (lib/rave/painted/guests.js)
       const V = playingNow && !DRAWN && !spooky && !forest && ghost < 0.01 && !reduced ? guestNow(B, st.drops, st.seed) : null;
       const gT = V && V.b >= 0 && V.b < 5 ? guestTitle(V) : null;
-      drawWall(ctx, L, m, spectrum, gT ? { title: gT[0], sub: gT[1], a: 1 - smooth(3, 5, V.b) } : { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA }, clamp(L.u * dpr * 0.8, 4, 12));
+      drawWall(ctx, L, m, spectrum, gT ? { title: gT[0], sub: gT[1], a: 1 - smooth(3, 5, V.b) } : { title: titleA > 0.01 && ttl ? ttl : null, sub: sb, a: titleA }, clamp(L.u * dpr * Zd * 0.8, 4, 12));
       drawTruss(ctx, L, m);
       if (spooky) drawWebs(ctx, L, m);
       drawSpots(ctx, L, m, (playingNow ? 0.45 + 0.55 * st.e : 0.25) * (1 - 0.8 * ghost));
@@ -351,6 +365,12 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       }
       // a flash of colour on the drop
       if (drop > 0.92) { ctx.fillStyle = hsl(pal.a, 100, 70, (drop - 0.92) * 3); ctx.fillRect(0, 0, L.VW, L.VH); }
+      // the director's letterbox, and its fade at the end
+      if (DC) {
+        const bh = L.VH * 0.055;
+        ctx.fillStyle = "#000"; ctx.fillRect(0, 0, L.VW, bh); ctx.fillRect(0, L.VH - bh, L.VW, bh);
+        if (DC.fade > 0) { ctx.fillStyle = `rgba(0,0,0,${DC.fade})`; ctx.fillRect(0, 0, L.VW, L.VH); }
+      }
       // vignette
       const vg = ctx.createRadialGradient(L.cx, L.VH * 0.55, Math.min(L.VW, L.VH) * 0.35, L.cx, L.VH * 0.55, Math.max(L.VW, L.VH) * 0.8);
       vg.addColorStop(0, "rgba(0,0,0,0)"); vg.addColorStop(1, "rgba(0,0,0,0.55)");
@@ -380,6 +400,11 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
             strobe {strobe ? "on" : "off"}
           </button>
         )}
+        {!reduced && (
+          <button className={`mono rv-small ${director ? "rv-on" : ""}`} onClick={() => setDirector((v) => !v)} aria-pressed={director} title="A camera that cuts and moves with the song, like a music video">
+            director's cut {director ? "on" : "off"}
+          </button>
+        )}
         <button className="mono rv-small" onClick={toggleFull} title="Full screen (F)">{full ? "exit full screen" : "full screen"}</button>
       </div>
       {!playing && (
@@ -391,6 +416,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
   );
 }
 
+// ?director starts with the director's cut on (Update 6.16)
+const DIRECTOR = typeof window !== "undefined" && /[?&]director\b/.test(window.location.search);
 // ?drawn shows the characters the old drawn way (Update 6.13)
 const DRAWN = typeof window !== "undefined" && /[?&]drawn\b/.test(window.location.search);
 const DEBUG = typeof window !== "undefined" && /[?&]ravedebug/.test(window.location.search) ? (window.__rave = []) : null;
