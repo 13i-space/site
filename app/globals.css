@@ -1983,9 +1983,14 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 
 /* ── The Wish Engine (Update 5.58) ── */
 .we { display: flex; flex-direction: column; align-items: center; }
-.we-cabinet { position: relative; width: min(460px, 100%); padding: 18px 18px 0; border-radius: 30px 30px 14px 14px;
-  background: linear-gradient(180deg, #3B2357 0%, #22163C 40%, #120C24 100%); border: 1px solid #6B4A8F;
-  box-shadow: 0 0 0 6px #160E2A, 0 0 0 7px #E9D29A55, 0 40px 80px rgba(0,0,0,.6), inset 0 0 40px rgba(233,210,154,.06); }
+.we-cabinet { position: relative; width: min(640px, 100%); margin: 0 auto; }
+/* Update 6.19: the cabinet is a canvas (components/WishCabinet.js); the words sit over it */
+.we-stage { position: relative; width: 100%; aspect-ratio: 600 / 880; }
+.we-cabinet-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.we-stage .we-state { top: 23.6%; }
+.we-stage .we-subs { left: 21%; right: 21%; bottom: auto; top: 55%; font-size: clamp(11px, 2.4vw, 15px); }
+.we-cabinet .we-panel { margin: 4px 3% 0; padding: 16px 18px 14px; border-radius: 14px; background: linear-gradient(180deg, #2A140A, #140904); border: 1px solid #7A5226; box-shadow: inset 0 1px 0 rgba(255,220,150,.15), 0 14px 30px rgba(0,0,0,.5); }
+.we-cabinet .we-tray { margin: 0 3%; }
 .we-marquee { text-align: center; padding: 12px 10px 14px; margin-bottom: 14px; border-radius: 18px 18px 8px 8px; background: radial-gradient(ellipse at center, #3E2A10, #160E06); border: 1px solid #E9D29A88;
   box-shadow: inset 0 0 20px rgba(233,210,154,.25); }
 .we-marquee-glyphs { font-size: 13px; letter-spacing: 4px; color: #7FF0E0; opacity: .7; }
