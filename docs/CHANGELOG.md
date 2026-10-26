@@ -3,6 +3,17 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.18 — The Signal Composer's floor is the Rave (Oct 2026)
+No SQL.
+- **The floor at the top of the Signal Composer** (components/deck/Stage.js) is now the Rave: the painted DJ at
+  the booth in front of the LED wall (its spectrum is your mix), the truss, spots, speakers and city, and the
+  Rave's crowd packed onto the dance floor in three rows plus the front row, glowsticks and all, the stage light
+  glowing behind each row. Spots and lasers take the decks' colours, mixed by the crossfader; the crowd's energy
+  still comes from the music and what you do (drops, transitions, brakes, chants), and drives how hard the DJ,
+  the lights and the crowd go. Drops and brakes throw a burst; "Summon" still raises something huge behind the
+  crowd. The XENO-DJ bar, BPM, crowd meter, REC and MC Ilu sit on top as before. The floor is a little taller.
+- Files: components/deck/Stage.js (rewritten on lib/rave); app/globals.css.
+
 ## Update 6.17 — Rave videos: save as video, endings, reactions, light, pumpkins, a dancing husk, a costumed crowd (Oct 2026)
 No SQL.
 - **Save as video** (Rave Mode, "save video"): the Rave for the song, filmed with the director's cut, with the
