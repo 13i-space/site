@@ -3,6 +3,24 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.19 — Ask Varrow: the Wish Engine's new cabinet (Oct 2026)
+No SQL.
+- **The Wish Engine is drawn live** (components/WishCabinet.js): a big carved-wood and brass fortune cabinet
+  with depth (its sides turn a little as you move), a carved crest with the 13i finial, a marquee - "Ask
+  Varrow" in humming warm neon - ringed by chasing bulbs (faster once it's awake), carved pilasters, a brass
+  ledge, a plinth on brass feet. In the arched window, behind old curved glass that reflects as you move:
+  **the painted Varrow from the Rave**, between velvet curtains with gold tie-backs, a faded star chart behind,
+  lit by a lamp that flickers on when the token drops, dust drifting in its light. Asleep it dozes, eyes
+  closed; awake its ridges glow, its eyes follow you, its hands circle the orb; it looks down as the card prints.
+- **You see the token go in**: it comes up turning and slides edge-on into the brass slot, which flares.
+  A **certainty gauge** swings while Varrow reads you; the answer card slides out of the brass mouth.
+- **Music inside the cabinet** (lib/wishAmbience.js): a low drone, an old detuned music box in A harmonic
+  minor in a long reverb, now and then a breath of air; it tightens while Varrow speaks. Starts with your first
+  touch, follows the artifacts' sound on/off.
+- The old SVG Varrow is retired; the question, the token button and the answer card stay below the cabinet.
+- Files: components/WishCabinet.js, lib/wishAmbience.js (new); components/WishEngine.js; lib/alienSound.js
+  (shares its audio); app/globals.css.
+
 ## Update 6.18 — The Signal Composer's floor is the Rave (Oct 2026)
 No SQL.
 - **The floor at the top of the Signal Composer** (components/deck/Stage.js) is now the Rave: the painted DJ at
