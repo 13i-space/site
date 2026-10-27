@@ -8,7 +8,7 @@ import { paintDancer } from "../lib/rave/painted";
 // idling, and talking when it's their line. Falls back to the drawn ones
 // (components/AlienLab.js) if WebGL isn't there.
 
-const QETH_REST = { lift: 0, lean: 0, sy: 1, hem: 0, flare: 0, head: 0, headY: 0, look: [0, 0], uL: [20, 110], uR: [100, 110], lL: [52, 108], lR: [68, 108], orb: [60, 106], orbGlow: 0, happy: 0, crown: 0, feet: [0, 0], fly: 0, gather: 0 };
+const QETH_REST = { lift: 0, lean: 0, sy: 1, hem: 0, flare: 0, head: 0, headY: 0, look: [0, 0], uL: [20, 110], uR: [100, 110], lL: [52, 108], lR: [68, 108], orb: [60, 106], orbGlow: 0, happy: 0, crown: 0, feet: [0, 0], fly: 0, gather: 0, hip: 0, roll: 0, tail: 0.4, tailUp: 0, hair: 0, knee: [0, 0] };
 const ILU_REST = { lift: 0, float: 0, sx: 1, sy: 1, rot: 0, spin: 0, flare: 0, tent: [0, 0, 0, 0, 0, 0, 0], curl: [0, 0, 0, 0, 0, 0, 0], look: [0, 0], mirror: 0, ant: 0, sticks: 0, stickA: 0, mouth: 0 };
 
 function mOf(t, talk, pal) {
@@ -16,25 +16,24 @@ function mOf(t, talk, pal) {
   return { t, B, ph: B % 1, amp: 0.25 + talk * 0.2, bass: 0.15 + talk * 0.2, high: 0.25 + talk * 0.35, level: 0.3, e: 0, drop: 0, build: 0, on: false, pal, halloween: false, cicada: false };
 }
 
-// Qeth: poised, one hand on her hip, the orb cradled low; when she speaks
-// her free hand opens in a slow gesture, her lips move and the crown lights
+// Qeth: hip cocked, one hand on it, her hair and tail moving slowly; when she
+// speaks her free hand opens in a slow gesture, her lips move, her crown lights
 function qethPose(t, talk) {
   const g = Math.sin(t * 2.2), n = Math.sin(t * 6.5);
   const lip = talk ? Math.max(0, Math.sin(t * 12) * 0.45 + Math.sin(t * 7.3) * 0.3) : 0;
+  const hip = 0.55 + Math.sin(t * 0.8) * 0.25;
   return {
     ...QETH_REST,
-    lift: Math.sin(t * 1.3) * 0.6,
-    sy: 1 + Math.sin(t * 1.3) * 0.006,
-    lean: Math.sin(t * 0.6) * 0.012,
-    head: 0.05 + n * 0.025 * talk + Math.sin(t * 0.4) * 0.03,
-    headY: Math.abs(n) * talk * 0.5,
-    look: [2 + Math.sin(t * 0.5) * 1.2, 0.3],
-    uL: [46, 108 + Math.sin(t * 1.1) * 0.6],
-    uR: [92 + g * 3 * talk, 100 - talk * (16 + g * 5)],
-    lL: [55, 103], lR: [65, 103], orb: [60, 104 + Math.sin(t * 1.6) * 1.2],
-    orbGlow: 0.3 + talk * 0.45,
+    lift: Math.sin(t * 1.3) * 0.4,
+    hip, roll: (t * 0.12) % 1, hair: Math.sin(t * 0.7) * 0.35, tail: 0.5 + Math.sin(t * 0.9) * 0.4, knee: [0.6, 0],
+    lean: -0.015, head: 0.07 + n * 0.025 * talk + Math.sin(t * 0.4) * 0.03,
+    headY: Math.abs(n) * talk * 0.4,
+    look: [1.5 + Math.sin(t * 0.5) * 1.0, 0.2],
+    uR: [74 + hip * 3.4, 106],
+    uL: [28 - g * 3 * talk, 86 - talk * (16 + g * 4)],
+    lL: [46, 110], lR: [77, 108],
     crown: 0.25 + talk * (0.45 + 0.3 * Math.abs(n)),
-    happy: 0.35, // a small smile, eyes open
+    happy: 0.4,
     mouth: lip,
   };
 }
