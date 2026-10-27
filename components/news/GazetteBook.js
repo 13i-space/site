@@ -3,18 +3,24 @@
 import { useEffect, useState } from "react";
 
 // The Galactic Gazette as a paper you can turn (Update 5.66): page one is
-// the space news, page two the sci-fi entertainment section. Turn with the
-// folded corner, the tabs, or the arrow keys; #page-2 opens page two.
+// the space news, page two the sci-fi entertainment section, page three
+// (Update 6.24) the live wire and the door to Mission Control. Turn with the
+// folded corner, the tabs, or the arrow keys; #page-2 / #page-3 open a page.
 export default function GazetteBook({ pages, labels }) {
   const [page, setPage] = useState(0);
   const [turning, setTurning] = useState(null); // "fwd" | "back"
-  useEffect(() => { if (/page-?2/.test(window.location.hash)) setPage(1); }, []);
+  useEffect(() => {
+    const m = window.location.hash.match(/page-?(\d+)/);
+    const n = m ? parseInt(m[1], 10) - 1 : 0;
+    if (n > 0 && n < pages.length) setPage(n);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const go = (to) => {
     if (to === page || turning || to < 0 || to >= pages.length) return;
     setTurning(to > page ? "fwd" : "back");
     setTimeout(() => {
       setPage(to);
-      try { history.replaceState(null, "", to ? "#page-2" : "#"); } catch (e) { /* ignore */ }
+      try { history.replaceState(null, "", to ? `#page-${to + 1}` : "#"); } catch (e) { /* ignore */ }
       window.scrollTo({ top: Math.max(0, (document.querySelector(".gz-book")?.offsetTop || 0) - 20), behavior: "smooth" });
     }, 380);
     setTimeout(() => setTurning(null), 760);

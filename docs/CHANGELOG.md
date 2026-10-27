@@ -3,6 +3,32 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.24 — Mission Control (Oct 2026)
+No SQL. No keys. A new page, /galaxy/mission-control, reached from a new page 3 of the Galactic Gazette.
+- **Mission Control** (components/MissionControl.js): one main screen playing a YouTube channel's live stream,
+  four monitors below (EARTH-1 NASA, ORBIT-4K Sen, PAD-CAMS NASASpaceflight, SIGNAL), clocks (UTC, Central,
+  T− to April 6, 2027), Fullscreen. Only the main screen streams; monitors show drawn previews
+  (lib/missionArt.js), then a real still once that channel has played once in this browser.
+- **The feed list is one file** (lib/missionFeeds.js): each screen points at a channel's live slot
+  (youtube.com/embed/live_stream?channel=...), so a restarted stream with a new video ID keeps working; add
+  `video:` to pin one stream instead. A dropped or ended stream shows the 13i standby screen (ring-eye, ripples)
+  and tries again every 45 seconds.
+- **Where the station is**: the ISS's real position from api.wheretheiss.at (public, no key, polled every 10 s
+  from the browser), on a dot map of Earth (Natural Earth land data, now shared in lib/earthLand.js) with day and
+  night, the next orbit and the last 45 minutes. Says "Estimated" if the position can't be reached.
+- **Next launches + launch alerts** (lib/launchSchedule.js): The Space Devs' Launch Library 2 (public, no key),
+  fetched on the server and cached 15 minutes (well under its 15-requests-an-hour free limit). Within 30 minutes
+  of a launch a banner appears and the main screen switches to the feed that carries it (unless the visitor
+  picked a screen in the last two minutes).
+- **Signal mode**: the SIGNAL monitor mutes the feed and plays Album 1 tracks from public/audio/signal over the
+  live view, with a waveform across the bottom of the screen.
+- **Gazette page 3, "Live from Orbit"**: an engraved plate, "Mission Control Opens Its Doors" with the way in,
+  the Launch Wire (next seven launches) and "On the Screens Tonight". components/news/GazetteBook.js now opens
+  any page from #page-N.
+- Files: app/(site)/galaxy/mission-control/page.js, components/MissionControl.js, lib/missionFeeds.js,
+  lib/missionArt.js, lib/launchSchedule.js, lib/earthLand.js (new); app/(site)/galaxy/news/page.js,
+  components/news/GazetteBook.js, lib/version.js.
+
 ## Update 6.23 — The new Qeth (Oct 2026)
 No SQL. Qeth is completely redrawn as a female alien (lib/rave/painted/qeth.js), in the Lab crew and the Rave.
 - Face painted per pixel: soft pearl-lilac skin with an iridescent sheen, large violet eyes with liner, full

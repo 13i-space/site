@@ -3,6 +3,8 @@ import { getSpaceNewspaper, NEWS_SOURCES } from "../../../../lib/spaceNews";
 import { getSciFiPaper, SCIFI_SOURCES } from "../../../../lib/scifiNews";
 import GazetteBook from "../../../../components/news/GazetteBook";
 import NewsImage from "../../../../components/news/NewsImage";
+import { getLaunches } from "../../../../lib/launchSchedule";
+import { FEEDS } from "../../../../lib/missionFeeds";
 
 // Rebuild this page with fresh headlines at most every 30 minutes
 // (matches NEWS_REFRESH_SECONDS in lib/spaceNews.js).
@@ -31,7 +33,7 @@ function Story({ a, size = "brief", noImage = false }) {
 }
 
 export default async function SpaceNewsPage() {
-  const [space, scifi] = await Promise.all([getSpaceNewspaper(), getSciFiPaper()]);
+  const [space, scifi, launches] = await Promise.all([getSpaceNewspaper(), getSciFiPaper(), getLaunches()]);
   return (
     <div className="gz-wrap">
       <link
@@ -42,8 +44,12 @@ export default async function SpaceNewsPage() {
       <Link href="/galaxy" className="mono" style={{ fontSize: 12, color: "#6E76B8" }}>
         &larr; back to The Galaxy
       </Link>
-      {/* Update 5.66: two pages - turn to the entertainment section */}
-      <GazetteBook labels={["The Cosmos", "Screen, Page & Sound"]} pages={[<PageOne key="1" {...space} />, <PageTwo key="2" {...scifi} />]} />
+      {/* Update 5.66: two pages - turn to the entertainment section.
+          Update 6.24: page three, the live wire, opens Mission Control. */}
+      <GazetteBook
+        labels={["The Cosmos", "Screen, Page & Sound", "Live from Orbit"]}
+        pages={[<PageOne key="1" {...space} />, <PageTwo key="2" {...scifi} />, <PageThree key="3" launches={launches} />]}
+      />
     </div>
   );
 }
@@ -174,6 +180,118 @@ function PageTwo({ sections, lead }) {
   );
 }
 
+// Page three (Update 6.24): the live wire - what's on Mission Control's
+// screens and the launch schedule, with the way in to Mission Control itself.
+function launchWhen(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", timeZone: "UTC" }) +
+    " · " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "UTC" }) + " UTC";
+}
+
+function OrbitPlate() {
+  // an engraving of the station over Earth's limb, in the paper's ink
+  const lines = Array.from({ length: 16 }, (_, i) => i);
+  return (
+    <div className="gz-plate gz-plate-tall gz-mc-plate">
+      <svg viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        <rect width="640" height="360" fill="#1d1710" />
+        {Array.from({ length: 40 }, (_, i) => <circle key={i} cx={(i * 157) % 640} cy={(i * 89) % 190} r={i % 5 ? 0.9 : 1.6} fill="#efe4cc" opacity={0.35 + (i % 3) * 0.2} />)}
+        <defs>
+          <clipPath id="gz-mc-earth"><circle cx="320" cy="1180" r="1000" /></clipPath>
+        </defs>
+        <circle cx="320" cy="1180" r="1000" fill="#d9cbab" />
+        <g clipPath="url(#gz-mc-earth)" stroke="#5a4a30" strokeWidth="1.1" fill="none" opacity=".55">
+          {lines.map((i) => <path key={i} d={`M -20 ${196 + i * 11} Q 320 ${170 + i * 11 - i * 0.6} 660 ${196 + i * 11}`} />)}
+        </g>
+        <g clipPath="url(#gz-mc-earth)" fill="#efe4cc" opacity=".8">
+          <ellipse cx="170" cy="232" rx="70" ry="8" /><ellipse cx="420" cy="250" rx="110" ry="11" /><ellipse cx="300" cy="300" rx="90" ry="14" /><ellipse cx="560" cy="222" rx="60" ry="6" />
+        </g>
+        <circle cx="320" cy="1180" r="1003" fill="none" stroke="#efe4cc" strokeWidth="3" opacity=".7" />
+        <g fill="#16110a" stroke="#efe4cc" strokeWidth="1.2">
+          <rect x="250" y="70" width="140" height="8" />
+          <rect x="262" y="40" width="22" height="68" /><rect x="292" y="40" width="22" height="68" />
+          <rect x="326" y="40" width="22" height="68" /><rect x="356" y="40" width="22" height="68" />
+          <rect x="304" y="62" width="32" height="24" rx="4" />
+        </g>
+        <g stroke="#efe4cc" strokeWidth=".6" opacity=".6">
+          {[262, 292, 326, 356].flatMap((x) => [x + 7, x + 14].map((xx) => <line key={x + "-" + xx} x1={xx} y1="40" x2={xx} y2="108" />))}
+        </g>
+      </svg>
+      <span className="gz-plate-cap" style={{ color: "#efe4cc", top: 8, bottom: "auto" }}>Live &middot; 400 km up</span>
+    </div>
+  );
+}
+
+function PageThree({ launches = [] }) {
+  const now = new Date();
+  const list = launches.slice(0, 7);
+  return (
+    <article className="gz-paper gz-paper-three">
+      <header className="gz-mast">
+        <div className="gz-ears">
+          <span>Vol. XIII &middot; No. {issueNo(now)} &middot; Page 3</span>
+          <span className="gz-ear-mid">&ldquo;Watched from above, as it happens&rdquo;</span>
+          <span>The Live Wire</span>
+        </div>
+        <h1 className="gz-title gz-title-two">Live from Orbit</h1>
+        <div className="gz-dateline">
+          <span>Pictures from the station and the pads</span>
+          <span>Received by 13i as it happens</span>
+          <span>Launch times in UTC</span>
+        </div>
+      </header>
+
+      <section className="gz-front">
+        <div className="gz-front-lead">
+          <Link href="/galaxy/mission-control" className="gz-story gz-lead gz-mc-lead">
+            <OrbitPlate />
+            <div className="gz-head">Mission Control Opens Its Doors</div>
+            <div className="gz-byline">The live room &middot; open day and night</div>
+            <p className="gz-sum">
+              Earth turns under the space station in real time, in ordinary light and in 4K, while cameras keep watch on the launch
+              pads. Mission Control puts every live feed on one floor, beside the station&rsquo;s position over the planet and a
+              countdown to every launch on the schedule. When a rocket is about to fly, its pad takes the main screen.
+            </p>
+            <span className="gz-mc-enter">Step into Mission Control &rarr;</span>
+          </Link>
+        </div>
+        <div className="gz-front-side">
+          <div className="gz-kicker">The Launch Wire</div>
+          {list.length === 0 ? (
+            <p className="gz-sum" style={{ padding: "10px 0" }}>The launch wire is quiet. The schedule comes through again shortly.</p>
+          ) : list.map((l) => (
+            <div key={l.id} className="gz-story gz-brief">
+              <div className="gz-head">{l.rocket}{l.mission ? <> &middot; <em>{l.mission}</em></> : null}</div>
+              <div className="gz-byline">{launchWhen(l.net)}{l.status ? <> &middot; {l.status}</> : null}</div>
+              <p className="gz-sum">{[l.provider, l.location].filter(Boolean).join(", ")}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="gz-section">
+        <h2 className="gz-sec-title"><span>On the Screens Tonight</span><small>live, from their own cameras</small></h2>
+        <div className="gz-mc-feeds">
+          {FEEDS.map((f) => (
+            <Link key={f.id} href="/galaxy/mission-control" className="gz-story gz-brief">
+              <div className="gz-head">{f.name}</div>
+              <div className="gz-byline">{f.code} &middot; {f.source}</div>
+            </Link>
+          ))}
+          <Link href="/galaxy/mission-control" className="gz-story gz-brief">
+            <div className="gz-head">Signal 13i, over the view</div>
+            <div className="gz-byline">Signal mode &middot; the feeds fall silent</div>
+          </Link>
+        </div>
+      </section>
+
+      <footer className="gz-foot">
+        Launch schedule from The Space Devs&rsquo; Launch Library; dates move often. The pictures play from NASA, Sen and NASASpaceflight on YouTube.
+      </footer>
+    </article>
+  );
+}
+
 const CSS = `
 .gz-book { position: relative; margin-top: 14px; perspective: 2200px; }
 .gz-tabs { display: flex; gap: 6px; }
@@ -195,6 +313,16 @@ const CSS = `
 .gz-corner-back span { right: auto; left: 12px; text-align: left; }
 .gz-leaf .gz-foot { padding: 0 170px 30px; }
 @media (max-width: 640px) { .gz-leaf .gz-foot { padding: 0 0 110px; } }
+.gz-mc-lead .gz-head { font-size: clamp(28px, 3.8vw, 42px); font-weight: 900; }
+.gz-mc-enter { display: inline-block; margin-top: 14px; padding: 8px 14px; border: 2px solid #16110a; font-family: 'Playfair Display', Georgia, serif; font-weight: 700; font-size: 16px; color: #16110a; letter-spacing: .5px; transition: background .2s, color .2s; }
+.gz-mc-lead:hover .gz-mc-enter { background: #16110a; color: #efe4cc; }
+.gz-mc-lead:hover .gz-head { text-decoration: none; }
+.gz-mc-plate { border-color: #16110a; }
+.gz-mc-feeds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 22px; }
+.gz-mc-feeds .gz-brief { border-bottom: none; border-left: 1px solid rgba(36,29,18,0.4); padding-left: 12px; }
+.gz-mc-feeds .gz-brief:first-child { border-left: none; padding-left: 0; }
+@media (max-width: 760px) { .gz-mc-feeds { grid-template-columns: 1fr 1fr; } .gz-mc-feeds .gz-brief { border-left: none; padding-left: 0; border-bottom: 1px solid rgba(36,29,18,0.4); } }
+.gz-paper-three .gz-title-two { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-style: italic; letter-spacing: -1px; }
 .gz-paper-two .gz-title-two { font-family: 'Playfair Display', Georgia, serif; font-weight: 900; font-style: italic; letter-spacing: -1px; }
 @media (prefers-reduced-motion: reduce) { .gz-turn-fwd, .gz-turn-back { animation: none; } }
 @media (max-width: 640px) { .gz-corner { width: 120px; height: 96px; } .gz-corner span { font-size: 12px; } .gz-tab { font-size: 13px; padding: 7px 10px; } }
