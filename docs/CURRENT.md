@@ -4,6 +4,7 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.24 (see CHANGELOG): Mission Control at /galaxy/mission-control, via page 3 of the Galactic Gazette - live YouTube feeds, ISS position, launch schedule and alerts, Signal mode. Feeds live in lib/missionFeeds.js.
 - Update 6.23 (see CHANGELOG): the new Qeth - a female alien, new hypnotic Rave moves.
 - Update 6.22 (see CHANGELOG): Ixxen redrawn - one eye, mouth, attached frills and beard, real neck, sleeves, 3D mantle.
 - Update 6.21 (see CHANGELOG): the Alien Lab painted - tank, embryo, room, Ixxen, Qeth and Ilu.
