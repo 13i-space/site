@@ -3,6 +3,19 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.23 — The new Qeth (Oct 2026)
+No SQL. Qeth is completely redrawn as a female alien (lib/rave/painted/qeth.js), in the Lab crew and the Rave.
+- Face painted per pixel: soft pearl-lilac skin with an iridescent sheen, large violet eyes with liner, full
+  lips that move when she talks, glowing brows and freckles that pulse with the beat.
+- Full violet hair (fringe, framing locks, a long wavy mane) with her five lit fronds rising out of it; the
+  "lights" move still flies them off.
+- An adult figure: a smaller head on a real neck, a fitted scaled bodysuit with a sweetheart neckline, waist and
+  hips, shapely legs in heeled boots, a long tail with a lit fin, sheer hip panels, pearl shoulder caps.
+- Four arms (the middle pair from her sides); no orb.
+- New moves (lib/rave/dancers.js): sway (figure-eight hips), snake (arm wave), roll (body roll, hair toss),
+  plus reworked vogue, lights and raise; new pose fields hip, roll, tail, tailUp, hair, knee.
+- Slightly larger on stage (lib/rave/stage.js). The no-WebGL fallbacks still draw the old Qeth.
+
 ## Update 6.22 — Ixxen, redrawn (Oct 2026)
 No SQL. One character, so the Lab and the Rave both change (lib/rave/painted/ixxen.js).
 - One great eye with a brow ridge (the two small eyes are gone); a real mouth: lips, a dark interior, teeth,
