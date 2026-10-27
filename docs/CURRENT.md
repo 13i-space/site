@@ -4,6 +4,7 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.22 (see CHANGELOG): Ixxen redrawn - one eye, mouth, attached frills and beard, real neck, sleeves, 3D mantle.
 - Update 6.21 (see CHANGELOG): the Alien Lab painted - tank, embryo, room, Ixxen, Qeth and Ilu.
 - Update 6.20 (see CHANGELOG): the Cryptex rendered as a 3D device; the Listening Well as a 3D spacetime instrument.
 - Update 6.19 (see CHANGELOG): Ask Varrow / the Wish Engine redrawn as a live cabinet with the painted Varrow and ambience.

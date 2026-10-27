@@ -3,6 +3,18 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.22 — Ixxen, redrawn (Oct 2026)
+No SQL. One character, so the Lab and the Rave both change (lib/rave/painted/ixxen.js).
+- One great eye with a brow ridge (the two small eyes are gone); a real mouth: lips, a dark interior, teeth,
+  opening a little with the bass.
+- The frills are membrane fins rooted inside the back of the dome (ribbed, lit through); the beard is fleshy
+  barbels rooted under the chin, only their tips sway.
+- One tapered neck with throat rings and a nape tendon, running up into the head, seated in a gold gorget.
+- Arms come out of sleeves with slim gold cuffs, from padded gold-rimmed sockets in the mantle.
+- The mantle as heavy cloth: weave, lit drapes, shadow under the gorget and round the belt, a quilted chest
+  plate with stitching and his single-eye emblem, piping, a heavier hem, a raised buckle.
+- The Lab's rim light on him is closer to the tank's colour (components/LabScene.js).
+
 ## Update 6.21 — The Alien Lab, painted (Oct 2026)
 No SQL.
 - **The tank, per pixel** (lib/labPaint/vat.js, lib/labPaint/vatShader.js): the liquid has depth, swaying light

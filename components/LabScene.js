@@ -899,7 +899,7 @@ function ixPainted(ix, arms) {
     return [from[0] + dx * 0.5 - (dy / L) * off, from[1] + dy * 0.5 + (dx / L) * off];
   });
   const B = t * 1.6;
-  const a = alarm ? 352 : hue, b = alarm ? 4 : (hue + 40) % 360;
+  const a = alarm ? 352 : hue, b = alarm ? 4 : (hue + 15) % 360;
   return {
     p: { lift: 0, lean, sy: 1 + Math.sin(t * 1.4) * 0.004, hem: 0, neck, tilt, look, shades: 0, loupe: ixLoupeK, stiff: 0, front: 0, face: 0, seams: alarm ? 1 : 0.3, arms: tips, elb },
     m: { t, B, ph: B % 1, amp: 0.15, bass: 0.15, high: alarm ? 0.8 : 0.3, level: 0.3, e: 0, drop: 0, build: 0, on: false, pal: { a, b }, halloween: false, cicada: false },
