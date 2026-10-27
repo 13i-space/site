@@ -16,22 +16,26 @@ function mOf(t, talk, pal) {
   return { t, B, ph: B % 1, amp: 0.25 + talk * 0.2, bass: 0.15 + talk * 0.2, high: 0.25 + talk * 0.35, level: 0.3, e: 0, drop: 0, build: 0, on: false, pal, halloween: false, cicada: false };
 }
 
-// Qeth: tall and still; when it speaks, a slow open-handed gesture, the crown lit
+// Qeth: poised, one hand on her hip, the orb cradled low; when she speaks
+// her free hand opens in a slow gesture, her lips move and the crown lights
 function qethPose(t, talk) {
   const g = Math.sin(t * 2.2), n = Math.sin(t * 6.5);
+  const lip = talk ? Math.max(0, Math.sin(t * 12) * 0.45 + Math.sin(t * 7.3) * 0.3) : 0;
   return {
     ...QETH_REST,
     lift: Math.sin(t * 1.3) * 0.6,
     sy: 1 + Math.sin(t * 1.3) * 0.006,
-    head: n * 0.035 * talk + Math.sin(t * 0.4) * 0.03,
-    headY: Math.abs(n) * talk * 0.8,
-    look: [3 + Math.sin(t * 0.5) * 1.5, 0.5],
-    uR: [100 + g * 4 * talk, 110 - talk * (14 + g * 5)],
-    lR: [68 + talk * (8 + g * 3), 108 - talk * (10 + g * 4)],
-    uL: [20, 110 + Math.sin(t * 1.1) * 1.5],
-    orbGlow: 0.25 + talk * 0.5,
+    lean: Math.sin(t * 0.6) * 0.012,
+    head: 0.05 + n * 0.025 * talk + Math.sin(t * 0.4) * 0.03,
+    headY: Math.abs(n) * talk * 0.5,
+    look: [2 + Math.sin(t * 0.5) * 1.2, 0.3],
+    uL: [46, 108 + Math.sin(t * 1.1) * 0.6],
+    uR: [92 + g * 3 * talk, 100 - talk * (16 + g * 5)],
+    lL: [55, 103], lR: [65, 103], orb: [60, 104 + Math.sin(t * 1.6) * 1.2],
+    orbGlow: 0.3 + talk * 0.45,
     crown: 0.25 + talk * (0.45 + 0.3 * Math.abs(n)),
-    happy: 0,
+    happy: 0.35, // a small smile, eyes open
+    mouth: lip,
   };
 }
 // Ilu: bobbing, tentacles drifting; talking it bounces and its mouth moves
@@ -54,7 +58,7 @@ function iluPose(t, talk) {
 
 const SPEC = {
   // frame: the viewBox the drawn one used (x0, y0, w, h), and where its feet go
-  qeth: { box: [0, -10, 120, 160], at: [60, 150], s: 0.98, pose: qethPose, pal: { a: 160, b: 190 } },
+  qeth: { box: [0, -10, 120, 160], at: [60, 150], s: 0.98, pose: qethPose, pal: { a: 300, b: 178 } },
   ilu: { box: [0, -10, 120, 160], at: [60, 150], s: 1.08, pose: iluPose, pal: { a: 320, b: 190 } },
 };
 
