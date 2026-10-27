@@ -1394,6 +1394,7 @@ main {
 .lab-alien { width: 116px; height: 145px; overflow: visible; filter: drop-shadow(0 8px 14px rgba(0,0,0,0.55)); }
 .lab-member .lab-alien { transition: transform .4s cubic-bezier(.3,1.4,.5,1); }
 .lab-member-on .lab-alien { transform: scale(1.04); }
+.lab-painted { display: block; }
 .lab-breathe { animation: lab-breathe 4.2s ease-in-out infinite; transform-origin: 60px 150px; }
 @keyframes lab-breathe { 50% { transform: scaleY(1.015) translateY(-0.6px); } }
 .lab-aura { animation: lab-aura 3.6s ease-in-out infinite; transform-origin: center; }

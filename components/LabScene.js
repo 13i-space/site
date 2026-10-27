@@ -5,6 +5,9 @@ import { drawEmbryo, STAGE_NAMES } from "../lib/embryo";
 import { drawSpecimen, specimenReadout } from "../lib/specimen";
 import { creatureOnly, portraitSrc } from "../lib/portraitArt";
 import { setLabMirror } from "../lib/labMirror";
+import { paintVat } from "../lib/labPaint/vat";
+import { paintRoom } from "../lib/labPaint/room";
+import { paintDancer } from "../lib/rave/painted";
 import { alienClick, alienLock, alienOpen, alienDeny, chime, labZap, labHum, labReveal } from "../lib/alienSound";
 
 // ─────────────────────────────────────────────────────────────────────────
@@ -298,7 +301,7 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
         : now < M.writeUntil ? [SLATE.x + 3, SLATE.y + 2] : [VAT.cx, VAT.cy];
 
       // ═══════════ the bay ═══════════
-      drawRoom(ctx, t, M, alarmOn, hue, jars, frantic);
+      drawRoom(ctx, t, M, alarmOn, hue, jars, frantic, morph);
       // the tank's light on the wall and floor
       const wg = ctx.createRadialGradient(VAT.cx, VAT.cy, 4, VAT.cx, VAT.cy, 46);
       wg.addColorStop(0, tint(60, 0.22 + morph * 0.15 + (alarmOn ? 0.1 : 0))); wg.addColorStop(1, tint(40, 0));
@@ -309,16 +312,41 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
       ctx.save();
       roundRect(ctx, VAT.x, VAT.y, VAT.w, VAT.h, 5); ctx.clip();
       const flick = k > 0.05 && k < 0.25 ? (Math.random() < 0.3 ? 0.3 : 1) : 1;
-      const lg = ctx.createLinearGradient(0, VAT.y, 0, VAT.y + VAT.h);
-      lg.addColorStop(0, tint(55, 0.16 * flick)); lg.addColorStop(1, tint(45, (0.42 + morph * 0.2) * flick));
-      ctx.fillStyle = lg; ctx.fillRect(VAT.x, VAT.y, VAT.w, VAT.h);
-      // the surface
-      const surf = VAT.y + 2.2;
-      ctx.strokeStyle = tint(80, 0.5); ctx.lineWidth = 0.25;
-      ctx.beginPath(); for (let x = VAT.x; x <= VAT.x + VAT.w; x += 1) { const y = surf + Math.sin(x * 0.7 + t * 2) * 0.25 * (1 + frantic * 2); x === VAT.x ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
       const frozen = k > 0 && k < 0.45;
       if (!frozen) frozenAt = t;
       const tt = reduced ? 1 : frozen ? frozenAt : t;
+      // the specimen's jolts (a tap on the glass, the injector)
+      let jx = 0, jy = 0;
+      const jolt = now - M.joltAt;
+      if (jolt > 0 && jolt < 0.6) { jx = Math.sin(jolt * 60) * (0.6 - jolt) * 1.4; }
+      const inj = now - M.inject;
+      if (inj > 0.55 && inj < 1.2) { jy = Math.sin((inj - 0.55) * 30) * (1.2 - inj) * 1.6; }
+      const stare = k > 0.6 && k < 0.88 ? Math.min(1, (k - 0.6) / 0.06) : 0;
+      const wrong = k > 0.7 && k < 0.8 ? Math.sin(((k - 0.7) / 0.1) * Math.PI) : 0;
+      const cocoonK = k > 0.88 ? (k - 0.88) / 0.12 * 0.4 : 0;
+      // the liquid and the embryo, painted per pixel (Update 6.21); the old
+      // drawing if WebGL isn't there
+      const showEm = !!em && (ph.phase === "grow" || ph.phase === "anomaly" || ph.phase === "cocoon");
+      // in the transformation the old body swells and dissolves (as drawMorph's)
+      const mBeat = Math.pow(Math.max(0, Math.sin(t * (2 + morph * 5))), 6);
+      const oldFade = ph.phase === "cocoon" ? 1 - smooth(0.15, 0.6, morph) : 1;
+      const oldScale = ph.phase === "cocoon" ? 1 + smooth(0, 0.4, morph) * 0.9 + mBeat * 0.08 : 1;
+      const painted = paintVat(ctx, VAT, {
+        t: reduced ? 1 : t, hue, env: em ? em.env : "bubbles", alarm: alarmOn, morph, frantic, flick, em, show: showEm,
+        centre: { x: VAT.cx - VAT.x + jx, y: VAT.cy - VAT.y + jy },
+        look: lookRef.current ? { x: lookRef.current.x - VAT.x, y: lookRef.current.y - VAT.y } : null,
+        freeze: frozen, frozenAt, stare, wrong, cocoon: cocoonK, scale: oldScale, fade: oldFade,
+      });
+      if (!painted) {
+        const lg = ctx.createLinearGradient(0, VAT.y, 0, VAT.y + VAT.h);
+        lg.addColorStop(0, tint(55, 0.16 * flick)); lg.addColorStop(1, tint(45, (0.42 + morph * 0.2) * flick));
+        ctx.fillStyle = lg; ctx.fillRect(VAT.x, VAT.y, VAT.w, VAT.h);
+      }
+      const surf = VAT.y + 2.2;
+      if (!painted) {
+        ctx.strokeStyle = tint(80, 0.5); ctx.lineWidth = 0.25;
+        ctx.beginPath(); for (let x = VAT.x; x <= VAT.x + VAT.w; x += 1) { const y = surf + Math.sin(x * 0.7 + t * 2) * 0.25 * (1 + frantic * 2); x === VAT.x ? ctx.moveTo(x, y) : ctx.lineTo(x, y); } ctx.stroke();
+      }
       // what drifts in the liquid
       const env = em ? em.env : "bubbles";
       const burst = now - M.burstAt < 1.2 && now > M.burstAt ? 1 : 0;
@@ -349,11 +377,6 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
         }
       }
       // ── the specimen ── (drawn in pixels: lib/embryo and lib/specimen think in px)
-      let jx = 0, jy = 0;
-      const jolt = now - M.joltAt;
-      if (jolt > 0 && jolt < 0.6) { jx = Math.sin(jolt * 60) * (0.6 - jolt) * 1.4; }
-      const inj = now - M.inject;
-      if (inj > 0.55 && inj < 1.2) { jy = Math.sin((inj - 0.55) * 30) * (1.2 - inj) * 1.6; }
       ctx.save();
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       const S = 38 * u, cx = (VAT.cx + jx) * u, cy = (VAT.cy + jy) * u;
@@ -380,7 +403,7 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
           ctx.beginPath(); ctx.moveTo(0, -0.9); ctx.lineTo(0.7, 0.6); ctx.lineTo(-0.6, 0.5); ctx.fill(); ctx.restore();
         }
       } else if (em && ph.phase === "cocoon") {
-        drawMorph(ctx, off, dpr, cx, cy, S, reduced ? 1 : t, em, tr, morph, since, tint);
+        drawMorph(ctx, off, dpr, cx, cy, S, reduced ? 1 : t, em, tr, morph, since, tint, painted);
       } else if (em) {
         // the anomaly's beats (see docs/WORLD.md - deliberately unexplained)
         if (k > 0.4 && k < 0.62) {
@@ -395,10 +418,8 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
           ctx.strokeStyle = `rgba(185,192,255,${0.6 * (1 - (k - 0.45) / 0.35)})`; ctx.lineWidth = 2;
           ctx.beginPath(); ctx.arc(vx - vw * 0.3, cy, rr, 0, TAU); ctx.stroke();
         }
-        const stare = k > 0.6 && k < 0.88 ? Math.min(1, (k - 0.6) / 0.06) : 0;
-        const wrong = k > 0.7 && k < 0.8 ? Math.sin(((k - 0.7) / 0.1) * Math.PI) : 0;
         const lookPx = lookRef.current ? { x: lookRef.current.x * u, y: lookRef.current.y * u } : null;
-        drawEmbryo(ctx, cx, cy, S, reduced ? 1 : t, em, { look: lookPx, freeze: frozen, frozenAt, stare, wrong, cocoon: k > 0.88 ? (k - 0.88) / 0.12 * 0.4 : 0 });
+        if (!painted) drawEmbryo(ctx, cx, cy, S, reduced ? 1 : t, em, { look: lookPx, freeze: frozen, frozenAt, stare, wrong, cocoon: cocoonK });
       } else {
         drawSpecimen(ctx, cx, cy, S, reduced ? 1 : t, tr, { seed: 3 });
       }
@@ -445,11 +466,25 @@ export default function LabScene({ traits, pulse = 0, nudge = 0, big = false, la
       // ═══════════ Ixxen ═══════════
       const mood = ph.phase === "anomaly" && k > 0.15 && k < 0.92 ? "alarmed" : frantic ? "intent" : revealK >= 0 && revealK < 4 ? "proud" : "work";
       const ix = { t, now, look, mood, hue, alarm: alarmOn, writing: now < M.writeUntil, loupe: frantic || jobs.some((j) => j.kind.startsWith("glass") && now < j.end) };
-      BACK_ARMS.forEach((i) => drawArm(ctx, i, arms[i].p, t, hue, false));
-      drawIxxen(ctx, ix);
-      drawConsole(ctx, t, M, now, alarmOn, hue);
-      drawHolo(ctx, t, M, now, alarmOn, hue, morph);
-      FRONT_ARMS.forEach((i) => { if (i === 1) drawSlate(ctx, arms[1].p, t, M, now); drawArm(ctx, i, arms[i].p, t, hue, i === 1); });
+      // painted (Update 6.21): the Rave's Ixxen, layered around the console;
+      // the old drawing if WebGL isn't there
+      const P = ixPainted(ix, arms);
+      if (P && paintIx(ctx, P, { armsOnly: BACK_ARMS })) {
+        paintIx(ctx, P, { noArms: true });
+        drawConsole(ctx, t, M, now, alarmOn, hue);
+        drawHolo(ctx, t, M, now, alarmOn, hue, morph);
+        paintIx(ctx, P, { armsOnly: [2, 4] });
+        drawSlate(ctx, arms[1].p, t, M, now);
+        paintIx(ctx, P, { armsOnly: [1, 0] });
+      } else {
+        BACK_ARMS.forEach((i) => drawArm(ctx, i, arms[i].p, t, hue, false));
+        drawIxxen(ctx, ix);
+        drawConsole(ctx, t, M, now, alarmOn, hue);
+        drawHolo(ctx, t, M, now, alarmOn, hue, morph);
+        FRONT_ARMS.forEach((i) => { if (i === 1) drawSlate(ctx, arms[1].p, t, M, now); drawArm(ctx, i, arms[i].p, t, hue, i === 1); });
+      }
+
+      drawAir(ctx, t, hue, alarmOn, morph, frantic);
 
       // the instruments, a few times a second
       if (now - lastRead > 0.35) {
@@ -487,18 +522,23 @@ function glow(ctx, x, y, r, color) {
   ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
 }
 
-function drawRoom(ctx, t, M, alarm, hue, jars, frantic) {
-  // back wall
-  const w = ctx.createLinearGradient(0, 0, 0, 92);
-  w.addColorStop(0, "#0a1418"); w.addColorStop(1, "#070912");
-  ctx.fillStyle = w; ctx.fillRect(0, 0, 100, 92);
-  // wall panels
-  ctx.strokeStyle = "rgba(111,195,168,0.08)"; ctx.lineWidth = 0.2;
-  for (let x = 0; x < 100; x += 12.5) { ctx.beginPath(); ctx.moveTo(x, 9); ctx.lineTo(x, 92); ctx.stroke(); }
-  for (let y = 34; y < 92; y += 19) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(100, y); ctx.stroke(); }
-  // rivets
-  ctx.fillStyle = "rgba(111,195,168,0.12)";
-  for (let x = 0; x < 100; x += 12.5) for (let y = 12; y < 92; y += 19) { ctx.beginPath(); ctx.arc(x + 1, y, 0.25, 0, TAU); ctx.fill(); }
+function drawRoom(ctx, t, M, alarm, hue, jars, frantic, morph = 0) {
+  // the wall and floor, painted (Update 6.21); the old flat ones without WebGL
+  const beam = alarm ? 0.6 + 0.4 * Math.sin(t * 14) : 0.25 + 0.2 * Math.sin(t * 2);
+  const painted = paintRoom(ctx, { t, hue, alarm, beacon: beam, glow: morph + frantic * 0.4, vat: VAT });
+  if (!painted) {
+    // back wall
+    const w = ctx.createLinearGradient(0, 0, 0, 92);
+    w.addColorStop(0, "#0a1418"); w.addColorStop(1, "#070912");
+    ctx.fillStyle = w; ctx.fillRect(0, 0, 100, 92);
+    // wall panels
+    ctx.strokeStyle = "rgba(111,195,168,0.08)"; ctx.lineWidth = 0.2;
+    for (let x = 0; x < 100; x += 12.5) { ctx.beginPath(); ctx.moveTo(x, 9); ctx.lineTo(x, 92); ctx.stroke(); }
+    for (let y = 34; y < 92; y += 19) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(100, y); ctx.stroke(); }
+    // rivets
+    ctx.fillStyle = "rgba(111,195,168,0.12)";
+    for (let x = 0; x < 100; x += 12.5) for (let y = 12; y < 92; y += 19) { ctx.beginPath(); ctx.arc(x + 1, y, 0.25, 0, TAU); ctx.fill(); }
+  }
   // ceiling pipes
   ctx.fillStyle = "#0d1220"; ctx.fillRect(0, 0, 100, 2.4);
   [[3.2, 1.1, "#1b2236"], [5.2, 0.7, "#151b2c"]].forEach(([y, r, col]) => {
@@ -509,7 +549,6 @@ function drawRoom(ctx, t, M, alarm, hue, jars, frantic) {
   // the beacon: slow amber, or red in the anomaly
   const bx = 4, by = 9;
   ctx.fillStyle = "#1a1f30"; ctx.fillRect(bx - 1.4, by - 0.6, 2.8, 1.2);
-  const beam = alarm ? 0.6 + 0.4 * Math.sin(t * 14) : 0.25 + 0.2 * Math.sin(t * 2);
   glow(ctx, bx, by + 1.2, alarm ? 16 : 4, alarm ? `rgba(240,70,90,${beam * 0.5})` : `rgba(233,210,154,${beam * 0.5})`);
   ctx.fillStyle = alarm ? "#F04A5A" : "#E9D29A"; ctx.globalAlpha = 0.5 + beam * 0.5;
   ctx.beginPath(); ctx.arc(bx, by + 1.1, 0.9, 0, Math.PI); ctx.fill(); ctx.globalAlpha = 1;
@@ -521,8 +560,13 @@ function drawRoom(ctx, t, M, alarm, hue, jars, frantic) {
       const j = jars[(i + row * 4) % jars.length];
       const x = 2.6 + i * (row ? 5.6 : 7), h = row ? 5.5 : 7.5, wj = row ? 3.4 : 4.4;
       const jy = sy - h;
-      ctx.fillStyle = `hsla(${j.h},60%,45%,0.18)`; roundRect(ctx, x, jy, wj, h, 0.8); ctx.fill();
-      ctx.strokeStyle = "rgba(200,210,255,0.25)"; ctx.lineWidth = 0.15; ctx.stroke();
+      const jg = ctx.createLinearGradient(x, 0, x + wj, 0);
+      jg.addColorStop(0, `hsla(${j.h},55%,22%,0.5)`); jg.addColorStop(0.45, `hsla(${j.h},60%,42%,0.32)`); jg.addColorStop(1, `hsla(${j.h},55%,16%,0.55)`);
+      ctx.fillStyle = jg; roundRect(ctx, x, jy, wj, h, 0.8); ctx.fill();
+      ctx.strokeStyle = "rgba(200,210,255,0.3)"; ctx.lineWidth = 0.15; ctx.stroke();
+      ctx.fillStyle = `hsla(${j.h},70%,70%,0.35)`; ctx.fillRect(x + 0.3, jy + h * 0.14, wj - 0.6, 0.18); // the liquid's surface
+      ctx.fillStyle = "rgba(255,255,255,0.22)"; ctx.fillRect(x + wj * 0.18, jy + 0.6, 0.35, h - 1.4); // glass highlight
+      ctx.fillStyle = "rgba(255,255,255,0.08)"; ctx.fillRect(x + wj * 0.72, jy + 0.9, 0.2, h - 2);
       ctx.fillStyle = "#2a3048"; ctx.fillRect(x - 0.2, jy - 0.7, wj + 0.4, 0.8);
       // something curled inside, glowing faintly
       ctx.save(); ctx.translate(x + wj / 2, jy + h * 0.55);
@@ -549,11 +593,13 @@ function drawRoom(ctx, t, M, alarm, hue, jars, frantic) {
   }
   ctx.restore();
   // the floor
-  const f = ctx.createLinearGradient(0, 90, 0, 100);
-  f.addColorStop(0, "#0b0e1c"); f.addColorStop(1, "#05060d");
-  ctx.fillStyle = f; ctx.fillRect(0, 90, 100, 10);
-  ctx.strokeStyle = "rgba(111,195,168,0.12)"; ctx.lineWidth = 0.15;
-  for (let x = -20; x < 120; x += 7) { ctx.beginPath(); ctx.moveTo(50 + (x - 50) * 0.7, 90); ctx.lineTo(x, 100); ctx.stroke(); }
+  if (!painted) {
+    const f = ctx.createLinearGradient(0, 90, 0, 100);
+    f.addColorStop(0, "#0b0e1c"); f.addColorStop(1, "#05060d");
+    ctx.fillStyle = f; ctx.fillRect(0, 90, 100, 10);
+    ctx.strokeStyle = "rgba(111,195,168,0.12)"; ctx.lineWidth = 0.15;
+    for (let x = -20; x < 120; x += 7) { ctx.beginPath(); ctx.moveTo(50 + (x - 50) * 0.7, 90); ctx.lineTo(x, 100); ctx.stroke(); }
+  }
   // the reservoir, on the right
   const rx = 87.5, ry = 30, rw = 9.5, rh = 50;
   ctx.fillStyle = "#121628"; ctx.fillRect(rx - 1, ry + rh, rw + 2, 10); ctx.fillRect(rx - 1, ry - 3, rw + 2, 3);
@@ -592,6 +638,33 @@ function drawRoom(ctx, t, M, alarm, hue, jars, frantic) {
   });
   // a valve on the pipe into the tank's base
   ctx.strokeStyle = "#1c2338"; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(VALVE.x, VALVE.y); ctx.lineTo(VAT.x + 4, VALVE.y); ctx.stroke();
+}
+
+// the air of the bay (Update 6.21): a cone of light down from the tank's
+// lamps, dust drifting through it, and the dark gathering at the edges
+const DUST = Array.from({ length: 46 }, (_, i) => ({ x: (i * 37.7) % 100, y: (i * 61.3) % 92, s: 0.12 + ((i * 13) % 7) * 0.035, v: 0.4 + ((i * 7) % 5) * 0.15, p: i * 1.7 }));
+function drawAir(ctx, t, hue, alarm, morph, frantic) {
+  const col = (l, a) => (alarm ? `rgba(240,90,110,${a})` : `hsla(${hue},70%,${l}%,${a})`);
+  ctx.save();
+  ctx.globalCompositeOperation = "lighter";
+  // the cone over and around the tank
+  ctx.save(); ctx.translate(VAT.cx, VAT.cy); ctx.scale(1, 1.6);
+  const cg = ctx.createRadialGradient(0, 0, 4, 0, 0, 30);
+  cg.addColorStop(0, col(70, 0.07 + morph * 0.06)); cg.addColorStop(1, col(60, 0));
+  ctx.fillStyle = cg; ctx.fillRect(-32, -32, 64, 64); ctx.restore();
+  // dust, lit when it drifts near the light
+  DUST.forEach((d) => {
+    const y = (((d.y - t * d.v) % 92) + 92) % 92, x = d.x + Math.sin(t * 0.3 + d.p) * 2;
+    const near = Math.exp(-Math.hypot(x - VAT.cx, (y - VAT.cy) * 0.7) / 22);
+    const a = (0.15 + 0.6 * near) * (0.6 + 0.4 * Math.sin(t * 1.3 + d.p)) * (1 + frantic);
+    ctx.fillStyle = col(82, Math.min(0.9, a * 0.6));
+    ctx.beginPath(); ctx.arc(x, y, d.s, 0, TAU); ctx.fill();
+  });
+  ctx.restore();
+  // the edges of the room fall into the dark
+  const vg = ctx.createRadialGradient(56, 50, 30, 56, 50, 78);
+  vg.addColorStop(0, "rgba(2,3,8,0)"); vg.addColorStop(1, "rgba(2,3,8,0.55)");
+  ctx.fillStyle = vg; ctx.fillRect(0, 0, 100, 100);
 }
 
 function drawVatBack(ctx, t, tint) {
@@ -797,6 +870,48 @@ function drawSlate(ctx, p, t, M, now) {
 
 // ─────────── Ixxen ───────────
 const SKIN = ["#A9B2E0", "#6E77AE", "#2F3466"];
+
+// the painted Ixxen (lib/rave/painted/ixxen.js), posed from the Lab's state.
+// Its body leans about its feet at (23, 80); the arms' tips live in the room,
+// so they're turned back into its frame.
+let ixLoupeK = 0, ixBroken = false;
+function ixPainted(ix, arms) {
+  if (ixBroken) return null;
+  const { t, look, mood, hue, alarm } = ix;
+  const lean = mood === "alarmed" ? -0.12 : mood === "intent" ? 0.1 : mood === "proud" ? -0.04 : 0.04 + Math.sin(t * 0.5) * 0.03;
+  const neck = mood === "intent" ? 0.45 : mood === "proud" ? -0.3 : 0;
+  const neckTop = [28.2 + neck * 3.2, 33.5 + neck * 1.2];
+  const toLook = Math.atan2(look[1] - neckTop[1], look[0] - neckTop[0]);
+  let tilt = clamp(toLook * 0.35, -0.35, 0.5);
+  if (mood === "alarmed") tilt = -0.45 + Math.sin(t * 25) * 0.03;
+  if (mood === "intent") tilt = 0.42;
+  if (mood === "proud") tilt = -0.15;
+  if (ix.writing) tilt = 0.55;
+  ixLoupeK += ((ix.loupe ? 1 : 0) - ixLoupeK) * 0.15;
+  const ca = Math.cos(-lean), sa = Math.sin(-lean);
+  const local = ([x, y]) => { const dx = x - 23, dy = y - 80; return [23 + ca * dx - sa * dy, 80 + sa * dx + ca * dy]; };
+  const tips = arms.map((a) => local(a.p));
+  const elb = tips.map((tip, i) => {
+    const from = SHOULDERS[i];
+    const dx = tip[0] - from[0], dy = tip[1] - from[1], L = Math.hypot(dx, dy) || 1;
+    const wob = Math.sin(t * 2.1 + i * 1.7) * Math.min(1.6, L * 0.06);
+    const off = L * 0.22 * BEND[i] + wob;
+    return [from[0] + dx * 0.5 - (dy / L) * off, from[1] + dy * 0.5 + (dx / L) * off];
+  });
+  const B = t * 1.6;
+  const a = alarm ? 352 : hue, b = alarm ? 4 : (hue + 40) % 360;
+  return {
+    p: { lift: 0, lean, sy: 1 + Math.sin(t * 1.4) * 0.004, hem: 0, neck, tilt, look, shades: 0, loupe: ixLoupeK, stiff: 0, front: 0, face: 0, seams: alarm ? 1 : 0.3, arms: tips, elb },
+    m: { t, B, ph: B % 1, amp: 0.15, bass: 0.15, high: alarm ? 0.8 : 0.3, level: 0.3, e: 0, drop: 0, build: 0, on: false, pal: { a, b }, halloween: false, cicada: false },
+  };
+}
+function paintIx(ctx, P, extra) {
+  ctx.save(); ctx.translate(23, 80);
+  const ok = paintDancer("ixxen", ctx, { ...P.p, ...extra }, P.m);
+  ctx.restore();
+  if (!ok) ixBroken = true;
+  return ok;
+}
 
 function drawIxxen(ctx, ix) {
   const { t, look, mood, hue, alarm } = ix;
@@ -1044,7 +1159,7 @@ function drawArm(ctx, i, tip, t, hue, holdsSlate) {
 // in a cocoon any more: it changes in front of you. The old body swells and
 // dissolves; ghosts of other bodies it could have been flicker through;
 // the new form grows in, glitching, its shape coming from the answers.
-function drawMorph(ctx, off, scale, cx, cy, S, t, em, tr, m, since, tint) {
+function drawMorph(ctx, off, scale, cx, cy, S, t, em, tr, m, since, tint, paintedOld = false) {
   const all = { ...tr, known: { body: true, limbs: true, move: true, skin: true, sense: true, mind: true } };
   // a pulse of light that quickens as it goes
   const beat = Math.pow(Math.max(0, Math.sin(t * (2 + m * 5))), 6);
@@ -1053,7 +1168,7 @@ function drawMorph(ctx, off, scale, cx, cy, S, t, em, tr, m, since, tint) {
   ctx.fillStyle = halo; ctx.fillRect(cx - S, cy - S, S * 2, S * 2);
   // the old body: swelling, splitting, dissolving
   const a0 = 1 - smooth(0.15, 0.6, m);
-  if (a0 > 0.01) {
+  if (a0 > 0.01 && !paintedOld) {
     ctx.save(); ctx.globalAlpha = a0;
     const sc = 1 + smooth(0, 0.4, m) * 0.9 + beat * 0.08;
     const split = smooth(0.1, 0.45, m) * 2.2;

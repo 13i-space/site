@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { PaintedMember } from "./PaintedCrew";
 
 // The Alien Lab's crew (Update 5.55). The Lab isn't a human lab: it's run by
 // aliens, and you're a guest at their bench. The room itself - the tank,
@@ -222,7 +223,7 @@ export function LabCrew({ line }) {
   return (
     <div className="lab-crew">
       <div className={`lab-member ${who === "qeth" ? "lab-member-on" : ""}`}>
-        <Qeth talking={who === "qeth"} />
+        <PaintedMember who="qeth" talking={who === "qeth"} fallback={<Qeth talking={who === "qeth"} />} />
         <div className="mono lab-name">OVERSEER QETH</div>
       </div>
       <div className={`lab-bubble lab-bubble-${who}`} aria-live="polite">
@@ -230,7 +231,7 @@ export function LabCrew({ line }) {
         <div className="lab-bubble-text">{shown}</div>
       </div>
       <div className={`lab-member ${who === "ilu" ? "lab-member-on" : ""}`}>
-        <Ilu talking={who === "ilu"} />
+        <PaintedMember who="ilu" talking={who === "ilu"} fallback={<Ilu talking={who === "ilu"} />} />
         <div className="mono lab-name">TECHNICIAN ILU</div>
       </div>
     </div>
