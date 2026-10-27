@@ -53,8 +53,9 @@ export function crewLine(stage, { questionId, answered, big, n = 0 }) {
 }
 
 // the two of them, drawn in code (Update 5.63: much more of them)
-// Qeth: the Overseer - tall, robed, four thin arms, three eyes, a crown of
-// lit filaments. Ilu: the Technician - a floating orb with one great eye,
+// Qeth: the Overseer - (painted, Update 6.23) slender, pearl-lilac, great violet
+// eyes, a crown of lit fronds, four arms, a pearl lab coat. The SVG below is the
+// old look, kept only as the no-WebGL fallback. Ilu: the Technician - a floating orb with one great eye,
 // two antennae and seven tentacles, one of which is always holding a tool.
 function Qeth({ talking }) {
   return (
