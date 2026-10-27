@@ -3,6 +3,22 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.21 — The Alien Lab, painted (Oct 2026)
+No SQL.
+- **The tank, per pixel** (lib/labPaint/vat.js, lib/labPaint/vatShader.js): the liquid has depth, swaying light
+  shafts, caustics, motes and the specimen's shadow; the embryo is painted from the same state as lib/embryo.js
+  (same seed, motion and anatomy): light through its membrane, veins, cytoplasm, glowing organelles, buds,
+  tendrils, its skin type (cilia, plates, bioluminescent, glass), eye-spots that find you, the anomaly's wrong
+  shape, a silk-sheened cocoon; in the transformation the old body swells and dissolves.
+- **The room** (lib/labPaint/room.js): brushed, bevelled, riveted wall panels with grime and vents, lit by the
+  tank and the beacon; wet floor tiles reflecting the tank; jars with glass highlights; dust and a vignette.
+- **Ixxen is the Rave's painted Ixxen**, layered around the console (back arms, body, console, front arms, slate);
+  the loupe swings over its eye when it peers (lib/rave/painted/ixxen.js: armsOnly / noArms / loupe).
+- **Qeth and Ilu are painted** (components/PaintedCrew.js): idling, and talking on their lines.
+- Every piece falls back to the old drawing without WebGL.
+- Files: lib/labPaint/* , components/PaintedCrew.js (new); components/LabScene.js, components/AlienLab.js,
+  lib/rave/painted/ixxen.js, app/globals.css.
+
 ## Update 6.20 — The Cryptex and the Listening Well, rebuilt (Oct 2026)
 No SQL.
 - **The Cryptex is a 3D device** (components/CryptexDevice.js, lib/cryptexShader.js): a raymarched cylinder of
