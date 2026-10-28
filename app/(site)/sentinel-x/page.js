@@ -20,6 +20,7 @@ const GAME_NAMES = {
   xenoklash: "XenoKlash",
   xenowing: "XenoWing",
   xenokart: "XenoKart",
+  "alien-combat": "13i Alien Combat",
   "deep-signal": "13i: The Deep Signal",
   sixteen: "SIXTEEN",
   tacet: "TACET",

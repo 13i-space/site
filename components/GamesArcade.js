@@ -19,6 +19,10 @@ const ARCADE = [
   { href: "/games/xenowing", title: "XenoWing", art: "wing", color: "#6FE3C8", tag: "flying", blurb: "Fly Ixxen, Ilu, Qeth and Varrow from the Rave across five worlds, chase or cockpit view, and take down the Methane Wyrm." },
   { href: "/games/xenokart", title: "XenoKart", art: "kart", color: "#5FF0DC", tag: "racing", blurb: "Alien kart racing across nine worlds and two cups. Snapping plants, lightning, a road under the ice, raiders on the ridges." },
 ];
+// Update 6.27: games being built in the open - playable, unfinished, greybox on purpose.
+const WORKSHOP = [
+  { href: "/games/alien-combat", title: "13i Alien Combat", art: "combat", color: "#8B95F6", tag: "in the workshop", blurb: "A third-person alien hero shooter, built in the open. Step 1: the Tidal Basin arena, movement and camera. Brontor and Skitterkin are on their way." },
+];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
 
 // ── the little screens ──
@@ -265,6 +269,25 @@ export function GameScreen({ art, color }) {
           <circle cx="80" cy="50" r="4" fill="none" stroke="#B9C0FF" strokeWidth="1.2" />
         </svg>
       );
+    case "combat":
+      // over the shoulder in the Tidal Basin: a grid floor, the moat's glow, the island, a crosshair
+      return (
+        <svg {...common}>
+          <rect width="160" height="100" fill="#0A0B1C" />
+          {[[14, 8], [40, 16], [72, 6], [104, 14], [138, 9], [150, 22]].map(([x, y], i) => <circle key={i} className="gs-blip" style={{ animationDelay: `${i * 0.6}s` }} cx={x} cy={y} r="0.7" fill="#fff" />)}
+          <path d="M0 100 L0 52 L160 52 L160 100 Z" fill="#1E2250" />
+          {[-60, -30, 0, 30, 60].map((d) => <path key={d} d={`M${80 + d * 0.5} 52 L${80 + d * 2.4} 100`} stroke={c} strokeWidth="0.4" opacity="0.35" />)}
+          {[60, 70, 84].map((y) => <path key={y} d={`M0 ${y} H160`} stroke={c} strokeWidth="0.4" opacity="0.3" />)}
+          <path d="M44 56 L116 56 L124 62 L36 62 Z" fill="#2A4F9E" opacity="0.8" />
+          <rect x="64" y="46" width="32" height="12" fill="#4B5290" />
+          <path d="M74 58 L86 58 L90 70 L70 70 Z" fill="#6E76B8" />
+          <rect x="16" y="34" width="12" height="28" fill="#3A3F78" />
+          <rect x="132" y="34" width="12" height="28" fill="#3A3F78" />
+          <rect x="44" y="64" width="16" height="36" rx="8" fill={c} />
+          <circle cx="86" cy="52" r="3.4" fill="none" stroke="#E9EBFF" strokeWidth="0.7" />
+          <circle cx="86" cy="52" r="0.7" fill="#E9EBFF" />
+        </svg>
+      );
     default:
       return <svg {...common}><circle cx="80" cy="50" r="20" fill={c} opacity="0.3" /></svg>;
   }
@@ -405,6 +428,14 @@ export default function GamesArcade() {
       </div>
       <div className="ga-grid ga-grid-4">
         {ARCADE.map((g, i) => <Cabinet key={g.href} {...g} i={i} />)}
+      </div>
+
+      <div className="ga-row-head">
+        <h2>In the workshop</h2>
+        <span className="mono">playable &middot; unfinished &middot; changing</span>
+      </div>
+      <div className="ga-grid">
+        {WORKSHOP.map((g, i) => <Cabinet key={g.href} {...g} i={i} />)}
       </div>
 
       <div className="ga-row-head">

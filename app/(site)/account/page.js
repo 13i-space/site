@@ -110,6 +110,7 @@ export default async function AccountPage() {
     xenoklash: { label: "XenoKlash", href: "/games/xenoklash" },
     xenowing: { label: "XenoWing", href: "/games/xenowing" },
     xenokart: { label: "XenoKart", href: "/games/xenokart" },
+    "alien-combat": { label: "13i Alien Combat", href: "/games/alien-combat" },
     "deep-signal": { label: "13i: The Deep Signal", href: "/games/deep-signal" },
     sixteen: { label: "SIXTEEN", href: "/games/sixteen" },
     tacet: { label: "TACET", href: "/games/tacet" },
