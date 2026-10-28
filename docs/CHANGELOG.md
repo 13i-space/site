@@ -3,6 +3,27 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.26 — Mission Control: Deep Space (Oct 2026)
+No SQL. No keys. A fourth, full-width console under Mission Control's desks: DEEP.
+- **The solar system from above** (components/DeepSpaceMap.js): the Sun, the planets and Pluto on their orbits
+  (worked out from JPL's published orbital elements, lib/solarSystem.js), the asteroid and Kuiper belts, the
+  termination shock and the heliopause, and 15 deep-space missions where they are today. Distance from the Sun
+  is on a log scale so the inner planets and the Voyagers share one screen; directions are true.
+- **Interactive**: drag to pan, scroll or pinch to zoom, Inner / Planets / Interstellar views, labels on/off.
+  Click a mission (on the map or in the list) for its agency, launch date and years in space, distance from the
+  Sun and from Earth, how long its signal takes to reach us, its objective and what it is doing now; its path
+  over the past year and a dashed line home to Earth are drawn.
+- **Live positions from NASA JPL Horizons** (lib/deepSpace.js): fetched on the server, every 6 hours, all at
+  once with a 6-second cap so the page is never held up. A reply only counts if the spacecraft name Horizons
+  returns matches the mission. Missions at a planet (JWST at L2, the Mars fleet) use the planet's position;
+  if Horizons can't be reached the Voyagers and New Horizons fall back to rough positions marked approximate,
+  and the rest are listed without a position.
+- Missions: Voyager 1 and 2, New Horizons, Europa Clipper, JUICE, BepiColombo, Parker Solar Probe, Solar Orbiter,
+  Psyche, Lucy, Hera, OSIRIS-APEX, Hayabusa2, JWST, the Mars fleet. Juno is left out: whether its mission
+  continued past September 2025 couldn't be confirmed.
+- Files: components/DeepSpaceMap.js, lib/solarSystem.js, lib/deepSpace.js (new); components/MissionControl.js,
+  app/(site)/galaxy/mission-control/page.js, lib/version.js.
+
 ## Update 6.25 — Mission Control, the control room (Oct 2026)
 No SQL. Mission Control (/galaxy/mission-control) rebuilt after its first night live, when most channel feeds
 didn't play.
