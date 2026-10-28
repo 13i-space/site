@@ -248,9 +248,9 @@ function PageThree({ launches = [] }) {
             <div className="gz-head">Mission Control Opens Its Doors</div>
             <div className="gz-byline">The live room &middot; open day and night</div>
             <p className="gz-sum">
-              Earth turns under the space station in real time, in ordinary light and in 4K, while cameras keep watch on the launch
-              pads. Mission Control puts every live feed on one floor, beside the station&rsquo;s position over the planet and a
-              countdown to every launch on the schedule. When a rocket is about to fly, its pad takes the main screen.
+              Earth turns under the space station in real time, in ordinary light and in 4K, while cameras keep watch on Starbase
+              and the Florida pads. Mission Control puts every live feed on one wall, over consoles tracking the station across the
+              planet and counting down every launch on the schedule. When a rocket is about to fly, its pad takes the big screen.
             </p>
             <span className="gz-mc-enter">Step into Mission Control &rarr;</span>
           </Link>
@@ -275,18 +275,14 @@ function PageThree({ launches = [] }) {
           {FEEDS.map((f) => (
             <Link key={f.id} href="/galaxy/mission-control" className="gz-story gz-brief">
               <div className="gz-head">{f.name}</div>
-              <div className="gz-byline">{f.code} &middot; {f.source}</div>
+              <div className="gz-byline">{f.code} &middot; {f.blurb}</div>
             </Link>
           ))}
-          <Link href="/galaxy/mission-control" className="gz-story gz-brief">
-            <div className="gz-head">Signal 13i, over the view</div>
-            <div className="gz-byline">Signal mode &middot; the feeds fall silent</div>
-          </Link>
         </div>
       </section>
 
       <footer className="gz-foot">
-        Launch schedule from The Space Devs&rsquo; Launch Library; dates move often. The pictures play from NASA, Sen and NASASpaceflight on YouTube.
+        Launch schedule from The Space Devs&rsquo; Launch Library; dates move often. The pictures play from their owners&rsquo; channels on YouTube.
       </footer>
     </article>
   );
@@ -318,7 +314,7 @@ const CSS = `
 .gz-mc-lead:hover .gz-mc-enter { background: #16110a; color: #efe4cc; }
 .gz-mc-lead:hover .gz-head { text-decoration: none; }
 .gz-mc-plate { border-color: #16110a; }
-.gz-mc-feeds { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0 22px; }
+.gz-mc-feeds { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0 22px; }
 .gz-mc-feeds .gz-brief { border-bottom: none; border-left: 1px solid rgba(36,29,18,0.4); padding-left: 12px; }
 .gz-mc-feeds .gz-brief:first-child { border-left: none; padding-left: 0; }
 @media (max-width: 760px) { .gz-mc-feeds { grid-template-columns: 1fr 1fr; } .gz-mc-feeds .gz-brief { border-left: none; padding-left: 0; border-bottom: 1px solid rgba(36,29,18,0.4); } }

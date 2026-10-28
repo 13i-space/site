@@ -3,6 +3,26 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.25 — Mission Control, the control room (Oct 2026)
+No SQL. Mission Control (/galaxy/mission-control) rebuilt after its first night live, when most channel feeds
+didn't play.
+- **Pinned streams with backups** (lib/missionFeeds.js): every screen has a list of sources, tried in order -
+  Paul's picks first (ISS 24/7 4QJEibrt9B8, Starbase mhJRzQsLZGg, NASA live & Starship Jm8wRjD3xVA), then
+  other streams, then the channel's live slot as a last resort. A screen moves to the next source on its own
+  when one errors, ends, turns out to be a recording, or never starts (30 s); when all are out it shows the
+  13i standby view and starts over a minute later.
+- **Five screens**: ISS-LIVE, ORBIT-4K (Sen), STARBASE, NASA-LIVE, CAPE-CAM (LabPadre).
+- **A full control room**: the page takes the whole window (Lyra steps out). A clock wall (day of year + UTC,
+  Central, next launch T−, 13i launch T−), a wall of screens - one big, two either side, all live on a
+  computer (side screens muted; click one to swap it onto the big screen), stills on a phone - and three
+  console monitors on the desk: TRACK (the ISS map), LAUNCH (the schedule as a table, with a button to put the
+  right pad on the big screen) and FEEDS (every screen's state and which source it's on).
+- Launch alerts now pick the screen by launch site (Texas → STARBASE, Florida → CAPE-CAM, NASA → NASA-LIVE).
+- **Signal 13i is an easter egg**: a dim ring-eye in the corner of the FEEDS console. It mutes the feeds and
+  plays Album 1 over the big screen, with the waveform.
+- Gazette page 3 lists the five screens; the Signal card is gone.
+- Files: components/MissionControl.js, lib/missionFeeds.js, app/(site)/galaxy/news/page.js, lib/version.js.
+
 ## Update 6.24 — Mission Control (Oct 2026)
 No SQL. No keys. A new page, /galaxy/mission-control, reached from a new page 3 of the Galactic Gazette.
 - **Mission Control** (components/MissionControl.js): one main screen playing a YouTube channel's live stream,
