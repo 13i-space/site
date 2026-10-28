@@ -6,6 +6,7 @@ import FullscreenButton from "./FullscreenButton";
 import { FEEDS, SIGNAL_TRACKS, embedUrl, watchUrl, thumbUrl, feedForLaunch } from "../lib/missionFeeds";
 import { drawArt, drawStandby } from "../lib/missionArt";
 import { landCells, LAND_W, LAND_H } from "../lib/earthLand";
+import DeepSpaceMap, { DEEP_CSS } from "./DeepSpaceMap";
 
 // Mission Control (Update 6.24, rebuilt as a full control room in 6.25):
 // the whole window. A wall of screens - one big, four smaller, all live on a
@@ -396,7 +397,7 @@ function IssTracker() {
 }
 
 // ---------- the room ----------
-export default function MissionControl({ launches = [] }) {
+export default function MissionControl({ launches = [], deep = {} }) {
   const rootRef = useRef(null);
   const wide = useMedia("(min-width: 900px)");
   const [order, setOrder] = useState(FEEDS.map((f) => f.id));
@@ -486,7 +487,7 @@ export default function MissionControl({ launches = [] }) {
 
   return (
     <div className="mc-root" ref={rootRef}>
-      <style dangerouslySetInnerHTML={{ __html: CSS }} />
+      <style dangerouslySetInnerHTML={{ __html: CSS + DEEP_CSS }} />
 
       {/* the clock wall */}
       <header className="mc-bar">
@@ -600,7 +601,12 @@ export default function MissionControl({ launches = [] }) {
         </Console>
       </div>
 
-      <p className="mc-credit">Streams play from their owners&rsquo; YouTube channels. Launch schedule: The Space Devs. Station position: wheretheiss.at.</p>
+      {/* the big console under the desks: the whole solar system (Update 6.26) */}
+      <Console code="DEEP" title="Deep space · where the missions are" right="Click a mission" className="mc-con-deep">
+        <DeepSpaceMap deep={deep} />
+      </Console>
+
+      <p className="mc-credit">Streams play from their owners&rsquo; YouTube channels. Launch schedule: The Space Devs. Station position: wheretheiss.at. Spacecraft positions: NASA JPL Horizons.</p>
       <audio ref={audioRef} onEnded={nextTrack} preload="none" />
     </div>
   );
@@ -737,6 +743,7 @@ body:has(.mc-root) .lyra-root, body:has(.mc-root) .lyra-tether { display: none !
 .mc-egg svg { width: 14px; height: 16px; }
 .mc-egg:hover { color: #8B95F6; }
 .mc-egg.on { color: #E8CFC0; border-color: rgba(232,207,192,.4); box-shadow: 0 0 10px rgba(232,207,192,.3); }
+.mc-con-deep { margin-top: 4px; }
 .mc-credit { margin: 2px 0 0; font-size: 11px; color: #3A3E75; text-align: center; }
 
 @media (max-width: 1200px) { .mc-consoles { grid-template-columns: 1fr 1fr; } .mc-con-feeds { grid-column: 1 / -1; } }
