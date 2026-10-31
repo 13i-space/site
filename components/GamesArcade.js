@@ -22,7 +22,7 @@ const ARCADE = [
 // Update 6.27: games being built in the open - playable, unfinished, greybox on purpose.
 // Update 6.28: SalienT is the current build; the step-1 build stays playable alongside it.
 const WORKSHOP = [
-  { href: "/games/salient", title: "SalienT", art: "combat", color: "#B9C0FF", tag: "in the workshop", blurb: "The 13i alien hero shooter. Brontor and Skitter, team fights up to 4 v 4, a control point in the Tidal Basin and a Relic to push through Sunscar Rift. Watch out for the crawlers." },
+  { href: "/games/salient", title: "SalienT", art: "combat", color: "#B9C0FF", tag: "in the workshop", blurb: "The 13i alien hero shooter. Brontor, Skitter and Chephro the healer; team fights up to 4 v 4, a control point in the Tidal Basin and a Relic to push through Sunscar Rift. Watch out for the crawlers." },
   { href: "/games/alien-combat", title: "13i Alien Combat", art: "combat", color: "#8B95F6", tag: "step 1 build", blurb: "Where SalienT started: the Tidal Basin arena, movement and camera. Kept here to show how far it has come." },
 ];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
