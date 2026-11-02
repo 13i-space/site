@@ -3,6 +3,19 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.31 — SalienT v0.25: Temple of 13i (Nov 2026)
+No SQL. No keys. A third SalienT arena and a 6 v 6 mode.
+- **Temple of 13i**: a huge two-floor water temple (about three times the length of the other arenas): side
+  galleries, a great stepped pyramid crowned by a giant 13i "i", pools fed by waterfalls from the second floor,
+  idols, alien hieroglyphs, alien plants and glowing water creatures. Its own music score, "Jade Cascade".
+- **Vault raid**: each base has three vault doors (contents shuffled every match). One hides the team's 13i
+  symbol: break that door and stand on the symbol for 3 seconds to win. One hides the Temple Warden, a boss
+  twice Brontor's size who charges the nearest enemy and never comes back once beaten. One hides three Crawler
+  centipedes that defend their base; only the front Crawler of each can be hurt.
+- **6 v 6** match mode. Bots break doors, defend exposed symbols and route round the new layout.
+- public/games/salient/ is now a single self-contained index.html (models built in); the old assets/ folder
+  was removed. The game page asks for ?v=0.25.0.
+
 ## Update 6.26 — Mission Control: Deep Space (Oct 2026)
 No SQL. No keys. A fourth, full-width console under Mission Control's desks: DEEP.
 - **The solar system from above** (components/DeepSpaceMap.js): the Sun, the planets and Pluto on their orbits
