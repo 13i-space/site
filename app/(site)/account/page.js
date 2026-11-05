@@ -8,6 +8,7 @@ import EditProfile from "../../../components/EditProfile";
 import { isSentinelUser } from "../../../lib/sentinel";
 import { isBriefUser } from "../../../lib/story/briefAccess";
 import { isFamilyPlayer } from "../../../lib/familyGame";
+import { isSalientTester } from "../../../lib/salientTesters";
 import YourSpecies from "../../../components/YourSpecies";
 import FirstAssignment from "../../../components/FirstAssignment";
 import { gatherVisitor } from "../../../lib/visitorContext";
@@ -99,6 +100,8 @@ export default async function AccountPage() {
   const storyBrief = isBriefUser(profile?.username);
   // The family game (lib/familyGame.js): a hidden button for the family only.
   const familyGame = isFamilyPlayer(profile?.username) && !sentinel;
+  // SalienT play-testers (lib/salientTesters.js): a shortcut to the game and how to play online.
+  const salientTester = isSalientTester(profile?.username);
 
   // Both label and the game's own page, so a score in this list can link
   // straight back to where it was earned (same idea as the Stories Read
@@ -163,6 +166,19 @@ export default async function AccountPage() {
               Sentinel-X &rarr;
             </div>
           </Link>
+        )}
+        {salientTester && (
+          <a
+            href="/games/salient"
+            className="panel"
+            style={{ display: "block", maxWidth: 420, margin: "0 auto 18px", borderColor: "#3f7f95", background: "rgba(110,230,255,0.06)", textDecoration: "none" }}
+          >
+            <div className="mono" style={{ fontSize: 10, color: "#9fe9ff", letterSpacing: "1.5px" }}>PLAY-TESTER &middot; SALIENT</div>
+            <div style={{ fontFamily: "'Fraunces', Georgia, serif", fontStyle: "italic", fontSize: 22, color: "#DCDFFF", marginTop: 4 }}>
+              Play SalienT online &rarr;
+            </div>
+            <div style={{ fontSize: 12, color: "#A7ADD9", marginTop: 6 }}>One of you clicks Play online with friends, then Host a room, and shares the 4-letter code; the others Join with it. Up to 3 players, bots fill the teams.</div>
+          </a>
         )}
         {familyGame && (
           <a

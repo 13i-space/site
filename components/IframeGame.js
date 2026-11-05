@@ -6,6 +6,7 @@ import Leaderboard from "./Leaderboard";
 import { playerTwoAt, playerTwoEnd } from "../lib/lyraAssist";
 import { albums, remixes, parseTrack, songSrc } from "../lib/musicReleases";
 import { recordGamePlay, recordHighScore, recordDailyScore, getPersonalBest, celebrateNewBest } from "../lib/trackActivity";
+import { salientRooms } from "../lib/salientRooms";
 
 const MAX_SCORE = 1000000; // sanity cap - far above anything a real run reaches
 
@@ -34,6 +35,9 @@ export default function IframeGame({ game, src, title, note = "click the game to
   const [refreshKey, setRefreshKey] = useState(0);
   const frameRef = useRef(null);
   const wrapRef = useRef(null);
+  // SalienT's online rooms (lib/salientRooms.js), made on first use
+  const roomsRef = useRef(null);
+  useEffect(() => () => roomsRef.current?.closeAll(), []);
 
   useEffect(() => {
     getPersonalBest(game).then(setBest);
@@ -87,6 +91,11 @@ export default function IframeGame({ game, src, title, note = "click the game to
     if (msg.type === "rumble") {
       // the game asked for rumble but can't reach the controller from inside the frame: play it from here
       try { const p = Array.from(navigator.getGamepads ? navigator.getGamepads() : []).find((g) => g && g.connected); p?.vibrationActuator?.playEffect?.("dual-rumble", { duration: Math.min(600, Number(msg.ms) || 160), strongMagnitude: Math.min(1, Number(msg.strong) || 0.5), weakMagnitude: Math.min(1, Number(msg.weak) || 0.4) }); } catch (e) {}
+      return;
+    }
+    if (msg.type === "net" && game === "salient") {
+      if (!roomsRef.current) roomsRef.current = salientRooms(() => frameRef.current);
+      roomsRef.current.handle(msg);
       return;
     }
     if (msg.type === "songs-toggle") { if (songs) setSongs(!songsOnRef.current); return; }
