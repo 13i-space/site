@@ -1,5 +1,7 @@
 import IframeGame from "../../../../components/IframeGame";
 
+// Update 6.38: SalienT 0.33: Deathmatch, a downed alien ship arena with free-for-all scoring (new textures in
+// public/games/salient/assets as .ktx2); jumps raised.
 // Update 6.37: SalienT 0.32: title screen clean-up (portraits, match setup, Focus bar, Title screen button).
 // Update 6.36: SalienT 0.31: five looks per species with patterns, Sunscar and Temple surfaces, alien
 // tech on every map, lower jumps, Temple wash-out fix.
@@ -18,10 +20,10 @@ export default function SalientPage() {
   return (
     <div>
       <div className="page-title">SalienT</div>
-      <div className="page-subtitle">in the workshop &middot; v0.32 &middot; eight species &middot; team fights up to 6 v 6, three arenas &middot; new: 40 species looks, upgraded Sunscar and Temple, alien tech on every map</div>
+      <div className="page-subtitle">in the workshop &middot; v0.33 &middot; eight species &middot; new: Deathmatch, free for all in a downed alien ship &middot; team fights up to 6 v 6 on three more arenas</div>
       <IframeGame
         game="salient"
-        src="/games/salient/index.html?v=0.32.0"
+        src="/games/salient/index.html?v=0.33.0"
         title="SalienT"
         note="pick a species, then Start Game (or Play online with friends, top right) · full screen button at the top · WASD move (double-tap W to sprint) · mouse aim · left click fire · right click secondary · V melee · E / Shift / F abilities · Q ultimate · Space jump · Tab scores · Z camera distance · H all controls · Esc gives the mouse back"
       />
