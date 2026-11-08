@@ -1,5 +1,8 @@
 import IframeGame from "../../../../components/IframeGame";
 
+// Update 6.39: SalienT 0.35: The Hunt (a 6 v 6 monster hunt in a glowing jungle, new textures in
+// public/games/salient/assets as .ktx2), the Deathmatch ship rebuilt (ceiling, third level, glass windows, a planet
+// outside), team intros and victory celebrations, an announcer, 13i songs by default.
 // Update 6.38: SalienT 0.33: Deathmatch, a downed alien ship arena with free-for-all scoring (new textures in
 // public/games/salient/assets as .ktx2); jumps raised.
 // Update 6.37: SalienT 0.32: title screen clean-up (portraits, match setup, Focus bar, Title screen button).
@@ -20,10 +23,10 @@ export default function SalientPage() {
   return (
     <div>
       <div className="page-title">SalienT</div>
-      <div className="page-subtitle">in the workshop &middot; v0.33 &middot; eight species &middot; new: Deathmatch, free for all in a downed alien ship &middot; team fights up to 6 v 6 on three more arenas</div>
+      <div className="page-subtitle">in the workshop &middot; v0.35 &middot; eight species &middot; new: The Hunt, a 6 v 6 monster hunt in a glowing jungle &middot; the Deathmatch ship rebuilt &middot; team intros, victory celebrations and an announcer</div>
       <IframeGame
         game="salient"
-        src="/games/salient/index.html?v=0.33.0"
+        src="/games/salient/index.html?v=0.35.0"
         title="SalienT"
         note="pick a species, then Start Game (or Play online with friends, top right) · full screen button at the top · WASD move (double-tap W to sprint) · mouse aim · left click fire · right click secondary · V melee · E / Shift / F abilities · Q ultimate · Space jump · Tab scores · Z camera distance · H all controls · Esc gives the mouse back"
       />

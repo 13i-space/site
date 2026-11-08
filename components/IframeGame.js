@@ -16,7 +16,7 @@ const MAX_SCORE = 1000000; // sanity cap - far above anything a real run reaches
 // play / high-score / daily-score records the other games keep.
 // Update 6.03: with songs on, the page plays 13i's own songs in random order
 // while you play, and tells the game to quiet its own music (message
-// {source:"13i", type:"music", on}). The choice is remembered.
+// {source:"13i", type:"music", on}). The choice is remembered; from Update 6.39 songs are on by default.
 const SONGS_KEY = "13i.gameSongs";
 function shuffledSongs() {
   const list = albums.flatMap((a) => a.tracks.map((t) => { const { file, label } = parseTrack(t); return { src: songSrc(file), label }; }))
@@ -61,11 +61,12 @@ export default function IframeGame({ game, src, title, note = "click the game to
     tellGame(on);
     if (on) playNext(); else { audioRef.current?.pause(); setNowPlaying(""); }
   }, [playNext, tellGame]);
-  // remembered choice: the game is told at once; the songs start on the first tap (browsers need one)
+  // remembered choice: the game is told at once; the songs start on the first tap (browsers need one).
+  // Update 6.39: the 13i songs are on unless you've turned them off.
   useEffect(() => {
     if (!songs) return;
-    let saved = false;
-    try { saved = localStorage.getItem(SONGS_KEY) === "1"; } catch (e) {}
+    let saved = true;
+    try { saved = localStorage.getItem(SONGS_KEY) !== "0"; } catch (e) {}
     if (!saved) return;
     setSongsOn(true);
     songsOnRef.current = true;
