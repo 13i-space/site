@@ -1,5 +1,7 @@
 import IframeGame from "../../../../components/IframeGame";
 
+// Update 6.41: SalienT 0.37: Temple spawn fix (teams start up top again), river ends you can climb out of,
+// Jungle Survival wording and placing fixes, one colour for the bushes you can hide in.
 // Update 6.40: SalienT 0.36: the Emerald Thornbeast (Paul's Meshy model, animated in code; assets/thornbeast.glb),
 // a hiding beast, a new bigger jungle valley, Jungle Survival (12 fighters, one life), objective banner and map order.
 // Update 6.39: SalienT 0.35: The Hunt (a 6 v 6 monster hunt in a glowing jungle, new textures in
@@ -25,10 +27,10 @@ export default function SalientPage() {
   return (
     <div>
       <div className="page-title">SalienT</div>
-      <div className="page-subtitle">in the workshop &middot; v0.36 &middot; eight species &middot; new: the Emerald Thornbeast &middot; a bigger jungle valley where the beast hides &middot; Jungle Survival, 12 fighters with one life each</div>
+      <div className="page-subtitle">in the workshop &middot; v0.37 &middot; eight species &middot; the Emerald Thornbeast &middot; a bigger jungle valley where the beast hides &middot; Jungle Survival, 12 fighters with one life each &middot; Temple spawn fixed</div>
       <IframeGame
         game="salient"
-        src="/games/salient/index.html?v=0.36.0"
+        src="/games/salient/index.html?v=0.37.0"
         title="SalienT"
         note="pick a species, then Start Game (or Play online with friends, top right) · full screen button at the top · WASD move (double-tap W to sprint) · mouse aim · left click fire · right click secondary · V melee · E / Shift / F abilities · Q ultimate · Space jump · Tab scores · Z camera distance · H all controls · Esc gives the mouse back"
       />
