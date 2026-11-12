@@ -21,8 +21,8 @@ const ARCADE = [
 ];
 // Update 6.27: games being built in the open - playable, unfinished, greybox on purpose.
 // Update 6.28: SalienT is the current build; the step-1 build stays playable alongside it.
+// Update 6.42: SalienT moved out of the workshop into its own featured slot under the four cabinets.
 const WORKSHOP = [
-  { href: "/games/salient", title: "SalienT", art: "combat", color: "#B9C0FF", tag: "in the workshop", blurb: "The 13i alien hero shooter. Eight species, team fights up to 6 v 6 against bots, and now online: host a room and play with up to two friends. Level up each species, spend attribute points and unlock new looks. A control point in the Tidal Basin, a Relic to push through Sunscar Rift, and a vault raid in the Temple of 13i, where one door hides a raging boss." },
   { href: "/games/alien-combat", title: "13i Alien Combat", art: "combat", color: "#8B95F6", tag: "step 1 build", blurb: "Where SalienT started: the Tidal Basin arena, movement and camera. Kept here to show how far it has come." },
 ];
 const STORY_ART = { tacet: ["tacet", "#8FD3E8"], "deep-signal": ["signal", "#6FC3A8"], sixteen: ["sixteen", "#E8B4C8"], prism: ["prism", "#E9D29A"], rubato: ["rubato", "#E8CFC0"], "hold-fire": ["holdfire", "#E9A24A"], fermata: ["fermata", "#BFE6FF"], tutti: ["tutti", "#9FE3B0"], ritornello: ["ritornello", "#F3E6C8"] };
@@ -370,6 +370,42 @@ function WarmUp() {
   );
 }
 
+// Update 6.42: SalienT, the featured game. A cabinet twice as wide as the others, with real screens from the
+// game (public/arcade/salient-*.webp), beside a strip of its arenas. Pictures are captured from the game itself.
+const SALIENT_SHOTS = [
+  { src: "/arcade/salient-living.webp", name: "The Living World", note: "fight for a living creature's influence" },
+  { src: "/arcade/salient-hunt.webp", name: "The Hunt", note: "6 v 6 against a roaming beast" },
+  { src: "/arcade/salient-ship.webp", name: "Deathmatch", note: "free for all inside a downed ship" },
+];
+function FeaturedSalient() {
+  return (
+    <section className="ga-feature" aria-label="Featured game: SalienT">
+      <Link href="/games/salient" className="ga-feature-main">
+        <span className="ga-feature-screen">
+          <img src="/arcade/salient-feature.webp" alt="The SalienT title screen: Brontor on a glowing pedestal, the roster of species below" width="1280" height="800" />
+          <span className="ga-scan" aria-hidden="true" />
+          <span className="ga-feature-glow" aria-hidden="true" />
+        </span>
+        <span className="ga-feature-body">
+          <span className="mono ga-feature-kicker"><i aria-hidden="true" /> featured &middot; the 13i hero shooter</span>
+          <span className="ga-feature-title">Salien<b>T</b></span>
+          <span className="ga-feature-blurb">Eight alien species with their own abilities, each levelling from 1 to 100 with new looks and attribute points on the way. Six arenas, team fights up to 6 v 6 against bots, and online rooms with friends. Take any species to 100 and the Temple Warden joins your roster.</span>
+          <span className="ga-feature-chips mono"><span>8 species</span><span>6 arenas</span><span>levels 1&ndash;100</span><span>play online</span></span>
+          <span className="ga-feature-cta">Play SalienT <span aria-hidden="true">&rarr;</span></span>
+        </span>
+      </Link>
+      <div className="ga-feature-side">
+        {SALIENT_SHOTS.map((s, i) => (
+          <Link key={s.src} href="/games/salient" className="ga-feature-shot" style={{ "--i": i }}>
+            <img src={s.src} alt={`SalienT: ${s.name}`} width="640" height="360" loading="lazy" />
+            <span className="ga-feature-cap"><b>{s.name}</b><span>{s.note}</span></span>
+          </Link>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function Cabinet({ href, title, blurb, art, color, tag, locked, lockNote, i }) {
   return (
     <Link href={href} className={`ga-cab ${locked ? "ga-cab-locked" : ""}`} style={{ "--c": color, "--i": i }}>
@@ -431,6 +467,8 @@ export default function GamesArcade() {
       <div className="ga-grid ga-grid-4">
         {ARCADE.map((g, i) => <Cabinet key={g.href} {...g} i={i} />)}
       </div>
+
+      <FeaturedSalient />
 
       <div className="ga-row-head">
         <h2>In the workshop</h2>
