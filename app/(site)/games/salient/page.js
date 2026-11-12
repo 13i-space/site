@@ -1,5 +1,9 @@
 import IframeGame from "../../../../components/IframeGame";
 
+// Update 6.42: SalienT 0.39: The Living World (a new arena where teams win a living creature's influence, with a
+// how-to-play card), levels 1 to 100 per species (a point every 4 levels, a look every 20, points count online),
+// the Temple Warden unlocked at level 100, the Thornbeast's energy sacs grown into her body, a glass title screen
+// over the arena, graphics-memory fixes for High, and the Hunt last on the list. Featured in the Arcade.
 // Update 6.41: SalienT 0.37: Temple spawn fix (teams start up top again), river ends you can climb out of,
 // Jungle Survival wording and placing fixes, one colour for the bushes you can hide in.
 // Update 6.40: SalienT 0.36: the Emerald Thornbeast (Paul's Meshy model, animated in code; assets/thornbeast.glb),
@@ -27,12 +31,12 @@ export default function SalientPage() {
   return (
     <div>
       <div className="page-title">SalienT</div>
-      <div className="page-subtitle">in the workshop &middot; v0.37 &middot; eight species &middot; the Emerald Thornbeast &middot; a bigger jungle valley where the beast hides &middot; Jungle Survival, 12 fighters with one life each &middot; Temple spawn fixed</div>
+      <div className="page-subtitle">featured &middot; v0.39 &middot; eight species, levels 1&ndash;100 &middot; new arena: The Living World &middot; unlock the Temple Warden at level 100 &middot; steadier High graphics</div>
       <IframeGame
         game="salient"
-        src="/games/salient/index.html?v=0.37.0"
+        src="/games/salient/index.html?v=0.39.0"
         title="SalienT"
-        note="pick a species, then Start Game (or Play online with friends, top right) · full screen button at the top · WASD move (double-tap W to sprint) · mouse aim · left click fire · right click secondary · V melee · E / Shift / F abilities · Q ultimate · Space jump · Tab scores · Z camera distance · H all controls · Esc gives the mouse back"
+        note="pick a species, then Start Game (or Play online with friends, top right) · full screen button at the top · WASD move (double-tap W to sprint) · mouse aim · left click fire · right click secondary · V melee · E / Shift / F abilities · Q ultimate · G (Living World) commune with an organ · Space jump · Tab scores · Z camera distance · H all controls · Esc gives the mouse back"
       />
     </div>
   );

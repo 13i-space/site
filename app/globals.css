@@ -1855,6 +1855,42 @@ a.kr-card:hover { border-color: rgba(233,210,154,.5); transform: translateY(-2px
 .ga-cab-locked .ga-cab-title { color: #6E76B8; letter-spacing: 6px; }
 .ga-lock { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
 .ga-lock span { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: var(--c); padding: 6px 12px; border: 1px solid var(--c); border-radius: 4px; background: rgba(5,6,26,.75); }
+/* Update 6.42: SalienT, featured under the four cabinets: a cabinet twice as wide, with its arenas beside it */
+.ga-feature { --c: #7FE6FF; display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 18px; margin-top: 18px; padding: 18px; border-radius: 22px; position: relative;
+  border: 1px solid color-mix(in srgb, var(--c) 40%, #20234a);
+  background: radial-gradient(80% 120% at 0% 0%, rgba(127,230,255,.12), transparent 60%), radial-gradient(70% 120% at 100% 100%, rgba(255,122,214,.10), transparent 60%), linear-gradient(180deg, #11143a, #080918);
+  box-shadow: 0 30px 70px -30px rgba(0,0,0,.8), inset 0 1px 0 rgba(255,255,255,.08); animation: ga-rise .6s ease both; animation-delay: 300ms; }
+.ga-feature::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(120deg, rgba(127,230,255,.8), rgba(185,192,255,.15) 35%, rgba(255,122,214,.7)); -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.ga-feature-main { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 22px; align-items: center; text-decoration: none; color: inherit; }
+.ga-feature-screen { position: relative; display: block; aspect-ratio: 16 / 10; border-radius: 14px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255,255,255,.1), 0 18px 40px -18px rgba(0,0,0,.8); transition: transform .35s, box-shadow .35s; }
+.ga-feature-screen img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 1.2s cubic-bezier(.2,.8,.2,1); }
+.ga-feature-glow { position: absolute; inset: 0; background: linear-gradient(180deg, transparent 55%, rgba(8,9,24,.55)); pointer-events: none; }
+.ga-feature-main:hover .ga-feature-screen { box-shadow: inset 0 0 0 1px var(--c), 0 22px 50px -16px rgba(127,230,255,.35); }
+.ga-feature-main:hover .ga-feature-screen img { transform: scale(1.04); }
+.ga-feature-body { display: flex; flex-direction: column; gap: 10px; }
+.ga-feature-kicker { display: flex; align-items: center; gap: 8px; font-size: 10.5px; letter-spacing: 2px; text-transform: uppercase; color: var(--c); }
+.ga-feature-kicker i { width: 7px; height: 7px; border-radius: 50%; background: #7DFFB0; box-shadow: 0 0 10px #7DFFB0; animation: ga-press 1.6s ease-in-out infinite; }
+.ga-feature-title { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: clamp(38px, 4.4vw, 58px); line-height: 1; color: #F1F0FF; letter-spacing: .5px; }
+.ga-feature-title b { font-weight: inherit; color: #F1F0FF; }
+.ga-feature-title { background: linear-gradient(90deg, #F1F0FF 0 8%, #7FE6FF 18%, #B9C0FF 55%, #FF9BE0 82%, #F1F0FF 92%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.ga-feature-blurb { font-size: 14.5px; line-height: 1.6; color: #AEB3DA; }
+.ga-feature-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.ga-feature-chips span { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #D9DCFF; padding: 5px 10px; border-radius: 999px; border: 1px solid rgba(185,192,255,.3); background: rgba(185,192,255,.06); }
+.ga-feature-cta { align-self: flex-start; margin-top: 4px; padding: 12px 20px; border-radius: 12px; font-size: 13px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: #06121A;
+  background: linear-gradient(135deg, #C9F6FF, #7FE6FF 50%, #9AA8FF); box-shadow: 0 12px 30px -10px rgba(127,230,255,.6), inset 0 1px 0 rgba(255,255,255,.7); transition: transform .2s, box-shadow .2s; }
+.ga-feature-main:hover .ga-feature-cta { transform: translateY(-2px); box-shadow: 0 16px 36px -10px rgba(127,230,255,.8), inset 0 1px 0 rgba(255,255,255,.7); }
+.ga-feature-side { display: grid; grid-template-rows: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.ga-feature-shot { position: relative; display: block; min-height: 92px; border-radius: 12px; overflow: hidden; text-decoration: none; border: 1px solid rgba(255,255,255,.08); animation: ga-rise .5s ease both; animation-delay: calc(400ms + var(--i) * 90ms); transition: border-color .2s, transform .2s; }
+.ga-feature-shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform .8s; }
+.ga-feature-shot:hover { border-color: var(--c); transform: translateX(-3px); }
+.ga-feature-shot:hover img { transform: scale(1.06); }
+.ga-feature-cap { position: absolute; inset: auto 0 0 0; display: flex; flex-direction: column; gap: 1px; padding: 18px 12px 9px; background: linear-gradient(180deg, transparent, rgba(6,7,20,.88)); }
+.ga-feature-cap b { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-weight: 400; font-size: 17px; color: #F1F0FF; }
+.ga-feature-cap span { font-size: 11.5px; color: #AEB3DA; }
+@media (max-width: 1020px) { .ga-feature { grid-template-columns: 1fr; } .ga-feature-side { grid-template-rows: none; grid-template-columns: repeat(3, minmax(0, 1fr)); } .ga-feature-shot { aspect-ratio: 16 / 10; } }
+@media (max-width: 700px) { .ga-feature-main { grid-template-columns: 1fr; } .ga-feature-side { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .ga-feature, .ga-feature-shot { animation: none; } .ga-feature-kicker i { animation: none; } .ga-feature-screen img, .ga-feature-shot img { transition: none; } }
 .ga-more { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-top: 46px; }
 .ga-more-card { display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border-radius: 14px; border: 1px solid #262A55; background: rgba(14,16,38,.72); text-decoration: none; transition: border-color .2s; }
 .ga-more-card:hover { border-color: #8B95F6; }
