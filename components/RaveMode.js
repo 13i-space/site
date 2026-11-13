@@ -33,6 +33,8 @@ import { drawDusk, drawForest, drawSwarm, drawCicada, chorusAt } from "../lib/ra
 import { mix, clamp, smooth, hash, glow, hsl } from "../lib/rave/draw";
 import { planFor, direct } from "../lib/rave/director";
 import { paintDJ, paintDancer, guestNow, guestTitle, paintGuest, GUEST_HEIGHT, paintGirl, paintCicada, paintPumpkins, paintDoll } from "../lib/rave/painted";
+// Update 6.43: a second stage for some songs - the SalienT cast in 3D (components/SalientRave.js)
+import SalientRave, { SALIENT_SONGS, salientSupported } from "./SalientRave";
 
 // the show's colours, a pair of hues at a time
 const PALETTES = [[190, 300], [275, 45], [165, 215], [325, 190], [45, 285], [125, 305], [210, 340]];
@@ -64,9 +66,31 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
   // Update 6.16: the director's cut, a camera that films the song like a music video
   const [director, setDirector] = useState(DIRECTOR);
   const [full, setFull] = useState(false);
-  const live = useRef({ track, title, sub, playing, strobe, director: DIRECTOR });
-  live.current = { track, title, sub, playing, strobe, director };
   const reduced = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  // Update 6.43: which stage - "13i" (the painted crew) or "salient" (the SalienT cast in 3D),
+  // for songs that have a SalienT stage. Remembered per visitor; phones and reduced
+  // motion start on 13i (the lighter one), everyone else on SalienT.
+  const [stagePick, setStagePick] = useState(() => {
+    try { const v = localStorage.getItem(STAGE_KEY); if (v === "13i" || v === "salient") return v; } catch (e) { /* ignore */ }
+    if (typeof window === "undefined") return "13i";
+    const phone = window.matchMedia && window.matchMedia("(pointer: coarse)").matches && Math.min(window.innerWidth, window.innerHeight) < 820;
+    return phone || reduced ? "13i" : "salient";
+  });
+  const [salFailed, setSalFailed] = useState(false);
+  const [salReady, setSalReady] = useState(false);
+  const [salOk] = useState(() => typeof window !== "undefined" && salientSupported());
+  const hasSalient = !!(track && SALIENT_SONGS.has(track.file) && salOk && !salFailed);
+  const salOn = hasSalient && stagePick === "salient" && !rec;
+  useEffect(() => { if (!salOn) setSalReady(false); }, [salOn]);
+  const pickStage = (v) => { setStagePick(v); try { localStorage.setItem(STAGE_KEY, v); } catch (e) { /* ignore */ } };
+  const salTime = () => {
+    const el = audioRef.current; if (!el) return 0;
+    const ac = audioNode.current && audioNode.current.context;
+    const latency = ac ? (ac.outputLatency || 0) + (ac.baseLatency || 0) : 0;
+    return el.currentTime - (el.paused ? 0 : latency);
+  };
+  const live = useRef({ track, title, sub, playing, strobe, director: DIRECTOR, sal: false });
+  live.current = { track, title, sub, playing, strobe, director, sal: salOn && salReady };
 
   // controls fade away while you watch; any move brings them back
   useEffect(() => {
@@ -140,6 +164,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
       const t = now / 1000;
       const dt = Math.min(0.05, Math.max(0.001, t - st.prevT));
       st.prevT = t;
+      // the SalienT stage is up and drawing over us: nothing to draw here
+      if (live.current.sal) return;
       // keep it smooth on slower machines: drop the resolution if frames run long
       // (after a moment to settle in, and it climbs back if things speed up)
       st.frames += 1;
@@ -466,6 +492,7 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
   return (
     <div ref={wrapRef} className={`rv ${chrome ? "rv-chrome" : ""} ${rec ? "rv-recording" : ""}`} role="dialog" aria-label="Rave Mode">
       <canvas ref={canvasRef} className="rv-canvas" aria-hidden="true" />
+      {salOn && <SalientRave key={track.file} getTime={salTime} calm={reduced} onReady={() => setSalReady(true)} onFail={() => { setSalFailed(true); setSalReady(false); }} />}
       <div className="rv-top">
         <div className="rv-now">
           <div className="mono rv-kicker">RAVE MODE{playing ? " · LIVE" : " · PAUSED"}</div>
@@ -478,20 +505,26 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
         <button onClick={onPrev} aria-label="Previous song">⏮</button>
         <button onClick={onToggle} className="rv-play" aria-label={playing ? "Pause" : "Play"}>{playing ? "❚❚" : "▶"}</button>
         <button onClick={onNext} aria-label="Next song">⏭</button>
-        {!reduced && (
+        {hasSalient && !rec && (
+          <span className="rv-stage" role="group" aria-label="Stage">
+            <button className={`mono rv-small ${!salOn ? "rv-on" : ""}`} onClick={() => pickStage("13i")} aria-pressed={!salOn} title="The 13i crew">13i</button>
+            <button className={`mono rv-small ${salOn ? "rv-on" : ""}`} onClick={() => pickStage("salient")} aria-pressed={salOn} title="The SalienT cast, in 3D">SalienT</button>
+          </span>
+        )}
+        {!reduced && !salOn && (
           <button className={`mono rv-small ${strobe ? "rv-on" : ""}`} onClick={() => setStrobe((v) => !v)} aria-pressed={strobe} title="Flashing lights on the big moments">
             strobe {strobe ? "on" : "off"}
           </button>
         )}
-        {!reduced && (
+        {!reduced && !salOn && (
           <button className={`mono rv-small ${director ? "rv-on" : ""}`} onClick={() => setDirector((v) => !v)} aria-pressed={director} title="A camera that cuts and moves with the song, like a music video">
             director's cut {director ? "on" : "off"}
           </button>
         )}
-        {!rec && <button className={`mono rv-small ${recMenu ? "rv-on" : ""}`} onClick={() => setRecMenu((v) => !v)} aria-expanded={recMenu} title="Save this song's Rave as a music video">save video</button>}
+        {!rec && !salOn && <button className={`mono rv-small ${recMenu ? "rv-on" : ""}`} onClick={() => setRecMenu((v) => !v)} aria-expanded={recMenu} title="Save this song's Rave as a music video">save video</button>}
         <button className="mono rv-small" onClick={toggleFull} title="Full screen (F)">{full ? "exit full screen" : "full screen"}</button>
       </div>
-      {recMenu && !rec && (
+      {recMenu && !rec && !salOn && (
         <div className="rv-recmenu" role="dialog" aria-label="Save as a video">
           <div className="mono rv-kicker">SAVE AS A VIDEO</div>
           <p>The Rave for <b>{title || "this song"}</b>, filmed with the director's cut, with the song. It records in real time from the start: let the song play to the end (or stop early) and keep this tab open.</p>
@@ -517,6 +550,8 @@ export default function RaveMode({ audioRef, track, title, sub, playing, onToggl
   );
 }
 
+// the stage picked last time (Update 6.43)
+const STAGE_KEY = "13i_rave_stage";
 // ?director starts with the director's cut on (Update 6.16)
 const DIRECTOR = typeof window !== "undefined" && /[?&]director\b/.test(window.location.search);
 // ?drawn shows the characters the old drawn way (Update 6.13)

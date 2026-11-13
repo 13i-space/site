@@ -4,6 +4,7 @@ Update this file (briefly) whenever a significant change lands. This is a
 snapshot, not a history — see CHANGELOG.md for the record over time.
 
 ## Working right now
+- Update 6.43 (see CHANGELOG): Rave Mode's SalienT stage on Ominous - Chephro DJs, the SalienT cast dances in 3D, a 13i / SalienT switch (components/SalientRave.js, rave-src/salient).
 - Update 6.26 (see CHANGELOG): Mission Control's DEEP console - an interactive solar system map with 15 deep-space missions placed by JPL Horizons (lib/solarSystem.js, lib/deepSpace.js).
 - Update 6.25 (see CHANGELOG): Mission Control as a full-window control room; every screen has backup streams (lib/missionFeeds.js); Signal 13i is an easter egg on the FEEDS console.
 - Update 6.24 (see CHANGELOG): Mission Control at /galaxy/mission-control, via page 3 of the Galactic Gazette - live YouTube feeds, ISS position, launch schedule and alerts, Signal mode. Feeds live in lib/missionFeeds.js.
