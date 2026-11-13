@@ -14,3 +14,6 @@ out/
 # Local Vercel / Claude Code settings
 .vercel/
 .claude/
+
+# Virtual GM local demo data
+.data/
