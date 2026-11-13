@@ -3,6 +3,30 @@
 Major features, architectural decisions, and significant fixes only — not
 every small edit. Newest at the top.
 
+## Update 6.43 — Rave Mode: the SalienT stage, on Ominous (Nov 2026)
+No SQL. No keys. Rave Mode gets a second stage for Ominous, and a switch for it.
+- **The SalienT stage** (components/SalientRave.js; source in rave-src/salient, prebuilt into
+  public/rave/salient/salient-rave.js with three.js inside; the characters in public/rave/salient/models).
+  A 3D club: a nine-sided LED floor, an LED wall, a nonagon truss of moving heads, lasers on the hats, CO2 jets
+  on the drops, speaker stacks and flown line arrays, a crowd of seven kinds of alien in the shadows.
+- **Chephro is the DJ**: he rises out of the booth, and his two arms and eight tentacles each work their own
+  platter, pad, fader or knob (they light where he touches). Spell-casting in the held bar before each drop,
+  a hand in the air when it lands. The desk has holographic screens scrolling Ominous's real waveform.
+- **The floor**: Skitter, Elyra, Kryvax, Murm, Vexl, Brontor and Thulkar arrive one at a time through the intro,
+  then rotate with a featured soloist (name card); all on for the drops, Elyra floats alone in the breakdown.
+  The four dance clips are shared across the Mixamo rigs (Thulkar keeps his own moves).
+- **The Temple Warden**: 12% of plays, he rises through a gold seal at the 2:40 drop for eight bars. ?warden
+  forces him.
+- **The SalienT logo** on the wall: the opening, the breakdown and the close.
+- Timed from the song's own clock (same beat grid as lib/rave/beatData.js) plus bass/mid/hat loudness measured
+  per 16th note, so it can be scrubbed and paused.
+- **The switch** (13i / SalienT) shows in Rave Mode's bar on songs in SALIENT_SONGS, remembered per visitor
+  (localStorage 13i_rave_stage). Phones and reduced motion start on 13i; everyone else on SalienT. Strobe,
+  director's cut and save video are for the 13i stage and hide on SalienT. No WebGL 2 or a failed load: the
+  switch goes away and the 13i stage plays.
+- Files: components/SalientRave.js, rave-src/salient/*, public/rave/salient/* (new); components/RaveMode.js,
+  app/globals.css, lib/version.js.
+
 ## Update 6.26 — Mission Control: Deep Space (Oct 2026)
 No SQL. No keys. A fourth, full-width console under Mission Control's desks: DEEP.
 - **The solar system from above** (components/DeepSpaceMap.js): the Sun, the planets and Pluto on their orbits

@@ -1249,6 +1249,24 @@ main {
 .rv-bar .rv-on { background: #fff; color: #1a0b2e; }
 /* saving a video (Update 6.17): while it records the frame is fixed, shown whole */
 .rv-recording .rv-canvas { object-fit: contain; background: #000; }
+/* Update 6.43: the SalienT stage and the stage switch */
+.rv-sal, .rv-sal-host { position: absolute; inset: 0; }
+.rv-sal-host canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.rv-sal-load { position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 12px; background: radial-gradient(120% 90% at 50% 45%, rgba(40,8,30,.55) 0%, rgba(4,2,12,.94) 70%); }
+.rv-sal-bar { width: min(260px, 70vw); height: 3px; background: rgba(185,192,255,.14); border-radius: 3px; overflow: hidden; }
+.rv-sal-bar i { display: block; height: 100%; background: linear-gradient(90deg, #7f8cff, #ff3a4a); transition: width .3s; }
+.rv-sal-msg { font-size: 11px; color: #8b95f6; letter-spacing: .5px; }
+.rv-sal-card { position: absolute; left: 26px; bottom: 118px; --c: #fff; opacity: 0; pointer-events: none; }
+.rv-sal-card.on { animation: rv-sal-card 5.2s ease both; }
+.rv-sal-card::before { content: ""; display: block; width: 46px; height: 2px; background: var(--c); margin-bottom: 12px; box-shadow: 0 0 12px var(--c); }
+.rv-sal-name { font-family: 'Fraunces', Georgia, serif; font-weight: 700; font-size: clamp(28px, 5vw, 56px); line-height: 1; color: #fff; text-shadow: 0 0 28px var(--c), 0 2px 10px #000; }
+.rv-sal-role { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: .34em; text-transform: uppercase; color: var(--c); margin-top: 8px; padding-left: 3px; text-shadow: 0 1px 8px #000; }
+@keyframes rv-sal-card { 0% { opacity: 0; transform: translateX(-26px); } 8% { opacity: 1; transform: none; } 78% { opacity: 1; } 100% { opacity: 0; transform: translateX(10px); } }
+@media (prefers-reduced-motion: reduce) { .rv-sal-card.on { animation-duration: .01s; } }
+.rv-stage { display: inline-flex; gap: 0; }
+.rv-bar .rv-stage .rv-small { border-radius: 0; }
+.rv-bar .rv-stage .rv-small:first-child { border-radius: 999px 0 0 999px; }
+.rv-bar .rv-stage .rv-small:last-child { border-radius: 0 999px 999px 0; margin-left: -1px; }
 .rv-recmenu { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); width: min(440px, calc(100% - 32px)); box-sizing: border-box; padding: 18px; border-radius: 14px; background: rgba(10,6,24,0.92); border: 1px solid rgba(255,255,255,0.18); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); z-index: 3; cursor: default; }
 .rv-recmenu p { font-size: 13.5px; line-height: 1.55; color: #d8d0f0; margin: 8px 0 14px; }
 .rv-recmenu-go { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
