@@ -3,7 +3,8 @@ import { notFound } from 'next/navigation';
 import { currentClub } from '../../../../../lib/gm/store';
 import { AG } from '../../../../../lib/gm/seed-data';
 import { Chip, Jersey } from '../../../_components/ui';
-import { AgentSwitch, RunPanel } from '../../../_components/AgentControls';
+import { AgentSwitch, RunPanel, ScheduleSelect, GoalSelect } from '../../../_components/AgentControls';
+import { nextRun } from '../../../../../lib/gm/text';
 import { hasKey } from '../../../../../lib/gm/runner';
 export default async function AgentPage({ params }) {
     const { id } = await params;
@@ -19,7 +20,7 @@ export default async function AgentPage({ params }) {
       <p className="small"><Link href="/gm/team">&larr; Meet the team</Link></p>
       <div style={{ marginTop: 14 }}>
         <div className="pagehead">
-          <div className="row" style={{ flexWrap: 'nowrap', gap: 16 }}><Jersey a={a} lg/><div><h1>{a.name}</h1><p style={{ marginTop: 4 }}>{a.pos}</p></div></div>
+          <div className="row" style={{ flexWrap: 'nowrap', gap: 16 }}><Jersey a={a} lg on={on}/><div><h1>{a.name}</h1><p style={{ marginTop: 4 }}>{a.pos}</p></div></div>
           <div className="row"><Chip k="good">Skill saved</Chip><span className="small mute">Agent on</span><AgentSwitch id={id} name={a.name} on={on}/></div>
         </div>
         <p style={{ maxWidth: '70ch', marginBottom: 18 }}>{a.line}</p>
@@ -35,7 +36,11 @@ export default async function AgentPage({ params }) {
           <div className="row" style={{ marginTop: 10 }}>{a.tabs.map(t => <Chip key={t}>{t}</Chip>)}</div>
         </section>
         <section className="card" style={{ marginTop: 14 }}>
-          <div className="row spread"><h3>Run</h3><RunPanel id={id} on={on} key_={hasKey()}/></div>
+          <div className="row spread"><h3>Schedule</h3><div className="row"><span className="small mute">Next run: <b>{nextRun(c, id)}</b></span><ScheduleSelect id={id} value={c.settings.schedule[id] || 'manual'}/>{a.id === 'sponsorship' || a.id === 'tickets' ? <GoalSelect id={id} value={c.settings.goals[id]}/> : null}</div></div>
+          <p className="small mute" style={{ marginTop: 8 }}>Scheduled agents run by themselves. Today that happens when you open the office; once the club is saved to the database they also run overnight.</p>
+        </section>
+        <section className="card" style={{ marginTop: 14 }}>
+          <div className="row spread"><h3>Run</h3><RunPanel id={id} on={on} live={hasKey()}/></div>
           <p className="small mute" style={{ marginTop: 8 }}>A run reads the club workbook and prepares drafts. It never sends. {hasKey() ? '' : 'Demo mode replays this agent’s steps without calling Claude.'}</p>
           <div className="log" style={{ marginTop: 12 }}>
             {logs.length ? logs.map(l => `${new Date(l.at).toLocaleString()} · ${l.mode}\n${l.summary}\n${l.steps.map(s => '→ ' + s).join('\n')}${l.blocked.length ? '\nBlocked: ' + l.blocked.join('; ') : ''}\nDrafts: ${l.drafts}`).join('\n\n') : 'No run yet.'}

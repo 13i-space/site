@@ -1,17 +1,22 @@
-import Link from 'next/link';
-import { currentClub } from '../../../lib/gm/store';
+import { currentClub, storageMode } from '../../../lib/gm/store';
 import Nav from '../_components/Nav';
+import AutoRun from '../_components/AutoRun';
+import { Brand, Crest } from '../_components/ui';
 import { hasKey } from '../../../lib/gm/runner';
+import { AGENTS } from '../../../lib/gm/seed-data';
+
 export default async function Office({ children }) {
     const club = await currentClub();
+    const mode = await storageMode();
     const pending = club.queue.filter(q => q.status === 'pending').length;
+    const names = Object.fromEntries(AGENTS.map(a => [a.id, a.name]));
     return (<div className="shell">
       <aside className="rail">
-        <Link className="brand" href="/gm/brief"><span className="mark">GM</span><b>VIRTUAL GM</b></Link>
-        <div className="clubchip"><span className="crest"/><div><b>{club.team}</b><span>{club.real ? 'USL League Two' : 'Your club'}</span></div></div>
-        <Nav pending={pending}/>
-        <div className="railfoot">{hasKey() ? 'Live agents' : 'Demo mode: add ANTHROPIC_API_KEY to run agents for real.'}</div>
+        <Brand />
+        <div className="clubchip"><Crest club={club}/><div><b>{club.team}</b><span className="s">{club.real ? 'USL League Two' : 'Your club'}</span></div></div>
+        <Nav pending={pending} on={club.settings.agentsOn}/>
+        <div className="railfoot">{hasKey() ? 'Live agents' : 'Demo mode: no API key.'} · {mode === 'database' ? 'Saved to database' : 'Temporary storage'}</div>
       </aside>
-      <main>{children}</main>
+      <main><AutoRun names={names}/>{children}</main>
     </div>);
 }
