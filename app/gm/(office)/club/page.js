@@ -1,7 +1,7 @@
 import { currentClub } from '../../../../lib/gm/store';
 import { QUESTIONS } from '../../../../lib/gm/seed-data';
 import { Head, Chip, stat } from '../../_components/ui';
-import { saveSender } from '../../../../lib/gm/actions';
+import { saveSender, saveLogo } from '../../../../lib/gm/actions';
 export default async function Club() {
     const c = await currentClub();
     return (<>
@@ -23,6 +23,14 @@ export default async function Club() {
               <div><label htmlFor="s-email">Sender email</label><input id="s-email" name="email" type="text" defaultValue={c.sender.email} placeholder="name@club.com"/></div>
               <div><label htmlFor="s-addr">Club mailing address</label><input id="s-addr" name="addr" type="text" defaultValue={c.sender.addr} placeholder="Street, city, state, ZIP"/></div>
               <button className="btn primary" type="submit">Save sender details</button>
+            </form>
+          </section>
+          <section className="card">
+            <h3>Club logo</h3>
+            <p className="small mute" style={{ margin: '6px 0 12px' }}>Paste a link to the logo image (https). It shows on the Daily Brief and in the menu.</p>
+            <form action={saveLogo} className="grid" style={{ gap: 12 }}>
+              <div><label htmlFor="logo">Logo image link</label><input id="logo" name="logo" type="text" defaultValue={c.logo} placeholder="https://…/logo.png"/></div>
+              <button className="btn" type="submit">Save logo</button>
             </form>
           </section>
           <section className="card"><h3>Questions for the club</h3><ul className="tidy small" style={{ marginTop: 10 }}>{QUESTIONS.map(q => <li key={q[0]}><b>{q[0]}:</b> {q[1]}</li>)}</ul></section>

@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react';
 import { useFormStatus } from 'react-dom';
 import { startSetup } from '../../../lib/gm/actions';
 
-const STEPS = ['Finding the club and its website', 'Pulling the logo and team colors', 'Filling in the club profile from public sources', 'Mapping the sponsor territory', 'Finding local prospects', 'Drafting outreach for approval', 'Assembling your front office'];
+const STEPS = ['Finding the club and its website', 'Pulling the logo and team colors', 'Filling in the club profile from public sources', 'Mapping the territory', 'Putting your starting eleven on the pitch', 'Assembling your front office'];
 
-function Body({ defaultName, defaultTeam, live }) {
+function Body({ defaultName, defaultTeam }) {
   const { pending } = useFormStatus();
   const [step, setStep] = useState(0);
   useEffect(() => {
@@ -28,18 +28,17 @@ function Body({ defaultName, defaultTeam, live }) {
   }
   return (
     <>
-      <div><div className="eyebrow">Step 1 of 2</div><h2 style={{ marginTop: 8 }}>Who are you, and what team?</h2></div>
+      <div><div className="eyebrow">Kick off</div><h2 style={{ marginTop: 8 }}>Who are you, and what team?</h2></div>
       <div className="grid" style={{ gap: 14 }}>
         <div><label htmlFor="name">Your name</label><input id="name" name="name" type="text" defaultValue={defaultName} autoComplete="off" /></div>
         <div><label htmlFor="team">Team name</label><input id="team" name="team" type="text" defaultValue={defaultTeam} autoComplete="off" /></div>
         <div><label htmlFor="website">Website (optional)</label><input id="website" name="website" type="text" placeholder="club website" autoComplete="off" /></div>
-        <button className="btn primary" type="submit" style={{ padding: '12px 16px', fontSize: 16 }}>Set up my front office</button>
+        <button className="btn primary lg" type="submit">Set up my front office</button>
       </div>
-      <p className="small mute">The McKinney Chupacabras load from the real workbook. Any other team starts blank{live ? ' and the agents fill what they can from public sources.' : '; add an API key and the agents will research it.'}</p>
     </>
   );
 }
 
 export default function SetupForm(props) {
-  return <form className="door-r" action={startSetup}><Body {...props} /></form>;
+  return <form className="signup" action={startSetup}><Body {...props} /></form>;
 }
